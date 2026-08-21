@@ -4,6 +4,7 @@ pub mod app;
 pub mod domain;
 pub mod graph;
 pub mod graph_view;
+pub mod node_renderers;
 pub mod state;
 pub mod theme;
 
@@ -14,6 +15,10 @@ pub use graph::{
     GraphPoint, GraphRect, GraphViewport, INTERACTIVE_FRAME_BUDGET_MS, NavigationDirection,
 };
 pub use graph_view::GraphSurface;
+pub use node_renderers::{
+    EdgeVisualStyle, InspectorData, NodePresentation, NodeShape, NodeVisualState, NodeVisualStyle,
+    edge_visual_style, kind_label, node_visual_style,
+};
 pub use state::{
     CenterView, EditorCommand, EditorState, MenuDefinition, MenuEntry, PanelLayout, StatusMessage,
     menu_definitions,

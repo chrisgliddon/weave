@@ -408,7 +408,7 @@ weavec story.weave --watch            # recompile on file change
 ### Phase 3 — Editor
 - [x] GPUI application skeleton
 - [x] Node graph canvas (gpui-flow integration)
-- [ ] Custom node renderers for each construct
+- [x] Custom node renderers for each construct
 - [ ] Text editor view with syntax highlighting
 - [ ] Bidirectional sync (graph ↔ text)
 - [ ] Live play preview

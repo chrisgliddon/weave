@@ -12,6 +12,7 @@ use gpui::{
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::GraphSurface;
+use crate::node_renderers::{InspectorData, kind_label};
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::theme::DARK_THEME;
 
@@ -236,6 +237,84 @@ impl EditorShell {
         }
         panel.into_any_element()
     }
+
+    fn inspector_panel(selection: Option<InspectorData>, width: f32) -> AnyElement {
+        let mut panel = div()
+            .w(px(width))
+            .h_full()
+            .flex_none()
+            .flex()
+            .flex_col()
+            .gap_3()
+            .p_3()
+            .bg(rgb(DARK_THEME.panel))
+            .border_l_1()
+            .border_color(rgb(DARK_THEME.border))
+            .child(
+                div()
+                    .text_sm()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child("Inspector"),
+            );
+        let Some(selection) = selection else {
+            return panel
+                .child(
+                    div()
+                        .text_xs()
+                        .text_color(rgb(DARK_THEME.muted_text))
+                        .child("Select a graph node to inspect its source and validation."),
+                )
+                .into_any_element();
+        };
+        panel = panel
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.accent))
+                    .child(kind_label(selection.kind).to_uppercase()),
+            )
+            .child(
+                div()
+                    .text_sm()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(selection.title),
+            )
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(selection.preview),
+            )
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(format!(
+                        "Position  {:.0}, {:.0}",
+                        selection.position.x, selection.position.y
+                    )),
+            );
+        if let Some(span) = selection.source_span {
+            panel = panel.child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(format!("Source  {}:{}", span.line, span.column)),
+            );
+        }
+        if let Some(validation) = selection.validation {
+            panel = panel.child(
+                div()
+                    .p_2()
+                    .rounded_md()
+                    .bg(rgb(DARK_THEME.error))
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(validation),
+            );
+        }
+        panel.into_any_element()
+    }
 }
 
 impl gpui::Render for EditorShell {
@@ -287,11 +366,8 @@ impl gpui::Render for EditorShell {
         workspace = workspace.child(center);
 
         if layout.inspector_sidebar {
-            workspace = workspace.child(Self::panel(
-                "Inspector",
-                "Selection details and validation",
-                Some(layout.right_width),
-            ));
+            let selection = self.graph.read(cx).inspector_data(cx);
+            workspace = workspace.child(Self::inspector_panel(selection, layout.right_width));
         }
 
         let mut root = div()

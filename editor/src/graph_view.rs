@@ -1,15 +1,20 @@
 //! Native `gpui-flow` surface for the editor graph workspace.
 
-use gpui::{
-    AnyElement, App, Context, Entity, FontWeight, KeyDownEvent, Window, div, prelude::*, px, rgb,
-};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use gpui::{App, Context, Entity, KeyDownEvent, Window, div, prelude::*, px, rgb};
 use gpui_flow::{
     BackgroundPattern, Controls, FlowGraph, FlowNode, FlowState, HandleDef, HandlePosition, Minimap,
 };
 use weave_core::ast::Document;
 
 use crate::graph::{
-    GraphDocument, NavigationDirection, directional_flow_node, is_valid_flow_connection,
+    GraphDocument, GraphNodeKind, GraphPoint, NavigationDirection, directional_flow_node,
+    is_valid_flow_connection,
+};
+use crate::node_renderers::{
+    InspectorData, NodePresentation, install_weave_renderers, presentations,
 };
 use crate::theme::DARK_THEME;
 
@@ -19,6 +24,7 @@ pub struct GraphSurface {
     flow: Entity<FlowGraph>,
     minimap: Entity<Minimap>,
     controls: Entity<Controls>,
+    presentations: Arc<HashMap<String, NodePresentation>>,
     next_user_node: u64,
 }
 
@@ -26,6 +32,7 @@ impl GraphSurface {
     /// Create a graph surface from the canonical parsed document.
     pub fn new(document: &Document, cx: &mut Context<Self>) -> Self {
         let graph = GraphDocument::from_ast(document);
+        let presentations = Arc::new(presentations(&graph));
         let (nodes, edges) = graph.flow_parts();
         let next_user_node = nodes.len() as u64;
         let state = cx.new(|_| {
@@ -36,17 +43,20 @@ impl GraphSurface {
             state.snap_grid = (20.0, 20.0);
             state
         });
+        let renderer_presentations = Arc::clone(&presentations);
         let flow = cx.new(|cx| {
-            FlowGraph::new(state.clone(), cx)
-                .bg_color(DARK_THEME.workspace)
-                .grid_color(DARK_THEME.border)
-                .bg_pattern(BackgroundPattern::Dots)
-                .node_bg_color(DARK_THEME.panel)
-                .node_border_color(DARK_THEME.border)
-                .default_renderer(render_basic_node)
-                .validate_connection(|connection, state| {
-                    is_valid_flow_connection(connection, &state.nodes)
-                })
+            install_weave_renderers(
+                FlowGraph::new(state.clone(), cx)
+                    .bg_color(DARK_THEME.workspace)
+                    .grid_color(DARK_THEME.border)
+                    .bg_pattern(BackgroundPattern::Dots)
+                    .node_bg_color(DARK_THEME.panel)
+                    .node_border_color(DARK_THEME.border)
+                    .validate_connection(|connection, state| {
+                        is_valid_flow_connection(connection, &state.nodes)
+                    }),
+                renderer_presentations,
+            )
         });
         let minimap = cx.new(|_| Minimap::new(state.clone()).container_bounds(1_000.0, 650.0));
         let controls = cx.new(|_| Controls::new(state.clone()).container_size(1_000.0, 650.0));
@@ -55,6 +65,7 @@ impl GraphSurface {
             flow,
             minimap,
             controls,
+            presentations,
             next_user_node,
         }
     }
@@ -63,6 +74,38 @@ impl GraphSurface {
     #[must_use]
     pub fn state(&self) -> Entity<FlowState> {
         self.state.clone()
+    }
+
+    /// Current selected-node details for the inspector panel.
+    #[must_use]
+    pub fn inspector_data(&self, cx: &App) -> Option<InspectorData> {
+        let state = self.state.read(cx);
+        let node = state.nodes.iter().find(|node| node.selected)?;
+        let id = node.id.to_string();
+        if let Some(presentation) = self.presentations.get(&id) {
+            return Some(InspectorData {
+                id: presentation.id.clone(),
+                kind: presentation.kind,
+                title: presentation.title.clone(),
+                preview: presentation.preview.clone(),
+                position: GraphPoint::new(node.position.x, node.position.y),
+                source_span: presentation.source_span,
+                validation: presentation.validation.clone(),
+            });
+        }
+        Some(InspectorData {
+            id: node.id.to_string(),
+            kind: kind_from_flow(node),
+            title: if node.label.is_empty() {
+                node.id.to_string()
+            } else {
+                node.label.to_string()
+            },
+            preview: "New graph construct".to_owned(),
+            position: GraphPoint::new(node.position.x, node.position.y),
+            source_span: None,
+            validation: Some("Complete this construct before saving".to_owned()),
+        })
     }
 
     fn add_knot(&mut self, cx: &mut Context<Self>) {
@@ -210,34 +253,12 @@ impl gpui::Render for GraphSurface {
     }
 }
 
-fn render_basic_node(node: &FlowNode, _window: &mut Window, _cx: &mut App) -> AnyElement {
-    let kind = node
-        .node_type
-        .as_ref()
-        .map(ToString::to_string)
-        .unwrap_or_else(|| "construct".to_owned());
-    div()
-        .w(px(188.0))
-        .flex()
-        .flex_col()
-        .gap_1()
-        .child(
-            div()
-                .text_xs()
-                .font_weight(FontWeight::MEDIUM)
-                .text_color(rgb(DARK_THEME.muted_text))
-                .child(kind.to_uppercase()),
-        )
-        .child(
-            div()
-                .text_sm()
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(rgb(DARK_THEME.text))
-                .child(if node.label.is_empty() {
-                    node.id.to_string()
-                } else {
-                    node.label.to_string()
-                }),
-        )
-        .into_any_element()
+fn kind_from_flow(node: &FlowNode) -> GraphNodeKind {
+    match node.node_type.as_ref().map(ToString::to_string).as_deref() {
+        Some("choice") => GraphNodeKind::Choice,
+        Some("grammar") => GraphNodeKind::Grammar,
+        Some("pattern") => GraphNodeKind::Pattern,
+        Some("variable") => GraphNodeKind::Variable,
+        Some("knot") | Some(_) | None => GraphNodeKind::Knot,
+    }
 }
