@@ -1,0 +1,30 @@
+[package]
+name = "weave-lsp"
+description = "Language Server Protocol implementation for Weave source files"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "weave_lsp"
+
+[[bin]]
+name = "weave-lsp"
+path = "src/main.rs"
+
+[dependencies]
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tower-lsp-server.workspace = true
+walkdir.workspace = true
+weave-core = { path = "../weave-core" }
+weave-fmt = { path = "../weave-fmt" }
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

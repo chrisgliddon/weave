@@ -13,6 +13,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 | `weave-fmt` | Canonical `.weave` source rendering | `weave-core` |
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
 | `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
+| `weave-lsp` | Editor-independent diagnostics, navigation, completion, rename, hover, and formatting over LSP stdio | `weave-core` and `weave-fmt`; never Bevy, GPUI, or editor APIs |
 | `weave_editor` | Standalone GPUI editor delivered in Phase 3 | Public APIs of the crates above |
 
 The dependency direction is:
@@ -28,6 +29,9 @@ weave-core + weave-patterns
 
 weave-core + weave-patterns + weave-runtime
 └── weave-web
+
+weave-core + weave-fmt
+└── weave-lsp
 
 weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy

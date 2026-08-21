@@ -193,6 +193,17 @@ python3 -m http.server 4173 --directory examples/web-player
 
 See the [web player guide](examples/web-player/README.md) for its JavaScript API, deterministic seed contract, state-storage boundary, platform requirements, and measured release size.
 
+### Language server
+
+The editor-independent `weave-lsp` binary provides compiler diagnostics, workspace navigation, completion, rename, hover types, symbols, and canonical formatting over standard LSP stdio:
+
+```bash
+cargo install --path crates/weave-lsp
+weave-lsp
+```
+
+Editors normally launch the process themselves. See the [language server guide](docs/language_server.md) for capabilities, workspace behavior, and a Neovim configuration.
+
 ### RON Output (excerpt)
 
 ```ron
@@ -230,7 +241,8 @@ weave/
 │   ├── weave-compiler/      # .weave → .ron / .json compiler
 │   ├── weave-bevy/          # Bevy plugin
 │   ├── weave-web/           # Browser-safe WASM runtime bindings
-│   └── weave-fmt/           # Formatter / pretty-printer for .weave files
+│   ├── weave-fmt/           # Formatter / pretty-printer for .weave files
+│   └── weave-lsp/           # Editor-independent language server
 │
 ├── editor/                  # Standalone GPU-accelerated editor (GPUI)
 │   ├── src/
@@ -252,6 +264,7 @@ weave/
 │
 ├── docs/
 │   ├── language_guide.md   # Full syntax documentation
+│   ├── language_server.md  # LSP capabilities and editor setup
 │   ├── pattern_systems.md  # How to define and use pattern systems
 │   ├── bevy_integration.md # Using Weave in Bevy games
 │   └── editor_guide.md     # Using the visual editor
@@ -434,7 +447,7 @@ weavec story.weave --watch            # recompile on file change
 ### Phase 4 — Ecosystem
 - [x] JSON compilation output
 - [x] Web-based story player (WASM)
-- [ ] Language server (LSP) for text editors
+- [x] Language server (LSP) for text editors
 - [ ] Syntax highlighting grammars (tree-sitter)
 - [ ] Documentation site
 - [ ] Example game integration
