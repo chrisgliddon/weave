@@ -8226,6 +8226,7 @@ dependencies = [
  "clap",
  "notify",
  "ron",
+ "schemars",
  "serde_json",
  "tempfile",
  "thiserror 2.0.20",
@@ -8239,6 +8240,7 @@ dependencies = [
  "pest",
  "pest_derive",
  "proptest",
+ "schemars",
  "serde",
  "thiserror 2.0.20",
 ]
@@ -8287,6 +8289,7 @@ dependencies = [
  "rand_chacha 0.9.0",
  "ron",
  "serde",
+ "serde_json",
  "thiserror 2.0.20",
  "weave-compiler",
  "weave-core",

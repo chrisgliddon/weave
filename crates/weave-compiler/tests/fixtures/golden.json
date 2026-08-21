@@ -1,0 +1,133 @@
+{
+  "version": 2,
+  "source_name": "crates/weave-compiler/tests/fixtures/golden.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 41,
+        "end": 56,
+        "line": 5,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "visits",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0.0
+            }
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {
+    "greeting": {
+      "rules": {
+        "hello": [
+          {
+            "parts": [
+              {
+                "kind": "text",
+                "value": "Hello"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "patterns": {},
+  "knots": {
+    "ending": {
+      "content": [
+        {
+          "span": {
+            "start": 146,
+            "end": 152,
+            "line": 12,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    },
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 71,
+            "end": 106,
+            "line": 8,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "parts": [
+                {
+                  "kind": "grammar_ref",
+                  "value": {
+                    "grammar": "greeting",
+                    "rule": "hello"
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": ", visitor "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "visits"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": "."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 107,
+            "end": 129,
+            "line": 9,
+            "column": 1
+          },
+          "kind": {
+            "kind": "choice",
+            "value": {
+              "id": "start:root.1",
+              "once": true,
+              "text": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Continue"
+                  }
+                ]
+              },
+              "condition": null,
+              "body": [],
+              "divert": "ending"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

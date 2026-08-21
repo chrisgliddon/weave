@@ -1,9 +1,10 @@
 //! Source AST definitions.
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 /// Byte and line location in a source file.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct Span {
     /// Inclusive byte offset.
     pub start: usize,

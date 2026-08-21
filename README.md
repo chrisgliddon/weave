@@ -179,6 +179,8 @@ story.weave  →  [weavec compiler]  →  story.ron   (Rust-native, human-readab
                                    ↘  story.json  (interop, web, save/load)
 ```
 
+RON and JSON decode to the same versioned `StoryIr`. The compatibility rules and generated JSON Schema are documented in the [JSON story format guide](docs/json_format.md).
+
 ### RON Output (excerpt)
 
 ```ron
@@ -416,7 +418,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Project management + file watching
 
 ### Phase 4 — Ecosystem
-- [ ] JSON compilation output
+- [x] JSON compilation output
 - [ ] Web-based story player (WASM)
 - [ ] Language server (LSP) for text editors
 - [ ] Syntax highlighting grammars (tree-sitter)

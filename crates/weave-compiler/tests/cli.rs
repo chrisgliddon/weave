@@ -37,6 +37,19 @@ fn compiles_default_ron_and_explicit_json() {
 }
 
 #[test]
+fn emits_the_published_json_schema() {
+    let output = Command::new(binary())
+        .arg("--schema")
+        .output()
+        .expect("run schema command");
+    assert!(output.status.success());
+    let schema: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("schema output is JSON");
+    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:2");
+    assert_eq!(schema["properties"]["version"]["const"], 2);
+}
+
+#[test]
 fn reports_compiler_and_io_failures_with_conventional_codes() {
     let directory = tempdir().expect("temporary directory");
     let invalid = directory.path().join("invalid.weave");
@@ -55,6 +68,18 @@ fn reports_compiler_and_io_failures_with_conventional_codes() {
         .expect("run compiler");
     assert_eq!(missing.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&missing.stderr).contains("could not read"));
+
+    let blocked_parent = directory.path().join("not-created");
+    let destination = blocked_parent.join("story.json");
+    let failed_write = Command::new(binary())
+        .args(["--format", "json", "--output"])
+        .arg(&destination)
+        .arg(source_fixture(&directory))
+        .output()
+        .expect("run compiler with invalid destination");
+    assert_eq!(failed_write.status.code(), Some(2));
+    assert!(!destination.exists());
+    assert!(!blocked_parent.exists());
 }
 
 #[test]
@@ -94,6 +119,12 @@ fn wait_until(timeout: Duration, mut condition: impl FnMut() -> bool) {
 }
 
 struct ChildGuard(Option<std::process::Child>);
+
+fn source_fixture(directory: &tempfile::TempDir) -> std::path::PathBuf {
+    let source = directory.path().join("valid.weave");
+    fs::write(&source, "=== start ===\nHello.\n-> END\n").expect("write valid source");
+    source
+}
 
 impl ChildGuard {
     fn stop(&mut self) {

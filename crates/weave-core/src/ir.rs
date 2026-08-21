@@ -2,6 +2,7 @@
 
 use std::collections::BTreeMap;
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::ast::Span;
@@ -10,7 +11,7 @@ use crate::ast::Span;
 pub const IR_VERSION: u32 = 2;
 
 /// Complete immutable compiled story.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct StoryIr {
     /// Serialized schema version. Must equal [`IR_VERSION`].
     pub version: u32,
@@ -45,14 +46,14 @@ impl StoryIr {
 }
 
 /// Compiled generative grammar.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct GrammarIr {
     /// Sorted rules, each with one or more uniform alternatives.
     pub rules: BTreeMap<String, Vec<Template>>,
 }
 
 /// Compiled custom or built-in pattern definition.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct PatternSystemIr {
     /// Optional built-in data and algorithm source.
     pub builtin: Option<BuiltinPatternIr>,
@@ -69,7 +70,7 @@ pub struct PatternSystemIr {
 }
 
 /// Built-in pattern data set and algorithm.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BuiltinPatternIr {
     /// Complete 78-card tarot system.
@@ -81,7 +82,7 @@ pub enum BuiltinPatternIr {
 }
 
 /// Compiled default pattern draw algorithm.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum PatternDrawMethodIr {
     /// Equal-probability element selection.
@@ -98,35 +99,35 @@ pub enum PatternDrawMethodIr {
 }
 
 /// Named pattern collection.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct PatternCollectionIr {
     /// Source-ordered semantic elements.
     pub elements: Vec<PatternElementIr>,
 }
 
 /// Structured pattern element.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct PatternElementIr {
     /// Deterministically sorted fields.
     pub fields: BTreeMap<String, ValueLiteral>,
 }
 
 /// Named spread definition.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct SpreadIr {
     /// Ordered symbolic positions.
     pub positions: Vec<String>,
 }
 
 /// Compiled narrative knot.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct KnotIr {
     /// Source-ordered executable instructions.
     pub content: Vec<Instruction>,
 }
 
 /// One source-spanned executable instruction.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Instruction {
     /// Author-facing source location.
     pub span: Span,
@@ -135,7 +136,7 @@ pub struct Instruction {
 }
 
 /// Runtime operation.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "kind", content = "value")]
 pub enum InstructionKind {
     /// Deliver one rendered narrative line.
@@ -171,7 +172,7 @@ pub enum InstructionKind {
 }
 
 /// Compiled declaration.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct DeclarationIr {
     /// Explicit declaration kind.
     pub kind: VariableKindIr,
@@ -184,7 +185,7 @@ pub struct DeclarationIr {
 }
 
 /// Runtime declaration kind.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum VariableKindIr {
     /// General variable.
@@ -198,7 +199,7 @@ pub enum VariableKindIr {
 }
 
 /// Runtime list mutation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ListOperationIr {
     /// Append one member.
@@ -208,7 +209,7 @@ pub enum ListOperationIr {
 }
 
 /// Compiled choice branch.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ChoiceIr {
     /// Deterministic identifier used for once-choice state.
     pub id: String,
@@ -225,7 +226,7 @@ pub struct ChoiceIr {
 }
 
 /// Ordered conditional branches.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ConditionalIr {
     /// Conditional branches in source order.
     pub branches: Vec<ConditionalBranchIr>,
@@ -234,7 +235,7 @@ pub struct ConditionalIr {
 }
 
 /// One compiled conditional branch.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ConditionalBranchIr {
     /// Boolean condition.
     pub condition: Expression,
@@ -243,7 +244,7 @@ pub struct ConditionalBranchIr {
 }
 
 /// Pre-parsed text template.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Template {
     /// Source-ordered parts.
     pub parts: Vec<TemplatePartIr>,
@@ -260,7 +261,7 @@ impl Template {
 }
 
 /// One runtime template part.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "kind", content = "value")]
 pub enum TemplatePartIr {
     /// Literal text.
@@ -277,7 +278,7 @@ pub enum TemplatePartIr {
 }
 
 /// Runtime expression, deliberately separate from the source AST.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "kind", content = "value")]
 pub enum Expression {
     /// Scalar value.
@@ -319,7 +320,7 @@ pub enum Expression {
 }
 
 /// Scalar runtime value literal.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "kind", content = "value")]
 pub enum ValueLiteral {
     /// Null.
@@ -335,7 +336,7 @@ pub enum ValueLiteral {
 }
 
 /// Runtime unary operator.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum UnaryOperatorIr {
     /// Boolean negation.
@@ -345,7 +346,7 @@ pub enum UnaryOperatorIr {
 }
 
 /// Runtime binary operator.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BinaryOperatorIr {
     /// Addition or string concatenation.

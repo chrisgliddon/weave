@@ -19,6 +19,9 @@ use weave_core::{Diagnostic, Severity, TemplatePart, has_errors, parse_document,
 /// Compiler version corresponding to the current IR.
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
+/// Stable identifier published in the machine-readable JSON Schema.
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:2";
+
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CompileOptions {
@@ -113,6 +116,58 @@ pub fn to_json(story: &StoryIr) -> Result<String, SerializeError> {
     let mut output = serde_json::to_string_pretty(story)?;
     output.push('\n');
     Ok(output)
+}
+
+/// Generate the canonical JSON Schema for the current runtime IR.
+pub fn json_schema() -> Result<String, SerializeError> {
+    let schema = schemars::schema_for!(StoryIr);
+    let mut value = serde_json::to_value(schema)?;
+    if let Some(root) = value.as_object_mut() {
+        root.insert(
+            "$id".to_owned(),
+            serde_json::Value::String(JSON_SCHEMA_ID.to_owned()),
+        );
+        root.insert(
+            "title".to_owned(),
+            serde_json::Value::String("Weave Story IR v2".to_owned()),
+        );
+        root.insert(
+            "x-weave-ir-version".to_owned(),
+            serde_json::Value::from(COMPILER_IR_VERSION),
+        );
+        if let Some(version) = root
+            .get_mut("properties")
+            .and_then(serde_json::Value::as_object_mut)
+            .and_then(|properties| properties.get_mut("version"))
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            version.insert(
+                "const".to_owned(),
+                serde_json::Value::from(COMPILER_IR_VERSION),
+            );
+        }
+    }
+    sort_json_keys(&mut value);
+    let mut output = serde_json::to_string_pretty(&value)?;
+    output.push('\n');
+    Ok(output)
+}
+
+fn sort_json_keys(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                sort_json_keys(value);
+            }
+        }
+        serde_json::Value::Object(object) => {
+            for value in object.values_mut() {
+                sort_json_keys(value);
+            }
+            object.sort_keys();
+        }
+        _ => {}
+    }
 }
 
 /// Compile source directly to canonical RON.
@@ -282,13 +337,16 @@ impl Lowerer {
     }
 
     fn lower_block(&mut self, statements: &[Spanned<Statement>], path: &str) -> Vec<Instruction> {
-        statements
-            .iter()
-            .enumerate()
-            .filter_map(|(index, statement)| {
-                self.lower_statement(statement, &format!("{path}.{index}"))
-            })
-            .collect()
+        let mut semantic_index = 0;
+        let mut lowered = Vec::new();
+        for statement in statements {
+            let statement_path = format!("{path}.{semantic_index}");
+            if let Some(instruction) = self.lower_statement(statement, &statement_path) {
+                semantic_index += 1;
+                lowered.push(instruction);
+            }
+        }
+        lowered
     }
 
     fn lower_statement(
