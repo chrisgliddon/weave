@@ -424,6 +424,13 @@ weavec story.weave --watch            # recompile on file change
 - [ ] Example game integration
 - [ ] Community pattern system library
 
+### Phase 5 — Pluggable Domain Modules
+- [ ] Shared module manifests, namespaces, compatibility, and provenance contract
+- [ ] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
+- [ ] Weave Character: personality, date context, relationships, expression, and guided authoring
+- [ ] Selectable tabletop ruleset adapters with isolated, versioned state
+- [ ] Portable RON and JSON domain packs with Bevy and PixiJS examples
+
 ---
 
 ## Design Philosophy
