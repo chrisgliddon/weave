@@ -7,5 +7,27 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[dependencies]
+gpui.workspace = true
+gpui-flow.workspace = true
+thiserror.workspace = true
+weave-compiler = { path = "../crates/weave-compiler" }
+weave-core = { path = "../crates/weave-core" }
+weave-fmt = { path = "../crates/weave-fmt" }
+weave-patterns = { path = "../crates/weave-patterns" }
+weave-runtime = { path = "../crates/weave-runtime" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+gpui_platform = { workspace = true, features = ["font-kit", "runtime_shaders"] }
+
+[target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
+gpui_platform = { workspace = true, features = ["wayland", "x11"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+gpui_platform.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
 [lints]
 workspace = true

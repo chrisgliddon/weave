@@ -15,7 +15,7 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.89"
+rust-version = "1.93"
 license = "MIT"
 repository = "https://github.com/chrisgliddon/weave"
 
@@ -28,6 +28,9 @@ bevy = { version = "0.18.1", default-features = false, features = [
     "std",
 ] }
 clap = { version = "4.6.6", features = ["derive"] }
+gpui = { git = "https://github.com/zed-industries/zed" }
+gpui-flow = { git = "https://github.com/pacifio/gpui-flow", rev = "cfa578758ee251657f15f281d893a08b85aedbff" }
+gpui_platform = { git = "https://github.com/zed-industries/zed", default-features = false }
 notify = "8.2.0"
 pest = "2.9.0"
 pest_derive = "2.9.0"
