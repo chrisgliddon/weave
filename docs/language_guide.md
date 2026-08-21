@@ -1,6 +1,8 @@
 # Weave Language Guide
 
-This is the normative Phase 2 language specification for Weave source files. Examples in the README are informative; when wording differs, this document defines parser, checker, formatter, compiler, and runtime behavior.
+Language specification version: `0.1.0`.
+
+This is the normative language specification for Weave source files. Examples in the README are informative; when wording differs, this document defines parser, checker, formatter, compiler, runtime, and editor-grammar behavior.
 
 ## 1. Source files
 
@@ -329,7 +331,7 @@ The compiler lowers checked source AST into a distinct runtime IR. IR version 2 
 - Stable once-choice identifiers.
 - Source spans for actionable runtime errors.
 
-RON is the normative output. JSON uses the same model for interoperability, but schema publication and compatibility guarantees beyond the shared version field are a Phase 4 deliverable.
+RON is the normative output. JSON uses the same model for interoperability and follows the schema publication and compatibility contract in [`json_format.md`](json_format.md).
 
 The runtime rejects an unsupported `version` before executing any instruction.
 

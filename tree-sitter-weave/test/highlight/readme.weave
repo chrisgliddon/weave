@@ -1,0 +1,57 @@
+// Representative source from the root README.
+grammar names {
+// <- keyword
+//      ^ module
+    full: "#first# #last#"
+//  ^ property
+//        ^ string
+}
+
+pattern tarot {
+// <- keyword
+//      ^ type
+    builtin: tarot
+//  ^ keyword
+    draw: uniform
+//  ^ keyword
+//        ^ constant.builtin
+    reversals: true
+//  ^ keyword
+//             ^ boolean
+    spread three_card { positions: [past, present, future] }
+//  ^ keyword
+//         ^ function.method
+//                      ^ keyword
+}
+
+=== arrival ===
+//  ^ function
+VAR current_card = tarot.spread.three_card.draw()
+// <- keyword
+//  ^ variable
+//                 ^ variable
+//                       ^ property
+#atmosphere.scene#
+// ^ module
+//            ^ property
+A fortune teller waves you over. "The cards have been calling."
+
+* [Look at the cards]
+// <- operator
+// ^ string
+    -> reading
+//  ^ operator
+//     ^ function
+
+{current_card.past.reversed:
+// ^ variable
+//             ^ property
+    "The card is reversed," she adds.
+- else:
+// <- operator
+//^ keyword
+    "The card is upright."
+}
+-> END
+// <- operator
+// ^ constant.builtin

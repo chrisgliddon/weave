@@ -204,6 +204,19 @@ weave-lsp
 
 Editors normally launch the process themselves. See the [language server guide](docs/language_server.md) for capabilities, workspace behavior, and a Neovim configuration.
 
+### Syntax highlighting
+
+[`tree-sitter-weave`](tree-sitter-weave) provides an incremental parser plus highlight, local-variable, and symbol-tag queries for `.weave` files. It recognizes the complete language surface, including nested narrative blocks, grammar references, pattern declarations, and incomplete editing states:
+
+```bash
+cd tree-sitter-weave
+npm ci
+npm run test:grammar
+npm test
+```
+
+Editor and host integration instructions, generated-parser policy, and the language-version contract are documented in the [grammar package guide](tree-sitter-weave/README.md).
+
 ### RON Output (excerpt)
 
 ```ron
@@ -243,6 +256,8 @@ weave/
 │   ├── weave-web/           # Browser-safe WASM runtime bindings
 │   ├── weave-fmt/           # Formatter / pretty-printer for .weave files
 │   └── weave-lsp/           # Editor-independent language server
+│
+├── tree-sitter-weave/       # Incremental parser and editor syntax queries
 │
 ├── editor/                  # Standalone GPU-accelerated editor (GPUI)
 │   ├── src/
@@ -448,7 +463,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] JSON compilation output
 - [x] Web-based story player (WASM)
 - [x] Language server (LSP) for text editors
-- [ ] Syntax highlighting grammars (tree-sitter)
+- [x] Syntax highlighting grammars (tree-sitter)
 - [ ] Documentation site
 - [ ] Example game integration
 - [ ] Community pattern system library

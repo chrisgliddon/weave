@@ -14,6 +14,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
 | `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
 | `weave-lsp` | Editor-independent diagnostics, navigation, completion, rename, hover, and formatting over LSP stdio | `weave-core` and `weave-fmt`; never Bevy, GPUI, or editor APIs |
+| `tree-sitter-weave` | Incremental concrete-syntax parser plus highlight, local-variable, and symbol-tag queries for downstream editors | Generated C parser with language bindings; no dependency on the Weave runtime or editor |
 | `weave_editor` | Standalone GPUI editor delivered in Phase 3 | Public APIs of the crates above |
 
 The dependency direction is:
@@ -33,9 +34,14 @@ weave-core + weave-patterns + weave-runtime
 weave-core + weave-fmt
 └── weave-lsp
 
+Weave language specification
+└── tree-sitter-weave
+
 weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
+
+`tree-sitter-weave` is intentionally independent of `weave-core`: editors can parse unfinished source without linking the compiler. Its grammar and queries must track the normative language guide, and its npm package, Rust crate, grammar metadata, and language-specification version are released together.
 
 `weave-core::ast` and `weave-core::ir` are deliberately separate models. The AST preserves author-facing syntax and source spans. The IR is a versioned, deterministic, runtime-facing schema and must not contain parser implementation types.
 
@@ -44,7 +50,7 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 - Workspace MSRV: Rust 1.93. The editor's pinned GPUI revision establishes this minimum; Bevy 0.18.1 remains supported.
 - Serialized IR version: `weave_core::ir::IR_VERSION`.
 - Bevy integration target: Bevy 0.18.
-- Phase 2 source files use the language contract in [`language_guide.md`](language_guide.md).
+- Source files use the versioned language contract in [`language_guide.md`](language_guide.md).
 
 Changing source semantics requires updating the language guide and parser fixtures. Changing serialized IR requires an explicit version decision and compatibility tests; the [JSON format contract](json_format.md) and its checked-in schema are authoritative for interoperable hosts. `PatternDefinition` and `StoryIr` are immutable/shareable. `PatternState` is caller-owned, serialized inside `StoryState`, and reconciled against the current definition on restore. The runtime owns only trait objects and never switches on Tarot, I-Ching, or rune identities; specialization lives behind `weave-patterns::PatternSystem`.
 

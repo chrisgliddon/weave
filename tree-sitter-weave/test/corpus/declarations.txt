@@ -1,0 +1,134 @@
+==================
+Grammar and pattern declarations
+==================
+
+grammar omens {
+    opening: ["A #closing#", "The {weather} changes"]
+    closing: "door"
+}
+
+pattern weather_omens {
+    omens: [
+        (name: "Storm Crow", meaning: warning, weight: 3),
+        (name: "Sun Dog", meaning: fortune, weight: 1),
+    ]
+    draw: weighted_by_weight
+    reversals: false
+    duplicates: true
+    spread day { positions: [dawn, noon, dusk] }
+}
+
+---
+
+(source_file
+  (grammar_declaration
+    (identifier)
+    (grammar_rule
+      (identifier)
+      (grammar_string_list
+        (string
+          (string_content)
+          (grammar_reference
+            (identifier)))
+        (string
+          (string_content)
+          (interpolation
+            (path_expression
+              (identifier)))
+          (string_content))))
+    (grammar_rule
+      (identifier)
+      (string
+        (string_content))))
+  (pattern_declaration
+    (identifier)
+    (pattern_collection
+      (identifier)
+      (pattern_element
+        (pattern_field
+          (identifier)
+          (string
+            (string_content)))
+        (pattern_field
+          (identifier)
+          (identifier))
+        (pattern_field
+          (identifier)
+          (number)))
+      (pattern_element
+        (pattern_field
+          (identifier)
+          (string
+            (string_content)))
+        (pattern_field
+          (identifier)
+          (identifier))
+        (pattern_field
+          (identifier)
+          (number))))
+    (draw_setting
+      (draw_method))
+    (reversals_setting
+      (boolean))
+    (duplicates_setting
+      (boolean))
+    (spread_declaration
+      (identifier)
+      (symbol_list
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+==================
+Story declarations and expressions
+==================
+
+VAR visits = 1 + 2 * 3
+LIST inventory = [map, "coin"]
+FLAG paid = not false and visits >= 2
+STATE quest = dormant [dormant, active, complete]
+VAR draw = weather_omens.spread.day.draw()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
+  (list_declaration
+    (identifier)
+    (list
+      (path_expression
+        (identifier))
+      (string
+        (string_content))))
+  (flag_declaration
+    (identifier)
+    (binary_expression
+      (unary_expression
+        (boolean))
+      (binary_expression
+        (path_expression
+          (identifier))
+        (number))))
+  (state_declaration
+    (identifier)
+    (path_expression
+      (identifier))
+    (symbol_list
+      (identifier)
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (call_expression
+      (path_expression
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier))
+      (argument_list))))

@@ -1,0 +1,99 @@
+==================
+Incomplete choice label
+==================
+
+=== start ===
+* [Choose a path
+
+---
+
+(source_file
+  (knot
+    (knot_header
+      (identifier))
+    (choice_statement
+      (choice_marker)
+      (choice_label
+        (choice_text)
+        (MISSING "]")))))
+
+==================
+Incomplete template expression
+==================
+
+=== start ===
+The answer is {value +
+
+---
+
+(source_file
+  (knot
+    (knot_header
+      (identifier))
+    (narrative_statement
+      (narrative_text)
+      (narrative_text)
+      (narrative_text))
+    (ERROR
+      (path_expression
+        (identifier)))))
+
+==================
+Unfinished conditional block
+==================
+
+=== start ===
+{ready:
+    Almost there.
+- else:
+    Waiting.
+
+---
+
+(source_file
+  (knot
+    (knot_header
+      (identifier))
+    (conditional_statement
+      (path_expression
+        (identifier))
+      (block
+        (narrative_statement
+          (narrative_text)
+          (narrative_text)))
+      (else_branch
+        (block
+          (narrative_statement
+            (narrative_text))))
+      (MISSING "}"))))
+
+==================
+Malformed pattern remains structured
+==================
+
+pattern omens {
+    cards: [
+        (name: "Crow", meaning: warning,
+    ]
+    spread daily { positions: [first, second
+}
+
+---
+
+(source_file
+  (pattern_declaration
+    (identifier)
+    (pattern_collection
+      (identifier)
+      (ERROR
+        (pattern_field
+          (identifier)
+          (string
+            (string_content)))
+        (pattern_field
+          (identifier)
+          (identifier))))
+    (ERROR
+      (identifier)
+      (identifier)
+      (identifier))))

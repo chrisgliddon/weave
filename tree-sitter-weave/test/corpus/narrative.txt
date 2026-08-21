@@ -1,0 +1,165 @@
+==================
+Nested choices and templates
+==================
+
+=== start ===
+#omens.opening#, traveler {name}.
+* [Ask about #omens.closing#] {if visits > 0}
+    SET visits = visits + 1
+    * [Continue] -> ending
+    + [Wait]
+        The wind answers {name}.
+* [Leave] -> END
+
+=== ending ===
+-> END
+
+---
+
+(source_file
+  (knot
+    (knot_header
+      (identifier))
+    (narrative_statement
+      (grammar_reference
+        (identifier)
+        (identifier))
+      (narrative_text)
+      (narrative_text)
+      (interpolation
+        (path_expression
+          (identifier)))
+      (narrative_text))
+    (choice_statement
+      (choice_marker)
+      (choice_label
+        (choice_text)
+        (grammar_reference
+          (identifier)
+          (identifier)))
+      (choice_condition
+        (binary_expression
+          (path_expression
+            (identifier))
+          (number))))
+    (assignment_statement
+      (identifier)
+      (binary_expression
+        (path_expression
+          (identifier))
+        (number)))
+    (choice_statement
+      (choice_marker)
+      (choice_label
+        (choice_text))
+      (inline_divert
+        (identifier))
+      (block
+        (choice_statement
+          (choice_marker)
+          (choice_label
+            (choice_text))
+          (block
+            (narrative_statement
+              (narrative_text)
+              (narrative_text)
+              (narrative_text)
+              (interpolation
+                (path_expression
+                  (identifier)))
+              (narrative_text))))))
+    (choice_statement
+      (choice_marker)
+      (choice_label
+        (choice_text)))
+    (divert_statement))
+  (knot
+    (knot_header
+      (identifier))
+    (divert_statement)))
+
+==================
+Nested conditionals and list operations
+==================
+
+=== start ===
+{paid and visits > 0:
+    PUSH inventory, "key"
+    {key in inventory:
+        The key turns.
+    - else:
+        Nothing happens.
+    }
+- visits == 0:
+    REMOVE inventory, map
+- else:
+    <- helper
+}
+-> ending
+
+=== helper ===
+THREAD ending
+
+=== ending ===
+-> END
+
+---
+
+(source_file
+  (knot
+    (knot_header
+      (identifier))
+    (conditional_statement
+      (binary_expression
+        (path_expression
+          (identifier))
+        (binary_expression
+          (path_expression
+            (identifier))
+          (number)))
+      (block
+        (list_mutation_statement
+          (identifier)
+          (string
+            (string_content)))
+        (conditional_statement
+          (binary_expression
+            (path_expression
+              (identifier))
+            (path_expression
+              (identifier)))
+          (block
+            (narrative_statement
+              (narrative_text)
+              (narrative_text)
+              (narrative_text)))
+          (else_branch
+            (block
+              (narrative_statement
+                (narrative_text)
+                (narrative_text))))))
+      (conditional_branch
+        (binary_expression
+          (path_expression
+            (identifier))
+          (number))
+        (block
+          (list_mutation_statement
+            (identifier)
+            (path_expression
+              (identifier)))))
+      (else_branch
+        (block
+          (thread_statement
+            (identifier)))))
+    (divert_statement
+      (identifier)))
+  (knot
+    (knot_header
+      (identifier))
+    (thread_statement
+      (identifier)))
+  (knot
+    (knot_header
+      (identifier))
+    (divert_statement)))

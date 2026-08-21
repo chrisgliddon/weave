@@ -11,6 +11,7 @@ members = [
     "editor",
     "examples/bevy-dialogue",
     "examples/standalone-runtime",
+    "tree-sitter-weave",
 ]
 resolver = "2"
 
