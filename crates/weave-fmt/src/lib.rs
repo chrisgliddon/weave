@@ -5,7 +5,7 @@ use std::fmt::Write;
 use weave_core::Diagnostic;
 use weave_core::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
+    PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
 };
 
 /// Current canonical formatting contract.
@@ -84,6 +84,30 @@ impl Formatter {
                     let mut seen_content = false;
                     for entry in &pattern.node.entries {
                         match &entry.node {
+                            PatternEntry::Builtin(name) => {
+                                seen_content = true;
+                                self.line(1, &format!("builtin: {name}"));
+                            }
+                            PatternEntry::DrawMethod(method) => {
+                                seen_content = true;
+                                let method = match method {
+                                    PatternDrawMethod::Uniform => "uniform".to_owned(),
+                                    PatternDrawMethod::WeightedBy(field) => {
+                                        format!("weighted_by_{field}")
+                                    }
+                                    PatternDrawMethod::ThreeCoin => "three_coin".to_owned(),
+                                    PatternDrawMethod::YarrowStalks => "yarrow_stalks".to_owned(),
+                                };
+                                self.line(1, &format!("draw: {method}"));
+                            }
+                            PatternEntry::Reversals(value) => {
+                                seen_content = true;
+                                self.line(1, &format!("reversals: {value}"));
+                            }
+                            PatternEntry::Duplicates(value) => {
+                                seen_content = true;
+                                self.line(1, &format!("duplicates: {value}"));
+                            }
                             PatternEntry::Collection(collection) => {
                                 seen_content = true;
                                 self.line(1, &format!("{}: [", collection.name));
@@ -370,6 +394,9 @@ grammar words{
 value:["one","two"]
 }
 pattern cards{
+draw:uniform
+reversals:false
+duplicates:false
 deck:[
 (name:"One",meaning:hope),
 ]
@@ -405,6 +432,9 @@ grammar words {
     value: ["one", "two"]
 }
 pattern cards {
+    draw: uniform
+    reversals: false
+    duplicates: false
     deck: [
         (name: "One", meaning: hope),
     ]

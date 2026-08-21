@@ -2,8 +2,20 @@ grammar tavern {
     welcome: ["Welcome in", "Warm yourself by the fire", "Take a seat"]
 }
 
+pattern omens {
+    signs: [
+        (name: "Storm Crow", meaning: warning),
+        (name: "Sun Dog", meaning: fortune),
+        (name: "Frost Wolf", meaning: hardship),
+    ]
+    spread day { positions: [dawn, noon, dusk] }
+}
+
+VAR omen = omens.spread.day.draw()
+
 === start ===
 #tavern.welcome#.
+The dawn omen is {omen.dawn.name}: {omen.dawn.meaning}.
 * [Order tea]
     The innkeeper pours a steaming cup.
     -> END

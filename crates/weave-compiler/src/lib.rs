@@ -6,13 +6,13 @@ use std::fmt;
 
 use weave_core::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
+    PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
 };
 use weave_core::ir::{
-    BinaryOperatorIr, ChoiceIr, ConditionalBranchIr, ConditionalIr, DeclarationIr, Expression,
-    GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr, PatternCollectionIr,
-    PatternElementIr, PatternSystemIr, SpreadIr, StoryIr, Template, TemplatePartIr,
-    UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
+    DeclarationIr, Expression, GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr,
+    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr,
+    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_core::{Diagnostic, Severity, TemplatePart, has_errors, parse_document, parse_template};
 
@@ -183,10 +183,38 @@ impl Lowerer {
                     self.current_grammar = None;
                 }
                 Item::Pattern(pattern) => {
+                    let mut builtin = None;
                     let mut collections = BTreeMap::new();
                     let mut spreads = BTreeMap::new();
+                    let mut draw_method = None;
+                    let mut allow_duplicates = false;
+                    let mut reversals = false;
                     for entry in &pattern.node.entries {
                         match &entry.node {
+                            PatternEntry::Builtin(name) => {
+                                builtin = match name.as_str() {
+                                    "tarot" => Some(BuiltinPatternIr::Tarot),
+                                    "i_ching" => Some(BuiltinPatternIr::IChing),
+                                    "elder_futhark" => Some(BuiltinPatternIr::ElderFuthark),
+                                    _ => None,
+                                };
+                            }
+                            PatternEntry::DrawMethod(method) => {
+                                draw_method = Some(match method {
+                                    PatternDrawMethod::Uniform => PatternDrawMethodIr::Uniform,
+                                    PatternDrawMethod::WeightedBy(field) => {
+                                        PatternDrawMethodIr::WeightedBy {
+                                            field: field.clone(),
+                                        }
+                                    }
+                                    PatternDrawMethod::ThreeCoin => PatternDrawMethodIr::ThreeCoin,
+                                    PatternDrawMethod::YarrowStalks => {
+                                        PatternDrawMethodIr::YarrowStalks
+                                    }
+                                });
+                            }
+                            PatternEntry::Reversals(value) => reversals = *value,
+                            PatternEntry::Duplicates(value) => allow_duplicates = *value,
                             PatternEntry::Collection(collection) => {
                                 let elements = collection
                                     .elements
@@ -220,8 +248,18 @@ impl Lowerer {
                     story.patterns.insert(
                         pattern.node.name.clone(),
                         PatternSystemIr {
+                            builtin,
                             collections,
                             spreads,
+                            draw_method: draw_method.unwrap_or_else(|| {
+                                if builtin == Some(BuiltinPatternIr::IChing) {
+                                    PatternDrawMethodIr::ThreeCoin
+                                } else {
+                                    PatternDrawMethodIr::Uniform
+                                }
+                            }),
+                            allow_duplicates,
+                            reversals,
                         },
                     );
                 }
@@ -456,5 +494,48 @@ mod tests {
         );
         let decoded: StoryIr = ron::from_str(&first_ron).expect("RON should deserialize");
         assert_eq!(decoded, first.story);
+    }
+
+    #[test]
+    fn lowers_builtin_and_authored_patterns_into_executable_ir() {
+        let source = r#"
+pattern cards {
+    builtin: tarot
+    reversals: true
+}
+pattern changes {
+    builtin: i_ching
+}
+pattern omens {
+    signs: [(name: "Crow", meaning: warning, severity: 2)]
+    draw: weighted_by_severity
+    duplicates: true
+}
+VAR card = cards.draw()
+VAR change = changes.draw()
+VAR omen = omens.draw()
+=== start ===
+{card.name} {change.name} {omen.name}
+"#;
+        let compiled = compile(source, &CompileOptions::default()).expect("source compiles");
+        assert_eq!(
+            compiled.story.patterns["cards"].builtin,
+            Some(BuiltinPatternIr::Tarot)
+        );
+        assert_eq!(
+            compiled.story.patterns["changes"].draw_method,
+            PatternDrawMethodIr::ThreeCoin
+        );
+        assert_eq!(
+            compiled.story.patterns["omens"].draw_method,
+            PatternDrawMethodIr::WeightedBy {
+                field: "severity".to_owned()
+            }
+        );
+        assert!(compiled.story.patterns["omens"].allow_duplicates);
+
+        let ron = to_ron(&compiled.story).expect("patterns serialize");
+        let decoded: StoryIr = ron::from_str(&ron).expect("patterns deserialize");
+        assert_eq!(decoded, compiled.story);
     }
 }

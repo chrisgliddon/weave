@@ -27,6 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     .add_observer(on_ready)
     .add_observer(on_line)
     .add_observer(on_choices)
+    .add_observer(on_pattern)
     .add_observer(on_ended)
     .add_observer(on_failed);
 
@@ -58,6 +59,13 @@ fn on_choices(choices: On<DeliverChoices>, mut commands: Commands) {
         println!("  {index}: {}", choice.text);
     }
     commands.weave_choose(0);
+}
+
+fn on_pattern(draw: On<PatternDrawn>) {
+    println!(
+        "pattern {} / {} / {:?}: {:?}",
+        draw.system, draw.element, draw.position, draw.meaning
+    );
 }
 
 fn on_ended(_: On<StoryEnded>, mut status: ResMut<ExampleStatus>) {

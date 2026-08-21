@@ -56,12 +56,10 @@ grammar atmosphere {
 
 // --- Pattern: meaning-bearing procedural generation (NEW) ---
 pattern tarot {
-    major: [
-        (name: "The Fool",  meaning: new_beginnings,  element: air),
-        (name: "The Tower", meaning: sudden_change,  element: fire),
-        (name: "The Star",  meaning: hope,            element: water),
-        // ...78 cards
-    ]
+    builtin: tarot
+    draw: uniform
+    reversals: true
+    duplicates: false
     spread three_card { positions: [past, present, future] }
 }
 
@@ -84,7 +82,12 @@ She lays out three cards.
     * [Leave] -> leaving
 
 === reading ===
-"Your past," she says, turning {current_card.past.name}.
+"Your {current_card.past.position}," she says, turning {current_card.past.name}.
+{current_card.past.reversed:
+    "The card is reversed," she adds.
+- else:
+    "The card is upright."
+}
 {current_card.past.meaning == new_beginnings:
     "A journey begun in innocence," she murmurs.
 - current_card.past.meaning == sudden_change:
@@ -119,7 +122,25 @@ Pattern systems are Weave's signature feature. They generate not just random out
 | **Tarot** | 78 cards (22 major + 56 minor arcana) | Uniform, weighted, spread-based |
 | **I-Ching** | 64 hexagrams | Coin method, yarrow stalks |
 | **Runes** | 24 Elder Futhark runes | Single draw, three-rune spread |
-| **Custom** | Anything you define | Anything you implement |
+| **Custom** | Authored semantic records | Uniform, weighted, spread-based |
+
+Built-ins are declared explicitly and may be given any source-level name:
+
+```weave
+pattern cards {
+    builtin: tarot
+    reversals: true
+}
+
+pattern changes {
+    builtin: i_ching
+    draw: yarrow_stalks
+}
+
+pattern runes {
+    builtin: elder_futhark
+}
+```
 
 ### Defining a Custom Pattern System
 
@@ -135,10 +156,12 @@ pattern weather_omens {
 }
 ```
 
-Your narrative can then test against the **meaning**, not just the name:
+Your narrative can then draw once and test against the **meaning**, not just the name:
 
 ```weave
-{weather_omens.day_omen.dawn.meaning == ill_tidings:
+VAR omen = weather_omens.spread.day_omen.draw()
+
+{omen.dawn.meaning == ill_tidings:
     A crow circles the village three times. No one speaks.
 - else:
     The dawn breaks clean and clear.
@@ -159,25 +182,24 @@ story.weave  →  [weavec compiler]  →  story.ron   (Rust-native, human-readab
 ### RON Output (excerpt)
 
 ```ron
-Story(
+StoryIr(
+    version: 2,
     grammars: {
-        "names": Grammar(rules: {
-            "first": ["Aldric", "Mira", "Theron", "Lyssia"],
-            "full":  "#first# #last#"
-        })
+        // Lowered templates omitted.
     },
     patterns: {
-        "tarot": PatternSystem(
-            elements: [PatternElement(name: "The Fool", meaning: NewBeginnings)],
-            draw_method: UniformRandom
+        "tarot": PatternSystemIr(
+            builtin: Some(tarot),
+            collections: {},
+            spreads: {
+                "three_card": SpreadIr(positions: ["past", "present", "future"]),
+            },
+            draw_method: PatternDrawMethodIr(kind: "uniform"),
+            allow_duplicates: false,
+            reversals: true,
         )
     },
-    knots: {
-        "arrival": Knot(content: [
-            GrammarExpand("atmosphere.scene"),
-            Choice(once: true, text: "Look at the cards", divert: "reading")
-        ])
-    }
+    // Lowered knots omitted.
 )
 ```
 
@@ -207,7 +229,7 @@ weave/
 │   │   └── project/            # File watching, project management
 │   └── Cargo.toml
 │
-├── examples/                # Runnable Phase 1 stories and integrations
+├── examples/                # Runnable language, pattern, and integration stories
 │   ├── stories/             # Basic grammar and branching source files
 │   ├── standalone-runtime/  # Compiler + runtime example
 │   └── bevy-dialogue/       # Headless Bevy asset/event example
@@ -238,6 +260,7 @@ fn main() {
         .add_observer(on_story_ready)
         .add_observer(on_line_delivered)
         .add_observer(on_choices_delivered)
+        .add_observer(on_pattern_drawn)
         .add_observer(on_story_failed)
         .run();
 }
@@ -261,12 +284,19 @@ fn on_choices_delivered(choices: On<DeliverChoices>, mut ui: ResMut<DialogueUI>)
     }
 }
 
+fn on_pattern_drawn(draw: On<PatternDrawn>) {
+    println!(
+        "{} drew {} at {:?}: {:?}",
+        draw.system, draw.element, draw.position, draw.meaning
+    );
+}
+
 fn on_story_failed(failure: On<StoryFailed>) {
     eprintln!("{}", failure.message);
 }
 ```
 
-`PatternDrawn` arrives with the Phase 2 pattern runtime. See [the Bevy integration guide](docs/bevy_integration.md) and run the finite headless example with `cargo run -p weave-example-bevy-dialogue`.
+`PatternDrawn` owns its semantic payload and is emitted once per element, in spread position order, before the line or choice boundary that used the draw. See [the Bevy integration guide](docs/bevy_integration.md) and run the finite headless example with `cargo run -p weave-example-bevy-dialogue`.
 
 ### Using Weave Without Bevy (Standalone Runtime)
 
@@ -368,12 +398,12 @@ weavec story.weave --watch            # recompile on file change
 - [x] Basic example stories
 
 ### Phase 2 — Pattern Systems
-- [ ] `PatternSystem` trait design
-- [ ] Tarot (78 cards, spreads, reversals)
-- [ ] I-Ching (64 hexagrams, coin + yarrow methods)
-- [ ] Runes (Elder Futhark)
-- [ ] Custom pattern system authoring
-- [ ] `PatternDrawn` events in Bevy
+- [x] `PatternSystem` trait design
+- [x] Tarot (78 cards, spreads, reversals)
+- [x] I-Ching (64 hexagrams, coin + yarrow methods)
+- [x] Runes (Elder Futhark)
+- [x] Custom pattern system authoring
+- [x] `PatternDrawn` events in Bevy
 
 ### Phase 3 — Editor
 - [ ] GPUI application skeleton

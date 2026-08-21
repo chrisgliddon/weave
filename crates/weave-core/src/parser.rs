@@ -11,8 +11,8 @@ use crate::Diagnostic;
 use crate::ast::{
     BinaryOperator, Choice, Conditional, ConditionalBranch, Declaration, Document, Expr,
     GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, PatternCollection,
-    PatternDecl, PatternElement, PatternEntry, Span, Spanned, SpreadDecl, Statement, UnaryOperator,
-    VariableKind,
+    PatternDecl, PatternDrawMethod, PatternElement, PatternEntry, Span, Spanned, SpreadDecl,
+    Statement, UnaryOperator, VariableKind,
 };
 
 #[derive(Parser)]
@@ -159,6 +159,26 @@ fn build_pattern(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>>
                 Ok(collection) => entries.push(collection),
                 Err(error) => diagnostics.push(error),
             },
+            Rule::builtin_decl => match build_pattern_setting(inner, PatternSetting::Builtin) {
+                Ok(setting) => entries.push(setting),
+                Err(error) => diagnostics.push(error),
+            },
+            Rule::draw_method_decl => {
+                match build_pattern_setting(inner, PatternSetting::DrawMethod) {
+                    Ok(setting) => entries.push(setting),
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            Rule::reversals_decl => match build_pattern_setting(inner, PatternSetting::Reversals) {
+                Ok(setting) => entries.push(setting),
+                Err(error) => diagnostics.push(error),
+            },
+            Rule::duplicates_decl => {
+                match build_pattern_setting(inner, PatternSetting::Duplicates) {
+                    Ok(setting) => entries.push(setting),
+                    Err(error) => diagnostics.push(error),
+                }
+            }
             Rule::spread_decl => match build_spread(inner) {
                 Ok(spread) => entries.push(spread),
                 Err(error) => diagnostics.push(error),
@@ -178,6 +198,45 @@ fn build_pattern(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>>
     } else {
         Err(diagnostics)
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum PatternSetting {
+    Builtin,
+    DrawMethod,
+    Reversals,
+    Duplicates,
+}
+
+fn build_pattern_setting(
+    pair: Pair<'_, Rule>,
+    setting: PatternSetting,
+) -> Result<Spanned<PatternEntry>, Diagnostic> {
+    let span = span_for(&pair);
+    let Some(value) = pair.into_inner().next() else {
+        return Err(internal_parser_error("pattern setting has no value"));
+    };
+    let entry = match setting {
+        PatternSetting::Builtin => PatternEntry::Builtin(value.as_str().to_owned()),
+        PatternSetting::DrawMethod => {
+            let source = value.as_str();
+            let method = match source {
+                "uniform" => PatternDrawMethod::Uniform,
+                "three_coin" => PatternDrawMethod::ThreeCoin,
+                "yarrow_stalks" => PatternDrawMethod::YarrowStalks,
+                _ => {
+                    let Some(field) = source.strip_prefix("weighted_by_") else {
+                        return Err(internal_parser_error("unrecognized pattern draw method"));
+                    };
+                    PatternDrawMethod::WeightedBy(field.to_owned())
+                }
+            };
+            PatternEntry::DrawMethod(method)
+        }
+        PatternSetting::Reversals => PatternEntry::Reversals(value.as_str() == "true"),
+        PatternSetting::Duplicates => PatternEntry::Duplicates(value.as_str() == "true"),
+    };
+    Ok(Spanned::new(entry, span))
 }
 
 fn build_pattern_collection(pair: Pair<'_, Rule>) -> Result<Spanned<PatternEntry>, Diagnostic> {

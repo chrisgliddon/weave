@@ -13,6 +13,7 @@ ron.workspace = true
 thiserror.workspace = true
 weave-compiler = { path = "../weave-compiler" }
 weave-core = { path = "../weave-core" }
+weave-patterns = { path = "../weave-patterns" }
 weave-runtime = { path = "../weave-runtime" }
 
 [lints]

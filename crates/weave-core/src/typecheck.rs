@@ -5,7 +5,7 @@ use std::fmt;
 
 use crate::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternEntry, Span, Spanned, Statement, UnaryOperator, VariableKind,
+    PatternDrawMethod, PatternEntry, Span, Spanned, Statement, UnaryOperator, VariableKind,
 };
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::template::{TemplatePart, parse_template};
@@ -83,6 +83,7 @@ struct GrammarInfo {
 struct PatternInfo {
     collections: BTreeSet<String>,
     spreads: BTreeMap<String, BTreeSet<String>>,
+    builtin: Option<String>,
 }
 
 struct Checker {
@@ -159,8 +160,82 @@ impl Checker {
                         continue;
                     }
                     let mut info = PatternInfo::default();
+                    let mut builtin_span = None;
+                    let mut draw_method: Option<(&PatternDrawMethod, Span)> = None;
+                    let mut reversals = None;
+                    let mut duplicates = None;
+                    let mut element_count = 0_usize;
+                    let mut authored_elements = Vec::new();
                     for entry in &pattern.node.entries {
                         match &entry.node {
+                            PatternEntry::Builtin(builtin) => {
+                                if builtin_span.is_some() {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2101",
+                                            format!(
+                                                "pattern `{name}` repeats its `builtin` setting"
+                                            ),
+                                        )
+                                        .with_span(entry.span),
+                                    );
+                                }
+                                if !matches!(
+                                    builtin.as_str(),
+                                    "tarot" | "i_ching" | "elder_futhark"
+                                ) {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2102",
+                                            format!("unknown built-in pattern `{builtin}`"),
+                                        )
+                                        .with_span(entry.span)
+                                        .with_help("use `tarot`, `i_ching`, or `elder_futhark`"),
+                                    );
+                                }
+                                builtin_span = Some(entry.span);
+                                info.builtin = Some(builtin.clone());
+                            }
+                            PatternEntry::DrawMethod(method) => {
+                                if draw_method.is_some() {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2103",
+                                            format!("pattern `{name}` repeats its `draw` setting"),
+                                        )
+                                        .with_span(entry.span),
+                                    );
+                                }
+                                draw_method = Some((method, entry.span));
+                            }
+                            PatternEntry::Reversals(value) => {
+                                if reversals.is_some() {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2104",
+                                            format!(
+                                                "pattern `{name}` repeats its `reversals` setting"
+                                            ),
+                                        )
+                                        .with_span(entry.span),
+                                    );
+                                }
+                                reversals = Some((*value, entry.span));
+                            }
+                            PatternEntry::Duplicates(value) => {
+                                if duplicates.is_some() {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2105",
+                                            format!(
+                                                "pattern `{name}` repeats its `duplicates` setting"
+                                            ),
+                                        )
+                                        .with_span(entry.span),
+                                    );
+                                }
+                                duplicates = Some((*value, entry.span));
+                            }
                             PatternEntry::Collection(collection) => {
                                 if !info.collections.insert(collection.name.clone()) {
                                     self.duplicate(
@@ -183,6 +258,7 @@ impl Checker {
                                     );
                                 }
                                 for element in &collection.elements {
+                                    element_count = element_count.saturating_add(1);
                                     let mut fields = BTreeSet::new();
                                     for (field, _) in &element.fields {
                                         if !fields.insert(field.clone()) {
@@ -194,6 +270,7 @@ impl Checker {
                                             );
                                         }
                                     }
+                                    authored_elements.push((&element.fields, entry.span));
                                 }
                             }
                             PatternEntry::Spread(spread) => {
@@ -235,6 +312,169 @@ impl Checker {
                             }
                             PatternEntry::Comment(_) | PatternEntry::Blank => {}
                         }
+                    }
+                    if info.builtin.is_some() && !info.collections.is_empty() {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2106",
+                                format!(
+                                    "pattern `{name}` cannot mix `builtin` data with authored collections"
+                                ),
+                            )
+                            .with_span(builtin_span.unwrap_or(pattern.span)),
+                        );
+                    } else if info.builtin.is_none() && info.collections.len() != 1 {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2107",
+                                format!(
+                                    "authored pattern `{name}` must contain exactly one collection"
+                                ),
+                            )
+                            .with_span(pattern.span),
+                        );
+                    }
+                    let mut element_names = BTreeSet::new();
+                    for (fields, span) in &authored_elements {
+                        match pattern_field(fields, "name") {
+                            Some(Literal::String(value) | Literal::Symbol(value)) => {
+                                if !element_names.insert(value.clone()) {
+                                    self.diagnostics.push(
+                                        Diagnostic::error(
+                                            "W2108",
+                                            format!(
+                                                "pattern `{name}` repeats element name `{value}`"
+                                            ),
+                                        )
+                                        .with_span(*span),
+                                    );
+                                }
+                            }
+                            _ => self.diagnostics.push(
+                                Diagnostic::error(
+                                    "W2109",
+                                    format!(
+                                        "every element in pattern `{name}` requires a string or symbol `name` field"
+                                    ),
+                                )
+                                .with_span(*span),
+                            ),
+                        }
+                        if pattern_field(fields, "meaning").is_none() {
+                            self.diagnostics.push(
+                                Diagnostic::error(
+                                    "W2110",
+                                    format!(
+                                        "every element in pattern `{name}` requires a `meaning` field"
+                                    ),
+                                )
+                                .with_span(*span),
+                            );
+                        }
+                    }
+                    if let Some((PatternDrawMethod::WeightedBy(field), _)) = draw_method {
+                        for (fields, element_span) in &authored_elements {
+                            if !matches!(
+                                pattern_field(fields, field),
+                                Some(Literal::Number(value)) if value.is_finite() && *value > 0.0
+                            ) {
+                                self.diagnostics.push(
+                                    Diagnostic::error(
+                                        "W2111",
+                                        format!(
+                                            "weighted draw field `{field}` must be a positive number on every element"
+                                        ),
+                                    )
+                                    .with_span(*element_span),
+                                );
+                            }
+                        }
+                    }
+                    if let Some((method, span)) = draw_method
+                        && matches!(
+                            method,
+                            PatternDrawMethod::ThreeCoin | PatternDrawMethod::YarrowStalks
+                        )
+                        && info.builtin.as_deref() != Some("i_ching")
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2112",
+                                "three-coin and yarrow-stalk draws require `builtin: i_ching`",
+                            )
+                            .with_span(span),
+                        );
+                    }
+                    if let Some((method, span)) = draw_method {
+                        let invalid_builtin_method = match (info.builtin.as_deref(), method) {
+                            (Some("i_ching"), PatternDrawMethod::Uniform) => {
+                                Some("I-Ching supports `three_coin` and `yarrow_stalks` draws")
+                            }
+                            (
+                                Some("i_ching" | "elder_futhark"),
+                                PatternDrawMethod::WeightedBy(_),
+                            ) => Some("this built-in does not expose a weighted draw field"),
+                            (Some("tarot"), PatternDrawMethod::WeightedBy(field))
+                                if field != "weight" =>
+                            {
+                                Some("built-in tarot weighting uses `weighted_by_weight`")
+                            }
+                            _ => None,
+                        };
+                        if let Some(message) = invalid_builtin_method {
+                            self.diagnostics
+                                .push(Diagnostic::error("W2114", message).with_span(span));
+                        }
+                    }
+                    if info.builtin.as_deref() == Some("i_ching")
+                        && let Some(spread) = info.spreads.keys().next()
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2116",
+                                format!(
+                                    "I-Ching pattern `{name}` cannot declare spread `{spread}`"
+                                ),
+                            )
+                            .with_span(pattern.span),
+                        );
+                    }
+                    let reversals_enabled = reversals.is_some_and(|(enabled, _)| enabled);
+                    let authored_reversal = authored_elements
+                        .iter()
+                        .any(|(fields, _)| pattern_field(fields, "reversed_meaning").is_some());
+                    if reversals_enabled
+                        && !matches!(info.builtin.as_deref(), Some("tarot" | "elder_futhark"))
+                        && (info.builtin.is_some() || !authored_reversal)
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2115",
+                                format!(
+                                    "pattern `{name}` enables reversals without reversal semantics"
+                                ),
+                            )
+                            .with_span(reversals.map_or(pattern.span, |(_, span)| span))
+                            .with_help("add `reversed_meaning` fields or disable `reversals`"),
+                        );
+                    }
+                    if !duplicates.is_some_and(|(allow, _)| allow)
+                        && info.builtin.is_none()
+                        && let Some((spread, _)) = info
+                            .spreads
+                            .iter()
+                            .find(|(_, positions)| positions.len() > element_count)
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                "W2113",
+                                format!(
+                                    "spread `{name}.{spread}` requests more unique positions than the pattern has elements"
+                                ),
+                            )
+                            .with_span(pattern.span)
+                            .with_help("add elements or set `duplicates: true`"),
+                        );
                     }
                     self.patterns.insert(name.clone(), info);
                 }
@@ -747,6 +987,14 @@ impl Checker {
             return Type::Any;
         }
         if self.patterns.contains_key(root) {
+            self.diagnostics.push(
+                Diagnostic::error(
+                    "W2117",
+                    format!("pattern `{root}` does not expose fields before it is drawn"),
+                )
+                .with_span(span)
+                .with_help("store `pattern.draw()` or a named spread draw in a variable first"),
+            );
             return Type::Any;
         }
         self.diagnostics.push(
@@ -760,12 +1008,13 @@ impl Checker {
             self.infer_expression(argument);
         }
         let valid = match path {
+            [pattern, draw] if draw == "draw" => self.patterns.contains_key(pattern),
             [pattern, spread_keyword, spread, draw]
                 if spread_keyword == "spread" && draw == "draw" =>
             {
                 self.patterns
                     .get(pattern)
-                    .is_some_and(|info| info.spreads.contains_key(spread))
+                    .is_some_and(|info| pattern_has_spread(info, spread))
             }
             _ => false,
         };
@@ -773,7 +1022,9 @@ impl Checker {
             self.diagnostics.push(
                 Diagnostic::error("W2029", format!("unsupported call `{}`", path.join(".")))
                     .with_span(span)
-                    .with_help("Phase 1 only reserves `pattern.spread.name.draw()`"),
+                    .with_help(
+                        "use `pattern.draw()` or `pattern.spread.name.draw()` with a declared pattern",
+                    ),
             );
         } else if !arguments.is_empty() {
             self.diagnostics.push(
@@ -910,6 +1161,20 @@ impl Checker {
     }
 }
 
+fn pattern_field<'a>(fields: &'a [(String, Literal)], name: &str) -> Option<&'a Literal> {
+    fields
+        .iter()
+        .find_map(|(field, value)| (field == name).then_some(value))
+}
+
+fn pattern_has_spread(info: &PatternInfo, spread: &str) -> bool {
+    info.spreads.contains_key(spread)
+        || matches!(
+            (info.builtin.as_deref(), spread),
+            (Some("tarot"), "three_card") | (Some("elder_futhark"), "three_rune")
+        )
+}
+
 /// Check declarations, references, expressions, and control flow.
 #[must_use]
 pub fn type_check(document: &Document) -> TypeCheckResult {
@@ -1013,6 +1278,88 @@ SET quest = active
                 .diagnostics
                 .iter()
                 .any(|diagnostic| diagnostic.code.0 == "W2031")
+        );
+    }
+
+    #[test]
+    fn checks_authored_pattern_schema_and_configuration() {
+        let source = r#"
+pattern omens {
+    signs: [
+        (name: "Crow", meaning: warning, meaning: duplicate, weight: 0),
+        (name: "Crow", weight: 2),
+    ]
+    draw: weighted_by_weight
+    reversals: true
+    spread four { positions: [a, b, c, d] }
+    spread empty { positions: [] }
+}
+VAR invalid = omens.four.a.meaning
+=== start ===
+-> END
+"#;
+        let document = parse_document(source).expect("source parses");
+        let result = type_check(&document);
+        for code in [
+            "W2007", "W2010", "W2108", "W2110", "W2111", "W2113", "W2115", "W2117",
+        ] {
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .any(|diagnostic| diagnostic.code.0 == code),
+                "missing diagnostic {code}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_builtin_defaults_and_rejects_incompatible_methods() {
+        let valid = r#"
+pattern cards {
+    builtin: tarot
+    reversals: true
+}
+pattern changes {
+    builtin: i_ching
+    draw: yarrow_stalks
+}
+pattern runes {
+    builtin: elder_futhark
+}
+VAR reading = cards.spread.three_card.draw()
+VAR hexagram = changes.draw()
+VAR rune = runes.spread.three_rune.draw()
+=== start ===
+{reading.past.meaning} {hexagram.meaning} {rune.present.meaning}
+"#;
+        let document = parse_document(valid).expect("source parses");
+        let result = type_check(&document);
+        assert!(result.is_success(), "{:?}", result.diagnostics);
+
+        let invalid = r#"
+pattern changes {
+    builtin: i_ching
+    draw: uniform
+    reversals: true
+}
+=== start ===
+-> END
+"#;
+        let document = parse_document(invalid).expect("source parses");
+        let result = type_check(&document);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code.0 == "W2114")
+        );
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code.0 == "W2115")
         );
     }
 }

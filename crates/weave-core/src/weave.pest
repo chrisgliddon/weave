@@ -29,7 +29,29 @@ pattern_decl = {
     ws* ~ "pattern" ~ ws+ ~ identifier ~ ws* ~ "{" ~
     pattern_entry* ~ ws* ~ "}" ~ ws* ~ newline?
 }
-pattern_entry = _{ blank_line | comment_line | pattern_collection | spread_decl }
+pattern_entry = _{
+    blank_line |
+    comment_line |
+    builtin_decl |
+    draw_method_decl |
+    reversals_decl |
+    duplicates_decl |
+    pattern_collection |
+    spread_decl
+}
+builtin_decl = {
+    ws* ~ "builtin" ~ ws* ~ ":" ~ ws* ~ identifier ~ ws* ~ (newline | &"}")
+}
+draw_method_decl = {
+    ws* ~ "draw" ~ ws* ~ ":" ~ ws* ~ draw_method ~ ws* ~ (newline | &"}")
+}
+draw_method = @{ "uniform" | "three_coin" | "yarrow_stalks" | ("weighted_by_" ~ identifier) }
+reversals_decl = {
+    ws* ~ "reversals" ~ ws* ~ ":" ~ ws* ~ boolean_literal ~ ws* ~ (newline | &"}")
+}
+duplicates_decl = {
+    ws* ~ "duplicates" ~ ws* ~ ":" ~ ws* ~ boolean_literal ~ ws* ~ (newline | &"}")
+}
 pattern_collection = {
     ws* ~ identifier ~ ws* ~ ":" ~ ws* ~ "[" ~
     pattern_collection_item* ~ ws* ~ "]" ~ ws* ~ ","? ~ newline?
@@ -46,7 +68,9 @@ spread_decl = {
     "positions" ~ ws* ~ ":" ~ ws* ~ symbol_list ~ ws* ~ "}" ~ ws* ~
     (newline | &"}")
 }
-symbol_list = { "[" ~ ws* ~ identifier ~ (ws* ~ "," ~ ws* ~ identifier)* ~ ws* ~ ","? ~ "]" }
+symbol_list = {
+    "[" ~ ws* ~ (identifier ~ (ws* ~ "," ~ ws* ~ identifier)* ~ ws* ~ ","?)? ~ "]"
+}
 
 global_decl = {
     ws* ~ declaration_keyword ~ ws+ ~ line_text ~ newline?

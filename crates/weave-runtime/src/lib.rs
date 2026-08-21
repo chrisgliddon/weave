@@ -15,6 +15,10 @@ use weave_core::ir::{
     InstructionKind, ListOperationIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr,
     ValueLiteral, VariableKindIr,
 };
+use weave_patterns::{
+    DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
+    system_from_ir,
+};
 
 /// Runtime version corresponding to the serialized IR version.
 pub const RUNTIME_VERSION: u32 = IR_VERSION;
@@ -93,6 +97,7 @@ pub struct VariableState {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StoryState {
     variables: BTreeMap<String, VariableState>,
+    patterns: BTreeMap<String, PatternState>,
     selected_once: BTreeSet<String>,
     frames: Vec<ExecutionFrame>,
     pending_choices: Vec<PendingChoice>,
@@ -106,6 +111,12 @@ impl StoryState {
     #[must_use]
     pub const fn variables(&self) -> &BTreeMap<String, VariableState> {
         &self.variables
+    }
+
+    /// Mutable draw state for each declared pattern system.
+    #[must_use]
+    pub const fn patterns(&self) -> &BTreeMap<String, PatternState> {
+        &self.patterns
     }
 
     /// Original deterministic random seed.
@@ -225,9 +236,14 @@ pub enum RuntimeErrorKind {
     /// The host selected an unavailable choice.
     #[error("choice index {index} is unavailable; {available} choices are pending")]
     InvalidChoice { index: usize, available: usize },
-    /// Pattern execution is deliberately deferred until Phase 2.
-    #[error("pattern draws are unavailable in Phase 1 (`{0}`)")]
-    PatternUnavailable(String),
+    /// Pattern definition or execution failed.
+    #[error("pattern `{system}` failed: {message}")]
+    Pattern {
+        /// Declared pattern identity.
+        system: String,
+        /// Structured pattern-layer error rendered for host diagnostics.
+        message: String,
+    },
     /// A state-machine transition violates its declaration.
     #[error("state `{name}` does not allow `{value}`")]
     InvalidState { name: String, value: String },
@@ -271,7 +287,9 @@ impl std::error::Error for RuntimeError {}
 #[derive(Debug, Clone)]
 pub struct Story {
     data: Arc<StoryIr>,
+    patterns: BTreeMap<String, Arc<dyn PatternSystem>>,
     state: StoryState,
+    pending_pattern_draws: Vec<DrawResult>,
 }
 
 impl Story {
@@ -283,10 +301,15 @@ impl Story {
     /// Start a compiled story with an explicit deterministic seed.
     pub fn with_seed(data: StoryIr, seed: u64) -> Result<Self, RuntimeError> {
         validate_story(&data)?;
+        let patterns = build_patterns(&data)?;
         let entry = data.entry.clone();
         let mut story = Self {
             data: Arc::new(data),
             state: StoryState {
+                patterns: patterns
+                    .keys()
+                    .map(|name| (name.clone(), PatternState::default()))
+                    .collect(),
                 variables: BTreeMap::new(),
                 selected_once: BTreeSet::new(),
                 frames: vec![ExecutionFrame {
@@ -299,17 +322,23 @@ impl Story {
                 random_draws: 0,
                 ended: false,
             },
+            patterns,
+            pending_pattern_draws: Vec::new(),
         };
         story.execute_globals()?;
         Ok(story)
     }
 
     /// Restore mutable state against the same immutable compiled story.
-    pub fn restore(data: StoryIr, state: StoryState) -> Result<Self, RuntimeError> {
+    pub fn restore(data: StoryIr, mut state: StoryState) -> Result<Self, RuntimeError> {
         validate_story(&data)?;
+        let patterns = build_patterns(&data)?;
+        reconcile_pattern_state(&patterns, &mut state.patterns);
         let story = Self {
             data: Arc::new(data),
+            patterns,
             state,
+            pending_pattern_draws: Vec::new(),
         };
         story.validate_state()?;
         Ok(story)
@@ -361,6 +390,12 @@ impl Story {
             .iter()
             .map(|choice| choice.view.clone())
             .collect()
+    }
+
+    /// Drain pattern draws produced since the previous call in narrative evaluation order.
+    #[must_use]
+    pub fn take_pattern_draws(&mut self) -> Vec<DrawResult> {
+        std::mem::take(&mut self.pending_pattern_draws)
     }
 
     /// Advance until a line, choice set, or end boundary is reached.
@@ -534,6 +569,34 @@ impl Story {
                 return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
                     "saved choice points to a non-choice instruction".to_owned(),
                 )));
+            }
+        }
+        if self.state.patterns.len() != self.patterns.len()
+            || self
+                .patterns
+                .keys()
+                .any(|name| !self.state.patterns.contains_key(name))
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "saved pattern state does not match the compiled story".to_owned(),
+            )));
+        }
+        for (name, state) in &self.state.patterns {
+            let Some(system) = self.patterns.get(name) else {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved pattern state references an unknown system".to_owned(),
+                )));
+            };
+            if state.last_draw.iter().any(|id| {
+                !system
+                    .definition()
+                    .elements
+                    .iter()
+                    .any(|element| &element.id == id)
+            }) {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                    "saved pattern state for `{name}` references stale elements"
+                ))));
             }
         }
         Ok(())
@@ -817,9 +880,14 @@ impl Story {
                 };
                 self.expand_grammar(grammar, rule, 0).map(Value::String)
             }
-            Expression::Call { path, .. } => Err(RuntimeError::new(
-                RuntimeErrorKind::PatternUnavailable(path.join(".")),
-            )),
+            Expression::Call { path, arguments } => {
+                if !arguments.is_empty() {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                        "compiled pattern draw contains unsupported arguments".to_owned(),
+                    )));
+                }
+                self.draw_pattern(path)
+            }
             Expression::Unary { operator, operand } => {
                 let operand = self.evaluate(operand)?;
                 match (operator, operand) {
@@ -955,6 +1023,54 @@ impl Story {
         self.render_template(&alternatives[index], depth + 1)
     }
 
+    fn draw_pattern(&mut self, path: &[String]) -> Result<Value, RuntimeError> {
+        let (system_name, spread) = match path {
+            [system, draw] if draw == "draw" => (system.as_str(), None),
+            [system, spread_keyword, spread, draw]
+                if spread_keyword == "spread" && draw == "draw" =>
+            {
+                (system.as_str(), Some(spread.clone()))
+            }
+            _ => {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                    "unsupported compiled call `{}`",
+                    path.join(".")
+                ))));
+            }
+        };
+        let system = self.patterns.get(system_name).cloned().ok_or_else(|| {
+            RuntimeError::new(RuntimeErrorKind::Pattern {
+                system: system_name.to_owned(),
+                message: "the compiled story does not define this system".to_owned(),
+            })
+        })?;
+        let pattern_state = self.state.patterns.get_mut(system_name).ok_or_else(|| {
+            RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                "pattern `{system_name}` has no mutable story state"
+            )))
+        })?;
+        let mut random = SeededRandom::new(self.state.seed, self.state.random_draws);
+        let result = system
+            .draw(
+                &DrawRequest {
+                    spread,
+                    ..DrawRequest::default()
+                },
+                pattern_state,
+                &mut random,
+            )
+            .map_err(|error| {
+                RuntimeError::new(RuntimeErrorKind::Pattern {
+                    system: system_name.to_owned(),
+                    message: error.to_string(),
+                })
+            })?;
+        self.state.random_draws = self.state.random_draws.saturating_add(random.consumed());
+        let value = draw_result_value(&result)?;
+        self.pending_pattern_draws.push(result);
+        Ok(value)
+    }
+
     fn random_index(&mut self, length: usize) -> usize {
         let mut random = ChaCha8Rng::seed_from_u64(self.state.seed);
         for _ in 0..self.state.random_draws {
@@ -963,6 +1079,104 @@ impl Story {
         let value = random.next_u64();
         self.state.random_draws = self.state.random_draws.saturating_add(1);
         (value % length as u64) as usize
+    }
+}
+
+fn build_patterns(
+    data: &StoryIr,
+) -> Result<BTreeMap<String, Arc<dyn PatternSystem>>, RuntimeError> {
+    data.patterns
+        .iter()
+        .map(|(name, definition)| {
+            system_from_ir(name, definition)
+                .map(|system| (name.clone(), system))
+                .map_err(|error| {
+                    RuntimeError::new(RuntimeErrorKind::Pattern {
+                        system: name.clone(),
+                        message: error.to_string(),
+                    })
+                })
+        })
+        .collect()
+}
+
+fn reconcile_pattern_state(
+    patterns: &BTreeMap<String, Arc<dyn PatternSystem>>,
+    states: &mut BTreeMap<String, PatternState>,
+) {
+    states.retain(|name, _| patterns.contains_key(name));
+    for (name, system) in patterns {
+        let state_is_current = states.get(name).is_some_and(|state| {
+            state.last_draw.iter().all(|id| {
+                system
+                    .definition()
+                    .elements
+                    .iter()
+                    .any(|element| &element.id == id)
+            })
+        });
+        if !state_is_current {
+            states.insert(name.clone(), PatternState::default());
+        }
+    }
+}
+
+fn draw_result_value(result: &DrawResult) -> Result<Value, RuntimeError> {
+    if result.spread.is_none() {
+        let [entry] = result.entries.as_slice() else {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "single pattern draw did not return exactly one element".to_owned(),
+            )));
+        };
+        return Ok(drawn_element_value(entry));
+    }
+    let mut positions = BTreeMap::new();
+    for entry in &result.entries {
+        let Some(position) = &entry.position else {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "spread pattern draw returned an unpositioned element".to_owned(),
+            )));
+        };
+        if positions
+            .insert(position.clone(), drawn_element_value(entry))
+            .is_some()
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "spread pattern draw repeated a result position".to_owned(),
+            )));
+        }
+    }
+    Ok(Value::Object(positions))
+}
+
+fn drawn_element_value(entry: &weave_patterns::DrawnElement) -> Value {
+    let mut fields = entry
+        .fields
+        .iter()
+        .map(|(name, value)| (name.clone(), pattern_value(value)))
+        .collect::<BTreeMap<_, _>>();
+    fields.insert("id".to_owned(), Value::String(entry.id.clone()));
+    fields.insert("reversed".to_owned(), Value::Bool(entry.reversed));
+    if let Some(position) = &entry.position {
+        fields.insert("position".to_owned(), Value::Symbol(position.clone()));
+    }
+    Value::Object(fields)
+}
+
+fn pattern_value(value: &PatternValue) -> Value {
+    match value {
+        PatternValue::Null => Value::Null,
+        PatternValue::Bool(value) => Value::Bool(*value),
+        PatternValue::Number(value) => Value::Number(*value),
+        PatternValue::String(value) => Value::String(value.clone()),
+        PatternValue::Symbol(value) => Value::Symbol(value.clone()),
+        PatternValue::List(values) => Value::List(values.iter().map(pattern_value).collect()),
+        PatternValue::Object(fields) => Value::Object(
+            fields
+                .iter()
+                .map(|(name, value)| (name.clone(), pattern_value(value)))
+                .collect(),
+        ),
     }
 }
 
@@ -1208,9 +1422,27 @@ mod tests {
 
     use super::*;
 
+    const README_STORY: &str = include_str!("../../weave-core/tests/fixtures/fortune_teller.weave");
+
     fn compile_story(source: &str, seed: u64) -> Story {
         let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
         Story::with_seed(compiled.story, seed).expect("story should start")
+    }
+
+    #[test]
+    fn complete_readme_story_compiles_and_runs_its_tarot_spread() {
+        let mut story = compile_story(README_STORY, 2026);
+        assert!(matches!(story.advance(), Ok(StoryEvent::Line(_))));
+        let draws = story.take_pattern_draws();
+        assert_eq!(draws.len(), 1);
+        assert_eq!(
+            draws[0]
+                .entries
+                .iter()
+                .map(|entry| entry.position.as_deref())
+                .collect::<Vec<_>>(),
+            [Some("past"), Some("present"), Some("future")]
+        );
     }
 
     #[test]
@@ -1307,7 +1539,7 @@ grammar coin {
     }
 
     #[test]
-    fn rejects_unknown_versions_and_phase_two_pattern_calls() {
+    fn rejects_unknown_versions_and_executes_pattern_calls() {
         let mut invalid = StoryIr::new("start");
         invalid.version = IR_VERSION + 1;
         let error = Story::new(invalid).expect_err("unknown version should fail");
@@ -1318,22 +1550,117 @@ grammar coin {
 
         let source = r#"
 pattern cards {
-    deck: [(name: "One")]
+    deck: [
+        (name: "One", meaning: first),
+        (name: "Two", meaning: second),
+    ]
     spread single { positions: [card] }
 }
-=== start ===
 VAR draw = cards.spread.single.draw()
+=== start ===
+{draw.card.name}: {draw.card.meaning}
 -> END
 "#;
         let mut story = compile_story(source, 0);
-        let error = story
-            .advance()
-            .expect_err("pattern call should be unavailable");
         assert!(matches!(
-            error.kind,
-            RuntimeErrorKind::PatternUnavailable(_)
+            story.advance(),
+            Ok(StoryEvent::Line(line)) if line == "One: first" || line == "Two: second"
         ));
-        assert!(error.span.is_some());
+        let draws = story.take_pattern_draws();
+        assert_eq!(draws.len(), 1);
+        assert_eq!(draws[0].entries[0].position.as_deref(), Some("card"));
+        assert_eq!(story.state().patterns()["cards"].draws, 1);
+    }
+
+    #[test]
+    fn custom_weighted_spreads_are_deterministic_and_branch_on_meaning() {
+        let source = r#"
+pattern weather_omens {
+    omens: [
+        (name: "Storm Crow", meaning: ill_tidings, severity: 3),
+        (name: "Sun Dog", meaning: good_fortune, severity: 1),
+        (name: "Frost Wolf", meaning: harsh_winter, severity: 4),
+    ]
+    draw: weighted_by_severity
+    spread day_omen { positions: [dawn, noon, dusk] }
+}
+VAR omen = weather_omens.spread.day_omen.draw()
+=== start ===
+{omen.dawn.meaning == ill_tidings:
+    Warning: {omen.dawn.name}.
+- else:
+    Clear: {omen.dawn.name}.
+}
+-> END
+"#;
+        let mut first = compile_story(source, 71);
+        let mut second = compile_story(source, 71);
+        assert_eq!(
+            first.advance().expect("line"),
+            second.advance().expect("line")
+        );
+        assert_eq!(first.take_pattern_draws(), second.take_pattern_draws());
+        assert_eq!(first.state().patterns()["weather_omens"].last_draw.len(), 3);
+    }
+
+    #[test]
+    fn built_in_systems_expose_structured_fields_to_story_expressions() {
+        let source = r#"
+pattern tarot_reading {
+    builtin: tarot
+    reversals: true
+}
+pattern changes {
+    builtin: i_ching
+    draw: three_coin
+}
+pattern runes {
+    builtin: elder_futhark
+}
+VAR cards = tarot_reading.spread.three_card.draw()
+VAR hexagram = changes.draw()
+VAR rune = runes.draw()
+=== start ===
+{cards.past.name}|{cards.future.meaning}|{hexagram.meaning}|{hexagram.changing_lines}|{hexagram.transformed.meaning}|{rune.transliteration}
+-> END
+"#;
+        let mut story = compile_story(source, 314_159);
+        let StoryEvent::Line(line) = story.advance().expect("built-ins run") else {
+            panic!("expected a line");
+        };
+        assert_eq!(line.split('|').count(), 6);
+        let draws = story.take_pattern_draws();
+        assert_eq!(draws.len(), 3);
+        assert_eq!(draws[0].system, "tarot_reading");
+        assert_eq!(draws[1].system, "changes");
+        assert_eq!(draws[2].system, "runes");
+    }
+
+    #[test]
+    fn restore_removes_stale_pattern_state_after_definition_changes() {
+        let original = r#"
+pattern omens {
+    signs: [(name: "Crow", meaning: warning)]
+}
+VAR omen = omens.draw()
+=== start ===
+{omen.name}
+"#;
+        let mut story = compile_story(original, 5);
+        assert_eq!(story.state().patterns()["omens"].last_draw, ["crow"]);
+        let state = story.state().clone();
+        let replacement = r#"
+pattern omens {
+    signs: [(name: "Wolf", meaning: hardship)]
+}
+VAR omen = omens.draw()
+=== start ===
+{omen.name}
+"#;
+        let compiled =
+            compile(replacement, &CompileOptions::default()).expect("replacement compiles");
+        story = Story::restore(compiled.story, state).expect("state reconciles");
+        assert!(story.state().patterns()["omens"].last_draw.is_empty());
     }
 
     #[test]

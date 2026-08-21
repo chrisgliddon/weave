@@ -7,12 +7,12 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 1;
+pub const IR_VERSION: u32 = 2;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StoryIr {
-    /// Serialized schema version. Must equal [`IR_VERSION`] in Phase 1.
+    /// Serialized schema version. Must equal [`IR_VERSION`].
     pub version: u32,
     /// Optional source path or display name.
     pub source_name: Option<String>,
@@ -22,14 +22,14 @@ pub struct StoryIr {
     pub globals: Vec<Instruction>,
     /// Sorted grammar definitions.
     pub grammars: BTreeMap<String, GrammarIr>,
-    /// Sorted pattern definitions reserved for Phase 2 execution.
+    /// Sorted executable pattern definitions.
     pub patterns: BTreeMap<String, PatternSystemIr>,
     /// Sorted knot definitions.
     pub knots: BTreeMap<String, KnotIr>,
 }
 
 impl StoryIr {
-    /// Create an empty version-1 story with the supplied entry point.
+    /// Create an empty story at the current IR version with the supplied entry point.
     #[must_use]
     pub fn new(entry: impl Into<String>) -> Self {
         Self {
@@ -51,13 +51,50 @@ pub struct GrammarIr {
     pub rules: BTreeMap<String, Vec<Template>>,
 }
 
-/// Compiled pattern definition. Execution is implemented in Phase 2.
+/// Compiled custom or built-in pattern definition.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PatternSystemIr {
+    /// Optional built-in data and algorithm source.
+    pub builtin: Option<BuiltinPatternIr>,
     /// Sorted named collections.
     pub collections: BTreeMap<String, PatternCollectionIr>,
     /// Sorted named spreads.
     pub spreads: BTreeMap<String, SpreadIr>,
+    /// Default draw algorithm.
+    pub draw_method: PatternDrawMethodIr,
+    /// Whether one spread draw may repeat an element.
+    pub allow_duplicates: bool,
+    /// Whether reversible elements may be drawn reversed.
+    pub reversals: bool,
+}
+
+/// Built-in pattern data set and algorithm.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BuiltinPatternIr {
+    /// Complete 78-card tarot system.
+    Tarot,
+    /// Complete 64-hexagram I-Ching system.
+    IChing,
+    /// Complete 24-rune Elder Futhark system.
+    ElderFuthark,
+}
+
+/// Compiled default pattern draw algorithm.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind")]
+pub enum PatternDrawMethodIr {
+    /// Equal-probability element selection.
+    Uniform,
+    /// Positive numeric field values define relative probability.
+    WeightedBy {
+        /// Weight field name.
+        field: String,
+    },
+    /// I-Ching three-coin generation.
+    ThreeCoin,
+    /// I-Ching yarrow-stalk generation.
+    YarrowStalks,
 }
 
 /// Named pattern collection.

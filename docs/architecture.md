@@ -7,8 +7,8 @@ This document defines package ownership and dependency boundaries for the Rust w
 | Package | Responsibility | May depend on |
 |---|---|---|
 | `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | General-purpose parsing and serialization crates only |
-| `weave-runtime` | Deterministic execution of compiled stories and saveable story state | `weave-core`; never Bevy |
-| `weave-patterns` | Pattern extension boundary and, in Phase 2, built-in tarot, I-Ching, and rune data | `weave-core` |
+| `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
+| `weave-patterns` | Serializable pattern extension boundary plus built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core` |
 | `weave-compiler` | Checked AST-to-IR lowering, RON/JSON serialization, and the `weavec` CLI | `weave-core`; never `weave-runtime` or Bevy |
 | `weave-fmt` | Canonical `.weave` source rendering | `weave-core` |
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
@@ -18,12 +18,14 @@ The dependency direction is:
 
 ```text
 weave-core
-├── weave-runtime
 ├── weave-patterns
 ├── weave-compiler
 └── weave-fmt
 
-weave-core + weave-compiler + weave-runtime
+weave-core + weave-patterns
+└── weave-runtime
+
+weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
 
@@ -34,9 +36,9 @@ weave-core + weave-compiler + weave-runtime
 - Workspace MSRV: Rust 1.89. This is the minimum supported by Bevy 0.18.1.
 - Serialized IR version: `weave_core::ir::IR_VERSION`.
 - Bevy integration target: Bevy 0.18.
-- Phase 1 source files use the language contract in [`language_guide.md`](language_guide.md).
+- Phase 2 source files use the language contract in [`language_guide.md`](language_guide.md).
 
-Changing source semantics requires updating the language guide and parser fixtures. Changing serialized IR requires an explicit version decision and compatibility tests. Runtime state is serialized separately from immutable story data.
+Changing source semantics requires updating the language guide and parser fixtures. Changing serialized IR requires an explicit version decision and compatibility tests. `PatternDefinition` and `StoryIr` are immutable/shareable. `PatternState` is caller-owned, serialized inside `StoryState`, and reconciled against the current definition on restore. The runtime owns only trait objects and never switches on Tarot, I-Ching, or rune identities; specialization lives behind `weave-patterns::PatternSystem`.
 
 ## Quality gates
 

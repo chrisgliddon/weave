@@ -12,12 +12,10 @@ grammar atmosphere {
 }
 
 pattern tarot {
-    major: [
-        (name: "The Fool", meaning: new_beginnings, element: air),
-        (name: "The Tower", meaning: sudden_change, element: fire),
-        (name: "The Star", meaning: hope, element: water),
-        // The complete built-in deck arrives in Phase 2.
-    ]
+    builtin: tarot
+    draw: uniform
+    reversals: true
+    duplicates: false
     spread three_card { positions: [past, present, future] }
 }
 
@@ -39,7 +37,12 @@ She lays out three cards.
     * [Leave] -> leaving
 
 === reading ===
-"Your past," she says, turning {current_card.past.name}.
+"Your {current_card.past.position}," she says, turning {current_card.past.name}.
+{current_card.past.reversed:
+    "The card is reversed," she adds.
+- else:
+    "The card is upright."
+}
 {current_card.past.meaning == new_beginnings:
     "A journey begun in innocence," she murmurs.
 - current_card.past.meaning == sudden_change:

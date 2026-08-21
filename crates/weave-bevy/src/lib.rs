@@ -18,6 +18,7 @@ use bevy::prelude::{
 use bevy::reflect::TypePath;
 use weave_compiler::{CompileOptions, compile};
 use weave_core::ir::StoryIr;
+use weave_patterns::{DrawResult, PatternValue};
 use weave_runtime::{ChoiceView, RuntimeError, Story, StoryEvent, StoryState, VariableState};
 
 /// Bevy version targeted by this integration.
@@ -184,6 +185,25 @@ pub struct DeliverChoices {
     pub choices: Vec<ChoiceView>,
 }
 
+/// One semantic pattern element emitted in narrative evaluation order.
+#[derive(Event, Debug, Clone, PartialEq)]
+pub struct PatternDrawn {
+    /// Declared pattern-system identity.
+    pub system: String,
+    /// Stable element identity within the system.
+    pub element: String,
+    /// Spread position, absent for an unpositioned single draw.
+    pub position: Option<String>,
+    /// Conventional display name when the element defines one.
+    pub name: Option<String>,
+    /// Effective semantic meaning after reversal overlays.
+    pub meaning: Option<PatternValue>,
+    /// Whether reversal semantics were applied.
+    pub reversed: bool,
+    /// Complete owned semantic field payload.
+    pub fields: std::collections::BTreeMap<String, PatternValue>,
+}
+
 impl Deref for DeliverChoices {
     type Target = [ChoiceView];
 
@@ -278,10 +298,11 @@ fn sync_asset_events(
         let Some(asset) = assets.get(handle.id()) else {
             continue;
         };
-        let replacement = story
-            .runtime
-            .as_ref()
-            .and_then(|runtime| Story::restore(asset.story.clone(), runtime.state().clone()).ok());
+        let replacement = story.runtime.as_ref().and_then(|runtime| {
+            (runtime.data().patterns == asset.story.patterns)
+                .then(|| Story::restore(asset.story.clone(), runtime.state().clone()).ok())
+                .flatten()
+        });
         let runtime =
             replacement.or_else(|| Story::with_seed(asset.story.clone(), story.seed).ok());
         match runtime {
@@ -363,12 +384,21 @@ impl Command for WeaveAction {
             return;
         };
         let result = match story_resource.runtime.as_mut() {
-            Some(runtime) => apply_action(runtime, self),
+            Some(runtime) => match apply_action(runtime, self) {
+                Ok(event) => Ok((runtime.take_pattern_draws(), event)),
+                Err(error) => {
+                    let _ = runtime.take_pattern_draws();
+                    Err(error)
+                }
+            },
             None => Err(None),
         };
         world.insert_resource(story_resource);
         match result {
-            Ok(event) => trigger_story_event(world, event),
+            Ok((draws, event)) => {
+                trigger_pattern_draws(world, draws);
+                trigger_story_event(world, event);
+            }
             Err(Some(error)) => world.trigger(StoryFailed {
                 message: error.to_string(),
                 runtime_error: Some(error),
@@ -377,6 +407,24 @@ impl Command for WeaveAction {
                 message: "Weave story is not ready".to_owned(),
                 runtime_error: None,
             }),
+        }
+    }
+}
+
+fn trigger_pattern_draws(world: &mut World, draws: Vec<DrawResult>) {
+    for draw in draws {
+        for entry in draw.entries {
+            let name = entry.name().map(str::to_owned);
+            let meaning = entry.meaning().cloned();
+            world.trigger(PatternDrawn {
+                system: draw.system.clone(),
+                element: entry.id,
+                position: entry.position,
+                name,
+                meaning,
+                reversed: entry.reversed,
+                fields: entry.fields,
+            });
         }
     }
 }
@@ -409,8 +457,8 @@ fn trigger_story_event(world: &mut World, event: StoryEvent) {
 /// Commonly used integration types.
 pub mod prelude {
     pub use crate::{
-        DeliverChoices, DeliverLine, StoryEnded, StoryFailed, StoryReady, StoryReloaded,
-        WeaveAsset, WeaveCommandsExt, WeavePlugin, WeaveSet, WeaveStory,
+        DeliverChoices, DeliverLine, PatternDrawn, StoryEnded, StoryFailed, StoryReady,
+        StoryReloaded, WeaveAsset, WeaveCommandsExt, WeavePlugin, WeaveSet, WeaveStory,
     };
 }
 
@@ -425,6 +473,9 @@ mod tests {
     #[derive(Resource, Default)]
     struct EventLog(Vec<String>);
 
+    #[derive(Resource, Default)]
+    struct PatternPayloadLog(Vec<PatternDrawn>);
+
     fn ready(_: On<StoryReady>, mut log: ResMut<EventLog>, mut commands: Commands) {
         log.0.push("ready".to_owned());
         commands.weave_continue();
@@ -432,6 +483,23 @@ mod tests {
 
     fn line(line: On<DeliverLine>, mut log: ResMut<EventLog>) {
         log.0.push(format!("line:{}", line.text));
+    }
+
+    fn pattern_drawn(event: On<PatternDrawn>, mut log: ResMut<EventLog>) {
+        log.0.push(format!(
+            "pattern:{}:{}:{}:{}",
+            event.system,
+            event.position.as_deref().unwrap_or("single"),
+            event
+                .meaning
+                .as_ref()
+                .map_or_else(|| "none".to_owned(), ToString::to_string),
+            event.reversed
+        ));
+    }
+
+    fn record_pattern_payload(event: On<PatternDrawn>, mut log: ResMut<PatternPayloadLog>) {
+        log.0.push(event.clone());
     }
 
     fn reloaded(_: On<StoryReloaded>, mut log: ResMut<EventLog>) {
@@ -512,6 +580,108 @@ mod tests {
                 .0
                 .iter()
                 .any(|entry| entry.contains("not ready"))
+        );
+    }
+
+    #[test]
+    fn pattern_events_precede_the_boundary_and_preserve_spread_order() {
+        let source = r#"
+pattern omens {
+    signs: [
+        (name: "Crow", meaning: warning),
+        (name: "Dog", meaning: fortune),
+        (name: "Wolf", meaning: hardship),
+    ]
+    spread day { positions: [dawn, noon, dusk] }
+}
+VAR reading = omens.draw()
+=== start ===
+SET reading = omens.spread.day.draw()
+Reading: {reading.dawn.name}.
+-> END
+"#;
+        let runtime = Story::with_seed(test_asset(source).story, 41).expect("runtime starts");
+        let mut story = WeaveStory::new("unused.weave");
+        story.runtime = Some(runtime);
+
+        let mut app = App::new();
+        app.init_resource::<EventLog>()
+            .init_resource::<PatternPayloadLog>()
+            .add_observer(pattern_drawn)
+            .add_observer(record_pattern_payload)
+            .add_observer(line)
+            .insert_resource(story);
+        WeaveAction::Continue.apply(app.world_mut());
+
+        let log = &app.world().resource::<EventLog>().0;
+        assert_eq!(log.len(), 5);
+        assert!(log[0].starts_with("pattern:omens:single:"));
+        assert!(log[1].starts_with("pattern:omens:dawn:"));
+        assert!(log[2].starts_with("pattern:omens:noon:"));
+        assert!(log[3].starts_with("pattern:omens:dusk:"));
+        assert!(log[4].starts_with("line:Reading:"));
+        let payloads = &app.world().resource::<PatternPayloadLog>().0;
+        assert_eq!(payloads.len(), 4);
+        assert_eq!(payloads[0].system, "omens");
+        assert!(!payloads[0].element.is_empty());
+        assert_eq!(payloads[0].position, None);
+        assert!(payloads[0].name.is_some());
+        assert!(payloads[0].meaning.is_some());
+        assert!(payloads[0].fields.contains_key("name"));
+
+        WeaveAction::Jump("start".to_owned()).apply(app.world_mut());
+        let log = &app.world().resource::<EventLog>().0;
+        assert!(log[5].starts_with("pattern:omens:dawn:"));
+        assert!(log[6].starts_with("pattern:omens:noon:"));
+        assert!(log[7].starts_with("pattern:omens:dusk:"));
+        assert!(log[8].starts_with("line:Reading:"));
+    }
+
+    #[test]
+    fn hot_reload_reinitializes_changed_pattern_definitions() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, AssetPlugin::default(), WeavePlugin));
+        let handle = app
+            .world_mut()
+            .resource_mut::<Assets<WeaveAsset>>()
+            .add(test_asset(
+                "pattern omens {\n    signs: [(name: \"Crow\", meaning: warning)]\n}\nVAR omen = omens.draw()\n=== start ===\n{omen.name}\n",
+            ));
+        let mut story = WeaveStory::new("patterns.weave");
+        story.handle = Some(handle.clone());
+        app.insert_resource(story);
+        app.update();
+        app.update();
+        assert_eq!(
+            app.world()
+                .resource::<WeaveStory>()
+                .state()
+                .expect("story loaded")
+                .patterns()["omens"]
+                .last_draw,
+            ["crow"]
+        );
+
+        app.world_mut()
+            .resource_mut::<Assets<WeaveAsset>>()
+            .insert(
+                handle.id(),
+                test_asset(
+                    "pattern omens {\n    signs: [(name: \"Wolf\", meaning: hardship)]\n}\nVAR omen = omens.draw()\n=== start ===\n{omen.name}\n",
+                ),
+            )
+            .expect("asset generation remains valid");
+        app.world_mut()
+            .write_message(AssetEvent::Modified { id: handle.id() });
+        app.update();
+        assert_eq!(
+            app.world()
+                .resource::<WeaveStory>()
+                .state()
+                .expect("story reloaded")
+                .patterns()["omens"]
+                .last_draw,
+            ["wolf"]
         );
     }
 

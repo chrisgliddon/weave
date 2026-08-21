@@ -1,0 +1,39 @@
+// Complete Phase 2 pattern-system example.
+pattern cards {
+    builtin: tarot
+    draw: uniform
+    reversals: true
+}
+
+pattern changes {
+    builtin: i_ching
+    draw: yarrow_stalks
+}
+
+pattern runes {
+    builtin: elder_futhark
+    reversals: true
+}
+
+pattern weather_omens {
+    omens: [
+        (name: "Storm Crow", meaning: ill_tidings, severity: 3),
+        (name: "Sun Dog", meaning: good_fortune, severity: 1),
+        (name: "Frost Wolf", meaning: harsh_winter, severity: 4),
+    ]
+    draw: weighted_by_severity
+    spread day_omen { positions: [dawn, noon, dusk] }
+}
+
+VAR reading = cards.spread.three_card.draw()
+VAR hexagram = changes.draw()
+VAR rune = runes.draw()
+VAR weather = weather_omens.spread.day_omen.draw()
+
+=== start ===
+Past: {reading.past.name} ({reading.past.meaning}).
+Present: {reading.present.name}; future: {reading.future.name}.
+Hexagram {hexagram.number}: {hexagram.name}; transformed: {hexagram.transformed.name}.
+Rune: {rune.glyph} {rune.name} ({rune.meaning}).
+At dawn, {weather.dawn.name} means {weather.dawn.meaning}.
+-> END

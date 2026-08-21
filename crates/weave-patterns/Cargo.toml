@@ -8,8 +8,14 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+rand.workspace = true
+rand_chacha.workspace = true
 serde.workspace = true
+thiserror.workspace = true
 weave-core = { path = "../weave-core" }
+
+[dev-dependencies]
+ron.workspace = true
 
 [lints]
 workspace = true

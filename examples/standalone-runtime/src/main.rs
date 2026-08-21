@@ -3,13 +3,13 @@ use std::error::Error;
 use weave_compiler::{CompileOptions, compile};
 use weave_runtime::{Story, StoryEvent};
 
-const STORY_SOURCE: &str = include_str!("../../stories/branching.weave");
+const STORY_SOURCE: &str = include_str!("../../stories/patterns.weave");
 
 fn main() -> Result<(), Box<dyn Error>> {
     let compiled = compile(
         STORY_SOURCE,
         &CompileOptions {
-            source_name: Some("examples/stories/branching.weave".to_owned()),
+            source_name: Some("examples/stories/patterns.weave".to_owned()),
         },
     )?;
     let mut story = Story::with_seed(compiled.story, 7)?;

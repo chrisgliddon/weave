@@ -1,6 +1,6 @@
 # Weave Language Guide
 
-This is the normative Phase 1 language specification for Weave source files. Examples in the README are informative; when wording differs, this document defines parser, checker, formatter, compiler, and runtime behavior.
+This is the normative Phase 2 language specification for Weave source files. Examples in the README are informative; when wording differs, this document defines parser, checker, formatter, compiler, and runtime behavior.
 
 ## 1. Source files
 
@@ -79,23 +79,68 @@ Grammar expansion is recursive. Missing references are static errors. A runtime 
 
 ## 5. Pattern declarations
 
-Phase 1 parses, checks, and serializes pattern definitions so source and IR are forward-compatible. Drawing and built-in datasets are delivered in Phase 2. Attempting to execute `.draw()` in the Phase 1 runtime returns a structured `PatternUnavailable` error.
+Pattern systems produce structured semantic objects. A declaration either selects one built-in data set or authors exactly one collection.
 
-The reserved syntax is:
+Built-in declarations use `builtin` and may customize the default algorithm, reversal policy, duplicate policy, or spreads:
 
 ```weave
 pattern tarot {
-    major: [
-        (name: "The Fool", meaning: new_beginnings, element: air),
-        (name: "The Tower", meaning: sudden_change, element: fire),
-    ]
+    builtin: tarot
+    draw: uniform
+    reversals: true
+    duplicates: false
     spread three_card { positions: [past, present, future] }
 }
 ```
 
-A collection contains records. Record values may be strings, numbers, booleans, `null`, or symbols. A spread has a unique name and one or more unique symbolic positions.
+The built-in identifiers and their default methods are:
 
-The call shape `pattern.spread.spread_name.draw()` is reserved. Its result has dynamic type `Any` in Phase 1, allowing field paths such as `draw.past.meaning` to be represented without pretending the Phase 2 schema is already available.
+| Identifier | Contents | Default method | Built-in spread |
+|---|---|---|---|
+| `tarot` | 78 cards | `uniform` | `three_card`: `past`, `present`, `future` |
+| `i_ching` | 64 King Wen hexagrams | `three_coin` | none |
+| `elder_futhark` | 24 runes | `uniform` | `three_rune`: `past`, `present`, `future` |
+
+I-Ching also accepts `draw: yarrow_stalks`. Tarot accepts `draw: weighted_by_weight`, where major arcana have twice the built-in weight of minor arcana. Unsupported method/built-in combinations are compile errors.
+
+Authored systems contain records with unique `name` values and a `meaning` field:
+
+```weave
+pattern weather_omens {
+    omens: [
+        (name: "Storm Crow", meaning: ill_tidings, severity: 3),
+        (name: "Sun Dog", meaning: good_fortune, severity: 1),
+        (name: "Frost Wolf", meaning: harsh_winter, severity: 4),
+    ]
+    draw: weighted_by_severity
+    spread day_omen { positions: [dawn, noon, dusk] }
+}
+```
+
+Record values may be strings, finite numbers, booleans, `null`, or symbols. `uniform` selects every record with equal probability. `weighted_by_<field>` requires that field to be a positive finite number on every record. A spread has a unique name and one or more unique positions. Draws do not repeat an element within a spread unless `duplicates: true` is set.
+
+`reversals: true` gives every reversible element an equal upright/reversed chance. Tarot defines reversal semantics for every card. Elder Futhark only reverses runes that explicitly carry a reversed meaning. An authored record becomes reversible by defining `reversed_meaning`; on a reversed draw, that value replaces `meaning`. Enabling reversals without any reversal semantics is a compile error.
+
+There are two call forms:
+
+```weave
+VAR rune = runes.draw()
+VAR omen = weather_omens.spread.day_omen.draw()
+```
+
+A single draw returns the element fields directly, plus `id` and `reversed`. A spread returns an object keyed by position; each positioned element also has `position`. For example:
+
+```weave
+{omen.dawn.meaning == ill_tidings:
+    A crow circles the village.
+- else:
+    The dawn is quiet.
+}
+```
+
+Tarot elements expose `name`, `arcana`, `suit`, `rank`, `meaning`, `element`, and `reversed_meaning`. I-Ching results expose number, name, meaning, trigrams, six line values, changing lines, and a structured `transformed` hexagram. Elder Futhark results expose name, glyph, transliteration, and meaning.
+
+Pattern results have static type `Any` because authored fields are open-ended. At runtime they are deterministic objects driven by the same seeded entropy stream as grammar expansion. Immutable definitions live in compiled story data; draw counts and last-draw identities live in separately serialized story state.
 
 ## 6. Values and types
 
@@ -110,9 +155,9 @@ Weave has these runtime types:
 | `Symbol` | `active`, `new_beginnings` | Stable semantic atom |
 | `List<T>` | `["key", "map"]` | Ordered, homogeneous when statically knowable |
 | `Object` | Pattern draw results | String-keyed structured data |
-| `Any` | Phase 2 draw result | Statically unknown, dynamically checked |
+| `Any` | Pattern draw result | Statically unknown, dynamically checked |
 
-A bare one-segment identifier resolves to a declared variable when one exists; otherwise it is a symbol literal. A dotted path must begin with a declared variable or a known pattern system. This rule preserves concise comparisons such as `quest == active` while still diagnosing misspelled object paths.
+A bare one-segment identifier resolves to a declared variable when one exists; otherwise it is a symbol literal. A dotted value path must begin with a declared variable. Pattern names are only valid in the recognized draw calls, and their result must be stored before fields are read. This rule preserves concise comparisons such as `quest == active` while still diagnosing misspelled object paths.
 
 ## 7. Variables, lists, flags, and state machines
 
@@ -257,7 +302,7 @@ Binary operators evaluate left to right within one precedence level. `and` and `
 - Equality compares any two values; values of different concrete types are unequal.
 - `value in list` tests equality against list members. `string in string` tests substring membership.
 - Division or remainder by zero is a runtime error.
-- A function call is only valid for a compiler-recognized path. Phase 1 reserves pattern `.draw()` and rejects other functions.
+- A function call is only valid for a declared `pattern.draw()` or `pattern.spread.name.draw()` path. Pattern draws accept no arguments.
 
 ## 13. Static analysis
 
@@ -268,7 +313,7 @@ The checker performs at least these validations before IR is produced:
 - Declaration initializer and assignment type compatibility.
 - Boolean conditions.
 - Valid state-machine definitions and statically known transitions.
-- Valid pattern collection records and spread positions.
+- Valid built-in names, method combinations, pattern collection records, weights, reversal configuration, and spread positions/capacity.
 - Unsupported call paths.
 - Unreachable statements after `-> target` or `-> END` in one block.
 
@@ -276,19 +321,19 @@ All diagnostics have a stable code, severity, message, and source span. Errors p
 
 ## 14. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 1 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 2 includes:
 
-- Sorted grammar and pattern maps.
+- Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.
 - Source spans for actionable runtime errors.
 
-RON is the normative Phase 1 output. JSON uses the same model for interoperability, but schema publication and compatibility guarantees beyond the shared version field are a Phase 4 deliverable.
+RON is the normative output. JSON uses the same model for interoperability, but schema publication and compatibility guarantees beyond the shared version field are a Phase 4 deliverable.
 
 The runtime rejects an unsupported `version` before executing any instruction.
 
-## 15. Complete Phase 1 example
+## 15. Complete Phase 2 example
 
 ```weave
 grammar names {
@@ -302,10 +347,16 @@ grammar atmosphere {
     scene: "The tavern was #mood#."
 }
 
+pattern cards {
+    builtin: tarot
+    reversals: true
+}
+
 VAR visits = 0
 LIST inventory = []
 FLAG paid = false
 STATE reading = unseen [unseen, offered, complete]
+VAR cards_on_table = cards.spread.three_card.draw()
 
 === arrival ===
 SET visits = visits + 1
@@ -329,8 +380,9 @@ A fortune teller waves you over. "Welcome, #names.full#."
 {visits > 1:
     "You came back," she says.
 - else:
-    She turns over a card.
+    She turns over {cards_on_table.present.name}.
 }
+Its meaning is {cards_on_table.present.meaning}.
 -> END
 ```
 

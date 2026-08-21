@@ -13,6 +13,7 @@ fn build_app() -> App {
         .add_observer(on_ready)
         .add_observer(on_line)
         .add_observer(on_choices)
+        .add_observer(on_pattern)
         .add_observer(on_failed);
     app
 }
@@ -32,12 +33,23 @@ fn on_choices(choices: On<DeliverChoices>) {
     }
 }
 
+fn on_pattern(draw: On<PatternDrawn>) {
+    println!(
+        "{} / {} / {:?} / {:?} / reversed={}",
+        draw.system, draw.element, draw.position, draw.meaning, draw.reversed
+    );
+}
+
 fn on_failed(failure: On<StoryFailed>) {
     eprintln!("{}", failure.message);
 }
 ```
 
 Queue a selection with `commands.weave_choose(index)`. `WeaveStory::variables` exposes the standalone runtime's deterministic variable map without introducing Bevy types into `weave-runtime`. Runtime failures retain their structured `RuntimeError` and source span in `StoryFailed::runtime_error`.
+
+`PatternDrawn` is triggered once for each result element. Its payload owns the system and element identities, optional spread position, conventional name and effective meaning, reversal flag, and complete semantic field map. A single draw produces one event. A spread produces events in declared position order. All of those events run before the `DeliverLine`, `DeliverChoices`, or `StoryEnded` boundary reached by the same action, so observers see narrative evaluation order.
+
+Hot reload restores story state when pattern IR is unchanged. If a pattern definition or draw configuration changes, the runtime is rebuilt from the configured seed instead; this prevents old element identities or semantic objects from leaking into the reloaded story. `StoryReloaded` is emitted after either valid path.
 
 The complete finite, headless example runs with:
 

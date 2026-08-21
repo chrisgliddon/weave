@@ -158,6 +158,14 @@ pub struct PatternDecl {
 /// Item within a pattern block.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PatternEntry {
+    /// Select one built-in immutable definition.
+    Builtin(String),
+    /// Configure the default draw algorithm.
+    DrawMethod(PatternDrawMethod),
+    /// Enable or disable reversed results.
+    Reversals(bool),
+    /// Allow or prevent duplicate elements in one spread draw.
+    Duplicates(bool),
     /// Named collection of semantic elements.
     Collection(PatternCollection),
     /// Named spread with ordered positions.
@@ -166,6 +174,19 @@ pub enum PatternEntry {
     Comment(String),
     /// Blank source line.
     Blank,
+}
+
+/// Pattern selection algorithm declared in source.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PatternDrawMethod {
+    /// Every element is equally likely.
+    Uniform,
+    /// Use one positive numeric field as a relative weight.
+    WeightedBy(String),
+    /// Traditional I-Ching three-coin generation.
+    ThreeCoin,
+    /// Traditional I-Ching yarrow-stalk generation.
+    YarrowStalks,
 }
 
 /// Named collection of pattern elements.
