@@ -1183,9 +1183,74 @@ impl gpui::Render for EditorShell {
                     )
                     .child(
                         div()
+                            .flex()
+                            .gap_1()
                             .text_xs()
                             .text_color(rgb(DARK_THEME.muted_text))
-                            .child("Graph  Text  Patterns  Preview"),
+                            .child(
+                                div()
+                                    .id("nav-graph")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.center == CenterView::Graph, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Graph")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::ShowGraph, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-text")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.center == CenterView::Text, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Text")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::ShowText, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-patterns")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.pattern_browser, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Patterns")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::TogglePatterns, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-preview")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.play_preview, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Preview")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::TogglePreview, cx);
+                                    })),
+                            ),
                     ),
             )
             .child(workspace);
