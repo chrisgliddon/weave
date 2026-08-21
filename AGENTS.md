@@ -9,6 +9,17 @@ These instructions apply to the entire repository.
 - Create newly discovered work with a concrete outcome, requirements, and acceptance criteria. Record real dependencies with `--blocked-by` rather than relying on prose.
 - Repository-local dex changes synchronize to GitHub Issues automatically. Never place a secret in a dex task name, description, result, or commit message because synced data becomes public.
 
+## Public-source isolation — mandatory
+
+Treat everything committed, synchronized, or shared from this repository as public by default.
+
+- Never mention, identify, link to, or allude to the existence of non-public source work, even generically. This includes repository or product names, codenames, corpora, datasets, records, characters, organizations, local paths, and provenance claims.
+- When carrying a general technique into Weave, specify the behavior independently from first principles. Never copy or closely paraphrase non-public code, prose, prompts, schemas, configuration, calibrated parameters, records, or data.
+- Use only original, synthetic, or compatibly licensed public fixtures and datasets. Record the license, citation, attribution, and transformation provenance required by each public source.
+- Apply this boundary to source, documentation, tests, examples, task metadata, issue and pull-request text, commit messages, results, logs, diagnostics, screenshots, and shareable chat output.
+- Before committing, synchronizing, or publishing newly authored material, inspect the changed public text for non-public identifiers, local absolute paths, and provenance language. Prefer an allowlist of intended public terms; if origin or licensing is uncertain, stop and ask.
+- If a prohibited reference is published, stop propagating it, remove it from the repository and synchronized trackers, report the exposure privately, and verify the current public artifacts are clean. Ask before any destructive history-rewrite operation.
+
 ## Secrets and credentials — mandatory
 
 Never print, log, paste, commit, or sync a secret or credential. This includes API keys, access tokens, passwords, cookies, authorization headers, private keys, signing material, database URLs, webhook secrets, and credential-bearing URLs.
