@@ -6,6 +6,7 @@ use gpui::{
     AnyElement, ClipboardItem, Context, FocusHandle, KeyDownEvent, ScrollStrategy,
     UniformListScrollHandle, Window, div, prelude::*, px, rgb, rgba, uniform_list,
 };
+use weave_core::Span;
 
 use crate::text_editor::{SyntaxKind, SyntaxToken, TextBuffer};
 use crate::theme::DARK_THEME;
@@ -68,6 +69,14 @@ impl TextSurface {
     /// Mark current source as saved.
     pub const fn mark_saved(&mut self) {
         self.buffer.mark_saved();
+    }
+
+    /// Reveal and select a source span requested by another editor panel.
+    pub fn reveal_span(&mut self, span: Span, cx: &mut Context<Self>) {
+        self.buffer.select_range(span.start..span.end);
+        self.scroll_cursor_into_view();
+        self.message = format!("Source {}:{}", span.line, span.column);
+        cx.notify();
     }
 
     fn after_edit(&mut self) {

@@ -76,6 +76,21 @@ impl GraphSurface {
         self.state.clone()
     }
 
+    /// Select one graph node requested by another editor panel.
+    pub fn select_node(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
+        let mut found = false;
+        self.state.update(cx, |state, _| {
+            for node in &mut state.nodes {
+                node.selected = node.id.as_ref() == id;
+                found |= node.selected;
+            }
+        });
+        if found {
+            cx.notify();
+        }
+        found
+    }
+
     /// Current selected-node details for the inspector panel.
     #[must_use]
     pub fn inspector_data(&self, cx: &App) -> Option<InspectorData> {

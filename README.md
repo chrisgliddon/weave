@@ -412,7 +412,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Text editor view with syntax highlighting
 - [ ] Bidirectional sync (graph ↔ text)
 - [ ] Live play preview
-- [ ] Pattern browser panel
+- [x] Pattern browser panel
 - [x] Project management + file watching
 
 ### Phase 4 — Ecosystem

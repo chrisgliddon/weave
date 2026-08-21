@@ -35,3 +35,9 @@ The Text view edits raw UTF-8 `.weave` source with grapheme-aware cursor movemen
 Use the File menu or Project sidebar to create, open, save, and reopen `.weave` projects. Saves replace the source atomically and write an adjacent `.ron` file whenever compilation succeeds. Unsaved changes are mirrored to an adjacent `.weave.recovery.json` snapshot without overwriting the project source.
 
 The native file watcher observes the containing directory so it survives atomic file replacement. It debounces event bursts and fingerprints source to distinguish Weave's own saves from external edits. A clean project reloads external changes into both Text and Graph views. If memory and disk both changed, saving is blocked until the Project sidebar explicitly keeps the editor version, loads the disk version, or preserves both by writing a `.memory-conflict.weave` copy.
+
+## Pattern browser
+
+Enable View → Patterns to browse Tarot, I-Ching, Elder Futhark, and every valid project-authored pattern through the shared executable pattern API. The panel filters built-in or project definitions, searches element names and semantic meanings, exposes fields, draw methods, reversals, spreads, positions, and compiler errors, and links project definitions and uses back to source or graph nodes.
+
+Single and spread previews are deterministic for the displayed seed. Every click constructs fresh pattern state and a fresh seeded entropy stream, so exploratory draws never advance or mutate Play Preview.

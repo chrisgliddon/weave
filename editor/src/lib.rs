@@ -5,6 +5,7 @@ pub mod domain;
 pub mod graph;
 pub mod graph_view;
 pub mod node_renderers;
+pub mod pattern_browser;
 pub mod project;
 pub mod state;
 pub mod text_editor;
@@ -21,6 +22,10 @@ pub use graph_view::GraphSurface;
 pub use node_renderers::{
     EdgeVisualStyle, InspectorData, NodePresentation, NodeShape, NodeVisualState, NodeVisualStyle,
     edge_visual_style, kind_label, node_visual_style,
+};
+pub use pattern_browser::{
+    PatternBrowserEvent, PatternBrowserModel, PatternBrowserSurface, PatternFilter, PatternOrigin,
+    PatternPreview, PatternRecord,
 };
 pub use project::{
     ConflictResolution, ConflictResult, ExternalChange, ExternalConflict, ProjectError,

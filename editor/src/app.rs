@@ -16,6 +16,7 @@ use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::GraphSurface;
 use crate::node_renderers::{InspectorData, kind_label};
+use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::text_view::TextSurface;
@@ -176,6 +177,7 @@ struct EditorShell {
     last_recovery_revision: Option<u64>,
     graph: Entity<GraphSurface>,
     text: Entity<TextSurface>,
+    patterns: Entity<PatternBrowserSurface>,
     focus: FocusHandle,
 }
 
@@ -197,6 +199,19 @@ impl EditorShell {
             )
         });
         let text = cx.new(|cx| TextSurface::new(WELCOME_SOURCE, cx));
+        let patterns = cx.new(|cx| {
+            PatternBrowserSurface::new(
+                domain.document(),
+                domain.last_valid_story(),
+                WELCOME_SOURCE,
+                domain.diagnostics(),
+                cx,
+            )
+        });
+        cx.subscribe(&patterns, |this, _, event, cx| {
+            this.handle_pattern_event(event, cx);
+        })
+        .detach();
         let shell = Self {
             state,
             domain,
@@ -205,6 +220,7 @@ impl EditorShell {
             last_recovery_revision: None,
             graph,
             text,
+            patterns,
             focus,
         };
         shell.schedule_project_poll(cx);
@@ -283,7 +299,7 @@ impl EditorShell {
             .project
             .path()
             .map(|path| path.to_string_lossy().into_owned());
-        match self.domain.compile_source(source, source_name) {
+        let compiled = match self.domain.compile_source(source, source_name) {
             Ok(()) => {
                 let document = self
                     .domain
@@ -297,7 +313,47 @@ impl EditorShell {
                 self.state.report_error(error.to_string());
                 false
             }
+        };
+        self.refresh_pattern_browser(cx);
+        compiled
+    }
+
+    fn refresh_pattern_browser(&mut self, cx: &mut Context<Self>) {
+        let document = self.domain.document().cloned();
+        let story = self.domain.last_valid_story().cloned();
+        let source = self.domain.source().to_owned();
+        let diagnostics = self.domain.diagnostics().to_vec();
+        self.patterns.update(cx, |patterns, cx| {
+            patterns.refresh(document.as_ref(), story.as_ref(), &source, &diagnostics, cx);
+        });
+    }
+
+    fn handle_pattern_event(&mut self, event: &PatternBrowserEvent, cx: &mut Context<Self>) {
+        match event {
+            PatternBrowserEvent::RevealSource(span) => {
+                self.text.update(cx, |text, cx| text.reveal_span(*span, cx));
+                self.state.layout.center = CenterView::Text;
+                self.state.status = crate::state::StatusMessage::Info(format!(
+                    "Pattern source at {}:{}",
+                    span.line, span.column
+                ));
+            }
+            PatternBrowserEvent::RevealGraph(id) => {
+                let graph_id = format!("pattern:{id}");
+                let selected = self
+                    .graph
+                    .update(cx, |graph, cx| graph.select_node(&graph_id, cx));
+                if selected {
+                    self.state.layout.center = CenterView::Graph;
+                    self.state.status =
+                        crate::state::StatusMessage::Info(format!("Selected pattern node {id}"));
+                } else {
+                    self.state
+                        .report_error("This built-in has no project graph node");
+                }
+            }
         }
+        cx.notify();
     }
 
     fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
@@ -873,16 +929,7 @@ impl gpui::Render for EditorShell {
             .child(workspace);
 
         if layout.pattern_browser {
-            root = root.child(
-                div()
-                    .h(px(120.0))
-                    .p_3()
-                    .bg(rgb(DARK_THEME.panel))
-                    .border_t_1()
-                    .border_color(rgb(DARK_THEME.border))
-                    .text_sm()
-                    .child("Pattern Browser — Tarot · I-Ching · Elder Futhark · Project"),
-            );
+            root = root.child(div().h(px(280.0)).flex_none().child(self.patterns.clone()));
         }
         if layout.play_preview {
             root = root.child(
