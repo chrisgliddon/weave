@@ -8,6 +8,7 @@ pub mod node_renderers;
 pub mod pattern_browser;
 pub mod project;
 pub mod state;
+pub mod sync;
 pub mod text_editor;
 pub mod text_view;
 pub mod theme;
@@ -35,6 +36,7 @@ pub use state::{
     CenterView, EditorCommand, EditorState, MenuDefinition, MenuEntry, PanelLayout, StatusMessage,
     menu_definitions,
 };
+pub use sync::{CanonicalProjectModel, GraphEdit, GraphSync, SyncConflict, TextSync};
 pub use text_editor::{SyntaxKind, SyntaxToken, TextBuffer, highlight_source};
 pub use text_view::TextSurface;
 pub use theme::{DARK_THEME, EditorTheme};

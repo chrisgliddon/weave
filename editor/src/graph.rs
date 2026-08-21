@@ -286,6 +286,16 @@ impl GraphDocument {
         &self.nodes
     }
 
+    /// Restore persisted positions for nodes whose stable identifiers still exist.
+    pub fn apply_positions(&mut self, positions: &std::collections::BTreeMap<String, GraphPoint>) {
+        for node in &mut self.nodes {
+            if let Some(position) = positions.get(&node.id) {
+                node.position = *position;
+            }
+        }
+        self.reindex();
+    }
+
     #[must_use]
     pub fn edges(&self) -> &[GraphEdge] {
         &self.edges

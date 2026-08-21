@@ -50,6 +50,12 @@ impl TextSurface {
         self.buffer.is_dirty()
     }
 
+    /// Monotonic edit revision used by the project synchronizer.
+    #[must_use]
+    pub const fn revision(&self) -> u64 {
+        self.buffer.revision()
+    }
+
     /// Replace the whole source as one undoable edit.
     pub fn replace_source(&mut self, source: &str, cx: &mut Context<Self>) {
         self.buffer.select_all();
@@ -77,6 +83,26 @@ impl TextSurface {
         self.scroll_cursor_into_view();
         self.message = format!("Source {}:{}", span.line, span.column);
         cx.notify();
+    }
+
+    /// Undo one source edit and refresh derived editor feedback.
+    pub fn undo(&mut self, cx: &mut Context<Self>) -> bool {
+        let changed = self.buffer.undo();
+        if changed {
+            self.after_edit();
+            cx.notify();
+        }
+        changed
+    }
+
+    /// Redo one source edit and refresh derived editor feedback.
+    pub fn redo(&mut self, cx: &mut Context<Self>) -> bool {
+        let changed = self.buffer.redo();
+        if changed {
+            self.after_edit();
+            cx.notify();
+        }
+        changed
     }
 
     fn after_edit(&mut self) {

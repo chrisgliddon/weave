@@ -41,3 +41,9 @@ The native file watcher observes the containing directory so it survives atomic 
 Enable View → Patterns to browse Tarot, I-Ching, Elder Futhark, and every valid project-authored pattern through the shared executable pattern API. The panel filters built-in or project definitions, searches element names and semantic meanings, exposes fields, draw methods, reversals, spreads, positions, and compiler errors, and links project definitions and uses back to source or graph nodes.
 
 Single and spread previews are deterministic for the displayed seed. Every click constructs fresh pattern state and a fresh seeded entropy stream, so exploratory draws never advance or mutate Play Preview.
+
+## Graph and text synchronization
+
+One canonical project model owns raw source, its current parsed document, the last valid graph projection, stable node positions, revision tokens, and transaction history. Text edits retain their exact comments and ordering while updating the graph after validation. Incomplete syntax remains authoritative in Text while Graph shows the last valid projection and blocks semantic mutations with an explicit conflict message.
+
+Graph actions for adding knots and choices or linking knots mutate the shared AST, format it through `weave-fmt`, and update Text as one undoable edit. Canvas-only position changes stay in graph metadata and never rewrite `.weave` source. Stale view revisions are rejected instead of merged silently, and synchronized undo/redo restores source, AST, and layout together.

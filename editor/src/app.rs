@@ -14,11 +14,12 @@ use gpui::{
 
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
-use crate::graph_view::GraphSurface;
+use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
+use crate::sync::{CanonicalProjectModel, TextSync};
 use crate::text_view::TextSurface;
 use crate::theme::DARK_THEME;
 
@@ -172,6 +173,9 @@ fn install_commands_and_menus(cx: &mut App) {
 struct EditorShell {
     state: EditorState,
     domain: DomainSession,
+    canonical: CanonicalProjectModel,
+    canonical_revision_seen: u64,
+    text_revision_seen: u64,
     project: ProjectSession,
     watcher: Option<ProjectWatcher>,
     last_recovery_revision: Option<u64>,
@@ -190,14 +194,20 @@ impl EditorShell {
         if let Err(error) = domain.compile_source(WELCOME_SOURCE, None) {
             state.report_error(error.to_string());
         }
+        let canonical = CanonicalProjectModel::new(WELCOME_SOURCE);
         let graph = cx.new(|cx| {
-            GraphSurface::new(
+            GraphSurface::new_with_layout(
                 domain
                     .document()
                     .expect("the embedded welcome source is valid"),
+                canonical.layout(),
                 cx,
             )
         });
+        cx.subscribe(&graph, |this, _, event, cx| {
+            this.handle_graph_event(event, cx);
+        })
+        .detach();
         let text = cx.new(|cx| TextSurface::new(WELCOME_SOURCE, cx));
         let patterns = cx.new(|cx| {
             PatternBrowserSurface::new(
@@ -215,6 +225,9 @@ impl EditorShell {
         let shell = Self {
             state,
             domain,
+            canonical,
+            canonical_revision_seen: 0,
+            text_revision_seen: 0,
             project: ProjectSession::untitled(WELCOME_SOURCE),
             watcher: None,
             last_recovery_revision: None,
@@ -242,6 +255,8 @@ impl EditorShell {
     }
 
     fn poll_project(&mut self, cx: &mut Context<Self>) {
+        self.synchronize_text_view(cx);
+        self.capture_graph_layout(cx);
         self.sync_source_to_project(cx);
         self.persist_recovery_if_needed();
         let change = match self.watcher.as_mut() {
@@ -279,6 +294,51 @@ impl EditorShell {
         self.state.dirty = self.project.is_dirty();
     }
 
+    fn synchronize_text_view(&mut self, cx: &mut Context<Self>) {
+        let revision = self.text.read(cx).revision();
+        if revision == self.text_revision_seen {
+            return;
+        }
+        let source = self.text.read(cx).source().to_owned();
+        match self
+            .canonical
+            .apply_text(source.clone(), self.canonical_revision_seen)
+        {
+            Ok(sync) => {
+                self.text_revision_seen = revision;
+                self.canonical_revision_seen = sync.revision();
+                self.project.set_source(source);
+                match sync {
+                    TextSync::Unchanged { .. } => {}
+                    TextSync::Applied { .. } => {
+                        if self.compile_current_source(cx) {
+                            self.state.status = crate::state::StatusMessage::Info(
+                                "Text and graph synchronized".to_owned(),
+                            );
+                        }
+                    }
+                    TextSync::Invalid { diagnostics, .. } => {
+                        let _ = self.compile_current_source(cx);
+                        self.state.report_error(format!(
+                            "Graph is showing the last valid source; fix {} syntax diagnostic(s)",
+                            diagnostics.len()
+                        ));
+                    }
+                }
+            }
+            Err(conflict) => {
+                self.state
+                    .report_error(format!("Synchronization conflict: {conflict}"));
+            }
+        }
+        cx.notify();
+    }
+
+    fn capture_graph_layout(&mut self, cx: &App) {
+        let layout = self.graph.read(cx).layout(cx);
+        let _ = self.canonical.capture_layout(layout);
+    }
+
     fn persist_recovery_if_needed(&mut self) {
         if !self.project.is_dirty() || self.last_recovery_revision == Some(self.project.revision())
         {
@@ -306,7 +366,7 @@ impl EditorShell {
                     .document()
                     .expect("successful compilation retains a syntax tree")
                     .clone();
-                self.graph = cx.new(|cx| GraphSurface::new(&document, cx));
+                self.install_graph(&document, cx);
                 true
             }
             Err(error) => {
@@ -316,6 +376,16 @@ impl EditorShell {
         };
         self.refresh_pattern_browser(cx);
         compiled
+    }
+
+    fn install_graph(&mut self, document: &weave_core::Document, cx: &mut Context<Self>) {
+        let graph =
+            cx.new(|cx| GraphSurface::new_with_layout(document, self.canonical.layout(), cx));
+        cx.subscribe(&graph, |this, _, event, cx| {
+            this.handle_graph_event(event, cx);
+        })
+        .detach();
+        self.graph = graph;
     }
 
     fn refresh_pattern_browser(&mut self, cx: &mut Context<Self>) {
@@ -356,17 +426,111 @@ impl EditorShell {
         cx.notify();
     }
 
+    fn handle_graph_event(&mut self, event: &GraphSurfaceEvent, cx: &mut Context<Self>) {
+        let edit = match event {
+            GraphSurfaceEvent::Unavailable(message) => {
+                self.state.report_error(message.clone());
+                cx.notify();
+                return;
+            }
+            GraphSurfaceEvent::Edit(edit) => edit.clone(),
+        };
+        self.synchronize_text_view(cx);
+        match self
+            .canonical
+            .apply_graph_edit(&edit, self.canonical_revision_seen)
+        {
+            Ok(sync) => {
+                self.canonical_revision_seen = sync.revision;
+                self.text
+                    .update(cx, |text, cx| text.replace_source(&sync.source, cx));
+                self.text_revision_seen = self.text.read(cx).revision();
+                self.project.set_source(sync.source);
+                let compiled = self.compile_current_source(cx);
+                if let Some(node) = sync.focus_node {
+                    let _ = self
+                        .graph
+                        .update(cx, |graph, cx| graph.select_node(&node, cx));
+                }
+                if compiled {
+                    self.state.status = crate::state::StatusMessage::Info(sync.summary);
+                }
+            }
+            Err(conflict) => self
+                .state
+                .report_error(format!("Graph edit blocked: {conflict}")),
+        }
+        cx.notify();
+    }
+
+    fn undo_active_view(&mut self, cx: &mut Context<Self>) {
+        match self.state.layout.center {
+            CenterView::Text => {
+                if self.text.update(cx, |text, cx| text.undo(cx)) {
+                    self.synchronize_text_view(cx);
+                    self.state.status =
+                        crate::state::StatusMessage::Info("Undid source edit".to_owned());
+                }
+            }
+            CenterView::Graph => {
+                if let Some(source) = self.canonical.undo() {
+                    self.apply_history_source(source, "Undid synchronized graph edit", cx);
+                } else {
+                    self.graph.update(cx, |graph, cx| graph.undo(cx));
+                }
+            }
+        }
+        cx.notify();
+    }
+
+    fn redo_active_view(&mut self, cx: &mut Context<Self>) {
+        match self.state.layout.center {
+            CenterView::Text => {
+                if self.text.update(cx, |text, cx| text.redo(cx)) {
+                    self.synchronize_text_view(cx);
+                    self.state.status =
+                        crate::state::StatusMessage::Info("Redid source edit".to_owned());
+                }
+            }
+            CenterView::Graph => {
+                if let Some(source) = self.canonical.redo() {
+                    self.apply_history_source(source, "Redid synchronized graph edit", cx);
+                } else {
+                    self.graph.update(cx, |graph, cx| graph.redo(cx));
+                }
+            }
+        }
+        cx.notify();
+    }
+
+    fn apply_history_source(&mut self, source: String, message: &str, cx: &mut Context<Self>) {
+        self.canonical_revision_seen = self.canonical.revision();
+        self.text
+            .update(cx, |text, cx| text.replace_source(&source, cx));
+        self.text_revision_seen = self.text.read(cx).revision();
+        self.project.set_source(source);
+        if self.compile_current_source(cx) {
+            self.state.status = crate::state::StatusMessage::Info(message.to_owned());
+        }
+    }
+
     fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
         let source = self.project.source().to_owned();
+        self.canonical = CanonicalProjectModel::new(source.clone());
+        self.canonical_revision_seen = self.canonical.revision();
         self.text
             .update(cx, |text, cx| text.load_source(&source, cx));
+        self.text_revision_seen = self.text.read(cx).revision();
         self.state.project_name = self.project.display_name();
         self.state.dirty = false;
         self.last_recovery_revision = None;
+        let graph_document = self.canonical.graph_document().clone();
+        self.install_graph(&graph_document, cx);
         self.compile_current_source(cx)
     }
 
     fn new_project(&mut self, cx: &mut Context<Self>) {
+        self.synchronize_text_view(cx);
         self.sync_source_to_project(cx);
         self.persist_recovery_if_needed();
         let mut project = ProjectSession::untitled(WELCOME_SOURCE);
@@ -398,6 +562,7 @@ impl EditorShell {
     }
 
     fn open_project_path(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.synchronize_text_view(cx);
         self.sync_source_to_project(cx);
         self.persist_recovery_if_needed();
         match self.project.open_from(path) {
@@ -428,6 +593,7 @@ impl EditorShell {
     }
 
     fn save_project(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.synchronize_text_view(cx);
         self.sync_source_to_project(cx);
         if self.project.path().is_none() {
             self.prompt_save_project_as(window, cx);
@@ -455,6 +621,7 @@ impl EditorShell {
     }
 
     fn save_project_as(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.synchronize_text_view(cx);
         self.sync_source_to_project(cx);
         match self.project.save_as(path) {
             Ok(saved) => self.finish_save(saved.diagnostics.len(), cx),
@@ -527,7 +694,19 @@ impl EditorShell {
     }
 
     fn apply(&mut self, command: EditorCommand, cx: &mut Context<Self>) {
+        match command {
+            EditorCommand::Undo => {
+                self.undo_active_view(cx);
+                return;
+            }
+            EditorCommand::Redo => {
+                self.redo_active_view(cx);
+                return;
+            }
+            _ => {}
+        }
         if command == EditorCommand::Compile {
+            self.synchronize_text_view(cx);
             self.sync_source_to_project(cx);
             if !self.compile_current_source(cx) {
                 cx.notify();

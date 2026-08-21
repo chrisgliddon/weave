@@ -1,12 +1,10 @@
 //! Native `gpui-flow` surface for the editor graph workspace.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
-use gpui::{App, Context, Entity, KeyDownEvent, Window, div, prelude::*, px, rgb};
-use gpui_flow::{
-    BackgroundPattern, Controls, FlowGraph, FlowNode, FlowState, HandleDef, HandlePosition, Minimap,
-};
+use gpui::{App, Context, Entity, EventEmitter, KeyDownEvent, Window, div, prelude::*, px, rgb};
+use gpui_flow::{BackgroundPattern, Controls, FlowGraph, FlowNode, FlowState, Minimap};
 use weave_core::ast::Document;
 
 use crate::graph::{
@@ -16,6 +14,7 @@ use crate::graph::{
 use crate::node_renderers::{
     InspectorData, NodePresentation, install_weave_renderers, presentations,
 };
+use crate::sync::GraphEdit;
 use crate::theme::DARK_THEME;
 
 /// Complete interactive graph canvas and its shared flow state.
@@ -28,10 +27,27 @@ pub struct GraphSurface {
     next_user_node: u64,
 }
 
+/// Semantic edit request or actionable graph feedback for the owning shell.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GraphSurfaceEvent {
+    Edit(GraphEdit),
+    Unavailable(String),
+}
+
 impl GraphSurface {
     /// Create a graph surface from the canonical parsed document.
     pub fn new(document: &Document, cx: &mut Context<Self>) -> Self {
-        let graph = GraphDocument::from_ast(document);
+        Self::new_with_layout(document, &BTreeMap::new(), cx)
+    }
+
+    /// Create a graph while restoring stable editor-owned node positions.
+    pub fn new_with_layout(
+        document: &Document,
+        layout: &BTreeMap<String, GraphPoint>,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        let mut graph = GraphDocument::from_ast(document);
+        graph.apply_positions(layout);
         let presentations = Arc::new(presentations(&graph));
         let (nodes, edges) = graph.flow_parts();
         let next_user_node = nodes.len() as u64;
@@ -76,6 +92,22 @@ impl GraphSurface {
         self.state.clone()
     }
 
+    /// Current stable node positions for canonical project metadata.
+    #[must_use]
+    pub fn layout(&self, cx: &App) -> BTreeMap<String, GraphPoint> {
+        self.state
+            .read(cx)
+            .nodes
+            .iter()
+            .map(|node| {
+                (
+                    node.id.to_string(),
+                    GraphPoint::new(node.position.x, node.position.y),
+                )
+            })
+            .collect()
+    }
+
     /// Select one graph node requested by another editor panel.
     pub fn select_node(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
         let mut found = false;
@@ -89,6 +121,24 @@ impl GraphSurface {
             cx.notify();
         }
         found
+    }
+
+    /// Undo one canvas-only interaction such as a move or connection gesture.
+    pub fn undo(&mut self, cx: &mut Context<Self>) -> bool {
+        let changed = self.state.update(cx, |state, _| state.undo());
+        if changed {
+            cx.notify();
+        }
+        changed
+    }
+
+    /// Redo one canvas-only interaction.
+    pub fn redo(&mut self, cx: &mut Context<Self>) -> bool {
+        let changed = self.state.update(cx, |state, _| state.redo());
+        if changed {
+            cx.notify();
+        }
+        changed
     }
 
     /// Current selected-node details for the inspector panel.
@@ -124,25 +174,69 @@ impl GraphSurface {
     }
 
     fn add_knot(&mut self, cx: &mut Context<Self>) {
-        let id = format!("knot:new_{}", self.next_user_node);
-        let label = format!("New knot {}", self.next_user_node + 1);
+        let preferred_name = format!("new_knot_{}", self.next_user_node + 1);
         self.next_user_node += 1;
-        self.state.update(cx, |state, _| {
-            state.push_undo();
-            let center = state.viewport.screen_to_flow(500.0, 325.0);
-            state.nodes.push(
-                FlowNode::new(id, center.x, center.y)
-                    .label(label)
-                    .node_type("knot")
-                    .size(220.0, 92.0)
-                    .handles(vec![
-                        HandleDef::target(HandlePosition::Left).id("in"),
-                        HandleDef::source(HandlePosition::Right).id("out"),
-                    ]),
-            );
-            state.rebuild_lookup();
-        });
-        cx.notify();
+        cx.emit(GraphSurfaceEvent::Edit(GraphEdit::AddKnot {
+            preferred_name,
+        }));
+    }
+
+    fn add_choice(&mut self, cx: &mut Context<Self>) {
+        let knots = self.selected_knot_names(cx);
+        let Some(knot) = knots.first() else {
+            cx.emit(GraphSurfaceEvent::Unavailable(
+                "Select one knot before adding a choice".to_owned(),
+            ));
+            return;
+        };
+        let target = self
+            .state
+            .read(cx)
+            .nodes
+            .iter()
+            .find(|node| {
+                node.node_type
+                    .as_ref()
+                    .is_some_and(|kind| kind.as_ref() == "knot")
+                    && node.label.as_ref() != knot
+            })
+            .map_or_else(|| "END".to_owned(), |node| node.label.to_string());
+        cx.emit(GraphSurfaceEvent::Edit(GraphEdit::AddChoice {
+            knot: knot.clone(),
+            label: "New choice".to_owned(),
+            target,
+        }));
+    }
+
+    fn connect_selected_knots(&mut self, thread: bool, cx: &mut Context<Self>) {
+        let knots = self.selected_knot_names(cx);
+        if knots.len() != 2 {
+            cx.emit(GraphSurfaceEvent::Unavailable(
+                "Select exactly two knots to connect them".to_owned(),
+            ));
+            return;
+        }
+        cx.emit(GraphSurfaceEvent::Edit(GraphEdit::ConnectKnots {
+            source: knots[0].clone(),
+            target: knots[1].clone(),
+            thread,
+        }));
+    }
+
+    fn selected_knot_names(&self, cx: &App) -> Vec<String> {
+        self.state
+            .read(cx)
+            .nodes
+            .iter()
+            .filter(|node| {
+                node.selected
+                    && node
+                        .node_type
+                        .as_ref()
+                        .is_some_and(|kind| kind.as_ref() == "knot")
+            })
+            .map(|node| node.label.to_string())
+            .collect()
     }
 
     fn navigate(&mut self, direction: NavigationDirection, cx: &mut Context<Self>) {
@@ -175,6 +269,8 @@ impl GraphSurface {
         cx.notify();
     }
 }
+
+impl EventEmitter<GraphSurfaceEvent> for GraphSurface {}
 
 impl gpui::Render for GraphSurface {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -211,6 +307,55 @@ impl gpui::Render for GraphSurface {
                             .hover(|style| style.bg(rgb(DARK_THEME.accent)))
                             .on_click(cx.listener(|this, _, _, cx| this.add_knot(cx)))
                             .child("+ Knot"),
+                    )
+                    .child(
+                        div()
+                            .id("add-choice")
+                            .px_3()
+                            .py_1p5()
+                            .rounded_md()
+                            .border_1()
+                            .border_color(rgb(DARK_THEME.border))
+                            .bg(rgb(DARK_THEME.chrome))
+                            .text_sm()
+                            .cursor_pointer()
+                            .hover(|style| style.bg(rgb(DARK_THEME.accent)))
+                            .on_click(cx.listener(|this, _, _, cx| this.add_choice(cx)))
+                            .child("+ Choice"),
+                    )
+                    .child(
+                        div()
+                            .id("connect-knots")
+                            .px_3()
+                            .py_1p5()
+                            .rounded_md()
+                            .border_1()
+                            .border_color(rgb(DARK_THEME.border))
+                            .bg(rgb(DARK_THEME.chrome))
+                            .text_sm()
+                            .cursor_pointer()
+                            .hover(|style| style.bg(rgb(DARK_THEME.accent)))
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.connect_selected_knots(false, cx);
+                            }))
+                            .child("Link knots"),
+                    )
+                    .child(
+                        div()
+                            .id("thread-knots")
+                            .px_3()
+                            .py_1p5()
+                            .rounded_md()
+                            .border_1()
+                            .border_color(rgb(DARK_THEME.border))
+                            .bg(rgb(DARK_THEME.chrome))
+                            .text_sm()
+                            .cursor_pointer()
+                            .hover(|style| style.bg(rgb(DARK_THEME.accent)))
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.connect_selected_knots(true, cx);
+                            }))
+                            .child("Thread knots"),
                     )
                     .child(
                         div()
