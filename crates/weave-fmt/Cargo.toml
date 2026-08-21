@@ -1,0 +1,15 @@
+[package]
+name = "weave-fmt"
+description = "Formatter and pretty-printer for Weave source"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+weave-core = { path = "../weave-core" }
+
+[lints]
+workspace = true

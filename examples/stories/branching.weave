@@ -1,0 +1,25 @@
+// Variables, a conditional choice, list mutation, and branching flow.
+VAR visits = 0
+LIST inventory = [map]
+FLAG door_open = false
+STATE journey = waiting [waiting, traveling, complete]
+
+=== start ===
+SET visits = visits + 1
+You arrive at the crossroads for visit {visits}.
+
+* [Take the forest road] {if map in inventory}
+    SET journey = traveling
+    REMOVE inventory, map
+    -> forest
+
++ [Wait by the signpost]
+    The wind moves through the grass.
+    -> start
+
+=== forest ===
+SET door_open = true
+The old gate opens: {door_open}.
+SET journey = complete
+Your journey is {journey}.
+-> END

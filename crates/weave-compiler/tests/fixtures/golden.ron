@@ -1,0 +1,133 @@
+StoryIr(
+    version: 1,
+    source_name: Some("crates/weave-compiler/tests/fixtures/golden.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 41,
+                end: 56,
+                line: 5,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "visits",
+                    value: Expression(
+                        kind: literal,
+                        value: ValueLiteral(
+                            kind: number,
+                            value: 0.0,
+                        ),
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {
+        "greeting": GrammarIr(
+            rules: {
+                "hello": [
+                    Template(
+                        parts: [
+                            TemplatePartIr(
+                                kind: text,
+                                value: "Hello",
+                            ),
+                        ],
+                    ),
+                ],
+            },
+        ),
+    },
+    patterns: {},
+    knots: {
+        "ending": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 146,
+                        end: 152,
+                        line: 12,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 71,
+                        end: 106,
+                        line: 8,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: text,
+                        value: Template(
+                            parts: [
+                                TemplatePartIr(
+                                    kind: grammar_ref,
+                                    value: grammar_ref(
+                                        grammar: Some("greeting"),
+                                        rule: "hello",
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: ", visitor ",
+                                ),
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "visits",
+                                        ],
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: ".",
+                                ),
+                            ],
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 107,
+                        end: 129,
+                        line: 9,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: choice,
+                        value: ChoiceIr(
+                            id: "start:root.1",
+                            once: true,
+                            text: Template(
+                                parts: [
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: "Continue",
+                                    ),
+                                ],
+                            ),
+                            condition: None,
+                            body: [],
+                            divert: Some("ending"),
+                        ),
+                    ),
+                ),
+            ],
+        ),
+    },
+)

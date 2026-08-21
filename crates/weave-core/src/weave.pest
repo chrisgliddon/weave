@@ -1,0 +1,99 @@
+document = { SOI ~ top_item* ~ EOI }
+top_item = _{ blank_line | comment_line | grammar_decl | pattern_decl | global_decl | knot }
+
+ws = _{ " " | "\t" }
+newline = _{ "\r\n" | "\n" }
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+identifier_continue = _{ ASCII_ALPHANUMERIC | "_" }
+comment_text = @{ (!newline ~ ANY)* }
+line_text = @{ (!newline ~ ANY)* }
+
+blank_line = { ws* ~ newline }
+comment_line = { ws* ~ "//" ~ comment_text ~ newline? }
+
+grammar_decl = {
+    ws* ~ "grammar" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    grammar_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+grammar_entry = _{ blank_line | comment_line | grammar_rule }
+grammar_rule = {
+    ws* ~ identifier ~ ws* ~ ":" ~ ws* ~ grammar_value ~ ws* ~ ","? ~
+    (newline | &"}")
+}
+grammar_value = _{ string_list | string_literal }
+string_list = {
+    "[" ~ ws* ~ (string_literal ~ ws* ~ ("," ~ ws* ~ string_literal ~ ws*)* ~ ","?)? ~ "]"
+}
+
+pattern_decl = {
+    ws* ~ "pattern" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    pattern_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+pattern_entry = _{ blank_line | comment_line | pattern_collection | spread_decl }
+pattern_collection = {
+    ws* ~ identifier ~ ws* ~ ":" ~ ws* ~ "[" ~
+    pattern_collection_item* ~ ws* ~ "]" ~ ws* ~ ","? ~ newline?
+}
+pattern_collection_item = _{ blank_line | comment_line | pattern_element_line }
+pattern_element_line = {
+    ws* ~ pattern_element ~ ws* ~ ","? ~ (newline | &"]")
+}
+pattern_element = { "(" ~ ws* ~ pattern_field ~ (ws* ~ "," ~ ws* ~ pattern_field)* ~ ws* ~ ")" }
+pattern_field = { identifier ~ ws* ~ ":" ~ ws* ~ pattern_literal }
+pattern_literal = _{ string_literal | number_literal | boolean_literal | null_literal | identifier }
+spread_decl = {
+    ws* ~ "spread" ~ ws+ ~ identifier ~ ws* ~ "{" ~ ws* ~
+    "positions" ~ ws* ~ ":" ~ ws* ~ symbol_list ~ ws* ~ "}" ~ ws* ~
+    (newline | &"}")
+}
+symbol_list = { "[" ~ ws* ~ identifier ~ (ws* ~ "," ~ ws* ~ identifier)* ~ ws* ~ ","? ~ "]" }
+
+global_decl = {
+    ws* ~ declaration_keyword ~ ws+ ~ line_text ~ newline?
+}
+declaration_keyword = { "VAR" | "LIST" | "FLAG" | "STATE" }
+
+knot = { knot_header ~ knot_body }
+knot_header = { ws* ~ "===" ~ ws* ~ identifier ~ ws* ~ "===" ~ ws* ~ (newline | &EOI) }
+knot_body = @{ (!knot_header ~ ANY)* }
+
+expression_input = { SOI ~ expression ~ EOI }
+expression = { ws* ~ logical_or ~ ws* }
+logical_or = { logical_and ~ (or_operator ~ logical_and)* }
+logical_and = { equality ~ (and_operator ~ equality)* }
+equality = { comparison ~ (equality_operator ~ comparison)* }
+comparison = { additive ~ (comparison_operator ~ additive)* }
+additive = { multiplicative ~ (additive_operator ~ multiplicative)* }
+multiplicative = { unary ~ (multiplicative_operator ~ unary)* }
+unary = { unary_operator* ~ primary }
+primary = _{
+    list_literal |
+    grammar_reference |
+    string_literal |
+    number_literal |
+    boolean_literal |
+    null_literal |
+    call_or_path |
+    "(" ~ expression ~ ")"
+}
+
+or_operator = { ws* ~ ("||" | ("or" ~ !identifier_continue)) ~ ws* }
+and_operator = { ws* ~ ("&&" | ("and" ~ !identifier_continue)) ~ ws* }
+equality_operator = { ws* ~ ("==" | "!=") ~ ws* }
+comparison_operator = { ws* ~ ("<=" | ">=" | "<" | ">" | ("in" ~ !identifier_continue)) ~ ws* }
+additive_operator = { ws* ~ ("+" | "-") ~ ws* }
+multiplicative_operator = { ws* ~ ("*" | "/" | "%") ~ ws* }
+unary_operator = { ws* ~ ("!" | "-" | ("not" ~ !identifier_continue)) ~ ws* }
+
+list_literal = { "[" ~ ws* ~ (expression ~ (ws* ~ "," ~ expression)* ~ ws* ~ ","?)? ~ "]" }
+grammar_reference = { "#" ~ identifier ~ ("." ~ identifier)? ~ "#" }
+call_or_path = { path ~ call_arguments? }
+path = { identifier ~ ("." ~ identifier)* }
+call_arguments = { ws* ~ "(" ~ ws* ~ (expression ~ (ws* ~ "," ~ expression)* ~ ws* ~ ","?)? ~ ")" }
+
+boolean_literal = { ("true" | "false") ~ !identifier_continue }
+null_literal = { "null" ~ !identifier_continue }
+number_literal = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? ~ (("e" | "E") ~ ("+" | "-")? ~ ASCII_DIGIT+)? }
+string_literal = @{ "\"" ~ string_character* ~ "\"" }
+string_character = _{ string_escape | !("\"" | "\\" | "\r" | "\n") ~ ANY }
+string_escape = { "\\" ~ ("\\" | "\"" | "n" | "r" | "t") }

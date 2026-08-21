@@ -3,8 +3,8 @@
 *A narrative scripting language that merges generative grammar with branching interactive fiction, powered by pattern-based meaning systems.*
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
-[![Bevy](https://img.shields.io/badge/bevy-0.15%2B-blueviolet.svg)](https://bevyengine.org)
+[![Rust](https://img.shields.io/badge/rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
+[![Bevy](https://img.shields.io/badge/bevy-0.18-blueviolet.svg)](https://bevyengine.org)
 [![GPUI](https://img.shields.io/badge/editor-GPUI-green.svg)](https://gpui.rs)
 
 ---
@@ -207,10 +207,10 @@ weave/
 │   │   └── project/            # File watching, project management
 │   └── Cargo.toml
 │
-├── examples/                # Example stories and Bevy integration demos
-│   ├── fortune_teller/      # The example shown above
-│   ├── i_ching_divination/ # Pattern system showcase
-│   └── bevy_dialogue/      # Bevy game integration
+├── examples/                # Runnable Phase 1 stories and integrations
+│   ├── stories/             # Basic grammar and branching source files
+│   ├── standalone-runtime/  # Compiler + runtime example
+│   └── bevy-dialogue/       # Headless Bevy asset/event example
 │
 ├── docs/
 │   ├── language_guide.md   # Full syntax documentation
@@ -238,7 +238,7 @@ fn main() {
         .add_observer(on_story_ready)
         .add_observer(on_line_delivered)
         .add_observer(on_choices_delivered)
-        .add_observer(on_pattern_drawn)  // React to tarot draws, etc.
+        .add_observer(on_story_failed)
         .run();
 }
 
@@ -246,49 +246,56 @@ fn on_story_ready(_: On<StoryReady>, mut commands: Commands) {
     commands.weave_jump_to("arrival");
 }
 
-fn on_line_delivered(line: On<DeliverLine>, mut ui: ResMut<DialogueUI>) {
+fn on_line_delivered(
+    line: On<DeliverLine>,
+    mut ui: ResMut<DialogueUI>,
+    mut commands: Commands,
+) {
     ui.show_text(&line.text);
     commands.weave_continue();
 }
 
 fn on_choices_delivered(choices: On<DeliverChoices>, mut ui: ResMut<DialogueUI>) {
     for (i, choice) in choices.iter().enumerate() {
-        ui.show_choice(i, choice.text());
+        ui.show_choice(i, &choice.text);
     }
 }
 
-fn on_pattern_drawn(draw: On<PatternDrawn>, mut ui: ResMut<CardDisplay>) {
-    // Show the drawn tarot card in your game UI
-    ui.reveal_card(&draw.name, &draw.position, draw.is_reversed);
+fn on_story_failed(failure: On<StoryFailed>) {
+    eprintln!("{}", failure.message);
 }
 ```
+
+`PatternDrawn` arrives with the Phase 2 pattern runtime. See [the Bevy integration guide](docs/bevy_integration.md) and run the finite headless example with `cargo run -p weave-example-bevy-dialogue`.
 
 ### Using Weave Without Bevy (Standalone Runtime)
 
 ```rust
-use weave_runtime::Story;
+use weave_runtime::{Story, StoryEvent};
 
-let mut story = Story::from_file("stories/fortune_teller.ron")?;
+let mut story = Story::from_file("story.ron")?;
 
-// Step through the narrative
-while story.can_continue() {
-    let line = story.continue();
-    println!("{line}");
-}
-
-if story.has_choices() {
-    for (i, choice) in story.choices().iter().enumerate() {
-        println!("  {i}: {}", choice.text);
+loop {
+    match story.advance()? {
+        StoryEvent::Line(line) => println!("{line}"),
+        StoryEvent::Choices(choices) => {
+            for (i, choice) in choices.iter().enumerate() {
+                println!("  {i}: {}", choice.text);
+            }
+            story.choose(0)?;
+        }
+        StoryEvent::Ended => break,
     }
-    story.choose(0);
 }
 ```
+
+Run the complete standalone example with `cargo run -p weave-example-standalone`.
 
 ---
 
 ## The Editor
 
-Weave ships with a standalone visual editor built in [GPUI](https://gpui.rs) (Zed's GPU-accelerated UI framework) and [gpui-flow](https://github.com/pacifio/gpui-flow) for the node graph canvas.
+Roadmap Phase 3 will ship a standalone visual editor built in [GPUI](https://gpui.rs) (Zed's GPU-accelerated UI framework) and [gpui-flow](https://github.com/pacifio/gpui-flow) for the node graph canvas.
 
 ### Dual-View Design
 
@@ -338,8 +345,8 @@ weave-runtime = "0.1"
 ### The Compiler CLI
 
 ```bash
-# Install
-cargo install weavec
+# Install from this checkout
+cargo install --path crates/weave-compiler
 
 # Compile a story
 weavec story.weave                    # → story.ron
@@ -352,13 +359,13 @@ weavec story.weave --watch            # recompile on file change
 ## Roadmap
 
 ### Phase 1 — Core Language & Runtime
-- [ ] Language specification document
-- [ ] Parser (PEG grammar via `pest`)
-- [ ] AST + type checker
-- [ ] Runtime: grammar expansion, flow control, variables, lists
-- [ ] Compile to RON
-- [ ] Bevy plugin (events, resources, hot reload)
-- [ ] Basic example stories
+- [x] Language specification document
+- [x] Parser (PEG grammar via `pest`)
+- [x] AST + type checker
+- [x] Runtime: grammar expansion, flow control, variables, lists
+- [x] Compile to RON
+- [x] Bevy plugin (events, resources, hot reload)
+- [x] Basic example stories
 
 ### Phase 2 — Pattern Systems
 - [ ] `PatternSystem` trait design
@@ -423,9 +430,9 @@ MIT — see [LICENSE](LICENSE).
 
 ## Contributing
 
-Contributions welcome. The project is in early development — see the roadmap for what's needed most.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for development checks and the exact templates for Features, Improvements, and Bugs. The roadmap is tracked in `dex` and synchronized with GitHub Issues.
 
-Open an issue first for large changes. Keep PRs focused.
+Open an issue before starting a large change and keep pull requests focused. Report vulnerabilities privately by following [SECURITY.md](SECURITY.md).
 
 ---
 

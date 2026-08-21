@@ -1,0 +1,12 @@
+grammar greeting {
+    hello: "Hello"
+}
+
+VAR visits = 0
+
+=== start ===
+#greeting.hello#, visitor {visits}.
+* [Continue] -> ending
+
+=== ending ===
+-> END

@@ -1,0 +1,12 @@
+grammar tavern {
+    welcome: ["Welcome in", "Warm yourself by the fire", "Take a seat"]
+}
+
+=== start ===
+#tavern.welcome#.
+* [Order tea]
+    The innkeeper pours a steaming cup.
+    -> END
++ [Leave]
+    You step back into the night.
+    -> END

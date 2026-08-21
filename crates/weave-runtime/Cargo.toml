@@ -1,0 +1,22 @@
+[package]
+name = "weave-runtime"
+description = "Standalone Weave story runtime without a Bevy dependency"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rand.workspace = true
+rand_chacha.workspace = true
+ron.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+weave-core = { path = "../weave-core" }
+
+[dev-dependencies]
+weave-compiler = { path = "../weave-compiler" }
+
+[lints]
+workspace = true

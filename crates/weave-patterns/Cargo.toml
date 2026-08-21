@@ -1,0 +1,15 @@
+[package]
+name = "weave-patterns"
+description = "Pattern-system extension point and built-in Weave pattern data"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+weave-core = { path = "../weave-core" }
+
+[lints]
+workspace = true

@@ -1,0 +1,1346 @@
+//! Deterministic standalone execution of compiled Weave stories.
+
+use std::collections::{BTreeMap, BTreeSet};
+use std::fmt;
+use std::fs;
+use std::path::Path;
+use std::sync::Arc;
+
+use rand::{RngCore, SeedableRng};
+use rand_chacha::ChaCha8Rng;
+use serde::{Deserialize, Serialize};
+use weave_core::Span;
+use weave_core::ir::{
+    BinaryOperatorIr, ChoiceIr, ConditionalIr, DeclarationIr, Expression, IR_VERSION, Instruction,
+    InstructionKind, ListOperationIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr,
+    ValueLiteral, VariableKindIr,
+};
+
+/// Runtime version corresponding to the serialized IR version.
+pub const RUNTIME_VERSION: u32 = IR_VERSION;
+const MAX_GRAMMAR_DEPTH: usize = 64;
+const MAX_THREAD_DEPTH: usize = 256;
+
+/// A dynamically typed story value.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
+pub enum Value {
+    /// Null.
+    Null,
+    /// Boolean.
+    Bool(bool),
+    /// Finite number.
+    Number(f64),
+    /// UTF-8 text.
+    String(String),
+    /// Semantic symbol.
+    Symbol(String),
+    /// Ordered values.
+    List(Vec<Value>),
+    /// Deterministically ordered fields.
+    Object(BTreeMap<String, Value>),
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Null => formatter.write_str("null"),
+            Self::Bool(value) => value.fmt(formatter),
+            Self::Number(value) => {
+                if value.fract() == 0.0 {
+                    write!(formatter, "{value:.0}")
+                } else {
+                    value.fmt(formatter)
+                }
+            }
+            Self::String(value) | Self::Symbol(value) => formatter.write_str(value),
+            Self::List(values) => {
+                formatter.write_str("[")?;
+                for (index, value) in values.iter().enumerate() {
+                    if index > 0 {
+                        formatter.write_str(", ")?;
+                    }
+                    value.fmt(formatter)?;
+                }
+                formatter.write_str("]")
+            }
+            Self::Object(fields) => {
+                formatter.write_str("{")?;
+                for (index, (name, value)) in fields.iter().enumerate() {
+                    if index > 0 {
+                        formatter.write_str(", ")?;
+                    }
+                    write!(formatter, "{name}: {value}")?;
+                }
+                formatter.write_str("}")
+            }
+        }
+    }
+}
+
+/// Observable state for one declared value.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct VariableState {
+    /// Declaration kind used for runtime validation.
+    pub kind: VariableKindIr,
+    /// Current value.
+    pub value: Value,
+    /// Allowed values for a state machine.
+    pub allowed_states: Vec<String>,
+}
+
+/// Serializable mutable state, kept separate from immutable [`StoryIr`] data.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StoryState {
+    variables: BTreeMap<String, VariableState>,
+    selected_once: BTreeSet<String>,
+    frames: Vec<ExecutionFrame>,
+    pending_choices: Vec<PendingChoice>,
+    seed: u64,
+    random_draws: u64,
+    ended: bool,
+}
+
+impl StoryState {
+    /// Current story variables in deterministic name order.
+    #[must_use]
+    pub const fn variables(&self) -> &BTreeMap<String, VariableState> {
+        &self.variables
+    }
+
+    /// Original deterministic random seed.
+    #[must_use]
+    pub const fn seed(&self) -> u64 {
+        self.seed
+    }
+
+    /// Whether execution has ended.
+    #[must_use]
+    pub const fn is_ended(&self) -> bool {
+        self.ended
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct BlockRef {
+    knot: String,
+    segments: Vec<BlockSegment>,
+}
+
+impl BlockRef {
+    fn knot(name: impl Into<String>) -> Self {
+        Self {
+            knot: name.into(),
+            segments: Vec::new(),
+        }
+    }
+
+    fn child(&self, segment: BlockSegment) -> Self {
+        let mut child = self.clone();
+        child.segments.push(segment);
+        child
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind")]
+enum BlockSegment {
+    Choice { instruction: usize },
+    ConditionalBranch { instruction: usize, branch: usize },
+    ConditionalFallback { instruction: usize },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ExecutionFrame {
+    block: BlockRef,
+    index: usize,
+    on_complete: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct PendingChoice {
+    reference: BlockRef,
+    instruction: usize,
+    view: ChoiceView,
+}
+
+/// One currently eligible choice exposed to a host application.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChoiceView {
+    /// Stable compiler-generated choice identifier.
+    pub id: String,
+    /// Rendered label.
+    pub text: String,
+    /// Whether the choice disappears after it is selected.
+    pub once: bool,
+}
+
+/// One host-visible result of advancing a story.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StoryEvent {
+    /// One rendered narrative line.
+    Line(String),
+    /// Execution is waiting for one of these choices.
+    Choices(Vec<ChoiceView>),
+    /// Story execution is complete.
+    Ended,
+}
+
+/// Structured failure category for malformed IR or invalid runtime behavior.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum RuntimeErrorKind {
+    /// The serialized IR version is unsupported.
+    #[error("unsupported story IR version {found}; expected {expected}")]
+    UnsupportedVersion { found: u32, expected: u32 },
+    /// RON input could not be decoded.
+    #[error("invalid story RON: {0}")]
+    InvalidRon(String),
+    /// File input/output failed.
+    #[error("story I/O failed: {0}")]
+    Io(String),
+    /// Compiled control-flow data is invalid.
+    #[error("invalid compiled story: {0}")]
+    InvalidStory(String),
+    /// A referenced knot does not exist.
+    #[error("unknown knot `{0}`")]
+    UnknownKnot(String),
+    /// A referenced grammar or rule does not exist.
+    #[error("unknown grammar rule `{grammar}.{rule}`")]
+    UnknownGrammarRule { grammar: String, rule: String },
+    /// A variable or field path cannot be resolved.
+    #[error("unknown value path `{0}`")]
+    UnknownPath(String),
+    /// An operation received the wrong concrete value type.
+    #[error("type error: {0}")]
+    Type(String),
+    /// Numeric division or remainder by zero.
+    #[error("division or remainder by zero")]
+    DivideByZero,
+    /// Grammar expansion exceeded the recursion limit.
+    #[error("grammar expansion exceeded {MAX_GRAMMAR_DEPTH} levels")]
+    GrammarDepth,
+    /// Thread execution exceeded the call-frame limit.
+    #[error("thread execution exceeded {MAX_THREAD_DEPTH} frames")]
+    ThreadDepth,
+    /// The host selected an unavailable choice.
+    #[error("choice index {index} is unavailable; {available} choices are pending")]
+    InvalidChoice { index: usize, available: usize },
+    /// Pattern execution is deliberately deferred until Phase 2.
+    #[error("pattern draws are unavailable in Phase 1 (`{0}`)")]
+    PatternUnavailable(String),
+    /// A state-machine transition violates its declaration.
+    #[error("state `{name}` does not allow `{value}`")]
+    InvalidState { name: String, value: String },
+}
+
+/// Runtime failure with an optional author-facing source location.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RuntimeError {
+    /// Failure category.
+    pub kind: RuntimeErrorKind,
+    /// Instruction that caused the failure, when available.
+    pub span: Option<Span>,
+}
+
+impl RuntimeError {
+    fn new(kind: RuntimeErrorKind) -> Self {
+        Self { kind, span: None }
+    }
+
+    fn at(kind: RuntimeErrorKind, span: Span) -> Self {
+        Self {
+            kind,
+            span: Some(span),
+        }
+    }
+}
+
+impl fmt::Display for RuntimeError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.kind.fmt(formatter)?;
+        if let Some(span) = self.span {
+            write!(formatter, " at {}:{}", span.line, span.column)?;
+        }
+        Ok(())
+    }
+}
+
+impl std::error::Error for RuntimeError {}
+
+/// A running story over immutable compiled data and isolated mutable state.
+#[derive(Debug, Clone)]
+pub struct Story {
+    data: Arc<StoryIr>,
+    state: StoryState,
+}
+
+impl Story {
+    /// Start a compiled story with deterministic seed zero.
+    pub fn new(data: StoryIr) -> Result<Self, RuntimeError> {
+        Self::with_seed(data, 0)
+    }
+
+    /// Start a compiled story with an explicit deterministic seed.
+    pub fn with_seed(data: StoryIr, seed: u64) -> Result<Self, RuntimeError> {
+        validate_story(&data)?;
+        let entry = data.entry.clone();
+        let mut story = Self {
+            data: Arc::new(data),
+            state: StoryState {
+                variables: BTreeMap::new(),
+                selected_once: BTreeSet::new(),
+                frames: vec![ExecutionFrame {
+                    block: BlockRef::knot(entry),
+                    index: 0,
+                    on_complete: None,
+                }],
+                pending_choices: Vec::new(),
+                seed,
+                random_draws: 0,
+                ended: false,
+            },
+        };
+        story.execute_globals()?;
+        Ok(story)
+    }
+
+    /// Restore mutable state against the same immutable compiled story.
+    pub fn restore(data: StoryIr, state: StoryState) -> Result<Self, RuntimeError> {
+        validate_story(&data)?;
+        let story = Self {
+            data: Arc::new(data),
+            state,
+        };
+        story.validate_state()?;
+        Ok(story)
+    }
+
+    /// Decode and start a compiled RON story.
+    pub fn from_ron(source: &str) -> Result<Self, RuntimeError> {
+        let data = ron::from_str::<StoryIr>(source)
+            .map_err(|error| RuntimeError::new(RuntimeErrorKind::InvalidRon(error.to_string())))?;
+        Self::new(data)
+    }
+
+    /// Load and start a compiled RON story from disk.
+    pub fn from_file(path: impl AsRef<Path>) -> Result<Self, RuntimeError> {
+        let source = fs::read_to_string(path.as_ref())
+            .map_err(|error| RuntimeError::new(RuntimeErrorKind::Io(error.to_string())))?;
+        Self::from_ron(&source)
+    }
+
+    /// Immutable compiled story data.
+    #[must_use]
+    pub fn data(&self) -> &StoryIr {
+        &self.data
+    }
+
+    /// Saveable mutable execution state.
+    #[must_use]
+    pub const fn state(&self) -> &StoryState {
+        &self.state
+    }
+
+    /// Whether execution can advance without a host choice.
+    #[must_use]
+    pub fn can_continue(&self) -> bool {
+        !self.state.ended && self.state.pending_choices.is_empty()
+    }
+
+    /// Whether execution is waiting for a choice.
+    #[must_use]
+    pub fn has_choices(&self) -> bool {
+        !self.state.pending_choices.is_empty()
+    }
+
+    /// Currently eligible rendered choices.
+    #[must_use]
+    pub fn choices(&self) -> Vec<ChoiceView> {
+        self.state
+            .pending_choices
+            .iter()
+            .map(|choice| choice.view.clone())
+            .collect()
+    }
+
+    /// Advance until a line, choice set, or end boundary is reached.
+    pub fn advance(&mut self) -> Result<StoryEvent, RuntimeError> {
+        if self.state.ended {
+            return Ok(StoryEvent::Ended);
+        }
+        if !self.state.pending_choices.is_empty() {
+            return Ok(StoryEvent::Choices(self.choices()));
+        }
+
+        loop {
+            let Some((block, index)) = self.next_position()? else {
+                return Ok(StoryEvent::Ended);
+            };
+            let instruction = self.instruction(&block, index)?.clone();
+            self.increment_frame()?;
+            let span = instruction.span;
+            match instruction.kind {
+                InstructionKind::Text(template) => {
+                    return self
+                        .render_template(&template, 0)
+                        .map(StoryEvent::Line)
+                        .map_err(|error| with_span(error, span));
+                }
+                InstructionKind::Declare(declaration) => {
+                    self.execute_declaration(&declaration)
+                        .map_err(|error| with_span(error, span))?;
+                }
+                InstructionKind::Assign { name, value } => {
+                    let value = self
+                        .evaluate(&value)
+                        .map_err(|error| with_span(error, span))?;
+                    self.assign(&name, value)
+                        .map_err(|error| with_span(error, span))?;
+                }
+                InstructionKind::MutateList {
+                    operation,
+                    name,
+                    value,
+                } => {
+                    let value = self
+                        .evaluate(&value)
+                        .map_err(|error| with_span(error, span))?;
+                    self.mutate_list(operation, &name, value)
+                        .map_err(|error| with_span(error, span))?;
+                }
+                InstructionKind::Choice(_) => {
+                    if let Some(event) = self
+                        .prepare_choices(block, index)
+                        .map_err(|error| with_span(error, span))?
+                    {
+                        return Ok(event);
+                    }
+                }
+                InstructionKind::Conditional(conditional) => {
+                    self.enter_conditional(&block, index, &conditional)
+                        .map_err(|error| with_span(error, span))?;
+                }
+                InstructionKind::Divert(target) => self.jump(&target)?,
+                InstructionKind::Thread(target) => self.thread(&target, span)?,
+                InstructionKind::End => {
+                    self.end();
+                    return Ok(StoryEvent::Ended);
+                }
+            }
+        }
+    }
+
+    /// Advance and require the next boundary to be a narrative line.
+    pub fn continue_line(&mut self) -> Result<Option<String>, RuntimeError> {
+        match self.advance()? {
+            StoryEvent::Line(line) => Ok(Some(line)),
+            StoryEvent::Choices(_) | StoryEvent::Ended => Ok(None),
+        }
+    }
+
+    /// Select one currently pending choice by display index.
+    pub fn choose(&mut self, index: usize) -> Result<(), RuntimeError> {
+        let available = self.state.pending_choices.len();
+        let Some(selected) = self.state.pending_choices.get(index).cloned() else {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidChoice {
+                index,
+                available,
+            }));
+        };
+        let instruction = self
+            .instruction(&selected.reference, selected.instruction)?
+            .clone();
+        let InstructionKind::Choice(choice) = instruction.kind else {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "saved choice points to a non-choice instruction".to_owned(),
+            )));
+        };
+        self.state.pending_choices.clear();
+        if choice.once {
+            self.state.selected_once.insert(choice.id.clone());
+        }
+        if choice.body.is_empty() {
+            if let Some(target) = choice.divert {
+                self.jump(&target)?;
+            }
+        } else {
+            self.state.frames.push(ExecutionFrame {
+                block: selected.reference.child(BlockSegment::Choice {
+                    instruction: selected.instruction,
+                }),
+                index: 0,
+                on_complete: choice.divert,
+            });
+        }
+        Ok(())
+    }
+
+    /// Replace the current flow stack with a named knot.
+    pub fn jump(&mut self, target: &str) -> Result<(), RuntimeError> {
+        if target == "END" {
+            self.end();
+            return Ok(());
+        }
+        if !self.data.knots.contains_key(target) {
+            return Err(RuntimeError::new(RuntimeErrorKind::UnknownKnot(
+                target.to_owned(),
+            )));
+        }
+        self.state.frames.clear();
+        self.state.frames.push(ExecutionFrame {
+            block: BlockRef::knot(target),
+            index: 0,
+            on_complete: None,
+        });
+        self.state.pending_choices.clear();
+        self.state.ended = false;
+        Ok(())
+    }
+
+    fn execute_globals(&mut self) -> Result<(), RuntimeError> {
+        for instruction in self.data.globals.clone() {
+            match instruction.kind {
+                InstructionKind::Declare(declaration) => self
+                    .execute_declaration(&declaration)
+                    .map_err(|error| with_span(error, instruction.span))?,
+                _ => {
+                    return Err(RuntimeError::at(
+                        RuntimeErrorKind::InvalidStory(
+                            "global content must contain declarations only".to_owned(),
+                        ),
+                        instruction.span,
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_state(&self) -> Result<(), RuntimeError> {
+        for frame in &self.state.frames {
+            let block = self.block(&frame.block)?;
+            if frame.index > block.len() {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved execution cursor is out of range".to_owned(),
+                )));
+            }
+        }
+        for pending in &self.state.pending_choices {
+            if !matches!(
+                self.instruction(&pending.reference, pending.instruction)?
+                    .kind,
+                InstructionKind::Choice(_)
+            ) {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved choice points to a non-choice instruction".to_owned(),
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    fn next_position(&mut self) -> Result<Option<(BlockRef, usize)>, RuntimeError> {
+        loop {
+            let Some(frame) = self.state.frames.last().cloned() else {
+                self.state.ended = true;
+                return Ok(None);
+            };
+            let length = self.block(&frame.block)?.len();
+            if frame.index < length {
+                return Ok(Some((frame.block, frame.index)));
+            }
+            let completed = self.state.frames.pop().ok_or_else(|| {
+                RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "execution stack changed unexpectedly".to_owned(),
+                ))
+            })?;
+            if let Some(target) = completed.on_complete {
+                self.jump(&target)?;
+            } else if self.state.frames.is_empty() {
+                self.state.ended = true;
+                return Ok(None);
+            }
+        }
+    }
+
+    fn increment_frame(&mut self) -> Result<(), RuntimeError> {
+        let Some(frame) = self.state.frames.last_mut() else {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "execution has no active frame".to_owned(),
+            )));
+        };
+        frame.index = frame.index.saturating_add(1);
+        Ok(())
+    }
+
+    fn block(&self, reference: &BlockRef) -> Result<&[Instruction], RuntimeError> {
+        let knot = self.data.knots.get(&reference.knot).ok_or_else(|| {
+            RuntimeError::new(RuntimeErrorKind::UnknownKnot(reference.knot.clone()))
+        })?;
+        let mut block = knot.content.as_slice();
+        for segment in &reference.segments {
+            block = match *segment {
+                BlockSegment::Choice { instruction } => {
+                    let Some(Instruction {
+                        kind: InstructionKind::Choice(choice),
+                        ..
+                    }) = block.get(instruction)
+                    else {
+                        return Err(invalid_block_reference());
+                    };
+                    &choice.body
+                }
+                BlockSegment::ConditionalBranch {
+                    instruction,
+                    branch,
+                } => {
+                    let Some(Instruction {
+                        kind: InstructionKind::Conditional(conditional),
+                        ..
+                    }) = block.get(instruction)
+                    else {
+                        return Err(invalid_block_reference());
+                    };
+                    conditional
+                        .branches
+                        .get(branch)
+                        .map(|branch| branch.body.as_slice())
+                        .ok_or_else(invalid_block_reference)?
+                }
+                BlockSegment::ConditionalFallback { instruction } => {
+                    let Some(Instruction {
+                        kind: InstructionKind::Conditional(conditional),
+                        ..
+                    }) = block.get(instruction)
+                    else {
+                        return Err(invalid_block_reference());
+                    };
+                    conditional
+                        .fallback
+                        .as_deref()
+                        .ok_or_else(invalid_block_reference)?
+                }
+            };
+        }
+        Ok(block)
+    }
+
+    fn instruction(
+        &self,
+        reference: &BlockRef,
+        index: usize,
+    ) -> Result<&Instruction, RuntimeError> {
+        self.block(reference)?
+            .get(index)
+            .ok_or_else(invalid_block_reference)
+    }
+
+    fn prepare_choices(
+        &mut self,
+        block: BlockRef,
+        first_index: usize,
+    ) -> Result<Option<StoryEvent>, RuntimeError> {
+        let mut index = first_index;
+        let mut choices = Vec::new();
+        while let Some(instruction) = self.block(&block)?.get(index).cloned() {
+            let InstructionKind::Choice(choice) = instruction.kind else {
+                break;
+            };
+            if index > first_index {
+                self.increment_frame()?;
+            }
+            if self.choice_is_eligible(&choice)? {
+                let text = self.render_template(&choice.text, 0)?;
+                choices.push(PendingChoice {
+                    reference: block.clone(),
+                    instruction: index,
+                    view: ChoiceView {
+                        id: choice.id,
+                        text,
+                        once: choice.once,
+                    },
+                });
+            }
+            index = index.saturating_add(1);
+        }
+        if choices.is_empty() {
+            Ok(None)
+        } else {
+            self.state.pending_choices = choices;
+            Ok(Some(StoryEvent::Choices(self.choices())))
+        }
+    }
+
+    fn choice_is_eligible(&mut self, choice: &ChoiceIr) -> Result<bool, RuntimeError> {
+        if choice.once && self.state.selected_once.contains(&choice.id) {
+            return Ok(false);
+        }
+        match &choice.condition {
+            Some(condition) => expect_bool(self.evaluate(condition)?, "choice condition"),
+            None => Ok(true),
+        }
+    }
+
+    fn enter_conditional(
+        &mut self,
+        block: &BlockRef,
+        instruction: usize,
+        conditional: &ConditionalIr,
+    ) -> Result<(), RuntimeError> {
+        for (branch_index, branch) in conditional.branches.iter().enumerate() {
+            if expect_bool(self.evaluate(&branch.condition)?, "conditional branch")? {
+                if !branch.body.is_empty() {
+                    self.state.frames.push(ExecutionFrame {
+                        block: block.child(BlockSegment::ConditionalBranch {
+                            instruction,
+                            branch: branch_index,
+                        }),
+                        index: 0,
+                        on_complete: None,
+                    });
+                }
+                return Ok(());
+            }
+        }
+        if conditional
+            .fallback
+            .as_ref()
+            .is_some_and(|body| !body.is_empty())
+        {
+            self.state.frames.push(ExecutionFrame {
+                block: block.child(BlockSegment::ConditionalFallback { instruction }),
+                index: 0,
+                on_complete: None,
+            });
+        }
+        Ok(())
+    }
+
+    fn thread(&mut self, target: &str, span: Span) -> Result<(), RuntimeError> {
+        if !self.data.knots.contains_key(target) {
+            return Err(RuntimeError::at(
+                RuntimeErrorKind::UnknownKnot(target.to_owned()),
+                span,
+            ));
+        }
+        if self.state.frames.len() >= MAX_THREAD_DEPTH {
+            return Err(RuntimeError::at(RuntimeErrorKind::ThreadDepth, span));
+        }
+        self.state.frames.push(ExecutionFrame {
+            block: BlockRef::knot(target),
+            index: 0,
+            on_complete: None,
+        });
+        Ok(())
+    }
+
+    fn end(&mut self) {
+        self.state.frames.clear();
+        self.state.pending_choices.clear();
+        self.state.ended = true;
+    }
+
+    fn execute_declaration(&mut self, declaration: &DeclarationIr) -> Result<(), RuntimeError> {
+        let value = self.evaluate(&declaration.value)?;
+        validate_declared_value(declaration, &value)?;
+        if let Some(existing) = self.state.variables.get(&declaration.name)
+            && existing.kind != declaration.kind
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                "`{}` was redeclared with another kind",
+                declaration.name
+            ))));
+        }
+        self.state.variables.insert(
+            declaration.name.clone(),
+            VariableState {
+                kind: declaration.kind,
+                value,
+                allowed_states: declaration.allowed_states.clone(),
+            },
+        );
+        Ok(())
+    }
+
+    fn assign(&mut self, name: &str, value: Value) -> Result<(), RuntimeError> {
+        let Some(variable) = self.state.variables.get_mut(name) else {
+            return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                name.to_owned(),
+            )));
+        };
+        validate_assignment(name, variable, &value)?;
+        variable.value = value;
+        Ok(())
+    }
+
+    fn mutate_list(
+        &mut self,
+        operation: ListOperationIr,
+        name: &str,
+        value: Value,
+    ) -> Result<(), RuntimeError> {
+        let Some(variable) = self.state.variables.get_mut(name) else {
+            return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                name.to_owned(),
+            )));
+        };
+        let Value::List(values) = &mut variable.value else {
+            return Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                "list mutation target `{name}` is not a list"
+            ))));
+        };
+        match operation {
+            ListOperationIr::Push => values.push(value),
+            ListOperationIr::Remove => {
+                if let Some(index) = values.iter().position(|member| member == &value) {
+                    values.remove(index);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn evaluate(&mut self, expression: &Expression) -> Result<Value, RuntimeError> {
+        match expression {
+            Expression::Literal(literal) => Ok(literal_value(literal)),
+            Expression::List(values) => values
+                .iter()
+                .map(|value| self.evaluate(value))
+                .collect::<Result<Vec<_>, _>>()
+                .map(Value::List),
+            Expression::Path(path) => self.resolve_path(path),
+            Expression::GrammarRef { grammar, rule } => {
+                let Some(grammar) = grammar else {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                        "runtime grammar reference is not qualified".to_owned(),
+                    )));
+                };
+                self.expand_grammar(grammar, rule, 0).map(Value::String)
+            }
+            Expression::Call { path, .. } => Err(RuntimeError::new(
+                RuntimeErrorKind::PatternUnavailable(path.join(".")),
+            )),
+            Expression::Unary { operator, operand } => {
+                let operand = self.evaluate(operand)?;
+                match (operator, operand) {
+                    (UnaryOperatorIr::Not, Value::Bool(value)) => Ok(Value::Bool(!value)),
+                    (UnaryOperatorIr::Negate, Value::Number(value)) => Ok(Value::Number(-value)),
+                    (operator, value) => Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                        "operator {operator:?} cannot be applied to {}",
+                        value_kind(&value)
+                    )))),
+                }
+            }
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => self.evaluate_binary(left, *operator, right),
+        }
+    }
+
+    fn evaluate_binary(
+        &mut self,
+        left: &Expression,
+        operator: BinaryOperatorIr,
+        right: &Expression,
+    ) -> Result<Value, RuntimeError> {
+        let left_value = self.evaluate(left)?;
+        if operator == BinaryOperatorIr::And {
+            let left = expect_bool(left_value, "left operand of `and`")?;
+            return if left {
+                expect_bool(self.evaluate(right)?, "right operand of `and`").map(Value::Bool)
+            } else {
+                Ok(Value::Bool(false))
+            };
+        }
+        if operator == BinaryOperatorIr::Or {
+            let left = expect_bool(left_value, "left operand of `or`")?;
+            return if left {
+                Ok(Value::Bool(true))
+            } else {
+                expect_bool(self.evaluate(right)?, "right operand of `or`").map(Value::Bool)
+            };
+        }
+        let right_value = self.evaluate(right)?;
+        evaluate_eager_binary(left_value, operator, right_value)
+    }
+
+    fn resolve_path(&self, path: &[String]) -> Result<Value, RuntimeError> {
+        let Some(root) = path.first() else {
+            return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                String::new(),
+            )));
+        };
+        let Some(variable) = self.state.variables.get(root) else {
+            if path.len() == 1 {
+                return Ok(Value::Symbol(root.clone()));
+            }
+            return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                path.join("."),
+            )));
+        };
+        let mut value = &variable.value;
+        for field in &path[1..] {
+            let Value::Object(fields) = value else {
+                return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                    path.join("."),
+                )));
+            };
+            let Some(next) = fields.get(field) else {
+                return Err(RuntimeError::new(RuntimeErrorKind::UnknownPath(
+                    path.join("."),
+                )));
+            };
+            value = next;
+        }
+        Ok(value.clone())
+    }
+
+    fn render_template(
+        &mut self,
+        template: &Template,
+        depth: usize,
+    ) -> Result<String, RuntimeError> {
+        if depth > MAX_GRAMMAR_DEPTH {
+            return Err(RuntimeError::new(RuntimeErrorKind::GrammarDepth));
+        }
+        let mut output = String::new();
+        for part in &template.parts {
+            match part {
+                TemplatePartIr::Text(text) => output.push_str(text),
+                TemplatePartIr::GrammarRef { grammar, rule } => {
+                    let Some(grammar) = grammar else {
+                        return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                            "runtime grammar reference is not qualified".to_owned(),
+                        )));
+                    };
+                    output.push_str(&self.expand_grammar(grammar, rule, depth + 1)?);
+                }
+                TemplatePartIr::Expression(expression) => {
+                    output.push_str(&self.evaluate(expression)?.to_string());
+                }
+            }
+        }
+        Ok(output)
+    }
+
+    fn expand_grammar(
+        &mut self,
+        grammar: &str,
+        rule: &str,
+        depth: usize,
+    ) -> Result<String, RuntimeError> {
+        if depth > MAX_GRAMMAR_DEPTH {
+            return Err(RuntimeError::new(RuntimeErrorKind::GrammarDepth));
+        }
+        let alternatives = self
+            .data
+            .grammars
+            .get(grammar)
+            .and_then(|grammar| grammar.rules.get(rule))
+            .cloned()
+            .ok_or_else(|| {
+                RuntimeError::new(RuntimeErrorKind::UnknownGrammarRule {
+                    grammar: grammar.to_owned(),
+                    rule: rule.to_owned(),
+                })
+            })?;
+        if alternatives.is_empty() {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                "grammar rule `{grammar}.{rule}` has no alternatives"
+            ))));
+        }
+        let index = self.random_index(alternatives.len());
+        self.render_template(&alternatives[index], depth + 1)
+    }
+
+    fn random_index(&mut self, length: usize) -> usize {
+        let mut random = ChaCha8Rng::seed_from_u64(self.state.seed);
+        for _ in 0..self.state.random_draws {
+            let _ = random.next_u64();
+        }
+        let value = random.next_u64();
+        self.state.random_draws = self.state.random_draws.saturating_add(1);
+        (value % length as u64) as usize
+    }
+}
+
+fn validate_story(data: &StoryIr) -> Result<(), RuntimeError> {
+    if data.version != IR_VERSION {
+        return Err(RuntimeError::new(RuntimeErrorKind::UnsupportedVersion {
+            found: data.version,
+            expected: IR_VERSION,
+        }));
+    }
+    if !data.knots.contains_key(&data.entry) {
+        return Err(RuntimeError::new(RuntimeErrorKind::UnknownKnot(
+            data.entry.clone(),
+        )));
+    }
+    Ok(())
+}
+
+fn validate_declared_value(declaration: &DeclarationIr, value: &Value) -> Result<(), RuntimeError> {
+    match declaration.kind {
+        VariableKindIr::Variable => Ok(()),
+        VariableKindIr::List if matches!(value, Value::List(_)) => Ok(()),
+        VariableKindIr::Flag if matches!(value, Value::Bool(_)) => Ok(()),
+        VariableKindIr::State => {
+            let Value::Symbol(symbol) = value else {
+                return Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                    "STATE `{}` requires a symbol",
+                    declaration.name
+                ))));
+            };
+            if declaration.allowed_states.contains(symbol) {
+                Ok(())
+            } else {
+                Err(RuntimeError::new(RuntimeErrorKind::InvalidState {
+                    name: declaration.name.clone(),
+                    value: symbol.clone(),
+                }))
+            }
+        }
+        _ => Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+            "initializer for `{}` does not match its declaration kind",
+            declaration.name
+        )))),
+    }
+}
+
+fn validate_assignment(
+    name: &str,
+    variable: &VariableState,
+    value: &Value,
+) -> Result<(), RuntimeError> {
+    match variable.kind {
+        VariableKindIr::Variable => {
+            if same_value_type(&variable.value, value) {
+                Ok(())
+            } else {
+                Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                    "assignment to `{name}` changes its concrete type"
+                ))))
+            }
+        }
+        VariableKindIr::List if matches!(value, Value::List(_)) => Ok(()),
+        VariableKindIr::Flag if matches!(value, Value::Bool(_)) => Ok(()),
+        VariableKindIr::State => {
+            let Value::Symbol(symbol) = value else {
+                return Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+                    "STATE `{name}` requires a symbol"
+                ))));
+            };
+            if variable.allowed_states.contains(symbol) {
+                Ok(())
+            } else {
+                Err(RuntimeError::new(RuntimeErrorKind::InvalidState {
+                    name: name.to_owned(),
+                    value: symbol.clone(),
+                }))
+            }
+        }
+        _ => Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+            "assignment to `{name}` has the wrong value type"
+        )))),
+    }
+}
+
+fn evaluate_eager_binary(
+    left: Value,
+    operator: BinaryOperatorIr,
+    right: Value,
+) -> Result<Value, RuntimeError> {
+    match operator {
+        BinaryOperatorIr::Add => match (left, right) {
+            (Value::Number(left), Value::Number(right)) => Ok(Value::Number(left + right)),
+            (Value::String(left), Value::String(right)) => Ok(Value::String(left + &right)),
+            (left, right) => binary_type_error(operator, &left, &right),
+        },
+        BinaryOperatorIr::Subtract
+        | BinaryOperatorIr::Multiply
+        | BinaryOperatorIr::Divide
+        | BinaryOperatorIr::Remainder => {
+            let (Value::Number(left), Value::Number(right)) = (&left, &right) else {
+                return binary_type_error(operator, &left, &right);
+            };
+            if matches!(
+                operator,
+                BinaryOperatorIr::Divide | BinaryOperatorIr::Remainder
+            ) && *right == 0.0
+            {
+                return Err(RuntimeError::new(RuntimeErrorKind::DivideByZero));
+            }
+            let value = match operator {
+                BinaryOperatorIr::Subtract => left - right,
+                BinaryOperatorIr::Multiply => left * right,
+                BinaryOperatorIr::Divide => left / right,
+                BinaryOperatorIr::Remainder => left % right,
+                _ => unreachable!("operator filtered by outer match"),
+            };
+            if value.is_finite() {
+                Ok(Value::Number(value))
+            } else {
+                Err(RuntimeError::new(RuntimeErrorKind::Type(
+                    "arithmetic result is not finite".to_owned(),
+                )))
+            }
+        }
+        BinaryOperatorIr::Equal => Ok(Value::Bool(left == right)),
+        BinaryOperatorIr::NotEqual => Ok(Value::Bool(left != right)),
+        BinaryOperatorIr::Less
+        | BinaryOperatorIr::LessEqual
+        | BinaryOperatorIr::Greater
+        | BinaryOperatorIr::GreaterEqual => compare_values(left, operator, right),
+        BinaryOperatorIr::In => match (left, right) {
+            (value, Value::List(values)) => Ok(Value::Bool(values.contains(&value))),
+            (Value::String(needle), Value::String(haystack)) => {
+                Ok(Value::Bool(haystack.contains(&needle)))
+            }
+            (left, right) => binary_type_error(operator, &left, &right),
+        },
+        BinaryOperatorIr::And | BinaryOperatorIr::Or => Err(RuntimeError::new(
+            RuntimeErrorKind::InvalidStory("short-circuit operator evaluated eagerly".to_owned()),
+        )),
+    }
+}
+
+fn compare_values(
+    left: Value,
+    operator: BinaryOperatorIr,
+    right: Value,
+) -> Result<Value, RuntimeError> {
+    let ordering = match (&left, &right) {
+        (Value::Number(left), Value::Number(right)) => left.partial_cmp(right),
+        (Value::String(left), Value::String(right))
+        | (Value::Symbol(left), Value::Symbol(right)) => Some(left.cmp(right)),
+        _ => return binary_type_error(operator, &left, &right),
+    };
+    let Some(ordering) = ordering else {
+        return Err(RuntimeError::new(RuntimeErrorKind::Type(
+            "values cannot be ordered".to_owned(),
+        )));
+    };
+    let result = match operator {
+        BinaryOperatorIr::Less => ordering.is_lt(),
+        BinaryOperatorIr::LessEqual => ordering.is_le(),
+        BinaryOperatorIr::Greater => ordering.is_gt(),
+        BinaryOperatorIr::GreaterEqual => ordering.is_ge(),
+        _ => false,
+    };
+    Ok(Value::Bool(result))
+}
+
+fn binary_type_error(
+    operator: BinaryOperatorIr,
+    left: &Value,
+    right: &Value,
+) -> Result<Value, RuntimeError> {
+    Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+        "operator {operator:?} does not accept {} and {}",
+        value_kind(left),
+        value_kind(right)
+    ))))
+}
+
+fn expect_bool(value: Value, context: &str) -> Result<bool, RuntimeError> {
+    match value {
+        Value::Bool(value) => Ok(value),
+        value => Err(RuntimeError::new(RuntimeErrorKind::Type(format!(
+            "{context} requires Bool, found {}",
+            value_kind(&value)
+        )))),
+    }
+}
+
+fn literal_value(literal: &ValueLiteral) -> Value {
+    match literal {
+        ValueLiteral::Null => Value::Null,
+        ValueLiteral::Bool(value) => Value::Bool(*value),
+        ValueLiteral::Number(value) => Value::Number(*value),
+        ValueLiteral::String(value) => Value::String(value.clone()),
+        ValueLiteral::Symbol(value) => Value::Symbol(value.clone()),
+    }
+}
+
+fn same_value_type(left: &Value, right: &Value) -> bool {
+    matches!(
+        (left, right),
+        (Value::Null, Value::Null)
+            | (Value::Bool(_), Value::Bool(_))
+            | (Value::Number(_), Value::Number(_))
+            | (Value::String(_), Value::String(_))
+            | (Value::Symbol(_), Value::Symbol(_))
+            | (Value::List(_), Value::List(_))
+            | (Value::Object(_), Value::Object(_))
+    )
+}
+
+fn value_kind(value: &Value) -> &'static str {
+    match value {
+        Value::Null => "Null",
+        Value::Bool(_) => "Bool",
+        Value::Number(_) => "Number",
+        Value::String(_) => "String",
+        Value::Symbol(_) => "Symbol",
+        Value::List(_) => "List",
+        Value::Object(_) => "Object",
+    }
+}
+
+fn invalid_block_reference() -> RuntimeError {
+    RuntimeError::new(RuntimeErrorKind::InvalidStory(
+        "saved block reference is invalid".to_owned(),
+    ))
+}
+
+fn with_span(mut error: RuntimeError, span: Span) -> RuntimeError {
+    if error.span.is_none() {
+        error.span = Some(span);
+    }
+    error
+}
+
+#[cfg(test)]
+mod tests {
+    use weave_compiler::{CompileOptions, compile};
+
+    use super::*;
+
+    fn compile_story(source: &str, seed: u64) -> Story {
+        let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
+        Story::with_seed(compiled.story, seed).expect("story should start")
+    }
+
+    #[test]
+    fn runs_variables_conditions_choices_and_state() {
+        let source = r#"
+VAR score = 1
+LIST inventory = [key]
+FLAG open = false
+STATE quest = dormant [dormant, active, complete]
+=== start ===
+SET score = score + 1
+* [Open] {if key in inventory}
+    SET open = true
+    SET quest = active
+    Door open: {open}; score: {score}; quest: {quest}.
+    -> END
++ [Wait]
+    Still waiting.
+    -> start
+"#;
+        let mut story = compile_story(source, 9);
+        assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
+        story.choose(0).expect("choice should be valid");
+        assert_eq!(
+            story.advance().expect("story should advance"),
+            StoryEvent::Line("Door open: true; score: 2; quest: active.".to_owned())
+        );
+        assert_eq!(
+            story.advance().expect("story should end"),
+            StoryEvent::Ended
+        );
+    }
+
+    #[test]
+    fn nested_choices_and_threads_resume_in_order() {
+        let source = r#"
+=== start ===
+Before.
+<- aside
+* [Ask]
+    Asked.
+    * [Finish] -> ending
+=== aside ===
+Aside.
+=== ending ===
+Done.
+-> END
+"#;
+        let mut story = compile_story(source, 0);
+        assert_eq!(
+            story.continue_line().expect("line"),
+            Some("Before.".to_owned())
+        );
+        assert_eq!(
+            story.continue_line().expect("line"),
+            Some("Aside.".to_owned())
+        );
+        assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
+        story.choose(0).expect("outer choice");
+        assert_eq!(
+            story.continue_line().expect("line"),
+            Some("Asked.".to_owned())
+        );
+        assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
+        story.choose(0).expect("inner choice");
+        assert_eq!(
+            story.continue_line().expect("line"),
+            Some("Done.".to_owned())
+        );
+    }
+
+    #[test]
+    fn seeded_grammar_is_reproducible_and_state_restores() {
+        let source = r#"
+grammar coin {
+    side: ["heads", "tails"]
+}
+=== start ===
+#coin.side# #coin.side#
+* [Again] -> start
+"#;
+        let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
+        let mut first = Story::with_seed(compiled.story.clone(), 42).expect("story should start");
+        let mut second = Story::with_seed(compiled.story.clone(), 42).expect("story should start");
+        assert_eq!(
+            first.advance().expect("line"),
+            second.advance().expect("line")
+        );
+        assert!(matches!(first.advance(), Ok(StoryEvent::Choices(_))));
+        let encoded = ron::to_string(first.state()).expect("state should serialize");
+        let state: StoryState = ron::from_str(&encoded).expect("state should deserialize");
+        let restored = Story::restore(compiled.story, state).expect("state should restore");
+        assert_eq!(restored.choices(), first.choices());
+    }
+
+    #[test]
+    fn rejects_unknown_versions_and_phase_two_pattern_calls() {
+        let mut invalid = StoryIr::new("start");
+        invalid.version = IR_VERSION + 1;
+        let error = Story::new(invalid).expect_err("unknown version should fail");
+        assert!(matches!(
+            error.kind,
+            RuntimeErrorKind::UnsupportedVersion { .. }
+        ));
+
+        let source = r#"
+pattern cards {
+    deck: [(name: "One")]
+    spread single { positions: [card] }
+}
+=== start ===
+VAR draw = cards.spread.single.draw()
+-> END
+"#;
+        let mut story = compile_story(source, 0);
+        let error = story
+            .advance()
+            .expect_err("pattern call should be unavailable");
+        assert!(matches!(
+            error.kind,
+            RuntimeErrorKind::PatternUnavailable(_)
+        ));
+        assert!(error.span.is_some());
+    }
+
+    #[test]
+    fn reports_division_by_zero_without_panicking() {
+        let source = "=== start ===\nVAR value = 1 / 0\n{value}\n";
+        let mut story = compile_story(source, 0);
+        let error = story.advance().expect_err("division by zero should fail");
+        assert_eq!(error.kind, RuntimeErrorKind::DivideByZero);
+    }
+}

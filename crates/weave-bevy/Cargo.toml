@@ -1,0 +1,19 @@
+[package]
+name = "weave-bevy"
+description = "Bevy 0.18 integration for the Weave runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+bevy.workspace = true
+ron.workspace = true
+thiserror.workspace = true
+weave-compiler = { path = "../weave-compiler" }
+weave-core = { path = "../weave-core" }
+weave-runtime = { path = "../weave-runtime" }
+
+[lints]
+workspace = true

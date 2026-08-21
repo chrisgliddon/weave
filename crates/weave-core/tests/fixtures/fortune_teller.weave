@@ -1,0 +1,67 @@
+// The complete syntax sample from README.md.
+grammar names {
+    first: ["Aldric", "Mira", "Theron", "Lyssia"],
+    last: ["the Bold", "Whisperwind", "Ironhand"],
+    full: "#first# #last#"
+}
+
+grammar atmosphere {
+    mood: ["sombre", "electric", "anticipatory", "hushed"],
+    weather: ["rain sheeting down", "a clearing sky", "oppressive heat"],
+    scene: "The tavern was #mood#, with #weather# outside."
+}
+
+pattern tarot {
+    major: [
+        (name: "The Fool", meaning: new_beginnings, element: air),
+        (name: "The Tower", meaning: sudden_change, element: fire),
+        (name: "The Star", meaning: hope, element: water),
+        // The complete built-in deck arrives in Phase 2.
+    ]
+    spread three_card { positions: [past, present, future] }
+}
+
+=== arrival ===
+VAR current_card = tarot.spread.three_card.draw()
+VAR npc = #names.full#
+
+#atmosphere.scene#
+A fortune teller waves you over. "{npc}, was it? The cards have been calling."
+
+She lays out three cards.
+
+* [Look at the cards]
+    -> reading
+
+* [Ask the price first]
+    "Five silver." She doesn't look up.
+    * [Pay] -> reading
+    * [Leave] -> leaving
+
+=== reading ===
+"Your past," she says, turning {current_card.past.name}.
+{current_card.past.meaning == new_beginnings:
+    "A journey begun in innocence," she murmurs.
+- current_card.past.meaning == sudden_change:
+    "Chaos shaped you, whether you know it or not."
+- else:
+    She studies the card in silence.
+}
+
+"Your future..." She turns the last card.
+{current_card.future.name == "The Tower":
+    Her face goes pale. "Oh, dear."
+- current_card.future.name == "The Star":
+    A smile breaks across her face. "There is hope for you yet."
+- else:
+    "The cards are... inconclusive."
+}
+-> after_reading
+
+=== after_reading ===
+You leave with the weight of {current_card.future.name} on your mind.
+-> END
+
+=== leaving ===
+You leave the tavern without a reading.
+-> END

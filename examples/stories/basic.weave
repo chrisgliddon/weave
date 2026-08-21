@@ -1,0 +1,8 @@
+// Seeded grammar expansion and a simple terminal flow.
+grammar greetings {
+    opening: ["Hello", "Welcome", "Good evening"]
+}
+
+=== start ===
+#greetings.opening#, traveler.
+-> END

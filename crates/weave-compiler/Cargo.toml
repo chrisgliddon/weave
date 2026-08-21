@@ -1,0 +1,27 @@
+[package]
+name = "weave-compiler"
+description = "Weave compiler library and weavec command-line interface"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "weave_compiler"
+
+[[bin]]
+name = "weavec"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+notify.workspace = true
+ron.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+weave-core = { path = "../weave-core" }
+
+[lints]
+workspace = true
