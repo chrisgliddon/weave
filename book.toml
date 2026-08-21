@@ -1,0 +1,33 @@
+[book]
+title = "Weave 0.1.0 Documentation"
+authors = ["Weave Contributors"]
+description = "Language, runtime, editor, and integration documentation for Weave."
+language = "en"
+src = "docs"
+
+[build]
+build-dir = "target/book"
+create-missing = false
+
+[output.html]
+site-url = "/weave/"
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/chrisgliddon/weave"
+edit-url-template = "https://github.com/chrisgliddon/weave/edit/main/{path}"
+additional-css = ["docs/theme/weave.css"]
+no-section-label = true
+
+[output.html.search]
+enable = true
+limit-results = 30
+teaser-word-count = 24
+use-boolean-and = true
+boost-title = 3
+boost-hierarchy = 2
+boost-paragraph = 1
+expand = true
+heading-split-level = 3
+
+[output.html.print]
+enable = true

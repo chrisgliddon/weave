@@ -1,0 +1,81 @@
+:root {
+  --weave-accent: #8b5cf6;
+  --weave-accent-strong: #6d28d9;
+  --weave-focus: #f59e0b;
+}
+
+.weave-skip-link {
+  background: var(--weave-accent-strong);
+  border-radius: 0 0 0.4rem 0.4rem;
+  color: #ffffff;
+  font-weight: 700;
+  inset-inline-start: 1rem;
+  padding: 0.65rem 0.9rem;
+  position: fixed;
+  top: 0;
+  transform: translateY(-130%);
+  transition: transform 120ms ease-out;
+  z-index: 1000;
+}
+
+.weave-skip-link:focus {
+  transform: translateY(0);
+}
+
+.menu-title {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.menu-title::after {
+  background: var(--weave-accent);
+  border-radius: 999px;
+  color: #ffffff;
+  content: "0.1.0";
+  display: inline-block;
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-left: 0.65rem;
+  padding: 0.12rem 0.48rem;
+  vertical-align: 0.12em;
+}
+
+.content main {
+  max-width: 56rem;
+}
+
+.content main a {
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+.content main h1,
+.content main h2,
+.content main h3 {
+  letter-spacing: -0.02em;
+}
+
+.content main blockquote {
+  border-inline-start-color: var(--weave-accent);
+}
+
+:is(a, button, input, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--weave-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu-title::after {
+    display: none;
+  }
+}

@@ -1,0 +1,11 @@
+<a class="weave-skip-link" href="#mdbook-content">Skip to main content</a>
+<script>
+    const weaveSkipLink = document.querySelector(".weave-skip-link");
+    document.body.prepend(weaveSkipLink);
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Tab" && !event.shiftKey && document.activeElement === document.body) {
+            event.preventDefault();
+            weaveSkipLink.focus();
+        }
+    }, true);
+</script>

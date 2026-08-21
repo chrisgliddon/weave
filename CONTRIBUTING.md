@@ -194,6 +194,13 @@ cargo test --workspace
 cargo build --workspace
 ```
 
+Build and verify the complete documentation site with the pinned mdBook release:
+
+```bash
+cargo install mdbook --version 0.5.4 --locked
+python3 scripts/build-docs.py
+```
+
 Add focused tests for changed behavior. Update documentation and examples whenever public syntax, behavior, APIs, or workflows change.
 
 ## Commits

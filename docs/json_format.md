@@ -10,7 +10,7 @@ weavec story.weave --format json --output story.json
 weavec --schema --output weave-story-ir.schema.json
 ```
 
-The canonical schema for IR version 2 is [`../schemas/weave-story-ir-v2.schema.json`](../schemas/weave-story-ir-v2.schema.json). `weavec --schema` generates that document from the Rust IR types, and the compiler test suite verifies that the checked-in file is byte-for-byte current.
+The canonical schema for IR version 2 is available as a site [download](downloads/weave-story-ir-v2.schema.json). `weavec --schema` generates that document from the Rust IR types, and the compiler test suite verifies that the checked-in file is byte-for-byte current.
 
 Every document contains a numeric top-level `version`. A consumer must check it before execution. Weave's runtime accepts exactly `weave_core::ir::IR_VERSION`; it rejects older or newer versions instead of guessing at compatibility.
 

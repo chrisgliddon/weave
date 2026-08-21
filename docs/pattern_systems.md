@@ -25,7 +25,7 @@ pattern runes {
 - I-Ching contains all 64 King Wen hexagrams. `three_coin` consumes three fair coin values per line. `yarrow_stalks` uses the traditional old-yin/young-yang/young-yin/old-yang probabilities `1/16`, `5/16`, `7/16`, and `3/16`. Six lines are generated bottom-up; changing lines produce a structured `transformed` hexagram.
 - Elder Futhark contains 24 runes in traditional order. `three_rune` draws `past`, `present`, and `future` without replacement. Only runes with an explicit `reversed_meaning` can reverse.
 
-The source and licensing basis for canonical names, ordering, and symbols is recorded in [`ATTRIBUTION.md`](../crates/weave-patterns/ATTRIBUTION.md). Weave's concise semantic keywords are original summaries.
+The source and licensing basis for canonical names, ordering, and symbols is recorded in the public [`ATTRIBUTION.md`](https://github.com/chrisgliddon/weave/blob/main/crates/weave-patterns/ATTRIBUTION.md). Weave's concise semantic keywords are original summaries.
 
 ## Custom systems
 

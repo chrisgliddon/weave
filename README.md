@@ -217,6 +217,17 @@ npm test
 
 Editor and host integration instructions, generated-parser policy, and the language-version contract are documented in the [grammar package guide](tree-sitter-weave/README.md).
 
+### Documentation site
+
+The versioned, searchable documentation site is built from the canonical guides in this repository and publishes generated Rust API documentation alongside them. Build the same artifact locally with:
+
+```bash
+cargo install mdbook --version 0.5.4 --locked
+python3 scripts/build-docs.py
+```
+
+The build compiles every example story, runs the finite standalone and Bevy examples, checks the browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
+
 ### RON Output (excerpt)
 
 ```ron
@@ -278,11 +289,13 @@ weave/
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── docs/
+│   ├── index.md            # Documentation site landing page
 │   ├── language_guide.md   # Full syntax documentation
 │   ├── language_server.md  # LSP capabilities and editor setup
 │   ├── pattern_systems.md  # How to define and use pattern systems
 │   ├── bevy_integration.md # Using Weave in Bevy games
-│   └── editor_guide.md     # Using the visual editor
+│   ├── editor_guide.md     # Using the visual editor
+│   └── api_reference.md    # Generated rustdoc entry points
 │
 ├── Cargo.toml              # Workspace root
 └── README.md
@@ -464,7 +477,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Web-based story player (WASM)
 - [x] Language server (LSP) for text editors
 - [x] Syntax highlighting grammars (tree-sitter)
-- [ ] Documentation site
+- [x] Documentation site
 - [ ] Example game integration
 - [ ] Community pattern system library
 
