@@ -5,12 +5,13 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, Bounds, Context, FocusHandle, KeyBinding, Menu, MenuItem, Window,
+    AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, Menu, MenuItem, Window,
     WindowBounds, WindowOptions, actions, div, prelude::*, px, rgb, size,
 };
 
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
+use crate::graph_view::GraphSurface;
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::theme::DARK_THEME;
 
@@ -164,6 +165,7 @@ fn install_commands_and_menus(cx: &mut App) {
 struct EditorShell {
     state: EditorState,
     domain: DomainSession,
+    graph: Entity<GraphSurface>,
     focus: FocusHandle,
 }
 
@@ -176,9 +178,18 @@ impl EditorShell {
         if let Err(error) = domain.compile_source(WELCOME_SOURCE, None) {
             state.report_error(error.to_string());
         }
+        let graph = cx.new(|cx| {
+            GraphSurface::new(
+                domain
+                    .document()
+                    .expect("the embedded welcome source is valid"),
+                cx,
+            )
+        });
         Self {
             state,
             domain,
+            graph,
             focus,
         }
     }
@@ -243,6 +254,10 @@ impl gpui::Render for EditorShell {
             CenterView::Graph => "GPU node graph canvas",
             CenterView::Text => "Unicode source editor",
         };
+        let center_content = match layout.center {
+            CenterView::Graph => self.graph.clone().into_any_element(),
+            CenterView::Text => Self::panel("Text", active_detail, None),
+        };
         let center = div()
             .flex()
             .flex_col()
@@ -268,7 +283,7 @@ impl gpui::Render for EditorShell {
                             .child(active_detail),
                     ),
             )
-            .child(Self::panel(layout.center.label(), active_detail, None));
+            .child(center_content);
         workspace = workspace.child(center);
 
         if layout.inspector_sidebar {

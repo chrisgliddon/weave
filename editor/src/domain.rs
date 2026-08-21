@@ -1,8 +1,8 @@
 //! Bridge to canonical compiler, runtime, and pattern data.
 
 use weave_compiler::{CompileOptions, compile};
-use weave_core::Diagnostic;
 use weave_core::ir::StoryIr;
+use weave_core::{Diagnostic, Document, parse_document};
 use weave_patterns::{
     PatternDefinition, elder_futhark_definition, i_ching_definition, tarot_definition,
 };
@@ -29,6 +29,7 @@ pub struct DomainSession {
     source_name: Option<String>,
     seed: u64,
     diagnostics: Vec<Diagnostic>,
+    document: Option<Document>,
     last_valid_story: Option<StoryIr>,
     runtime: Option<Story>,
 }
@@ -42,6 +43,7 @@ impl DomainSession {
             source_name: None,
             seed,
             diagnostics: Vec::new(),
+            document: None,
             last_valid_story: None,
             runtime: None,
         }
@@ -58,6 +60,7 @@ impl DomainSession {
     ) -> Result<(), DomainError> {
         self.source = source.into();
         self.source_name = source_name;
+        let parsed = parse_document(&self.source);
         let compiled = match compile(
             &self.source,
             &CompileOptions {
@@ -67,6 +70,7 @@ impl DomainSession {
             Ok(compiled) => compiled,
             Err(error) => {
                 self.diagnostics = error.diagnostics;
+                self.document = parsed.ok();
                 return Err(DomainError::Compile {
                     count: self.diagnostics.len(),
                 });
@@ -74,6 +78,7 @@ impl DomainSession {
         };
         let runtime = Story::with_seed(compiled.story.clone(), self.seed)?;
         self.diagnostics = compiled.diagnostics;
+        self.document = parsed.ok();
         self.last_valid_story = Some(compiled.story);
         self.runtime = Some(runtime);
         Ok(())
@@ -89,6 +94,12 @@ impl DomainSession {
     #[must_use]
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
+    }
+
+    /// Current syntax tree when the in-progress source is parseable.
+    #[must_use]
+    pub const fn document(&self) -> Option<&Document> {
+        self.document.as_ref()
     }
 
     /// Most recent valid compiled story.
