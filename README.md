@@ -409,7 +409,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] GPUI application skeleton
 - [x] Node graph canvas (gpui-flow integration)
 - [x] Custom node renderers for each construct
-- [ ] Text editor view with syntax highlighting
+- [x] Text editor view with syntax highlighting
 - [ ] Bidirectional sync (graph ↔ text)
 - [ ] Live play preview
 - [ ] Pattern browser panel

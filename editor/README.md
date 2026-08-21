@@ -25,3 +25,7 @@ The graph uses `gpui-flow` for native pan, pointer-centered zoom, node dragging,
 The renderer-independent graph model uses a uniform spatial index for hit testing and viewport queries. Its explicit interactive budget is 16.67 ms per query (60 Hz); the regression suite exercises repeated visibility queries over 10,000 knots and also caps the size of the rendered working set.
 
 Knot cards, choice diamonds, grammar boxes, pattern hexagons, and variable pills have distinct color and shape cues. Selection, keyboard focus, and validation add independent high-contrast borders, so state never relies on color alone. Choice, divert, and thread connections likewise use distinct paths, weights, labels, and semantic validation. Selecting a node populates the inspector with its preview, graph coordinate, source location, and any validation error.
+
+## Source editing
+
+The Text view edits raw UTF-8 `.weave` source with grapheme-aware cursor movement and deletion, selection, clipboard operations, undo/redo, Unicode-safe search, canonical formatting, and inline compiler diagnostics. Syntax colors cover declarations, knot headers, choices, diverts, strings, numbers, grammar references, pattern calls, comments, and punctuation. Source lines are virtualized, so the GPUI element tree stays proportional to the viewport rather than the file size.

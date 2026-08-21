@@ -11,6 +11,7 @@ repository.workspace = true
 gpui.workspace = true
 gpui-flow.workspace = true
 thiserror.workspace = true
+unicode-segmentation.workspace = true
 weave-compiler = { path = "../crates/weave-compiler" }
 weave-core = { path = "../crates/weave-core" }
 weave-fmt = { path = "../crates/weave-fmt" }

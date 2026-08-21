@@ -14,6 +14,7 @@ use crate::domain::DomainSession;
 use crate::graph_view::GraphSurface;
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::state::{CenterView, EditorCommand, EditorState};
+use crate::text_view::TextSurface;
 use crate::theme::DARK_THEME;
 
 actions!(
@@ -167,6 +168,7 @@ struct EditorShell {
     state: EditorState,
     domain: DomainSession,
     graph: Entity<GraphSurface>,
+    text: Entity<TextSurface>,
     focus: FocusHandle,
 }
 
@@ -187,20 +189,20 @@ impl EditorShell {
                 cx,
             )
         });
+        let text = cx.new(|cx| TextSurface::new(WELCOME_SOURCE, cx));
         Self {
             state,
             domain,
             graph,
+            text,
             focus,
         }
     }
 
     fn apply(&mut self, command: EditorCommand, cx: &mut Context<Self>) {
         if command == EditorCommand::Compile {
-            if let Err(error) = self
-                .domain
-                .compile_source(self.domain.source().to_owned(), None)
-            {
+            let source = self.text.read(cx).source().to_owned();
+            if let Err(error) = self.domain.compile_source(source, None) {
                 self.state.report_error(error.to_string());
                 cx.notify();
                 return;
@@ -335,7 +337,7 @@ impl gpui::Render for EditorShell {
         };
         let center_content = match layout.center {
             CenterView::Graph => self.graph.clone().into_any_element(),
-            CenterView::Text => Self::panel("Text", active_detail, None),
+            CenterView::Text => self.text.clone().into_any_element(),
         };
         let center = div()
             .flex()

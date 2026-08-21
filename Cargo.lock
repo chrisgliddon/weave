@@ -8302,6 +8302,7 @@ dependencies = [
  "gpui_platform",
  "proptest",
  "thiserror 2.0.20",
+ "unicode-segmentation",
  "weave-compiler",
  "weave-core",
  "weave-fmt",

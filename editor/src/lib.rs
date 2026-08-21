@@ -6,6 +6,8 @@ pub mod graph;
 pub mod graph_view;
 pub mod node_renderers;
 pub mod state;
+pub mod text_editor;
+pub mod text_view;
 pub mod theme;
 
 pub use app::{LaunchMode, StartupError, launch};
@@ -23,6 +25,8 @@ pub use state::{
     CenterView, EditorCommand, EditorState, MenuDefinition, MenuEntry, PanelLayout, StatusMessage,
     menu_definitions,
 };
+pub use text_editor::{SyntaxKind, SyntaxToken, TextBuffer, highlight_source};
+pub use text_view::TextSurface;
 pub use theme::{DARK_THEME, EditorTheme};
 
 /// Source compiled when the editor opens without a project.
