@@ -411,7 +411,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Custom node renderers for each construct
 - [x] Text editor view with syntax highlighting
 - [x] Bidirectional sync (graph ↔ text)
-- [ ] Live play preview
+- [x] Live play preview
 - [x] Pattern browser panel
 - [x] Project management + file watching
 

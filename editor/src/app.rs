@@ -17,6 +17,7 @@ use crate::domain::DomainSession;
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
+use crate::preview::{PreviewEvent, PreviewSurface};
 use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::sync::{CanonicalProjectModel, TextSync};
@@ -182,6 +183,7 @@ struct EditorShell {
     graph: Entity<GraphSurface>,
     text: Entity<TextSurface>,
     patterns: Entity<PatternBrowserSurface>,
+    preview: Entity<PreviewSurface>,
     focus: FocusHandle,
 }
 
@@ -222,6 +224,18 @@ impl EditorShell {
             this.handle_pattern_event(event, cx);
         })
         .detach();
+        let preview = cx.new(|cx| {
+            PreviewSurface::new(
+                domain.last_valid_story().cloned(),
+                0,
+                canonical.revision(),
+                cx,
+            )
+        });
+        cx.subscribe(&preview, |this, _, event, cx| {
+            this.handle_preview_event(event, cx);
+        })
+        .detach();
         let shell = Self {
             state,
             domain,
@@ -234,6 +248,7 @@ impl EditorShell {
             graph,
             text,
             patterns,
+            preview,
             focus,
         };
         shell.schedule_project_poll(cx);
@@ -257,6 +272,8 @@ impl EditorShell {
     fn poll_project(&mut self, cx: &mut Context<Self>) {
         self.synchronize_text_view(cx);
         self.capture_graph_layout(cx);
+        self.preview
+            .update(cx, |preview, cx| preview.poll_compile(Instant::now(), cx));
         self.sync_source_to_project(cx);
         self.persist_recovery_if_needed();
         let change = match self.watcher.as_mut() {
@@ -316,9 +333,11 @@ impl EditorShell {
                                 "Text and graph synchronized".to_owned(),
                             );
                         }
+                        self.schedule_preview_compile(cx);
                     }
                     TextSync::Invalid { diagnostics, .. } => {
                         let _ = self.compile_current_source(cx);
+                        self.schedule_preview_compile(cx);
                         self.state.report_error(format!(
                             "Graph is showing the last valid source; fix {} syntax diagnostic(s)",
                             diagnostics.len()
@@ -337,6 +356,30 @@ impl EditorShell {
     fn capture_graph_layout(&mut self, cx: &App) {
         let layout = self.graph.read(cx).layout(cx);
         let _ = self.canonical.capture_layout(layout);
+    }
+
+    fn schedule_preview_compile(&mut self, cx: &mut Context<Self>) {
+        let source = self.canonical.source().to_owned();
+        let source_name = self
+            .project
+            .path()
+            .map(|path| path.to_string_lossy().into_owned());
+        let revision = self.canonical.revision();
+        self.preview.update(cx, |preview, cx| {
+            preview.schedule_compile(source, source_name, revision, Instant::now(), cx);
+        });
+    }
+
+    fn compile_preview_now(&mut self, cx: &mut Context<Self>) -> bool {
+        let source = self.canonical.source().to_owned();
+        let source_name = self
+            .project
+            .path()
+            .map(|path| path.to_string_lossy().into_owned());
+        let revision = self.canonical.revision();
+        self.preview.update(cx, |preview, cx| {
+            preview.compile_now(&source, source_name, revision, cx)
+        })
     }
 
     fn persist_recovery_if_needed(&mut self) {
@@ -426,6 +469,20 @@ impl EditorShell {
         cx.notify();
     }
 
+    fn handle_preview_event(&mut self, event: &PreviewEvent, cx: &mut Context<Self>) {
+        match event {
+            PreviewEvent::RevealSource(span) => {
+                self.text.update(cx, |text, cx| text.reveal_span(*span, cx));
+                self.state.layout.center = CenterView::Text;
+                self.state.status = crate::state::StatusMessage::Info(format!(
+                    "Preview diagnostic at {}:{}",
+                    span.line, span.column
+                ));
+            }
+        }
+        cx.notify();
+    }
+
     fn handle_graph_event(&mut self, event: &GraphSurfaceEvent, cx: &mut Context<Self>) {
         let edit = match event {
             GraphSurfaceEvent::Unavailable(message) => {
@@ -446,6 +503,7 @@ impl EditorShell {
                     .update(cx, |text, cx| text.replace_source(&sync.source, cx));
                 self.text_revision_seen = self.text.read(cx).revision();
                 self.project.set_source(sync.source);
+                self.schedule_preview_compile(cx);
                 let compiled = self.compile_current_source(cx);
                 if let Some(node) = sync.focus_node {
                     let _ = self
@@ -509,6 +567,7 @@ impl EditorShell {
             .update(cx, |text, cx| text.replace_source(&source, cx));
         self.text_revision_seen = self.text.read(cx).revision();
         self.project.set_source(source);
+        self.schedule_preview_compile(cx);
         if self.compile_current_source(cx) {
             self.state.status = crate::state::StatusMessage::Info(message.to_owned());
         }
@@ -526,7 +585,9 @@ impl EditorShell {
         self.last_recovery_revision = None;
         let graph_document = self.canonical.graph_document().clone();
         self.install_graph(&graph_document, cx);
-        self.compile_current_source(cx)
+        let compiled = self.compile_current_source(cx);
+        let _ = self.compile_preview_now(cx);
+        compiled
     }
 
     fn new_project(&mut self, cx: &mut Context<Self>) {
@@ -703,12 +764,34 @@ impl EditorShell {
                 self.redo_active_view(cx);
                 return;
             }
+            EditorCommand::Run => {
+                if self.preview.update(cx, |preview, cx| preview.run(cx)) {
+                    self.state.apply(EditorCommand::Run);
+                } else if let Some(issue) = self.preview.read(cx).session().issue() {
+                    self.state.report_error(issue.message.clone());
+                }
+                cx.notify();
+                return;
+            }
+            EditorCommand::Stop => {
+                self.preview.update(cx, |preview, cx| preview.stop(cx));
+                self.state.apply(EditorCommand::Stop);
+                cx.notify();
+                return;
+            }
             _ => {}
         }
         if command == EditorCommand::Compile {
             self.synchronize_text_view(cx);
             self.sync_source_to_project(cx);
             if !self.compile_current_source(cx) {
+                cx.notify();
+                return;
+            }
+            if !self.compile_preview_now(cx) {
+                if let Some(issue) = self.preview.read(cx).session().issue() {
+                    self.state.report_error(issue.message.clone());
+                }
                 cx.notify();
                 return;
             }
@@ -1114,12 +1197,8 @@ impl gpui::Render for EditorShell {
             root = root.child(
                 div()
                     .h(px(layout.bottom_height))
-                    .p_3()
-                    .bg(rgb(DARK_THEME.panel))
-                    .border_t_1()
-                    .border_color(rgb(DARK_THEME.border))
-                    .text_sm()
-                    .child("Play Preview — ready"),
+                    .flex_none()
+                    .child(self.preview.clone()),
             );
         }
         let status_color = if self.state.status.is_error() {

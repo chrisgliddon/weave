@@ -6,6 +6,7 @@ pub mod graph;
 pub mod graph_view;
 pub mod node_renderers;
 pub mod pattern_browser;
+pub mod preview;
 pub mod project;
 pub mod state;
 pub mod sync;
@@ -27,6 +28,10 @@ pub use node_renderers::{
 pub use pattern_browser::{
     PatternBrowserEvent, PatternBrowserModel, PatternBrowserSurface, PatternFilter, PatternOrigin,
     PatternPreview, PatternRecord,
+};
+pub use preview::{
+    PreviewCompileDebouncer, PreviewEvent, PreviewIssue, PreviewSession, PreviewStatus,
+    PreviewSurface, PreviewTranscript,
 };
 pub use project::{
     ConflictResolution, ConflictResult, ExternalChange, ExternalConflict, ProjectError,

@@ -47,3 +47,9 @@ Single and spread previews are deterministic for the displayed seed. Every click
 One canonical project model owns raw source, its current parsed document, the last valid graph projection, stable node positions, revision tokens, and transaction history. Text edits retain their exact comments and ordering while updating the graph after validation. Incomplete syntax remains authoritative in Text while Graph shows the last valid projection and blocks semantic mutations with an explicit conflict message.
 
 Graph actions for adding knots and choices or linking knots mutate the shared AST, format it through `weave-fmt`, and update Text as one undoable edit. Canvas-only position changes stay in graph metadata and never rewrite `.weave` source. Stale view revisions are rejected instead of merged silently, and synchronized undo/redo restores source, AST, and layout together.
+
+## Live play preview
+
+The bottom Play Preview runs the current compiled `Story` without restarting Weave. Continue advances through lines to the next choice or ending, Step advances one runtime boundary, choice buttons select branches, Restart replays from the entry knot, and each listed knot can start a fresh replay from that location. The displayed seed can be changed and replayed deterministically.
+
+The State pane exposes current variables and structured pattern draws. Text edits schedule a 250 ms quiet-period compile; a valid build restarts preview from the same seed, while compiler or runtime failures remain actionable and never unwind the editor. A compiler failure keeps the complete last valid runtime and transcript visible with a stale-build indicator until source compiles again.
