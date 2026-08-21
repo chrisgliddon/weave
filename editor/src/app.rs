@@ -2,17 +2,21 @@
 
 use std::cell::RefCell;
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::time::{Duration, Instant};
 
 use gpui::{
-    AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, Menu, MenuItem, Window,
-    WindowBounds, WindowOptions, actions, div, prelude::*, px, rgb, size,
+    AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, Menu, MenuItem,
+    PathPromptOptions, Window, WindowBounds, WindowOptions, actions, div, prelude::*, px, rgb,
+    size,
 };
 
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::GraphSurface;
 use crate::node_renderers::{InspectorData, kind_label};
+use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::text_view::TextSurface;
 use crate::theme::DARK_THEME;
@@ -167,6 +171,9 @@ fn install_commands_and_menus(cx: &mut App) {
 struct EditorShell {
     state: EditorState,
     domain: DomainSession,
+    project: ProjectSession,
+    watcher: Option<ProjectWatcher>,
+    last_recovery_revision: Option<u64>,
     graph: Entity<GraphSurface>,
     text: Entity<TextSurface>,
     focus: FocusHandle,
@@ -190,20 +197,283 @@ impl EditorShell {
             )
         });
         let text = cx.new(|cx| TextSurface::new(WELCOME_SOURCE, cx));
-        Self {
+        let shell = Self {
             state,
             domain,
+            project: ProjectSession::untitled(WELCOME_SOURCE),
+            watcher: None,
+            last_recovery_revision: None,
             graph,
             text,
             focus,
+        };
+        shell.schedule_project_poll(cx);
+        shell
+    }
+
+    fn schedule_project_poll(&self, cx: &mut Context<Self>) {
+        cx.spawn(async move |this, cx| {
+            loop {
+                cx.background_executor()
+                    .timer(Duration::from_millis(100))
+                    .await;
+                if this.update(cx, |this, cx| this.poll_project(cx)).is_err() {
+                    break;
+                }
+            }
+        })
+        .detach();
+    }
+
+    fn poll_project(&mut self, cx: &mut Context<Self>) {
+        self.sync_source_to_project(cx);
+        self.persist_recovery_if_needed();
+        let change = match self.watcher.as_mut() {
+            Some(watcher) => watcher.poll(&mut self.project, Instant::now()),
+            None => return,
+        };
+        match change {
+            Ok(Some(ExternalChange::Reloaded)) => {
+                if self.load_project_source(cx) {
+                    self.state.status = crate::state::StatusMessage::Info(
+                        "Reloaded an external project change".to_owned(),
+                    );
+                }
+                cx.notify();
+            }
+            Ok(Some(ExternalChange::Conflict(_))) => {
+                self.state.report_error(
+                    "The project changed on disk; choose a conflict action in Project",
+                );
+                cx.notify();
+            }
+            Ok(Some(ExternalChange::NoChange | ExternalChange::SelfAuthored)) | Ok(None) => {}
+            Err(error) => {
+                self.state.report_error(error.to_string());
+                cx.notify();
+            }
         }
+    }
+
+    fn sync_source_to_project(&mut self, cx: &App) {
+        let source = self.text.read(cx).source();
+        if source != self.project.source() {
+            self.project.set_source(source.to_owned());
+        }
+        self.state.dirty = self.project.is_dirty();
+    }
+
+    fn persist_recovery_if_needed(&mut self) {
+        if !self.project.is_dirty() || self.last_recovery_revision == Some(self.project.revision())
+        {
+            return;
+        }
+        let Some(path) = self.project.recovery_path() else {
+            return;
+        };
+        match self.project.write_recovery(path) {
+            Ok(()) => self.last_recovery_revision = Some(self.project.revision()),
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+    }
+
+    fn compile_current_source(&mut self, cx: &mut Context<Self>) -> bool {
+        let source = self.text.read(cx).source().to_owned();
+        let source_name = self
+            .project
+            .path()
+            .map(|path| path.to_string_lossy().into_owned());
+        match self.domain.compile_source(source, source_name) {
+            Ok(()) => {
+                let document = self
+                    .domain
+                    .document()
+                    .expect("successful compilation retains a syntax tree")
+                    .clone();
+                self.graph = cx.new(|cx| GraphSurface::new(&document, cx));
+                true
+            }
+            Err(error) => {
+                self.state.report_error(error.to_string());
+                false
+            }
+        }
+    }
+
+    fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
+        let source = self.project.source().to_owned();
+        self.text
+            .update(cx, |text, cx| text.load_source(&source, cx));
+        self.state.project_name = self.project.display_name();
+        self.state.dirty = false;
+        self.last_recovery_revision = None;
+        self.compile_current_source(cx)
+    }
+
+    fn new_project(&mut self, cx: &mut Context<Self>) {
+        self.sync_source_to_project(cx);
+        self.persist_recovery_if_needed();
+        let mut project = ProjectSession::untitled(WELCOME_SOURCE);
+        project.inherit_recent(&self.project);
+        self.project = project;
+        self.watcher = None;
+        let _ = self.load_project_source(cx);
+        self.state.status = crate::state::StatusMessage::Info("Created a new project".to_owned());
+        cx.notify();
+    }
+
+    fn prompt_open_project(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let receiver = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some("Open Weave Project".into()),
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let Ok(Ok(Some(paths))) = receiver.await else {
+                return;
+            };
+            let Some(path) = paths.into_iter().next() else {
+                return;
+            };
+            let _ = this.update_in(cx, |this, _window, cx| this.open_project_path(&path, cx));
+        })
+        .detach();
+    }
+
+    fn open_project_path(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.sync_source_to_project(cx);
+        self.persist_recovery_if_needed();
+        match self.project.open_from(path) {
+            Ok(project) => {
+                self.project = project;
+                let compiled = self.load_project_source(cx);
+                match ProjectWatcher::new(path, Duration::from_millis(150)) {
+                    Ok(watcher) => {
+                        self.watcher = Some(watcher);
+                        if compiled {
+                            self.state.status = crate::state::StatusMessage::Info(format!(
+                                "Opened {}",
+                                self.project.display_name()
+                            ));
+                        }
+                    }
+                    Err(error) => {
+                        self.watcher = None;
+                        self.state.report_error(format!(
+                            "Opened project, but file watching failed: {error}"
+                        ));
+                    }
+                }
+            }
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+        cx.notify();
+    }
+
+    fn save_project(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.sync_source_to_project(cx);
+        if self.project.path().is_none() {
+            self.prompt_save_project_as(window, cx);
+            return;
+        }
+        self.save_project_to_current_path(cx);
+    }
+
+    fn prompt_save_project_as(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let directory = self
+            .project
+            .path()
+            .and_then(Path::parent)
+            .map(Path::to_path_buf)
+            .or_else(|| std::env::current_dir().ok())
+            .unwrap_or_else(|| PathBuf::from("."));
+        let receiver = cx.prompt_for_new_path(&directory, Some("story.weave"));
+        cx.spawn_in(window, async move |this, cx| {
+            let Ok(Ok(Some(path))) = receiver.await else {
+                return;
+            };
+            let _ = this.update_in(cx, |this, _window, cx| this.save_project_as(&path, cx));
+        })
+        .detach();
+    }
+
+    fn save_project_as(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.sync_source_to_project(cx);
+        match self.project.save_as(path) {
+            Ok(saved) => self.finish_save(saved.diagnostics.len(), cx),
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+        cx.notify();
+    }
+
+    fn save_project_to_current_path(&mut self, cx: &mut Context<Self>) {
+        match self.project.save() {
+            Ok(saved) => self.finish_save(saved.diagnostics.len(), cx),
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+        cx.notify();
+    }
+
+    fn finish_save(&mut self, diagnostic_count: usize, cx: &mut Context<Self>) {
+        self.text.update(cx, |text, _| text.mark_saved());
+        self.state.project_name = self.project.display_name();
+        self.state.dirty = false;
+        self.last_recovery_revision = None;
+        let _ = self.compile_current_source(cx);
+        if diagnostic_count == 0 {
+            self.state.status =
+                crate::state::StatusMessage::Info(format!("Saved {}", self.project.display_name()));
+        } else {
+            self.state.report_error(format!(
+                "Saved source with {diagnostic_count} compiler diagnostic(s)"
+            ));
+        }
+        if let Some(path) = self.project.path() {
+            match ProjectWatcher::new(path, Duration::from_millis(150)) {
+                Ok(watcher) => self.watcher = Some(watcher),
+                Err(error) => self
+                    .state
+                    .report_error(format!("Saved project, but file watching failed: {error}")),
+            }
+        }
+    }
+
+    fn resolve_project_conflict(&mut self, resolution: ConflictResolution, cx: &mut Context<Self>) {
+        match self.project.resolve_conflict(resolution) {
+            Ok(result) => {
+                let mut loaded_cleanly = true;
+                if resolution != ConflictResolution::KeepMemory {
+                    loaded_cleanly = self.load_project_source(cx);
+                } else {
+                    self.state.dirty = true;
+                }
+                let message = match result.memory_copy {
+                    Some(path) => format!(
+                        "Kept both versions; memory copy saved as {}",
+                        path.display()
+                    ),
+                    None if resolution == ConflictResolution::KeepMemory => {
+                        "Kept the in-memory version; save to overwrite the disk version".to_owned()
+                    }
+                    None => "Loaded the version from disk".to_owned(),
+                };
+                if loaded_cleanly {
+                    self.state.status = crate::state::StatusMessage::Info(message);
+                } else {
+                    self.state
+                        .report_error(format!("{message}; source has compiler diagnostics"));
+                }
+            }
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+        cx.notify();
     }
 
     fn apply(&mut self, command: EditorCommand, cx: &mut Context<Self>) {
         if command == EditorCommand::Compile {
-            let source = self.text.read(cx).source().to_owned();
-            if let Err(error) = self.domain.compile_source(source, None) {
-                self.state.report_error(error.to_string());
+            self.sync_source_to_project(cx);
+            if !self.compile_current_source(cx) {
                 cx.notify();
                 return;
             }
@@ -212,30 +482,189 @@ impl EditorShell {
         cx.notify();
     }
 
-    fn panel(title: &str, detail: &str, width: Option<f32>) -> AnyElement {
+    fn project_panel(&self, width: f32, cx: &mut Context<Self>) -> AnyElement {
+        let dirty = self.project.is_dirty() || self.text.read(cx).is_dirty();
+        let path = self.project.path().map_or_else(
+            || "Not saved yet".to_owned(),
+            |path| path.display().to_string(),
+        );
+        let compile_output = self.project.compile_output().map_or_else(
+            || "Compile output appears after a valid save".to_owned(),
+            |path| format!("Compiled: {}", path.display()),
+        );
         let mut panel = div()
+            .w(px(width))
             .h_full()
+            .flex_none()
             .flex()
             .flex_col()
             .gap_2()
             .p_3()
             .bg(rgb(DARK_THEME.panel))
-            .border_1()
+            .border_r_1()
             .border_color(rgb(DARK_THEME.border))
             .child(
                 div()
                     .text_sm()
                     .text_color(rgb(DARK_THEME.text))
-                    .child(title.to_owned()),
+                    .child("Project"),
+            )
+            .child(
+                div()
+                    .text_sm()
+                    .text_color(if dirty {
+                        rgb(DARK_THEME.accent)
+                    } else {
+                        rgb(DARK_THEME.text)
+                    })
+                    .child(format!(
+                        "{}{}",
+                        self.project.display_name(),
+                        if dirty { " •" } else { "" }
+                    )),
             )
             .child(
                 div()
                     .text_xs()
                     .text_color(rgb(DARK_THEME.muted_text))
-                    .child(detail.to_owned()),
+                    .child(path),
+            )
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(compile_output),
+            )
+            .child(
+                div()
+                    .flex()
+                    .gap_2()
+                    .child(
+                        div()
+                            .id("project-new")
+                            .px_2()
+                            .py_1()
+                            .rounded_md()
+                            .bg(rgb(DARK_THEME.chrome))
+                            .cursor_pointer()
+                            .text_xs()
+                            .child("New")
+                            .on_click(cx.listener(|this, _, _, cx| this.new_project(cx))),
+                    )
+                    .child(
+                        div()
+                            .id("project-open")
+                            .px_2()
+                            .py_1()
+                            .rounded_md()
+                            .bg(rgb(DARK_THEME.chrome))
+                            .cursor_pointer()
+                            .text_xs()
+                            .child("Open…")
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.prompt_open_project(window, cx);
+                            })),
+                    )
+                    .child(
+                        div()
+                            .id("project-save")
+                            .px_2()
+                            .py_1()
+                            .rounded_md()
+                            .bg(rgb(DARK_THEME.accent))
+                            .cursor_pointer()
+                            .text_xs()
+                            .child("Save")
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.save_project(window, cx);
+                            })),
+                    ),
             );
-        if let Some(width) = width {
-            panel = panel.w(px(width)).flex_none();
+
+        if self.project.conflict().is_some() {
+            panel = panel
+                .child(
+                    div()
+                        .mt_2()
+                        .p_2()
+                        .rounded_md()
+                        .bg(rgb(DARK_THEME.error))
+                        .text_xs()
+                        .child("This file changed outside Weave. Choose which version to keep."),
+                )
+                .child(
+                    div()
+                        .id("conflict-keep-memory")
+                        .px_2()
+                        .py_1()
+                        .rounded_md()
+                        .bg(rgb(DARK_THEME.chrome))
+                        .cursor_pointer()
+                        .text_xs()
+                        .child("Keep editor version")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.resolve_project_conflict(ConflictResolution::KeepMemory, cx);
+                        })),
+                )
+                .child(
+                    div()
+                        .id("conflict-take-disk")
+                        .px_2()
+                        .py_1()
+                        .rounded_md()
+                        .bg(rgb(DARK_THEME.chrome))
+                        .cursor_pointer()
+                        .text_xs()
+                        .child("Load disk version")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.resolve_project_conflict(ConflictResolution::TakeDisk, cx);
+                        })),
+                )
+                .child(
+                    div()
+                        .id("conflict-save-both")
+                        .px_2()
+                        .py_1()
+                        .rounded_md()
+                        .bg(rgb(DARK_THEME.chrome))
+                        .cursor_pointer()
+                        .text_xs()
+                        .child("Save both versions")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.resolve_project_conflict(ConflictResolution::SaveBoth, cx);
+                        })),
+                );
+        }
+
+        if !self.project.recent().is_empty() {
+            panel = panel.child(
+                div()
+                    .mt_3()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child("RECENT"),
+            );
+            for (index, path) in self.project.recent().iter().take(6).enumerate() {
+                let open_path = path.clone();
+                let label = path.file_name().map_or_else(
+                    || path.display().to_string(),
+                    |name| name.to_string_lossy().into(),
+                );
+                panel = panel.child(
+                    div()
+                        .id(("recent-project", index))
+                        .px_1()
+                        .py_1()
+                        .rounded_md()
+                        .cursor_pointer()
+                        .text_xs()
+                        .text_color(rgb(DARK_THEME.text))
+                        .child(label)
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            this.open_project_path(&open_path, cx);
+                        })),
+                );
+            }
         }
         panel.into_any_element()
     }
@@ -324,11 +753,7 @@ impl gpui::Render for EditorShell {
         let layout = self.state.layout.clone();
         let mut workspace = div().flex().flex_1().min_h_0().min_w_0();
         if layout.project_sidebar {
-            workspace = workspace.child(Self::panel(
-                "Project",
-                "Open or create a .weave project",
-                Some(layout.left_width),
-            ));
+            workspace = workspace.child(self.project_panel(layout.left_width, cx));
         }
 
         let active_detail = match layout.center {
@@ -377,13 +802,13 @@ impl gpui::Render for EditorShell {
             .key_context("WeaveEditor")
             .track_focus(&self.focus)
             .on_action(cx.listener(|this, _: &NewProject, _, cx| {
-                this.apply(EditorCommand::NewProject, cx);
+                this.new_project(cx);
             }))
-            .on_action(cx.listener(|this, _: &OpenProject, _, cx| {
-                this.apply(EditorCommand::OpenProject, cx);
+            .on_action(cx.listener(|this, _: &OpenProject, window, cx| {
+                this.prompt_open_project(window, cx);
             }))
-            .on_action(cx.listener(|this, _: &SaveProject, _, cx| {
-                this.apply(EditorCommand::Save, cx);
+            .on_action(cx.listener(|this, _: &SaveProject, window, cx| {
+                this.save_project(window, cx);
             }))
             .on_action(cx.listener(|this, _: &Undo, _, cx| {
                 this.apply(EditorCommand::Undo, cx);

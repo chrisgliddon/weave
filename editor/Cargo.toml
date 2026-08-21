@@ -10,6 +10,10 @@ repository.workspace = true
 [dependencies]
 gpui.workspace = true
 gpui-flow.workspace = true
+notify.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
 thiserror.workspace = true
 unicode-segmentation.workspace = true
 weave-compiler = { path = "../crates/weave-compiler" }

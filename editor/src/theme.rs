@@ -53,7 +53,9 @@ mod tests {
     fn default_theme_has_distinct_focus_and_error_tokens() {
         assert_ne!(DARK_THEME.workspace, DARK_THEME.panel);
         assert_ne!(DARK_THEME.accent, DARK_THEME.error);
-        assert!(DARK_THEME.spacing > 0.0);
-        assert!(DARK_THEME.radius > 0.0);
+        const {
+            assert!(DARK_THEME.spacing > 0.0);
+            assert!(DARK_THEME.radius > 0.0);
+        }
     }
 }

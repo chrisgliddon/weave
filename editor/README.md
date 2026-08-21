@@ -29,3 +29,9 @@ Knot cards, choice diamonds, grammar boxes, pattern hexagons, and variable pills
 ## Source editing
 
 The Text view edits raw UTF-8 `.weave` source with grapheme-aware cursor movement and deletion, selection, clipboard operations, undo/redo, Unicode-safe search, canonical formatting, and inline compiler diagnostics. Syntax colors cover declarations, knot headers, choices, diverts, strings, numbers, grammar references, pattern calls, comments, and punctuation. Source lines are virtualized, so the GPUI element tree stays proportional to the viewport rather than the file size.
+
+## Project lifecycle
+
+Use the File menu or Project sidebar to create, open, save, and reopen `.weave` projects. Saves replace the source atomically and write an adjacent `.ron` file whenever compilation succeeds. Unsaved changes are mirrored to an adjacent `.weave.recovery.json` snapshot without overwriting the project source.
+
+The native file watcher observes the containing directory so it survives atomic file replacement. It debounces event bursts and fingerprints source to distinguish Weave's own saves from external edits. A clean project reloads external changes into both Text and Graph views. If memory and disk both changed, saving is blocked until the Project sidebar explicitly keeps the editor version, loads the disk version, or preserves both by writing a `.memory-conflict.weave` copy.

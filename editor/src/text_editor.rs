@@ -118,6 +118,18 @@ impl TextBuffer {
         self.saved_revision = self.revision;
     }
 
+    /// Replace the complete document as a clean load boundary.
+    pub fn load(&mut self, source: impl Into<String>) {
+        self.source = source.into();
+        self.cursor = self.source.len();
+        self.anchor = None;
+        self.undo.clear();
+        self.redo.clear();
+        self.revision = self.revision.saturating_add(1);
+        self.saved_revision = self.revision;
+        self.refresh_analysis();
+    }
+
     /// Replace current selection or insert at the caret.
     pub fn insert(&mut self, text: &str) {
         let selection = self.selection();
@@ -411,10 +423,8 @@ pub fn highlight_source(source: &str) -> Vec<SyntaxToken> {
         highlight_line(line, line_start, &mut tokens);
         line_start += line.len();
     }
-    if source.is_empty() || !source.ends_with('\n') {
-        if line_start < source.len() {
-            highlight_line(&source[line_start..], line_start, &mut tokens);
-        }
+    if (source.is_empty() || !source.ends_with('\n')) && line_start < source.len() {
+        highlight_line(&source[line_start..], line_start, &mut tokens);
     }
     tokens
 }
@@ -678,6 +688,17 @@ VAR card = cards.spread.single.draw()
         assert!(buffer.source().contains("é👩‍🚀\n"));
         assert!(buffer.redo());
         assert!(buffer.source().is_char_boundary(buffer.cursor()));
+    }
+
+    #[test]
+    fn loading_a_project_resets_history_and_dirty_state() {
+        let mut buffer = TextBuffer::new("=== start ===\nFirst.\n-> END\n");
+        buffer.insert("changed");
+        assert!(buffer.is_dirty());
+        buffer.load("=== start ===\nSecond.\n-> END\n");
+        assert!(!buffer.is_dirty());
+        assert!(!buffer.undo());
+        assert!(buffer.source().contains("Second."));
     }
 
     #[test]

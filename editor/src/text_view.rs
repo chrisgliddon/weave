@@ -57,6 +57,14 @@ impl TextSurface {
         cx.notify();
     }
 
+    /// Load a project or externally-updated file as a clean history boundary.
+    pub fn load_source(&mut self, source: &str, cx: &mut Context<Self>) {
+        self.buffer.load(source);
+        self.after_edit();
+        self.message = "Source loaded from disk".to_owned();
+        cx.notify();
+    }
+
     /// Mark current source as saved.
     pub const fn mark_saved(&mut self) {
         self.buffer.mark_saved();
