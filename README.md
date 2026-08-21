@@ -181,6 +181,18 @@ story.weave  →  [weavec compiler]  →  story.ron   (Rust-native, human-readab
 
 RON and JSON decode to the same versioned `StoryIr`. The compatibility rules and generated JSON Schema are documented in the [JSON story format guide](docs/json_format.md).
 
+### Browser player
+
+The dependency-light [`weave-web`](crates/weave-web) crate exposes the standalone runtime through WebAssembly. Build and serve the accessible example with:
+
+```bash
+cargo install wasm-bindgen-cli --version 0.2.127 --locked --root target/web-tools
+./scripts/build-web-player.sh
+python3 -m http.server 4173 --directory examples/web-player
+```
+
+See the [web player guide](examples/web-player/README.md) for its JavaScript API, deterministic seed contract, state-storage boundary, platform requirements, and measured release size.
+
 ### RON Output (excerpt)
 
 ```ron
@@ -217,6 +229,7 @@ weave/
 │   ├── weave-patterns/      # Built-in pattern systems (tarot, i-ching, runes)
 │   ├── weave-compiler/      # .weave → .ron / .json compiler
 │   ├── weave-bevy/          # Bevy plugin
+│   ├── weave-web/           # Browser-safe WASM runtime bindings
 │   └── weave-fmt/           # Formatter / pretty-printer for .weave files
 │
 ├── editor/                  # Standalone GPU-accelerated editor (GPUI)
@@ -234,7 +247,8 @@ weave/
 ├── examples/                # Runnable language, pattern, and integration stories
 │   ├── stories/             # Basic grammar and branching source files
 │   ├── standalone-runtime/  # Compiler + runtime example
-│   └── bevy-dialogue/       # Headless Bevy asset/event example
+│   ├── bevy-dialogue/       # Headless Bevy asset/event example
+│   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── docs/
 │   ├── language_guide.md   # Full syntax documentation
@@ -419,7 +433,7 @@ weavec story.weave --watch            # recompile on file change
 
 ### Phase 4 — Ecosystem
 - [x] JSON compilation output
-- [ ] Web-based story player (WASM)
+- [x] Web-based story player (WASM)
 - [ ] Language server (LSP) for text editors
 - [ ] Syntax highlighting grammars (tree-sitter)
 - [ ] Documentation site

@@ -1,0 +1,27 @@
+[package]
+name = "weave-web"
+description = "Browser-safe WebAssembly bindings for the standalone Weave runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+serde-wasm-bindgen.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+weave-core = { path = "../weave-core" }
+weave-patterns = { path = "../weave-patterns" }
+weave-runtime = { path = "../weave-runtime" }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.77"
+
+[lints]
+workspace = true

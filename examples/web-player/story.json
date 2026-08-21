@@ -1,0 +1,254 @@
+{
+  "version": 2,
+  "source_name": "examples/web-player/story.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 297,
+        "end": 325,
+        "line": 11,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "signal",
+          "value": {
+            "kind": "call",
+            "value": {
+              "path": [
+                "signals",
+                "draw"
+              ],
+              "arguments": []
+            }
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {
+    "signals": {
+      "builtin": null,
+      "collections": {
+        "signs": {
+          "elements": [
+            {
+              "fields": {
+                "meaning": {
+                  "kind": "symbol",
+                  "value": "hidden_path"
+                },
+                "name": {
+                  "kind": "string",
+                  "value": "Foxfire"
+                }
+              }
+            },
+            {
+              "fields": {
+                "meaning": {
+                  "kind": "symbol",
+                  "value": "clear_warning"
+                },
+                "name": {
+                  "kind": "string",
+                  "value": "Bell Glass"
+                }
+              }
+            },
+            {
+              "fields": {
+                "meaning": {
+                  "kind": "symbol",
+                  "value": "patient_change"
+                },
+                "name": {
+                  "kind": "string",
+                  "value": "Moth Wing"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "spreads": {},
+      "draw_method": {
+        "kind": "uniform"
+      },
+      "allow_duplicates": false,
+      "reversals": false
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 340,
+            "end": 446,
+            "line": 14,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "parts": [
+                {
+                  "kind": "text",
+                  "value": "The hilltop observatory wakes beneath a sky of moving ink. The dial marks "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "signal",
+                      "name"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": ": "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "signal",
+                      "meaning"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": "."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 448,
+            "end": 469,
+            "line": 16,
+            "column": 1
+          },
+          "kind": {
+            "kind": "choice",
+            "value": {
+              "id": "start:root.1",
+              "once": true,
+              "text": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Follow the signal"
+                  }
+                ]
+              },
+              "condition": null,
+              "body": [
+                {
+                  "span": {
+                    "start": 474,
+                    "end": 543,
+                    "line": 17,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "You turn the brass wheel. A thin road of light opens beyond the dome."
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 548,
+                    "end": 554,
+                    "line": 18,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "end"
+                  }
+                }
+              ],
+              "divert": null
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 556,
+            "end": 579,
+            "line": 20,
+            "column": 1
+          },
+          "kind": {
+            "kind": "choice",
+            "value": {
+              "id": "start:root.2",
+              "once": true,
+              "text": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Close the night log"
+                  }
+                ]
+              },
+              "condition": null,
+              "body": [
+                {
+                  "span": {
+                    "start": 584,
+                    "end": 665,
+                    "line": 21,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "You record the sign, shutter the lens, and leave the stars to their patient work."
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 670,
+                    "end": 676,
+                    "line": 22,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "end"
+                  }
+                }
+              ],
+              "divert": null
+            }
+          }
+        }
+      ]
+    }
+  }
+}

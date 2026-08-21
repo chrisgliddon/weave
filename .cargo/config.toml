@@ -1,0 +1,2 @@
+[target.wasm32-unknown-unknown]
+runner = "./scripts/wasm-test-runner.sh"

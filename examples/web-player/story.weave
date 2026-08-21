@@ -1,0 +1,22 @@
+// A compact browser-player story with one semantic pattern draw and two endings.
+pattern signals {
+    signs: [
+        (name: "Foxfire", meaning: hidden_path),
+        (name: "Bell Glass", meaning: clear_warning),
+        (name: "Moth Wing", meaning: patient_change),
+    ]
+    draw: uniform
+}
+
+VAR signal = signals.draw()
+
+=== start ===
+The hilltop observatory wakes beneath a sky of moving ink. The dial marks {signal.name}: {signal.meaning}.
+
+* [Follow the signal]
+    You turn the brass wheel. A thin road of light opens beyond the dome.
+    -> END
+
+* [Close the night log]
+    You record the sign, shutter the lens, and leave the stars to their patient work.
+    -> END

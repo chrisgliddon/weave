@@ -12,6 +12,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 | `weave-compiler` | Checked AST-to-IR lowering, RON/JSON serialization, and the `weavec` CLI | `weave-core`; never `weave-runtime` or Bevy |
 | `weave-fmt` | Canonical `.weave` source rendering | `weave-core` |
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
+| `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
 | `weave_editor` | Standalone GPUI editor delivered in Phase 3 | Public APIs of the crates above |
 
 The dependency direction is:
@@ -24,6 +25,9 @@ weave-core
 
 weave-core + weave-patterns
 └── weave-runtime
+
+weave-core + weave-patterns + weave-runtime
+└── weave-web
 
 weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy

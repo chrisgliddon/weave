@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#171916">
+    <title>Weave · Night Observatory</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#story">Skip to the story</a>
+    <main class="page-shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Weave field edition · 01</p>
+          <h1>Night<br>Observatory</h1>
+        </div>
+        <p class="deck">A deterministic story running entirely in your browser.</p>
+      </header>
+
+      <section class="story-sheet" id="story" aria-labelledby="story-heading">
+        <div class="sheet-heading">
+          <div>
+            <p class="folio">Interactive record</p>
+            <h2 id="story-heading">The signal log</h2>
+          </div>
+          <p id="status" class="status" role="status" aria-live="polite">Loading the runtime…</p>
+        </div>
+
+        <ol id="transcript" class="transcript" aria-live="polite" aria-relevant="additions"></ol>
+
+        <fieldset id="choice-fieldset" class="choices" hidden>
+          <legend>Choose the next action</legend>
+          <div id="choice-list" class="choice-list"></div>
+        </fieldset>
+
+        <div class="primary-actions" aria-label="Story controls">
+          <button id="continue" class="button button-primary" type="button" disabled>Continue</button>
+          <button id="restart" class="button button-quiet" type="button" disabled>Restart</button>
+        </div>
+      </section>
+
+      <aside class="workbench" aria-labelledby="workbench-heading">
+        <div>
+          <p class="folio">Host boundary</p>
+          <h2 id="workbench-heading">Reader’s bench</h2>
+        </div>
+        <label for="seed">Deterministic seed</label>
+        <div class="seed-row">
+          <input id="seed" name="seed" type="number" min="0" max="4294967295" step="1" value="73" inputmode="numeric">
+          <button id="apply-seed" class="button button-small" type="button" disabled>Apply</button>
+        </div>
+        <div class="save-row">
+          <button id="save" class="text-action" type="button" disabled>Save state</button>
+          <button id="load" class="text-action" type="button" disabled>Load state</button>
+          <button id="clear" class="text-action" type="button">Clear save</button>
+        </div>
+        <p class="boundary-note">The WASM runtime never reads browser storage. These controls explicitly move its versioned state string through this page’s local storage.</p>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
