@@ -1,0 +1,575 @@
+{
+  "$defs": {
+    "CapabilityDeclaration": {
+      "additionalProperties": false,
+      "description": "One versioned host capability required by a module.",
+      "properties": {
+        "id": {
+          "description": "Stable capability identifier.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Capability contract version.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "ExportDeclaration": {
+      "additionalProperties": false,
+      "description": "One typed value exported by a module.",
+      "properties": {
+        "description": {
+          "description": "Author-facing export purpose.",
+          "type": "string"
+        },
+        "required": {
+          "description": "Whether a selected pack must provide an initial value.",
+          "type": "boolean"
+        },
+        "source": {
+          "$ref": "#/$defs/ExportSource",
+          "description": "Runtime mutability and ownership boundary."
+        },
+        "type": {
+          "$ref": "#/$defs/TypeExpression",
+          "description": "Export value type."
+        }
+      },
+      "required": [
+        "type",
+        "required",
+        "source",
+        "description"
+      ],
+      "type": "object"
+    },
+    "ExportSource": {
+      "description": "Ownership of an exported value after compilation.",
+      "oneOf": [
+        {
+          "const": "pack",
+          "description": "Immutable compiled data supplied by packs.",
+          "type": "string"
+        },
+        {
+          "const": "state",
+          "description": "Versioned mutable state initialized from pack data and stored separately.",
+          "type": "string"
+        }
+      ]
+    },
+    "FieldDeclaration": {
+      "additionalProperties": false,
+      "description": "One field in a closed object type.",
+      "properties": {
+        "description": {
+          "description": "Author-facing field purpose.",
+          "type": "string"
+        },
+        "required": {
+          "description": "Whether the field must be present.",
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/TypeExpression",
+          "description": "Field value type."
+        }
+      },
+      "required": [
+        "type",
+        "required",
+        "description"
+      ],
+      "type": "object"
+    },
+    "ModuleAuthor": {
+      "additionalProperties": false,
+      "description": "One module author or steward.",
+      "properties": {
+        "name": {
+          "description": "Display name.",
+          "type": "string"
+        },
+        "url": {
+          "description": "Optional public HTTPS profile or project page.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "ModuleDependency": {
+      "additionalProperties": false,
+      "description": "One module dependency.",
+      "properties": {
+        "id": {
+          "description": "Globally stable module identity.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Accepted semantic versions.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "TypeExpression": {
+      "description": "Closed, host-independent type language for domain values.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number with optional bounds.",
+          "properties": {
+            "integer": {
+              "description": "Require an integral numeric value.",
+              "type": "boolean"
+            },
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "maximum": {
+              "description": "Inclusive upper bound.",
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "minimum": {
+              "description": "Inclusive lower bound.",
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "integer"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text with scalar-length bounds.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "max_length": {
+              "description": "Maximum Unicode-scalar count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_length": {
+              "description": "Minimum Unicode-scalar count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "min_length",
+            "max_length"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom from a closed, sorted set.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "values": {
+              "description": "Allowed symbolic values.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "values"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Homogeneous, bounded ordered values.",
+          "properties": {
+            "items": {
+              "$ref": "#/$defs/TypeExpression",
+              "description": "Element type."
+            },
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "max_items": {
+              "description": "Maximum item count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_items": {
+              "description": "Minimum item count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "items",
+            "min_items",
+            "max_items"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "fields": {
+              "additionalProperties": {
+                "$ref": "#/$defs/FieldDeclaration"
+              },
+              "description": "Declared fields, sorted by name in serialized output.",
+              "type": "object"
+            },
+            "kind": {
+              "const": "object",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "fields"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Reference to a manifest-local named type.",
+          "properties": {
+            "kind": {
+              "const": "named",
+              "type": "string"
+            },
+            "name": {
+              "description": "Name in [`ModuleManifest::types`].",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:domain-module-manifest:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A portable, declarative domain-module manifest.",
+  "properties": {
+    "authors": {
+      "description": "Module authors or stewards.",
+      "items": {
+        "$ref": "#/$defs/ModuleAuthor"
+      },
+      "type": "array"
+    },
+    "capabilities": {
+      "description": "Required host capabilities in canonical identifier order.",
+      "items": {
+        "$ref": "#/$defs/CapabilityDeclaration"
+      },
+      "type": "array"
+    },
+    "contract_version": {
+      "const": 1,
+      "description": "Module contract version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "dependencies": {
+      "description": "Required modules in canonical module-identifier order.",
+      "items": {
+        "$ref": "#/$defs/ModuleDependency"
+      },
+      "type": "array"
+    },
+    "exports": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ExportDeclaration"
+      },
+      "description": "Values exposed to source, compiler, runtime, and host integrations.",
+      "type": "object"
+    },
+    "id": {
+      "description": "Globally stable, dot-separated module identity.",
+      "type": "string"
+    },
+    "license": {
+      "description": "SPDX license expression for the manifest and module-authored data.",
+      "type": "string"
+    },
+    "license_url": {
+      "description": "HTTPS location of the applicable license text.",
+      "type": "string"
+    },
+    "namespace": {
+      "description": "Default source-language namespace.",
+      "type": "string"
+    },
+    "pack_format_version": {
+      "description": "Data-pack format consumed by this module.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance",
+      "description": "Machine-readable authorship and source lineage."
+    },
+    "summary": {
+      "description": "Concise module purpose.",
+      "type": "string"
+    },
+    "title": {
+      "description": "Human-readable module title.",
+      "type": "string"
+    },
+    "types": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypeExpression"
+      },
+      "description": "Reusable named value types.",
+      "type": "object"
+    },
+    "version": {
+      "description": "Semantic module version.",
+      "type": "string"
+    },
+    "weave_version": {
+      "description": "Compatible Weave releases.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_version",
+    "pack_format_version",
+    "id",
+    "version",
+    "namespace",
+    "title",
+    "summary",
+    "authors",
+    "license",
+    "license_url",
+    "weave_version",
+    "capabilities",
+    "dependencies",
+    "types",
+    "exports",
+    "provenance"
+  ],
+  "title": "Weave Domain Module Manifest v1",
+  "type": "object",
+  "x-weave-domain-contract-version": 1
+}

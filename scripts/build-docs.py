@@ -32,6 +32,7 @@ REQUIRED_CHAPTERS = {
     "language_guide.md",
     "pattern_systems.md",
     "community_patterns.md",
+    "domain_modules.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -50,6 +51,7 @@ RUSTDOC_PACKAGES = (
     "weave-compiler",
     "weave-runtime",
     "weave-patterns",
+    "weave-domain",
     "weave-fmt",
     "weave-bevy",
     "weave-web",
@@ -229,6 +231,28 @@ def pattern_tool_binary() -> Path:
     return binary
 
 
+def domain_tool_binary() -> Path:
+    """Build and locate the domain-module contract command-line tool."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-domain",
+            "--bin",
+            "weave-module",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-module{suffix}"
+    if not binary.is_file():
+        raise DocsError(f"domain module tool was not produced at {binary}")
+    return binary
+
+
 def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
@@ -369,6 +393,96 @@ def verify_community_package() -> None:
     print("verified community package publication and story loading", flush=True)
 
 
+def verify_domain_contract() -> None:
+    """Verify schemas, validation, and canonical JSON/RON domain fixtures."""
+
+    domain_tool = domain_tool_binary()
+    fixture = ROOT / "examples" / "domain-modules" / "contract"
+    manifest_json = fixture / "module.weave-module.json"
+    manifest_ron = fixture / "module.weave-module.ron"
+    pack_json = fixture / "pack.weave-domain.json"
+    pack_ron = fixture / "pack.weave-domain.ron"
+
+    run(
+        [
+            str(domain_tool),
+            "validate",
+            str(manifest_json.relative_to(ROOT)),
+            "--pack",
+            str(pack_json.relative_to(ROOT)),
+        ],
+        capture=True,
+    )
+    run(
+        [
+            str(domain_tool),
+            "validate",
+            str(manifest_ron.relative_to(ROOT)),
+            "--pack",
+            str(pack_ron.relative_to(ROOT)),
+        ],
+        capture=True,
+    )
+
+    with tempfile.TemporaryDirectory(prefix="weave-domain-contract-") as temporary:
+        workspace = Path(temporary)
+        generated_manifest_schema = workspace / "domain-module-manifest-v1.schema.json"
+        generated_pack_schema = workspace / "domain-pack-v1.schema.json"
+        normalized_manifest_json = workspace / "module.weave-module.json"
+        normalized_manifest_ron = workspace / "module.weave-module.ron"
+        normalized_pack_json = workspace / "pack.weave-domain.json"
+        normalized_pack_ron = workspace / "pack.weave-domain.ron"
+
+        for kind, output in (
+            ("manifest", generated_manifest_schema),
+            ("pack", generated_pack_schema),
+        ):
+            run(
+                [str(domain_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
+        for generated, checked in (
+            (
+                generated_manifest_schema,
+                ROOT / "schemas" / "domain-module-manifest-v1.schema.json",
+            ),
+            (generated_pack_schema, ROOT / "schemas" / "domain-pack-v1.schema.json"),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"checked-in domain schema is stale: {checked.name}")
+
+        normalization_jobs = (
+            ("manifest", manifest_json, "json", normalized_manifest_json),
+            ("manifest", manifest_json, "ron", normalized_manifest_ron),
+            ("pack", pack_json, "json", normalized_pack_json),
+            ("pack", pack_json, "ron", normalized_pack_ron),
+        )
+        for kind, source, encoding, output in normalization_jobs:
+            run(
+                [
+                    str(domain_tool),
+                    "normalize",
+                    kind,
+                    str(source.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+        for generated, checked in (
+            (normalized_manifest_json, manifest_json),
+            (normalized_manifest_ron, manifest_ron),
+            (normalized_pack_json, pack_json),
+            (normalized_pack_ron, pack_ron),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"canonical domain fixture is stale: {checked.name}")
+
+    print("verified domain module schemas and canonical JSON/RON fixtures", flush=True)
+
+
 def run_finite_examples() -> None:
     """Exercise the two non-interactive example programs advertised by the site."""
 
@@ -424,6 +538,8 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
     for schema in (
         "weave-story-ir-v2.schema.json",
         "community-pattern-package-v1.schema.json",
+        "domain-module-manifest-v1.schema.json",
+        "domain-pack-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")
@@ -584,6 +700,7 @@ def main() -> None:
     check_quickstart_source()
     compile_examples()
     verify_community_package()
+    verify_domain_contract()
     run_finite_examples()
     rustdoc = build_rustdoc()
     build_site(rustdoc, mdbook)

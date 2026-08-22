@@ -6,6 +6,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 
 | Package | Responsibility | May depend on |
 |---|---|---|
+| `weave-domain` | Host-independent domain-module manifests, types, values, packs, compatibility, deterministic resolution, and provenance | General-purpose serialization, schema, semantic-version, and URL crates only |
 | `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | General-purpose parsing and serialization crates only |
 | `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
 | `weave-patterns` | Serializable pattern extension boundary, data-only community package registry, and built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core`; never compiler, runtime, or host APIs |
@@ -20,6 +21,8 @@ This document defines package ownership and dependency boundaries for the Rust w
 The dependency direction is:
 
 ```text
+weave-domain
+
 weave-core
 ├── weave-patterns
 └── weave-fmt
@@ -40,6 +43,8 @@ Weave language specification
 weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
+
+`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. During Phase 5, `weave-core` consumes its portable value types, while compiler, runtime, editor, Bevy, and browser boundaries depend inward on the same contract rather than defining host-specific module models. The complete contract, activation, compatibility, and provenance rules are in the [domain-module guide](domain_modules.md).
 
 `tree-sitter-weave` is intentionally independent of `weave-core`: editors can parse unfinished source without linking the compiler. Its grammar and queries must track the normative language guide, and its npm package, Rust crate, grammar metadata, and language-specification version are released together.
 

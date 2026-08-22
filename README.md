@@ -171,6 +171,8 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed exports, canonical RON/JSON packs, semantic-version negotiation, deterministic dependency ordering, and machine-readable provenance. The `weave-module` tool generates both checked schemas and validates the original synthetic contract fixture without loading third-party code.
+
 ---
 
 ## Compilation
@@ -265,6 +267,7 @@ weave/
 │   ├── weave-core/          # Language parser, AST, type system
 │   ├── weave-runtime/       # Story runtime engine (no Bevy dependency)
 │   ├── weave-patterns/      # Built-ins plus data-only community packages and registry CLI
+│   ├── weave-domain/        # Versioned domain-module manifests, packs, validation, and schemas
 │   ├── weave-compiler/      # .weave → .ron / .json compiler
 │   ├── weave-bevy/          # Bevy plugin
 │   ├── weave-web/           # Browser-safe WASM runtime bindings
@@ -289,6 +292,7 @@ weave/
 │   ├── stories/             # Basic grammar and branching source files
 │   ├── standalone-runtime/  # Compiler + runtime example
 │   ├── bevy-dialogue/       # Interactive Bevy dialogue game + smoke test
+│   ├── domain-modules/      # Canonical JSON/RON contract fixtures
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples
@@ -299,6 +303,7 @@ weave/
 │   ├── language_server.md  # LSP capabilities and editor setup
 │   ├── pattern_systems.md  # How to define and use pattern systems
 │   ├── community_patterns.md # Package format, registry, provenance, and moderation
+│   ├── domain_modules.md    # Manifest, namespace, compatibility, and provenance contract
 │   ├── bevy_integration.md # Using Weave in Bevy games
 │   ├── editor_guide.md     # Using the visual editor
 │   └── api_reference.md    # Generated rustdoc entry points
@@ -488,7 +493,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Community pattern system library
 
 ### Phase 5 — Pluggable Domain Modules
-- [ ] Shared module manifests, namespaces, compatibility, and provenance contract
+- [x] Shared module manifests, namespaces, compatibility, and provenance contract
 - [ ] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
 - [ ] Weave Character: personality, date context, relationships, expression, and guided authoring
 - [ ] Selectable tabletop ruleset adapters with isolated, versioned state

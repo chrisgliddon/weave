@@ -1,0 +1,112 @@
+(
+    contract_version: 1,
+    pack_format_version: 1,
+    id: "org.weave.synthetic_constellation",
+    version: "1.0.0",
+    namespace: "constellation",
+    title: "Synthetic Constellation",
+    summary: "A deliberately fictional module used to verify the public domain-module contract.",
+    authors: [
+        (
+            name: "Weave Contributors",
+            url: Some("https://github.com/chrisgliddon/weave"),
+        ),
+    ],
+    license: "MIT",
+    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+    weave_version: ">=0.1.0, <0.2.0",
+    capabilities: [
+        (
+            id: "data",
+            version: 1,
+        ),
+        (
+            id: "editor_schema",
+            version: 1,
+        ),
+    ],
+    dependencies: [],
+    types: {
+        "Observation": (
+            kind: "object",
+            fields: {
+                "intensity": (
+                    type: (
+                        kind: "number",
+                        integer: false,
+                        minimum: Some(0.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "A normalized fictional observation strength.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "An authored display label.",
+                ),
+            },
+        ),
+        "Phase": (
+            kind: "symbol",
+            values: [
+                "dawn",
+                "midnight",
+                "twilight",
+            ],
+        ),
+    },
+    exports: {
+        "observation": (
+            type: (
+                kind: "named",
+                name: "Observation",
+            ),
+            required: true,
+            source: pack,
+            description: "The current fictional sky observation.",
+        ),
+        "phase": (
+            type: (
+                kind: "named",
+                name: "Phase",
+            ),
+            required: true,
+            source: pack,
+            description: "The current fictional sky phase.",
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "weave_fixture",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "domain-contract-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic fixture authored for the Weave domain-module contract.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "exports.observation": [
+                "weave_fixture",
+            ],
+            "exports.phase": [
+                "weave_fixture",
+            ],
+            "types.Observation": [
+                "weave_fixture",
+            ],
+            "types.Phase": [
+                "weave_fixture",
+            ],
+        },
+    ),
+)

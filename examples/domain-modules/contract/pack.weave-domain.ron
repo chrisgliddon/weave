@@ -1,0 +1,53 @@
+(
+    pack_format_version: 1,
+    id: "glasswing_sky",
+    version: "1.0.0",
+    title: "Glasswing Sky",
+    module: (
+        id: "org.weave.synthetic_constellation",
+        version: "=1.0.0",
+    ),
+    dependencies: [],
+    values: {
+        "observation": (
+            kind: object,
+            value: {
+                "intensity": (
+                    kind: number,
+                    value: 0.625,
+                ),
+                "label": (
+                    kind: string,
+                    value: "Glasswing constellation",
+                ),
+            },
+        ),
+        "phase": (
+            kind: symbol,
+            value: "twilight",
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "weave_fixture",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "domain-contract-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic fixture authored for the Weave domain-module contract.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "values.observation": [
+                "weave_fixture",
+            ],
+            "values.phase": [
+                "weave_fixture",
+            ],
+        },
+    ),
+)

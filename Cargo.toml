@@ -3,6 +3,7 @@ members = [
     "crates/weave-bevy",
     "crates/weave-compiler",
     "crates/weave-core",
+    "crates/weave-domain",
     "crates/weave-fmt",
     "crates/weave-patterns",
     "crates/weave-runtime",
