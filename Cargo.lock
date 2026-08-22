@@ -8890,6 +8890,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.20",
  "unicode-segmentation",
+ "weave-character",
  "weave-compiler",
  "weave-core",
  "weave-domain",

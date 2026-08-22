@@ -1,0 +1,8 @@
+{
+  "review_format_version": 1,
+  "proposal_sha256": "519129097c03769320edf5d1c4ceaa74431f28ba50d7fe0101420d6861c974cd",
+  "input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "decision": "accepted",
+  "reviewer": "org.weave.reviewer.fixture",
+  "rationale": "Approve the complete synthetic reference-safe rename."
+}

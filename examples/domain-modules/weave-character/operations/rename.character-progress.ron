@@ -1,0 +1,12 @@
+(
+    progress_format_version: 1,
+    collection_id: "org.weave.character.collection.glasswind",
+    input_sha256: "140e61c43ad62a16eb330d0e42a7aa11637ff5d94ecebcfe43dae11fb48e061d",
+    request_sha256: "8f69e402ffbb0a410dea2d63fcde07ff068b939fbbe89587e42d439f6ca0f09c",
+    total: 2,
+    next_index: 1,
+    completed_target_ids: [
+        "org.weave.character.ari_vale",
+    ],
+    state: running,
+)

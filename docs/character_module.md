@@ -2,7 +2,7 @@
 
 Weave Character v1 is a portable, data-only contract for fictional character canon, evidence, projections, suggestions, and deterministic template synthesis. It is not a personality test, clinical instrument, hiring tool, or claim about a real person. The contract does not copy or administer questionnaire items. It uses the public six-factor and 24-facet vocabulary documented by the [HEXACO-PI-R authors](https://hexaco.org/scaledescriptions); the authors' [inventory history](https://hexaco.org/history) distinguishes those 24 factor-specific facets from later interstitial scales. The synthetic fixture values, identities, prose, algorithms, extension examples, and expected outputs are original MIT-licensed Weave material.
 
-The Rust authority is `weave-character`. Download the generated [profile schema](downloads/weave-character-profile-v1.schema.json), [template schema](downloads/weave-character-template-v1.schema.json), [overlay schema](downloads/weave-character-overlay-v1.schema.json), [synthesis schema](downloads/weave-character-synthesis-v1.schema.json), and [diagnostic schema](downloads/weave-character-diagnostic-v1.schema.json).
+The Rust authority is `weave-character`. Download the generated [profile schema](downloads/weave-character-profile-v1.schema.json), [template schema](downloads/weave-character-template-v1.schema.json), [overlay schema](downloads/weave-character-overlay-v1.schema.json), [synthesis schema](downloads/weave-character-synthesis-v1.schema.json), [diagnostic schema](downloads/weave-character-diagnostic-v1.schema.json), [collection schema](downloads/weave-character-collection-v1.schema.json), [operation-request schema](downloads/weave-character-operation-request-v1.schema.json), [proposal schema](downloads/weave-character-proposal-v1.schema.json), [review schema](downloads/weave-character-review-v1.schema.json), and [progress schema](downloads/weave-character-progress-v1.schema.json).
 
 ## Trust and data boundaries
 
@@ -123,6 +123,23 @@ Updating a template changes its fingerprint. The old overlay then reports `C107`
 
 The closed v1 operation set covers display name, aliases, birth date, every factor/facet, inner-life records, voice records, suggestions, and extensions. No operation can set an OCEAN field. RON and JSON use the same operation enum and diagnostic record.
 
+## Collections and reviewed corpus operations
+
+`CharacterCollection` is a versioned, deterministic map from stable character id to independently valid profiles. Its revision increases only when an accepted operation changes at least one profile. `CharacterOperationRequest` pins the canonical input collection SHA-256, a deterministic seed, one explicit scope, provenance, and one action. The action vocabulary covers create, clone, revise, rename, import, and recompute; list, show, validate, propose, review, resume, and apply are shared operations over those artifacts.
+
+Scopes select all profiles, a sorted exact id set, or a deterministic filter by id prefix and/or extension namespace. Create, clone, revise, rename, and import name their direct targets in the action. Recompute applies its scope and changes only derived compatibility views. It never writes inference into canon or replaces a locked authored value.
+
+The reviewed workflow has four boundaries:
+
+1. Propose validates the complete input and request, applies the action to an isolated clone, migrates every affected relationship reference, and emits a byte-stable `CharacterProposal`. The proposal includes exact input/request/output hashes, sorted target ids, fingerprinted changes, the complete candidate collection, and the original request needed for independent reproduction. The accepted collection is unchanged.
+2. Resume advances over that same sorted target list. `CharacterJobProgress` stores only the collection, input and request hashes, total, cursor, completed id prefix, and state. It contains no character payload or private authoring prose. A proposal appears only when every target has been accounted for.
+3. Review accepts or rejects the entire proposal hash. Partial reviews and partial application are unsupported.
+4. Apply validates the review, verifies that the current collection still matches the pinned input, and independently reproduces the proposal. A stale, rejected, malformed, or differently fingerprinted artifact returns an error before state changes. A successful apply returns one complete replacement collection; the CLI persists it through an atomic same-directory rename, and the editor swaps its in-memory collection in one transition.
+
+Changing a display name leaves stable ids and references intact. Changing a stable id previews both owned source references and incoming target references. A locked relationship extension stops the whole rename unless the request explicitly enables the locked override and records a rationale. Import validates every JSON or RON profile before mutation, requires unique sorted ids, is a no-op when repeated with identical content, and refuses conflicts unless `force` plus a rationale are present. The proposal and review retain that override decision.
+
+The source-tooling API, `CharacterCorpusSession` editor service, and `weave-character` CLI call these same functions and return the same typed diagnostics. A CLI proposal is therefore byte-identical to the source/editor proposal for the same collection, request, seed, and contract versions.
+
 ## Diagnostics and failure policy
 
 Failures identify a stable path and static redaction-safe message without echoing rejected values:
@@ -173,7 +190,7 @@ VAR ocean_openness = character.profile.ocean.openness.score
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. Invalid fixtures cover an unsupported core version, conflicting overlay, stale template, bad relationship, unsupported typed extension version, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The collection fixtures add Sable Reed, a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. Invalid fixtures cover unsupported versions, conflicting overlays, stale input/review/progress, a malformed proposal, a bad relationship, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
@@ -183,6 +200,27 @@ cargo run -p weave-character -- schema profile \
 
 cargo run -p weave-character -- validate profile \
   examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- collection-list \
+  examples/domain-modules/weave-character/operations/collection.character-collection.json
+
+cargo run -p weave-character -- collection-propose \
+  examples/domain-modules/weave-character/operations/collection.character-collection.json \
+  examples/domain-modules/weave-character/operations/rename.character-request.json \
+  --output target/rename.character-proposal.json
+
+cargo run -p weave-character -- collection-review \
+  target/rename.character-proposal.json \
+  --decision accepted \
+  --reviewer org.weave.reviewer.example \
+  --rationale "Approve the complete reference-safe rename." \
+  --output target/rename.character-review.json
+
+cargo run -p weave-character -- collection-apply \
+  examples/domain-modules/weave-character/operations/collection.character-collection.json \
+  target/rename.character-proposal.json \
+  target/rename.character-review.json \
+  --dry-run
 
 cargo run -p weave-character -- synthesize \
   examples/domain-modules/weave-character/overlay.character.json \

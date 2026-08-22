@@ -5,10 +5,15 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand, ValueEnum};
 use tempfile::NamedTempFile;
 use weave_character::{
-    CharacterOverlay, CharacterProfile, CharacterSynthesisResult, CharacterTemplate,
-    character_diagnostic_schema, character_domain_pack, character_module_manifest,
-    character_overlay_schema, character_profile_schema, character_synthesis_schema,
-    character_template_schema, synthesize_character,
+    CharacterCollection, CharacterJobProgress, CharacterOperationRequest, CharacterOverlay,
+    CharacterProfile, CharacterProposal, CharacterProposalReview, CharacterReviewDecision,
+    CharacterScope, CharacterSynthesisResult, CharacterTemplate, apply_reviewed_character_proposal,
+    character_collection_schema, character_diagnostic_schema, character_domain_pack,
+    character_module_manifest, character_operation_request_schema, character_overlay_schema,
+    character_profile_schema, character_progress_schema, character_proposal_schema,
+    character_review_schema, character_synthesis_schema, character_template_schema,
+    collection_fingerprint, list_characters, propose_character_operation,
+    resume_character_operation, review_character_proposal, show_character, synthesize_character,
 };
 
 #[derive(Debug, Parser)]
@@ -67,6 +72,85 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// List deterministic summaries from one validated Character collection.
+    CollectionList {
+        collection: PathBuf,
+        /// Select one or more exact stable ids.
+        #[arg(long = "id")]
+        ids: Vec<String>,
+        /// Select stable ids with this prefix.
+        #[arg(long)]
+        id_prefix: Option<String>,
+        /// Select profiles containing this extension namespace.
+        #[arg(long)]
+        extension_namespace: Option<String>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Show one exact profile from a validated Character collection.
+    CollectionShow {
+        collection: PathBuf,
+        id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Produce a deterministic review proposal without changing the collection.
+    CollectionPropose {
+        collection: PathBuf,
+        request: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Advance a payload-free resumable collection operation.
+    CollectionResume {
+        collection: PathBuf,
+        request: PathBuf,
+        #[arg(long)]
+        progress: Option<PathBuf>,
+        #[arg(long, default_value_t = 100)]
+        max_items: usize,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        progress_output: PathBuf,
+        #[arg(long)]
+        proposal_output: Option<PathBuf>,
+    },
+    /// Record a whole-proposal review without changing the collection.
+    CollectionReview {
+        proposal: PathBuf,
+        #[arg(long, value_enum)]
+        decision: ReviewDecision,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Independently reproduce and atomically apply one accepted whole proposal.
+    CollectionApply {
+        collection: PathBuf,
+        proposal: PathBuf,
+        review: PathBuf,
+        /// Validate and reproduce the complete apply without writing any file.
+        #[arg(long)]
+        dry_run: bool,
+        /// Destination collection; defaults to atomically replacing the input collection.
+        #[arg(long)]
+        output: Option<PathBuf>,
+        /// Output encoding; defaults to the destination file extension.
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -76,12 +160,23 @@ enum DocumentKind {
     Overlay,
     Synthesis,
     Diagnostic,
+    Collection,
+    Request,
+    Proposal,
+    Review,
+    Progress,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum OutputFormat {
     Json,
     Ron,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum ReviewDecision {
+    Accepted,
+    Rejected,
 }
 
 fn main() {
@@ -100,6 +195,11 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::Overlay => character_overlay_schema()?,
                 DocumentKind::Synthesis => character_synthesis_schema()?,
                 DocumentKind::Diagnostic => character_diagnostic_schema()?,
+                DocumentKind::Collection => character_collection_schema()?,
+                DocumentKind::Request => character_operation_request_schema()?,
+                DocumentKind::Proposal => character_proposal_schema()?,
+                DocumentKind::Review => character_review_schema()?,
+                DocumentKind::Progress => character_progress_schema()?,
             };
             atomic_write(&output, schema.as_bytes())?;
         }
@@ -122,6 +222,21 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                     return Err(
                         "diagnostic documents have a schema but no standalone validator".into(),
                     );
+                }
+                DocumentKind::Collection => {
+                    parse_collection(&input, &source)?;
+                }
+                DocumentKind::Request => {
+                    parse_request(&input, &source)?;
+                }
+                DocumentKind::Proposal => {
+                    parse_proposal(&input, &source)?;
+                }
+                DocumentKind::Review => {
+                    parse_review(&input, &source)?;
+                }
+                DocumentKind::Progress => {
+                    parse_progress(&input, &source)?;
                 }
             }
             println!("validated {}", input.display());
@@ -180,6 +295,138 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
             atomic_write(&output, serialized.as_bytes())?;
             println!("wrote Character domain pack {}", output.display());
         }
+        Command::CollectionList {
+            collection,
+            ids,
+            id_prefix,
+            extension_namespace,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let scope = collection_scope(ids, id_prefix, extension_namespace)?;
+            let summaries = list_characters(&collection_value, &scope)?;
+            let serialized = match format {
+                OutputFormat::Json => weave_domain::to_pretty_json(&summaries)?,
+                OutputFormat::Ron => weave_domain::to_pretty_ron(&summaries)?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::CollectionShow {
+            collection,
+            id,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let profile = show_character(&collection, &id)?;
+            let serialized = match format {
+                OutputFormat::Json => profile.to_json()?,
+                OutputFormat::Ron => profile.to_ron()?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::CollectionPropose {
+            collection,
+            request,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let request = read_request(&request)?;
+            let proposal = propose_character_operation(&collection, &request)?;
+            let serialized = serialize_proposal(&proposal, format)?;
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character proposal {}", output.display());
+        }
+        Command::CollectionResume {
+            collection,
+            request,
+            progress,
+            max_items,
+            format,
+            progress_output,
+            proposal_output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let request = read_request(&request)?;
+            let progress = progress
+                .as_ref()
+                .map(|path| read_progress(path))
+                .transpose()?;
+            let step =
+                resume_character_operation(&collection, &request, progress.as_ref(), max_items)?;
+            if step.proposal.is_some() && proposal_output.is_none() {
+                return Err(
+                    "completed resume step requires --proposal-output for its proposal".into(),
+                );
+            }
+            let serialized_progress = match format {
+                OutputFormat::Json => step.progress.to_json()?,
+                OutputFormat::Ron => step.progress.to_ron()?,
+            };
+            let serialized_proposal = step
+                .proposal
+                .as_ref()
+                .map(|proposal| serialize_proposal(proposal, format))
+                .transpose()?;
+            atomic_write(&progress_output, serialized_progress.as_bytes())?;
+            if let (Some(path), Some(serialized)) =
+                (proposal_output.as_ref(), serialized_proposal.as_ref())
+            {
+                atomic_write(path, serialized.as_bytes())?;
+            }
+            println!("wrote Character progress {}", progress_output.display());
+        }
+        Command::CollectionReview {
+            proposal,
+            decision,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal = read_proposal(&proposal)?;
+            let decision = match decision {
+                ReviewDecision::Accepted => CharacterReviewDecision::Accepted,
+                ReviewDecision::Rejected => CharacterReviewDecision::Rejected,
+            };
+            let review = review_character_proposal(&proposal, decision, reviewer, rationale)?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character review {}", output.display());
+        }
+        Command::CollectionApply {
+            collection,
+            proposal,
+            review,
+            dry_run,
+            output,
+            format,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let proposal = read_proposal(&proposal)?;
+            let review = read_review(&review)?;
+            let applied = apply_reviewed_character_proposal(&collection_value, &proposal, &review)?;
+            if dry_run {
+                println!(
+                    "validated Character apply {}",
+                    collection_fingerprint(&applied)?
+                );
+            } else {
+                let destination = output.as_deref().unwrap_or(&collection);
+                let format = format.unwrap_or_else(|| output_format_for(destination));
+                let serialized = match format {
+                    OutputFormat::Json => applied.to_json()?,
+                    OutputFormat::Ron => applied.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!("applied Character proposal {}", destination.display());
+            }
+        }
     }
     Ok(())
 }
@@ -226,6 +473,133 @@ fn parse_synthesis(
     } else {
         CharacterSynthesisResult::from_json(source)
     }
+}
+
+fn parse_collection(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterCollection, weave_character::CharacterCorpusError> {
+    if is_ron(path) {
+        CharacterCollection::from_ron(source)
+    } else {
+        CharacterCollection::from_json(source)
+    }
+}
+
+fn parse_request(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterOperationRequest, weave_character::CharacterCorpusError> {
+    if is_ron(path) {
+        CharacterOperationRequest::from_ron(source)
+    } else {
+        CharacterOperationRequest::from_json(source)
+    }
+}
+
+fn parse_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterProposal, weave_character::CharacterCorpusError> {
+    if is_ron(path) {
+        CharacterProposal::from_ron(source)
+    } else {
+        CharacterProposal::from_json(source)
+    }
+}
+
+fn parse_review(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterProposalReview, weave_character::CharacterCorpusError> {
+    if is_ron(path) {
+        CharacterProposalReview::from_ron(source)
+    } else {
+        CharacterProposalReview::from_json(source)
+    }
+}
+
+fn parse_progress(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterJobProgress, weave_character::CharacterCorpusError> {
+    if is_ron(path) {
+        CharacterJobProgress::from_ron(source)
+    } else {
+        CharacterJobProgress::from_json(source)
+    }
+}
+
+fn read_collection(path: &Path) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
+    Ok(parse_collection(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_request(path: &Path) -> Result<CharacterOperationRequest, Box<dyn std::error::Error>> {
+    Ok(parse_request(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_proposal(path: &Path) -> Result<CharacterProposal, Box<dyn std::error::Error>> {
+    Ok(parse_proposal(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_review(path: &Path) -> Result<CharacterProposalReview, Box<dyn std::error::Error>> {
+    Ok(parse_review(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_progress(path: &Path) -> Result<CharacterJobProgress, Box<dyn std::error::Error>> {
+    Ok(parse_progress(path, &fs::read_to_string(path)?)?)
+}
+
+fn collection_scope(
+    mut ids: Vec<String>,
+    id_prefix: Option<String>,
+    extension_namespace: Option<String>,
+) -> Result<CharacterScope, Box<dyn std::error::Error>> {
+    if !ids.is_empty() && (id_prefix.is_some() || extension_namespace.is_some()) {
+        return Err("--id cannot be combined with collection filters".into());
+    }
+    if !ids.is_empty() {
+        ids.sort();
+        ids.dedup();
+        Ok(CharacterScope::Characters { ids })
+    } else if id_prefix.is_some() || extension_namespace.is_some() {
+        Ok(CharacterScope::Filter {
+            id_prefix,
+            extension_namespace,
+        })
+    } else {
+        Ok(CharacterScope::All)
+    }
+}
+
+fn serialize_proposal(
+    proposal: &CharacterProposal,
+    format: OutputFormat,
+) -> Result<String, weave_character::CharacterCorpusError> {
+    match format {
+        OutputFormat::Json => proposal.to_json(),
+        OutputFormat::Ron => proposal.to_ron(),
+    }
+}
+
+fn output_format_for(path: &Path) -> OutputFormat {
+    if is_ron(path) {
+        OutputFormat::Ron
+    } else {
+        OutputFormat::Json
+    }
+}
+
+fn write_or_print(
+    output: Option<&Path>,
+    serialized: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(output) = output {
+        atomic_write(output, serialized.as_bytes())?;
+    } else {
+        print!("{serialized}");
+    }
+    Ok(())
 }
 
 fn is_ron(path: &Path) -> bool {

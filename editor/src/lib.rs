@@ -1,6 +1,7 @@
 //! Standalone GPUI application and testable editor-domain services.
 
 pub mod app;
+pub mod character;
 pub mod domain;
 pub mod graph;
 pub mod graph_view;
@@ -15,6 +16,7 @@ pub mod text_view;
 pub mod theme;
 
 pub use app::{LaunchMode, StartupError, launch};
+pub use character::CharacterCorpusSession;
 pub use domain::{
     DomainError, DomainSession, ModuleExportInspection, ModuleInspection,
     builtin_pattern_definitions,

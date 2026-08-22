@@ -12,8 +12,11 @@ The canonical pairs are:
 - `unknown-extension-preserved.character.{json,ron}`: inactive opaque version preservation.
 - `module.weave-module.{json,ron}` and `ari_vale.weave-domain.{json,ron}`: the shared declarative module boundary and immutable runtime projection; and
 - `ari-vale.weave` plus `ari-vale.story.{json,ron}`: concise activation, one presentation-facing source override, typed trait reads, and exact compiled IR.
+- `operations/collection.character-collection.{json,ron}`: a two-profile collection with stable cross-references;
+- `operations/rename.character-{request,progress,proposal,review}.{json,ron}`: one pinned, resumable, whole-proposal rename workflow; and
+- `operations/renamed.character-collection.{json,ron}`: the exact atomically applicable result.
 
-The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template lineage, a broken relationship reference, and forbidden derived canonical evidence.
+The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template/review/progress lineage, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
 
 Rebuild or check every fixture and schema from the repository root:
 
@@ -27,6 +30,17 @@ Validate or reproduce individual artifacts:
 ```bash
 cargo run -p weave-character -- validate profile \
   examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- collection-propose \
+  examples/domain-modules/weave-character/operations/collection.character-collection.json \
+  examples/domain-modules/weave-character/operations/rename.character-request.json \
+  --output target/rename.character-proposal.json
+
+cargo run -p weave-character -- collection-apply \
+  examples/domain-modules/weave-character/operations/collection.character-collection.json \
+  examples/domain-modules/weave-character/operations/rename.character-proposal.json \
+  examples/domain-modules/weave-character/operations/rename.character-review.json \
+  --dry-run
 
 cargo run -p weave-character -- synthesize \
   examples/domain-modules/weave-character/overlay.character.json \

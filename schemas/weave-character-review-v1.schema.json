@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "CharacterReviewDecision": {
+      "description": "Explicit proposal disposition.",
+      "enum": [
+        "accepted",
+        "rejected"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Whole-proposal review. Partial application is deliberately unsupported.",
+  "properties": {
+    "decision": {
+      "$ref": "#/$defs/CharacterReviewDecision"
+    },
+    "input_sha256": {
+      "type": "string"
+    },
+    "proposal_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "proposal_sha256",
+    "input_sha256",
+    "decision",
+    "reviewer",
+    "rationale"
+  ],
+  "title": "Weave Character Review v1",
+  "type": "object",
+  "x-weave-character-operation-version": 1
+}

@@ -7,6 +7,7 @@
 
 mod domain;
 mod model;
+mod operations;
 mod synthesis;
 mod validation;
 
@@ -20,6 +21,7 @@ pub use domain::{
     character_module_manifest, character_profile_domain_value,
 };
 pub use model::*;
+pub use operations::*;
 pub use synthesis::{synthesize_character, template_fingerprint, validate_synthesis_result};
 pub use validation::{
     CharacterError, derive_ocean, recompute_derived, validate_overlay, validate_profile,

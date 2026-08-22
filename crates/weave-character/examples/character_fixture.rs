@@ -5,19 +5,25 @@ use std::path::{Path, PathBuf};
 use sha2::{Digest, Sha256};
 use weave_character::{
     Agreeableness, AlignmentView, Attributed, AuthoredNote, BehavioralSignature,
-    BehavioralSignatures, BirthDate, CHARACTER_OVERLAY_FORMAT_VERSION,
+    BehavioralSignatures, BirthDate, CHARACTER_COLLECTION_FORMAT_VERSION,
+    CHARACTER_OPERATION_REQUEST_FORMAT_VERSION, CHARACTER_OVERLAY_FORMAT_VERSION,
     CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterCanon,
-    CharacterDerivedViews, CharacterExtension, CharacterIdentity, CharacterOperation,
-    CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterSuggestion,
-    CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness, DateContext,
-    Emotionality, ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion, Freshness,
-    HexacoProfile, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
+    CharacterCollection, CharacterCorpusAction, CharacterDerivedViews, CharacterExtension,
+    CharacterIdentity, CharacterOperation, CharacterOperationAction, CharacterOperationRequest,
+    CharacterOverlay, CharacterProfile, CharacterReviewDecision, CharacterScope,
+    CharacterSuggestion, CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness,
+    DateContext, Emotionality, ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion,
+    Freshness, HexacoProfile, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
     NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
     Openness, PreferencePolarity, RelationshipEdge, RelationshipEdges, ReviewState, RoleProjection,
     RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceCategory,
-    VoiceDirection, character_diagnostic_schema, character_domain_pack, character_module_manifest,
-    character_overlay_schema, character_profile_schema, character_synthesis_schema,
-    character_template_schema, recompute_derived, synthesize_character, template_fingerprint,
+    VoiceDirection, apply_reviewed_character_proposal, character_collection_schema,
+    character_diagnostic_schema, character_domain_pack, character_module_manifest,
+    character_operation_request_schema, character_overlay_schema, character_profile_schema,
+    character_progress_schema, character_proposal_schema, character_review_schema,
+    character_synthesis_schema, character_template_schema, collection_fingerprint,
+    propose_character_operation, recompute_derived, resume_character_operation,
+    review_character_proposal, synthesize_character, template_fingerprint,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, to_pretty_json};
 
@@ -66,6 +72,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "1.0.0",
         "Ari Vale Synthetic Character",
     )?;
+    let collection = character_collection(&profile)?;
+    let rename_request = rename_request(&collection)?;
+    let progress = resume_character_operation(&collection, &rename_request, None, 1)?.progress;
+    let rename_proposal = propose_character_operation(&collection, &rename_request)?;
+    let rename_review = review_character_proposal(
+        &rename_proposal,
+        CharacterReviewDecision::Accepted,
+        "org.weave.reviewer.fixture",
+        "Approve the complete synthetic reference-safe rename.",
+    )?;
+    let renamed_collection =
+        apply_reviewed_character_proposal(&collection, &rename_proposal, &rename_review)?;
 
     write_pair(&fixture, "profile.character", &profile, write)?;
     write_pair(&fixture, "template.character", &template, write)?;
@@ -80,6 +98,39 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     write_pair(&fixture, "module.weave-module", &module_manifest, write)?;
     write_pair(&fixture, "ari_vale.weave-domain", &domain_pack, write)?;
+
+    let operations = fixture.join("operations");
+    write_pair(
+        &operations,
+        "collection.character-collection",
+        &collection,
+        write,
+    )?;
+    write_pair(
+        &operations,
+        "rename.character-request",
+        &rename_request,
+        write,
+    )?;
+    write_pair(
+        &operations,
+        "rename.character-proposal",
+        &rename_proposal,
+        write,
+    )?;
+    write_pair(
+        &operations,
+        "rename.character-review",
+        &rename_review,
+        write,
+    )?;
+    write_pair(&operations, "rename.character-progress", &progress, write)?;
+    write_pair(
+        &operations,
+        "renamed.character-collection",
+        &renamed_collection,
+        write,
+    )?;
 
     let invalid = fixture.join("invalid");
     let mut unknown_profile_version = serde_json::to_value(&profile)?;
@@ -163,6 +214,30 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         write,
     )?;
 
+    let mut stale_review = rename_review.clone();
+    stale_review.input_sha256 = "0".repeat(64);
+    write_raw_json(
+        &invalid.join("stale-character-review.json"),
+        &stale_review,
+        write,
+    )?;
+
+    let mut stale_progress = progress.clone();
+    stale_progress.request_sha256 = "0".repeat(64);
+    write_raw_json(
+        &invalid.join("stale-character-progress.json"),
+        &stale_progress,
+        write,
+    )?;
+
+    let mut malformed_proposal = rename_proposal.clone();
+    malformed_proposal.output_sha256 = "0".repeat(64);
+    write_raw_json(
+        &invalid.join("malformed-character-proposal.json"),
+        &malformed_proposal,
+        write,
+    )?;
+
     for (name, contents) in [
         (
             "weave-character-profile-v1.schema.json",
@@ -184,10 +259,83 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "weave-character-diagnostic-v1.schema.json",
             character_diagnostic_schema()?,
         ),
+        (
+            "weave-character-collection-v1.schema.json",
+            character_collection_schema()?,
+        ),
+        (
+            "weave-character-operation-request-v1.schema.json",
+            character_operation_request_schema()?,
+        ),
+        (
+            "weave-character-proposal-v1.schema.json",
+            character_proposal_schema()?,
+        ),
+        (
+            "weave-character-review-v1.schema.json",
+            character_review_schema()?,
+        ),
+        (
+            "weave-character-progress-v1.schema.json",
+            character_progress_schema()?,
+        ),
     ] {
         write_or_check(&schemas.join(name), contents.as_bytes(), write)?;
     }
     Ok(())
+}
+
+fn character_collection(
+    ari: &CharacterProfile,
+) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
+    let mut sable = ari.clone();
+    sable.id = "org.weave.character.sable_reed".to_owned();
+    sable.canon.identity.display_name.value = "Sable Reed".to_owned();
+    let CharacterExtension::Relationships(relationships) = sable
+        .extensions
+        .get_mut("org.weave.character.relationships")
+        .expect("relationship fixture")
+    else {
+        return Err("relationship fixture changed kind".into());
+    };
+    let edge = relationships
+        .value
+        .edges
+        .get_mut("mentor_sable")
+        .expect("relationship edge");
+    edge.source_character_id.clone_from(&sable.id);
+    edge.target_character_id.clone_from(&ari.id);
+    recompute_derived(&mut sable);
+
+    Ok(CharacterCollection {
+        collection_format_version: CHARACTER_COLLECTION_FORMAT_VERSION,
+        id: "org.weave.character.collection.glasswind".to_owned(),
+        revision: 1,
+        characters: BTreeMap::from([(ari.id.clone(), ari.clone()), (sable.id.clone(), sable)]),
+    })
+}
+
+fn rename_request(
+    collection: &CharacterCollection,
+) -> Result<CharacterOperationRequest, Box<dyn std::error::Error>> {
+    Ok(CharacterOperationRequest {
+        request_format_version: CHARACTER_OPERATION_REQUEST_FORMAT_VERSION,
+        id: "org.weave.character.operation.rename_ari".to_owned(),
+        expected_input_sha256: collection_fingerprint(collection)?,
+        seed: 4_271,
+        scope: CharacterScope::Characters {
+            ids: vec!["org.weave.character.ari_vale".to_owned()],
+        },
+        action: CharacterCorpusAction::Rename {
+            character_id: "org.weave.character.ari_vale".to_owned(),
+            new_id: Some("org.weave.character.ari_vale_wayfinder".to_owned()),
+            new_display_name: Some("Ari Vale, Wayfinder".to_owned()),
+            override_locked: false,
+            rationale: "Migrate the stable identifier and every relationship reference together."
+                .to_owned(),
+        },
+        provenance: original_provenance("operation_original", "operation"),
+    })
 }
 
 fn complete_profile() -> CharacterProfile {

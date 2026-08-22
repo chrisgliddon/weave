@@ -538,6 +538,25 @@ def verify_domain_contract() -> None:
     character_story_json = character_fixture / "ari-vale.story.json"
     character_story_ron = character_fixture / "ari-vale.story.ron"
     character_project = character_fixture / "weave.modules.json"
+    character_operations = character_fixture / "operations"
+    character_collection_json = (
+        character_operations / "collection.character-collection.json"
+    )
+    character_collection_ron = character_operations / "collection.character-collection.ron"
+    character_request_json = character_operations / "rename.character-request.json"
+    character_request_ron = character_operations / "rename.character-request.ron"
+    character_proposal_json = character_operations / "rename.character-proposal.json"
+    character_proposal_ron = character_operations / "rename.character-proposal.ron"
+    character_review_json = character_operations / "rename.character-review.json"
+    character_review_ron = character_operations / "rename.character-review.ron"
+    character_progress_json = character_operations / "rename.character-progress.json"
+    character_progress_ron = character_operations / "rename.character-progress.ron"
+    renamed_character_collection_json = (
+        character_operations / "renamed.character-collection.json"
+    )
+    renamed_character_collection_ron = (
+        character_operations / "renamed.character-collection.ron"
+    )
     world_packs = (
         world_pack,
         world_fixture
@@ -685,6 +704,11 @@ def verify_domain_contract() -> None:
         generated_character_overlay_schema = workspace / "weave-character-overlay-v1.schema.json"
         generated_character_synthesis_schema = workspace / "weave-character-synthesis-v1.schema.json"
         generated_character_diagnostic_schema = workspace / "weave-character-diagnostic-v1.schema.json"
+        generated_character_collection_schema = workspace / "weave-character-collection-v1.schema.json"
+        generated_character_request_schema = workspace / "weave-character-operation-request-v1.schema.json"
+        generated_character_proposal_schema = workspace / "weave-character-proposal-v1.schema.json"
+        generated_character_review_schema = workspace / "weave-character-review-v1.schema.json"
+        generated_character_progress_schema = workspace / "weave-character-progress-v1.schema.json"
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -717,6 +741,15 @@ def verify_domain_contract() -> None:
         compiled_character_json = workspace / "ari-vale.story.json"
         compiled_character_ron = workspace / "ari-vale.story.ron"
         compiled_character_locked_json = workspace / "ari-vale.locked.story.json"
+        generated_character_proposal_json = workspace / "rename.character-proposal.json"
+        generated_character_proposal_ron = workspace / "rename.character-proposal.ron"
+        generated_character_review_json = workspace / "rename.character-review.json"
+        generated_character_review_ron = workspace / "rename.character-review.ron"
+        generated_character_progress_json = workspace / "rename.character-progress.json"
+        generated_character_ready_progress_json = workspace / "rename-ready.character-progress.json"
+        resumed_character_proposal_json = workspace / "resumed.character-proposal.json"
+        applied_character_collection_json = workspace / "renamed.character-collection.json"
+        applied_character_collection_ron = workspace / "renamed.character-collection.ron"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -752,6 +785,11 @@ def verify_domain_contract() -> None:
             ("overlay", generated_character_overlay_schema),
             ("synthesis", generated_character_synthesis_schema),
             ("diagnostic", generated_character_diagnostic_schema),
+            ("collection", generated_character_collection_schema),
+            ("request", generated_character_request_schema),
+            ("proposal", generated_character_proposal_schema),
+            ("review", generated_character_review_schema),
+            ("progress", generated_character_progress_schema),
         ):
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
@@ -809,6 +847,26 @@ def verify_domain_contract() -> None:
                 generated_character_diagnostic_schema,
                 ROOT / "schemas" / "weave-character-diagnostic-v1.schema.json",
             ),
+            (
+                generated_character_collection_schema,
+                ROOT / "schemas" / "weave-character-collection-v1.schema.json",
+            ),
+            (
+                generated_character_request_schema,
+                ROOT / "schemas" / "weave-character-operation-request-v1.schema.json",
+            ),
+            (
+                generated_character_proposal_schema,
+                ROOT / "schemas" / "weave-character-proposal-v1.schema.json",
+            ),
+            (
+                generated_character_review_schema,
+                ROOT / "schemas" / "weave-character-review-v1.schema.json",
+            ),
+            (
+                generated_character_progress_schema,
+                ROOT / "schemas" / "weave-character-progress-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -822,6 +880,16 @@ def verify_domain_contract() -> None:
             ("overlay", character_overlay_ron),
             ("synthesis", character_synthesis_json),
             ("synthesis", character_synthesis_ron),
+            ("collection", character_collection_json),
+            ("collection", character_collection_ron),
+            ("request", character_request_json),
+            ("request", character_request_ron),
+            ("proposal", character_proposal_json),
+            ("proposal", character_proposal_ron),
+            ("review", character_review_json),
+            ("review", character_review_ron),
+            ("progress", character_progress_json),
+            ("progress", character_progress_ron),
         ):
             run(
                 [
@@ -852,6 +920,145 @@ def verify_domain_contract() -> None:
             )
             if output.read_bytes() != checked.read_bytes():
                 raise DocsError(f"canonical Character synthesis is stale: {checked.name}")
+
+        for (
+            encoding,
+            collection,
+            request,
+            checked_proposal,
+            generated_proposal,
+            checked_review,
+            generated_review,
+            checked_applied,
+            generated_applied,
+        ) in (
+            (
+                "json",
+                character_collection_json,
+                character_request_json,
+                character_proposal_json,
+                generated_character_proposal_json,
+                character_review_json,
+                generated_character_review_json,
+                renamed_character_collection_json,
+                applied_character_collection_json,
+            ),
+            (
+                "ron",
+                character_collection_ron,
+                character_request_ron,
+                character_proposal_ron,
+                generated_character_proposal_ron,
+                character_review_ron,
+                generated_character_review_ron,
+                renamed_character_collection_ron,
+                applied_character_collection_ron,
+            ),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "collection-propose",
+                    str(collection.relative_to(ROOT)),
+                    str(request.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_proposal),
+                ],
+                capture=True,
+            )
+            if generated_proposal.read_bytes() != checked_proposal.read_bytes():
+                raise DocsError(f"canonical Character proposal is stale: {checked_proposal.name}")
+            run(
+                [
+                    str(character_tool),
+                    "collection-review",
+                    str(checked_proposal.relative_to(ROOT)),
+                    "--decision",
+                    "accepted",
+                    "--reviewer",
+                    "org.weave.reviewer.fixture",
+                    "--rationale",
+                    "Approve the complete synthetic reference-safe rename.",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_review),
+                ],
+                capture=True,
+            )
+            if generated_review.read_bytes() != checked_review.read_bytes():
+                raise DocsError(f"canonical Character review is stale: {checked_review.name}")
+            run(
+                [
+                    str(character_tool),
+                    "collection-apply",
+                    str(collection.relative_to(ROOT)),
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(checked_review.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_applied),
+                ],
+                capture=True,
+            )
+            if generated_applied.read_bytes() != checked_applied.read_bytes():
+                raise DocsError(
+                    f"canonical Character atomic apply is stale: {checked_applied.name}"
+                )
+
+        run(
+            [
+                str(character_tool),
+                "collection-resume",
+                str(character_collection_json.relative_to(ROOT)),
+                str(character_request_json.relative_to(ROOT)),
+                "--max-items",
+                "1",
+                "--progress-output",
+                str(generated_character_progress_json),
+            ],
+            capture=True,
+        )
+        if generated_character_progress_json.read_bytes() != character_progress_json.read_bytes():
+            raise DocsError("canonical Character resumable progress is stale")
+        run(
+            [
+                str(character_tool),
+                "collection-resume",
+                str(character_collection_json.relative_to(ROOT)),
+                str(character_request_json.relative_to(ROOT)),
+                "--progress",
+                str(generated_character_progress_json),
+                "--max-items",
+                "1",
+                "--progress-output",
+                str(generated_character_ready_progress_json),
+                "--proposal-output",
+                str(resumed_character_proposal_json),
+            ],
+            capture=True,
+        )
+        if resumed_character_proposal_json.read_bytes() != character_proposal_json.read_bytes():
+            raise DocsError("resumed Character proposal differs from direct dry-run")
+        dry_run_output = workspace / "forbidden-dry-run-output.json"
+        run(
+            [
+                str(character_tool),
+                "collection-apply",
+                str(character_collection_json.relative_to(ROOT)),
+                str(character_proposal_json.relative_to(ROOT)),
+                str(character_review_json.relative_to(ROOT)),
+                "--dry-run",
+                "--output",
+                str(dry_run_output),
+            ],
+            capture=True,
+        )
+        if dry_run_output.exists():
+            raise DocsError("Character apply dry-run wrote a collection")
 
         for encoding, generated_manifest, checked_manifest, generated_pack, checked_pack in (
             (
@@ -1594,6 +1801,11 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-overlay-v1.schema.json",
         "weave-character-synthesis-v1.schema.json",
         "weave-character-diagnostic-v1.schema.json",
+        "weave-character-collection-v1.schema.json",
+        "weave-character-operation-request-v1.schema.json",
+        "weave-character-proposal-v1.schema.json",
+        "weave-character-review-v1.schema.json",
+        "weave-character-progress-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

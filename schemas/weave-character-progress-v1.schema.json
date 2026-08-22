@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "CharacterJobState": {
+      "description": "Resumable job state.",
+      "enum": [
+        "running",
+        "ready_for_review"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-progress:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Payload-free resumable proposal-generation cursor.",
+  "properties": {
+    "collection_id": {
+      "type": "string"
+    },
+    "completed_target_ids": {
+      "description": "Exact sorted prefix already processed; contains no character values or prose.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "input_sha256": {
+      "type": "string"
+    },
+    "next_index": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "progress_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "request_sha256": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/CharacterJobState"
+    },
+    "total": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "progress_format_version",
+    "collection_id",
+    "input_sha256",
+    "request_sha256",
+    "total",
+    "next_index",
+    "completed_target_ids",
+    "state"
+  ],
+  "title": "Weave Character Progress v1",
+  "type": "object",
+  "x-weave-character-operation-version": 1
+}

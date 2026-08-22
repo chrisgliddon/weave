@@ -1,0 +1,40 @@
+(
+    request_format_version: 1,
+    id: "org.weave.character.operation.rename_ari",
+    expected_input_sha256: "140e61c43ad62a16eb330d0e42a7aa11637ff5d94ecebcfe43dae11fb48e061d",
+    seed: 4271,
+    scope: (
+        kind: "characters",
+        ids: [
+            "org.weave.character.ari_vale",
+        ],
+    ),
+    action: (
+        action: "rename",
+        character_id: "org.weave.character.ari_vale",
+        new_id: Some("org.weave.character.ari_vale_wayfinder"),
+        new_display_name: Some("Ari Vale, Wayfinder"),
+        override_locked: false,
+        rationale: "Migrate the stable identifier and every relationship reference together.",
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "operation_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "character-contract-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Weave Character contract fixture.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "operation": [
+                "operation_original",
+            ],
+        },
+    ),
+)
