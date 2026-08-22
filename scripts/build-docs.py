@@ -342,12 +342,16 @@ def compile_examples() -> None:
     domain_world_corpus = set(
         (ROOT / "examples/domain-modules/weave-world/corpus/stories").glob("*.weave")
     )
+    domain_character_sources = {
+        ROOT / "examples/domain-modules/weave-character/ari-vale.weave"
+    }
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
         if source not in {domain_tracer, domain_tutorial}
         and source not in domain_world_sources
         and source not in domain_world_corpus
+        and source not in domain_character_sources
     ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
     sources.append(readme_fixture)
@@ -526,6 +530,14 @@ def verify_domain_contract() -> None:
     character_overlay_ron = character_fixture / "overlay.character.ron"
     character_synthesis_json = character_fixture / "synthesis.character.json"
     character_synthesis_ron = character_fixture / "synthesis.character.ron"
+    character_manifest_json = character_fixture / "module.weave-module.json"
+    character_manifest_ron = character_fixture / "module.weave-module.ron"
+    character_pack_json = character_fixture / "ari_vale.weave-domain.json"
+    character_pack_ron = character_fixture / "ari_vale.weave-domain.ron"
+    character_source = character_fixture / "ari-vale.weave"
+    character_story_json = character_fixture / "ari-vale.story.json"
+    character_story_ron = character_fixture / "ari-vale.story.ron"
+    character_project = character_fixture / "weave.modules.json"
     world_packs = (
         world_pack,
         world_fixture
@@ -594,6 +606,28 @@ def verify_domain_contract() -> None:
         ],
         capture=True,
         environment=cargo_environment(),
+    )
+    for manifest, pack in (
+        (character_manifest_json, character_pack_json),
+        (character_manifest_ron, character_pack_ron),
+    ):
+        run(
+            [
+                str(domain_tool),
+                "validate",
+                str(manifest.relative_to(ROOT)),
+                "--pack",
+                str(pack.relative_to(ROOT)),
+            ],
+            capture=True,
+        )
+    run(
+        [
+            str(domain_tool),
+            "validate-project",
+            str(character_project.relative_to(ROOT)),
+        ],
+        capture=True,
     )
     world_validation = [
         str(domain_tool),
@@ -676,6 +710,13 @@ def verify_domain_contract() -> None:
         generated_composition_receipt_ron = workspace / "composition.receipt.ron"
         generated_character_synthesis_json = workspace / "synthesis.character.json"
         generated_character_synthesis_ron = workspace / "synthesis.character.ron"
+        generated_character_manifest_json = workspace / "character-module.weave-module.json"
+        generated_character_manifest_ron = workspace / "character-module.weave-module.ron"
+        generated_character_pack_json = workspace / "ari_vale.weave-domain.json"
+        generated_character_pack_ron = workspace / "ari_vale.weave-domain.ron"
+        compiled_character_json = workspace / "ari-vale.story.json"
+        compiled_character_ron = workspace / "ari-vale.story.ron"
+        compiled_character_locked_json = workspace / "ari-vale.locked.story.json"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -811,6 +852,56 @@ def verify_domain_contract() -> None:
             )
             if output.read_bytes() != checked.read_bytes():
                 raise DocsError(f"canonical Character synthesis is stale: {checked.name}")
+
+        for encoding, generated_manifest, checked_manifest, generated_pack, checked_pack in (
+            (
+                "json",
+                generated_character_manifest_json,
+                character_manifest_json,
+                generated_character_pack_json,
+                character_pack_json,
+            ),
+            (
+                "ron",
+                generated_character_manifest_ron,
+                character_manifest_ron,
+                generated_character_pack_ron,
+                character_pack_ron,
+            ),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "module-manifest",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_manifest),
+                ],
+                capture=True,
+            )
+            run(
+                [
+                    str(character_tool),
+                    "domain-pack",
+                    str(character_profile_json.relative_to(ROOT)),
+                    "--id",
+                    "ari_vale",
+                    "--version",
+                    "1.0.0",
+                    "--title",
+                    "Ari Vale Synthetic Character",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_pack),
+                ],
+                capture=True,
+            )
+            if generated_manifest.read_bytes() != checked_manifest.read_bytes():
+                raise DocsError(f"canonical Character manifest is stale: {checked_manifest.name}")
+            if generated_pack.read_bytes() != checked_pack.read_bytes():
+                raise DocsError(f"canonical Character pack is stale: {checked_pack.name}")
 
         normalization_jobs = (
             ("manifest", manifest_json, "json", normalized_manifest_json),
@@ -965,6 +1056,80 @@ def verify_domain_contract() -> None:
             != "twilight"
         ):
             raise DocsError("compiled domain tracer omitted its selected module data")
+
+        for encoding, output, checked in (
+            ("ron", compiled_character_ron, character_story_ron),
+            ("json", compiled_character_json, character_story_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(character_source.relative_to(ROOT)),
+                    "--module-manifest",
+                    str(character_manifest_json.relative_to(ROOT)),
+                    "--module-pack",
+                    str(character_pack_json.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+            if output.read_bytes() != checked.read_bytes():
+                raise DocsError(f"compiled Character fixture is stale: {checked.name}")
+
+        run(
+            [
+                str(compiler),
+                str(character_source.relative_to(ROOT)),
+                "--locked",
+                "--format",
+                "json",
+                "--output",
+                str(compiled_character_locked_json),
+            ],
+            capture=True,
+        )
+        if compiled_character_locked_json.read_bytes() != character_story_json.read_bytes():
+            raise DocsError("locked Character project output differs from the checked Story IR")
+        character_story = json.loads(compiled_character_json.read_text(encoding="utf-8"))
+        character_profile = (
+            character_story.get("modules", {})
+            .get("character", {})
+            .get("exports", {})
+            .get("profile", {})
+            .get("value", {})
+            .get("value", {})
+        )
+        if (
+            character_story.get("version") != 4
+            or character_profile.get("identity", {})
+            .get("value", {})
+            .get("id", {})
+            .get("value")
+            != "org.weave.character.ari_vale"
+            or character_profile.get("hexaco", {})
+            .get("value", {})
+            .get("openness", {})
+            .get("value", {})
+            .get("creativity", {})
+            .get("value", {})
+            .get("projection_score", {})
+            .get("value")
+            != 0.86
+            or character_profile.get("ocean", {})
+            .get("value", {})
+            .get("lossy", {})
+            .get("value")
+            is not True
+            or character_profile.get("ocean", {})
+            .get("value", {})
+            .get("independent_evidence", {})
+            .get("value")
+            is not False
+        ):
+            raise DocsError("compiled Character fixture omitted typed evidence or derivation labels")
 
         run(
             [
@@ -1341,7 +1506,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 

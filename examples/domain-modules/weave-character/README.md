@@ -10,6 +10,8 @@ The canonical pairs are:
 - `synthesis.character.{json,ron}`: reproducible template/overlay/effective-profile proof;
 - `omitted-extensions.character.{json,ron}`: valid minimal optional-domain behavior; and
 - `unknown-extension-preserved.character.{json,ron}`: inactive opaque version preservation.
+- `module.weave-module.{json,ron}` and `ari_vale.weave-domain.{json,ron}`: the shared declarative module boundary and immutable runtime projection; and
+- `ari-vale.weave` plus `ari-vale.story.{json,ron}`: concise activation, one presentation-facing source override, typed trait reads, and exact compiled IR.
 
 The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template lineage, a broken relationship reference, and forbidden derived canonical evidence.
 
@@ -30,6 +32,19 @@ cargo run -p weave-character -- synthesize \
   examples/domain-modules/weave-character/overlay.character.json \
   --template examples/domain-modules/weave-character/template.character.json \
   --output target/synthesis.character.json
+
+cargo run -p weave-character -- domain-pack \
+  examples/domain-modules/weave-character/profile.character.json \
+  --id ari_vale \
+  --version 1.0.0 \
+  --title "Ari Vale Synthetic Character" \
+  --output target/ari_vale.weave-domain.json
+
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-character/ari-vale.weave \
+  --locked \
+  --format json \
+  --output target/ari-vale.story.json
 ```
 
 See the [Character contract guide](../../../docs/character_module.md) for authority, missing-data, OCEAN, extension, synthesis, compatibility, privacy, and diagnostic rules.

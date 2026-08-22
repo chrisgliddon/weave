@@ -143,6 +143,34 @@ Failures identify a stable path and static redaction-safe message without echoin
 
 Parsing, validation, and synthesis return no partial effective profile. File output uses an atomic same-directory temporary file.
 
+## End-to-end module projection
+
+The checked Ari Vale profile also passes through the ordinary domain-module boundary. `character_module_manifest()` returns the same declarative `ModuleManifest` used by World, and `character_domain_pack()` validates the complete `CharacterProfile` before projecting it into one finite `DomainValue` tree. Neither function parses `.weave`, depends on the editor, contacts a provider, or loads executable package code.
+
+The runtime projection retains:
+
+- the stable character id, attributed display name, and aliases;
+- all six factor summaries and all 24 facets with input form, normalized projection score, confidence, state, review, lock, freshness, rationale, and lineage;
+- the exact OCEAN algorithm, input paths, scores, confidence, `lossy: true`, `independent_evidence: false`, and omitted Honesty-Humility marker; and
+- sorted profile source and transformation identifiers.
+
+`projection_score` is the exact normalized score for a `score` input and only the documented compatibility anchor for a retained band input. It never replaces the original profile measurement. Missing factor or facet evidence remains an absent optional path.
+
+The manifest declares `profile.hexaco`, `profile.ocean`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality evidence in the profile artifact, run the validator/projector, and receive a pack whose OCEAN view was recomputed before compilation. A story or editor may still author permitted presentation-facing fields such as the attributed display-name value; that override remains separate in Story IR and cannot change the stable character id.
+
+[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) activates the checked pack through concise source, reads typed factor/facet and OCEAN paths, and compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). Adjacent `weave.modules.json` and `weave.lock` make the build deterministic and offline. The editor uses the same catalog and rolls a rejected read-only edit back atomically. The finite Bevy consumer loads the RON profile into an ECS resource, while the PixiJS consumer decodes the JSON profile and verifies all six summaries, Creativity, and the derived/lossy OCEAN marker without an editor dependency.
+
+```weave
+module character {
+    id: "org.weave.character"
+    version: "=1.0.0"
+    pack: "ari_vale@=1.0.0"
+}
+
+VAR creativity = character.profile.hexaco.openness.creativity.projection_score
+VAR ocean_openness = character.profile.ocean.openness.score
+```
+
 ## Canonical fixtures and commands
 
 The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. Invalid fixtures cover an unsupported core version, conflicting overlay, stale template, bad relationship, unsupported typed extension version, and derived canonical evidence.
@@ -161,6 +189,24 @@ cargo run -p weave-character -- synthesize \
   --template examples/domain-modules/weave-character/template.character.json \
   --format json \
   --output target/synthesis.character.json
+
+cargo run -p weave-character -- module-manifest \
+  --format json \
+  --output target/module.weave-module.json
+
+cargo run -p weave-character -- domain-pack \
+  examples/domain-modules/weave-character/profile.character.json \
+  --id ari_vale \
+  --version 1.0.0 \
+  --title "Ari Vale Synthetic Character" \
+  --format json \
+  --output target/ari_vale.weave-domain.json
+
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-character/ari-vale.weave \
+  --locked \
+  --format json \
+  --output target/ari-vale.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, and synthesis artifacts without network access.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, synthesis, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally recompiles the locked Story IR and tests both engine consumers.

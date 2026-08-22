@@ -15,9 +15,9 @@ use weave_character::{
     NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
     Openness, PreferencePolarity, RelationshipEdge, RelationshipEdges, ReviewState, RoleProjection,
     RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceCategory,
-    VoiceDirection, character_diagnostic_schema, character_overlay_schema,
-    character_profile_schema, character_synthesis_schema, character_template_schema,
-    recompute_derived, synthesize_character, template_fingerprint,
+    VoiceDirection, character_diagnostic_schema, character_domain_pack, character_module_manifest,
+    character_overlay_schema, character_profile_schema, character_synthesis_schema,
+    character_template_schema, recompute_derived, synthesize_character, template_fingerprint,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, to_pretty_json};
 
@@ -59,6 +59,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     omitted.suggestions.clear();
     recompute_derived(&mut omitted);
     let unknown_extension = synthesis.effective_profile.clone();
+    let module_manifest = character_module_manifest()?;
+    let domain_pack = character_domain_pack(
+        &profile,
+        "ari_vale",
+        "1.0.0",
+        "Ari Vale Synthetic Character",
+    )?;
 
     write_pair(&fixture, "profile.character", &profile, write)?;
     write_pair(&fixture, "template.character", &template, write)?;
@@ -71,6 +78,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &unknown_extension,
         write,
     )?;
+    write_pair(&fixture, "module.weave-module", &module_manifest, write)?;
+    write_pair(&fixture, "ari_vale.weave-domain", &domain_pack, write)?;
 
     let invalid = fixture.join("invalid");
     let mut unknown_profile_version = serde_json::to_value(&profile)?;

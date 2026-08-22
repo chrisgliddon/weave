@@ -22,7 +22,7 @@ pub use model::{
     DomainPack, DomainValue, EntityCollectionDeclaration, ExportDeclaration, ExportSource,
     FieldDeclaration, ModuleAuthor, ModuleAuthoring, ModuleDependency, ModuleManifest,
     ModuleRequirement, PackDependency, Provenance, ProvenanceKind, ProvenanceSource,
-    ProvenanceTransformation, TypeExpression,
+    ProvenanceTransformation, ReadOnlyPathDeclaration, TypeExpression,
 };
 pub use registry::{
     DOMAIN_LOCK_FILE_NAME, DOMAIN_LOCK_FORMAT_VERSION, DOMAIN_PROJECT_FILE_NAME,

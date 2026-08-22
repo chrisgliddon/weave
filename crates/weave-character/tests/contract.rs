@@ -2,8 +2,12 @@ use weave_character::{
     CharacterDiagnosticCode, CharacterExtension, CharacterOperationAction, CharacterOverlay,
     CharacterProfile, CharacterSynthesisResult, CharacterTemplate, HexacoProfile, LockState,
     ReviewState, TraitBand, TraitMeasurement, ValueState, character_diagnostic_schema,
-    character_overlay_schema, character_profile_schema, character_synthesis_schema,
-    character_template_schema, synthesize_character,
+    character_domain_pack, character_module_manifest, character_overlay_schema,
+    character_profile_schema, character_synthesis_schema, character_template_schema,
+    recompute_derived, synthesize_character,
+};
+use weave_domain::{
+    DomainOverride, DomainPack, DomainValue, ModuleManifest, apply_authored_overrides,
 };
 
 const PROFILE_JSON: &str =
@@ -34,6 +38,14 @@ const UNKNOWN_EXTENSION_JSON: &str = include_str!(
 const UNKNOWN_EXTENSION_RON: &str = include_str!(
     "../../../examples/domain-modules/weave-character/unknown-extension-preserved.character.ron"
 );
+const MODULE_JSON: &str =
+    include_str!("../../../examples/domain-modules/weave-character/module.weave-module.json");
+const MODULE_RON: &str =
+    include_str!("../../../examples/domain-modules/weave-character/module.weave-module.ron");
+const DOMAIN_PACK_JSON: &str =
+    include_str!("../../../examples/domain-modules/weave-character/ari_vale.weave-domain.json");
+const DOMAIN_PACK_RON: &str =
+    include_str!("../../../examples/domain-modules/weave-character/ari_vale.weave-domain.ron");
 const UNKNOWN_PROFILE_VERSION: &str = include_str!(
     "../../../examples/domain-modules/weave-character/invalid/unknown-profile-version.character.json"
 );
@@ -253,6 +265,266 @@ fn strict_json_rejects_duplicates_without_disclosing_values() {
 }
 
 #[test]
+fn validated_profile_projects_through_the_shared_domain_contract() {
+    let profile = CharacterProfile::from_json(PROFILE_JSON).expect("profile");
+    let manifest = character_module_manifest().expect("Character manifest");
+    let checked_manifest = ModuleManifest::from_json(MODULE_JSON).expect("checked manifest JSON");
+    assert_eq!(manifest, checked_manifest);
+    assert_eq!(ModuleManifest::from_ron(MODULE_RON).unwrap(), manifest);
+    assert_eq!(manifest.to_json().unwrap(), MODULE_JSON);
+    assert_eq!(manifest.to_ron().unwrap(), MODULE_RON);
+
+    let pack = character_domain_pack(
+        &profile,
+        "ari_vale",
+        "1.0.0",
+        "Ari Vale Synthetic Character",
+    )
+    .expect("Character pack");
+    assert_eq!(DomainPack::from_json(DOMAIN_PACK_JSON).unwrap(), pack);
+    assert_eq!(DomainPack::from_ron(DOMAIN_PACK_RON).unwrap(), pack);
+    assert_eq!(pack.to_json().unwrap(), DOMAIN_PACK_JSON);
+    assert_eq!(pack.to_ron().unwrap(), DOMAIN_PACK_RON);
+
+    for path in [
+        [
+            "profile",
+            "hexaco",
+            "honesty_humility",
+            "sincerity",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "honesty_humility",
+            "fairness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "honesty_humility",
+            "greed_avoidance",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "honesty_humility",
+            "modesty",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "emotionality",
+            "fearfulness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "emotionality",
+            "anxiety",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "emotionality",
+            "dependence",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "emotionality",
+            "sentimentality",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "extraversion",
+            "social_self_esteem",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "extraversion",
+            "social_boldness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "extraversion",
+            "sociability",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "extraversion",
+            "liveliness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "agreeableness",
+            "forgivingness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "agreeableness",
+            "gentleness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "agreeableness",
+            "flexibility",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "agreeableness",
+            "patience",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "conscientiousness",
+            "organization",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "conscientiousness",
+            "diligence",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "conscientiousness",
+            "perfectionism",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "conscientiousness",
+            "prudence",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "openness",
+            "aesthetic_appreciation",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "openness",
+            "inquisitiveness",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "openness",
+            "creativity",
+            "projection_score",
+        ],
+        [
+            "profile",
+            "hexaco",
+            "openness",
+            "unconventionality",
+            "projection_score",
+        ],
+    ] {
+        assert!(matches!(
+            domain_value_at(&pack.values, &path),
+            Some(DomainValue::Number(_))
+        ));
+    }
+}
+
+#[test]
+fn domain_projection_recomputes_bands_and_rejects_derived_writeback() {
+    let mut profile = CharacterProfile::from_json(PROFILE_JSON).expect("profile");
+    profile
+        .canon
+        .personality
+        .openness
+        .factor
+        .as_mut()
+        .expect("openness factor")
+        .value = TraitMeasurement::Band {
+        band: TraitBand::VeryHigh,
+    };
+    recompute_derived(&mut profile);
+    let pack = character_domain_pack(
+        &profile,
+        "ari_vale_band",
+        "1.0.0",
+        "Ari Vale Band Projection",
+    )
+    .expect("band pack");
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &["profile", "hexaco", "openness", "summary", "form"]
+        ),
+        Some(&DomainValue::Symbol("very_high".into()))
+    );
+    assert_eq!(
+        domain_value_at(&pack.values, &["profile", "ocean", "openness", "score"]),
+        Some(&DomainValue::Number(0.9))
+    );
+
+    let manifest = character_module_manifest().expect("manifest");
+    let protected = DomainOverride {
+        path: ["profile", "ocean", "openness", "score"]
+            .map(str::to_owned)
+            .to_vec(),
+        value: DomainValue::Number(0.1),
+    };
+    assert!(
+        apply_authored_overrides(&manifest, &pack.values, &[protected])
+            .expect_err("derived OCEAN is read-only")
+            .to_string()
+            .contains("read-only path")
+    );
+
+    let display_name = DomainOverride {
+        path: ["profile", "identity", "display_name", "value"]
+            .map(str::to_owned)
+            .to_vec(),
+        value: DomainValue::String("Ari Vale, Wayfinder".into()),
+    };
+    let edited = apply_authored_overrides(&manifest, &pack.values, &[display_name])
+        .expect("display name remains an explicit authoring surface");
+    assert_eq!(
+        domain_value_at(&edited, &["profile", "identity", "display_name", "value"]),
+        Some(&DomainValue::String("Ari Vale, Wayfinder".into()))
+    );
+}
+
+#[test]
 fn checked_contract_artifacts_are_byte_exact() {
     let profile = CharacterProfile::from_json(PROFILE_JSON).expect("profile");
     assert_eq!(profile.to_json().unwrap(), PROFILE_JSON);
@@ -331,4 +603,19 @@ fn assert_complete_hexaco(profile: &HexacoProfile) {
     assert!(openness.inquisitiveness.is_some());
     assert!(openness.creativity.is_some());
     assert!(openness.unconventionality.is_some());
+}
+
+fn domain_value_at<'a>(
+    values: &'a std::collections::BTreeMap<String, DomainValue>,
+    path: &[&str],
+) -> Option<&'a DomainValue> {
+    let (export, fields) = path.split_first()?;
+    let mut value = values.get(*export)?;
+    for field in fields {
+        let DomainValue::Object(entries) = value else {
+            return None;
+        };
+        value = entries.get(*field)?;
+    }
+    Some(value)
 }

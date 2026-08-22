@@ -207,6 +207,17 @@ pub fn apply_authored_overrides(
         for (index, segment) in authored.path.iter().enumerate() {
             validate_namespace(&format!("overrides.path[{index}]"), segment)?;
         }
+        if manifest
+            .authoring
+            .read_only_paths
+            .iter()
+            .any(|protected| paths_overlap(&authored.path, &protected.path))
+        {
+            return Err(invalid(
+                format!("overrides.{}", authored.path.join(".")),
+                "replacement overlaps a manifest-declared read-only path",
+            ));
+        }
         apply_override(manifest, &mut values, authored)?;
     }
     validate_effective_values(manifest, &values)?;
@@ -560,7 +571,83 @@ fn validate_authoring(manifest: &ModuleManifest) -> Result<(), DomainError> {
             require_string_field(&path, fields, field, &manifest.types)?;
         }
     }
+    if manifest.authoring.read_only_paths.len() > 4_096 {
+        return Err(invalid(
+            "authoring.read_only_paths",
+            "too many read-only paths",
+        ));
+    }
+    let mut previous: Option<&[String]> = None;
+    for (index, declaration) in manifest.authoring.read_only_paths.iter().enumerate() {
+        let path = format!("authoring.read_only_paths[{index}]");
+        if declaration.path.is_empty() {
+            return Err(invalid(
+                format!("{path}.path"),
+                "read-only path must not be empty",
+            ));
+        }
+        for (segment_index, segment) in declaration.path.iter().enumerate() {
+            validate_namespace(&format!("{path}.path[{segment_index}]"), segment)?;
+        }
+        if previous.is_some_and(|prior| prior >= declaration.path.as_slice()) {
+            return Err(invalid(
+                "authoring.read_only_paths",
+                "read-only paths must be unique and sorted",
+            ));
+        }
+        if manifest
+            .authoring
+            .read_only_paths
+            .iter()
+            .take(index)
+            .any(|prior| paths_overlap(&prior.path, &declaration.path))
+        {
+            return Err(invalid(
+                "authoring.read_only_paths",
+                "read-only paths must not overlap",
+            ));
+        }
+        previous = Some(&declaration.path);
+        validate_text(&format!("{path}.reason"), &declaration.reason, 1, 1_024)?;
+        resolve_value_path_type(manifest, &declaration.path).map_err(|_| {
+            invalid(
+                format!("{path}.path"),
+                "read-only path must resolve to a declared export value",
+            )
+        })?;
+    }
     Ok(())
+}
+
+fn paths_overlap(left: &[String], right: &[String]) -> bool {
+    left.starts_with(right) || right.starts_with(left)
+}
+
+fn resolve_value_path_type<'a>(
+    manifest: &'a ModuleManifest,
+    path: &[String],
+) -> Result<&'a TypeExpression, DomainError> {
+    let Some((export_name, fields)) = path.split_first() else {
+        return Err(invalid("path", "value path must not be empty"));
+    };
+    let export = manifest
+        .exports
+        .get(export_name)
+        .ok_or_else(|| DomainError::UnknownExport {
+            name: export_name.clone(),
+        })?;
+    let mut value_type = &export.value_type;
+    for field in fields {
+        value_type = match resolve_named_type(value_type, &manifest.types)? {
+            TypeExpression::Object { fields } => fields
+                .get(field)
+                .map(|declaration| &declaration.value_type)
+                .ok_or_else(|| invalid("path", "unknown object field"))?,
+            TypeExpression::Map { values, .. } => values,
+            _ => return Err(invalid("path", "path descends into a scalar or list")),
+        };
+    }
+    resolve_named_type(value_type, &manifest.types)
 }
 
 fn require_field<'a>(

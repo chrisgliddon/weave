@@ -6,8 +6,9 @@ use clap::{Parser, Subcommand, ValueEnum};
 use tempfile::NamedTempFile;
 use weave_character::{
     CharacterOverlay, CharacterProfile, CharacterSynthesisResult, CharacterTemplate,
-    character_diagnostic_schema, character_overlay_schema, character_profile_schema,
-    character_synthesis_schema, character_template_schema, synthesize_character,
+    character_diagnostic_schema, character_domain_pack, character_module_manifest,
+    character_overlay_schema, character_profile_schema, character_synthesis_schema,
+    character_template_schema, synthesize_character,
 };
 
 #[derive(Debug, Parser)]
@@ -40,6 +41,27 @@ enum Command {
         overlay: PathBuf,
         #[arg(long)]
         template: Option<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Write the canonical declarative Weave Character module manifest.
+    ModuleManifest {
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Validate a profile and project it into one immutable domain pack.
+    DomainPack {
+        profile: PathBuf,
+        #[arg(long)]
+        id: String,
+        #[arg(long)]
+        version: String,
+        #[arg(long)]
+        title: String,
         #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
         format: OutputFormat,
         #[arg(long)]
@@ -130,6 +152,33 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
             };
             atomic_write(&output, serialized.as_bytes())?;
             println!("synthesized {}", output.display());
+        }
+        Command::ModuleManifest { format, output } => {
+            let manifest = character_module_manifest()?;
+            let serialized = match format {
+                OutputFormat::Json => manifest.to_json()?,
+                OutputFormat::Ron => manifest.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character module manifest {}", output.display());
+        }
+        Command::DomainPack {
+            profile,
+            id,
+            version,
+            title,
+            format,
+            output,
+        } => {
+            let profile_source = fs::read_to_string(&profile)?;
+            let profile = parse_profile(&profile, &profile_source)?;
+            let pack = character_domain_pack(&profile, id, version, title)?;
+            let serialized = match format {
+                OutputFormat::Json => pack.to_json()?,
+                OutputFormat::Ron => pack.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character domain pack {}", output.display());
         }
     }
     Ok(())

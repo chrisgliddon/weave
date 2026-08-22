@@ -1,0 +1,1558 @@
+(
+    pack_format_version: 1,
+    id: "ari_vale",
+    version: "1.0.0",
+    title: "Ari Vale Synthetic Character",
+    module: (
+        id: "org.weave.character",
+        version: "=1.0.0",
+    ),
+    dependencies: [],
+    values: {
+        "profile": (
+            kind: object,
+            value: {
+                "hexaco": (
+                    kind: object,
+                    value: {
+                        "agreeableness": (
+                            kind: object,
+                            value: {
+                                "flexibility": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.59,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "forgivingness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.55,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "gentleness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.71,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "patience": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.67,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.63,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "conscientiousness": (
+                            kind: object,
+                            value: {
+                                "diligence": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.84,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "organization": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.75,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "perfectionism": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.69,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "prudence": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "locked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.82,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.78,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "emotionality": (
+                            kind: object,
+                            value: {
+                                "anxiety": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.58,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "dependence": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.49,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "fearfulness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.42,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "sentimentality": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.79,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.57,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "extraversion": (
+                            kind: object,
+                            value: {
+                                "liveliness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.74,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "sociability": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.64,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "social_boldness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.61,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "social_self_esteem": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.73,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.68,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "honesty_humility": (
+                            kind: object,
+                            value: {
+                                "fairness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.81,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "greed_avoidance": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.66,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "modesty": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.65,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "sincerity": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.76,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.72,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "openness": (
+                            kind: object,
+                            value: {
+                                "aesthetic_appreciation": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.88,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "creativity": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.86,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "inquisitiveness": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.81,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "summary": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.83,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                                "unconventionality": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "form": (
+                                            kind: symbol,
+                                            value: "score",
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "projection_score": (
+                                            kind: number,
+                                            value: 0.77,
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "identity": (
+                    kind: object,
+                    value: {
+                        "aliases": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: string,
+                                    value: "Ari",
+                                ),
+                                (
+                                    kind: string,
+                                    value: "Vale",
+                                ),
+                            ],
+                        ),
+                        "display_name": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "freshness": (
+                                    kind: symbol,
+                                    value: "current",
+                                ),
+                                "lineage": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "character_original",
+                                        ),
+                                    ],
+                                ),
+                                "lock": (
+                                    kind: symbol,
+                                    value: "unlocked",
+                                ),
+                                "review": (
+                                    kind: symbol,
+                                    value: "not_required",
+                                ),
+                                "state": (
+                                    kind: symbol,
+                                    value: "authored",
+                                ),
+                                "value": (
+                                    kind: string,
+                                    value: "Ari Vale",
+                                ),
+                            },
+                        ),
+                        "id": (
+                            kind: string,
+                            value: "org.weave.character.ari_vale",
+                        ),
+                    },
+                ),
+                "ocean": (
+                    kind: object,
+                    value: {
+                        "agreeableness": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "input_paths": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "canon.personality.agreeableness.factor",
+                                        ),
+                                    ],
+                                ),
+                                "score": (
+                                    kind: number,
+                                    value: 0.63,
+                                ),
+                            },
+                        ),
+                        "algorithm": (
+                            kind: string,
+                            value: "weave_hexaco_to_ocean_compatibility",
+                        ),
+                        "algorithm_version": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                        "conscientiousness": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "input_paths": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "canon.personality.conscientiousness.factor",
+                                        ),
+                                    ],
+                                ),
+                                "score": (
+                                    kind: number,
+                                    value: 0.78,
+                                ),
+                            },
+                        ),
+                        "extraversion": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "input_paths": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "canon.personality.extraversion.factor",
+                                        ),
+                                    ],
+                                ),
+                                "score": (
+                                    kind: number,
+                                    value: 0.68,
+                                ),
+                            },
+                        ),
+                        "independent_evidence": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "lossy": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "neuroticism": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "input_paths": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "canon.personality.emotionality.factor",
+                                        ),
+                                    ],
+                                ),
+                                "score": (
+                                    kind: number,
+                                    value: 0.57,
+                                ),
+                            },
+                        ),
+                        "omitted_factor": (
+                            kind: symbol,
+                            value: "honesty_humility",
+                        ),
+                        "openness": (
+                            kind: object,
+                            value: {
+                                "confidence": (
+                                    kind: symbol,
+                                    value: "high",
+                                ),
+                                "input_paths": (
+                                    kind: list,
+                                    value: [
+                                        (
+                                            kind: string,
+                                            value: "canon.personality.openness.factor",
+                                        ),
+                                    ],
+                                ),
+                                "score": (
+                                    kind: number,
+                                    value: 0.83,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "profile_format_version": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "provenance": (
+                    kind: object,
+                    value: {
+                        "sources": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: string,
+                                    value: "character_original",
+                                ),
+                            ],
+                        ),
+                        "transformations": (
+                            kind: list,
+                            value: [],
+                        ),
+                    },
+                ),
+            },
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "character_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "character-contract-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Weave Character contract fixture.",
+                modified: false,
+            ),
+        ],
+        transformations: [
+            (
+                id: "weave_character_domain_projection_v1",
+                inputs: [
+                    "character_original",
+                ],
+                description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
+            ),
+        ],
+        claims: {
+            "values.profile": [
+                "weave_character_domain_projection_v1",
+            ],
+        },
+    ),
+)

@@ -5,7 +5,9 @@ import hokkaidoStory from "../../domain-modules/weave-world/corpus/stories/hokka
 import maldivesStory from "../../domain-modules/weave-world/corpus/stories/maldives.story.json";
 import newZealandStory from "../../domain-modules/weave-world/reference-place.story.json";
 import composedWorldStory from "../../domain-modules/weave-world/composed-setting.story.json";
+import characterStory from "../../domain-modules/weave-character/ari-vale.story.json";
 
+import { characterPresentation } from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
 
@@ -25,11 +27,12 @@ try {
     },
   );
   const composedWorld = composedWorldPresentation(composedWorldStory);
+  const character = characterPresentation(characterStory);
 
   const app = new Application();
   await app.init({
     width: 720,
-    height: 420,
+    height: 500,
     background: composedWorld.background,
     antialias: true,
     autoDensity: true,
@@ -38,7 +41,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · creativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
@@ -52,7 +55,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS used the composed World rules, place, and environment to choose travel behavior and presentation.";
+    "PixiJS read portable World and Character exports; the OCEAN value remains visibly derived and lossy.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "registries": [],
+  "manifests": [
+    "module.weave-module.json"
+  ],
+  "packs": [
+    "ari_vale.weave-domain.json"
+  ]
+}

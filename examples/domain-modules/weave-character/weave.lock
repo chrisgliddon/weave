@@ -1,0 +1,21 @@
+{
+  "lock_version": 1,
+  "modules": [
+    {
+      "id": "org.weave.character",
+      "version": "1.0.0",
+      "sha256": "9fae17e363ef895fcab4c7bd2375636d11766558e16f477dc1d37c5ca6a149dd",
+      "dependencies": []
+    }
+  ],
+  "packs": [
+    {
+      "module_id": "org.weave.character",
+      "module_version": "1.0.0",
+      "pack_id": "ari_vale",
+      "version": "1.0.0",
+      "sha256": "da23148841633f8d7b92134324e2d33b0ab23122a750e655f73c80fed1b84f7e",
+      "dependencies": []
+    }
+  ]
+}

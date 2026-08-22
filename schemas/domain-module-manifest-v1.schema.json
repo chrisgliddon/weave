@@ -167,6 +167,13 @@
             "$ref": "#/$defs/EntityCollectionDeclaration"
           },
           "type": "array"
+        },
+        "read_only_paths": {
+          "description": "Typed value paths that source and editor overrides must not replace.",
+          "items": {
+            "$ref": "#/$defs/ReadOnlyPathDeclaration"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -329,6 +336,28 @@
         "id",
         "inputs",
         "description"
+      ],
+      "type": "object"
+    },
+    "ReadOnlyPathDeclaration": {
+      "additionalProperties": false,
+      "description": "One manifest-declared path that remains inspectable but cannot be authored as an override.",
+      "properties": {
+        "path": {
+          "description": "Export path segments beginning with the export name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason": {
+          "description": "Author-facing explanation of why the path is protected.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
       ],
       "type": "object"
     },

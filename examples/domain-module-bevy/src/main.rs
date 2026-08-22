@@ -15,6 +15,8 @@ const WORLD_STORIES: [&str; 4] = [
 ];
 const COMPOSED_WORLD_STORY: &str =
     include_str!("../../domain-modules/weave-world/composed-setting.story.ron");
+const CHARACTER_STORY: &str =
+    include_str!("../../domain-modules/weave-character/ari-vale.story.ron");
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -47,6 +49,16 @@ struct ComposedWorldReading {
     travel_behavior: String,
     presentation_palette: String,
     authored_value_count: usize,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct CharacterReading {
+    id: String,
+    display_name: String,
+    factor_scores: [f64; 6],
+    creativity: f64,
+    ocean_openness: f64,
+    ocean_is_lossy: bool,
 }
 
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
@@ -208,6 +220,64 @@ fn composed_world_reading(story: &StoryIr) -> Result<ComposedWorldReading, io::E
     })
 }
 
+fn character_reading(story: &StoryIr) -> Result<CharacterReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let number = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Number(value)) => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let boolean = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Bool(value)) => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let factor = |name: &str| {
+        number(
+            &["profile", "hexaco", name, "summary", "projection_score"],
+            "Character factor summary is invalid",
+        )
+    };
+    Ok(CharacterReading {
+        id: string(&["profile", "identity", "id"], "Character id is invalid")?,
+        display_name: string(
+            &["profile", "identity", "display_name", "value"],
+            "Character display name is invalid",
+        )?,
+        factor_scores: [
+            factor("honesty_humility")?,
+            factor("emotionality")?,
+            factor("extraversion")?,
+            factor("agreeableness")?,
+            factor("conscientiousness")?,
+            factor("openness")?,
+        ],
+        creativity: number(
+            &[
+                "profile",
+                "hexaco",
+                "openness",
+                "creativity",
+                "projection_score",
+            ],
+            "Character creativity facet is invalid",
+        )?,
+        ocean_openness: number(
+            &["profile", "ocean", "openness", "score"],
+            "Character OCEAN openness is invalid",
+        )?,
+        ocean_is_lossy: boolean(
+            &["profile", "ocean", "lossy"],
+            "Character OCEAN lossiness marker is invalid",
+        )?,
+    })
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -244,6 +314,17 @@ fn report_composed_world(reading: Res<ComposedWorldReading>) {
     );
 }
 
+fn report_character(reading: Res<CharacterReading>) {
+    println!(
+        "Bevy read {} ({}): creativity {:.2}, derived OCEAN openness {:.2}, lossy={}",
+        reading.display_name,
+        reading.id,
+        reading.creativity,
+        reading.ocean_openness,
+        reading.ocean_is_lossy,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -257,14 +338,21 @@ fn main() -> Result<(), Box<dyn Error>> {
             .collect::<Result<_, _>>()?,
     );
     let composed_world = composed_world_reading(&ron::from_str::<StoryIr>(COMPOSED_WORLD_STORY)?)?;
+    let character = character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
         .insert_resource(world_readings)
         .insert_resource(composed_world)
+        .insert_resource(character)
         .add_systems(
             Startup,
-            (report_reading, report_world, report_composed_world),
+            (
+                report_reading,
+                report_world,
+                report_composed_world,
+                report_character,
+            ),
         );
     app.update();
     Ok(())
@@ -346,6 +434,22 @@ mod tests {
                 travel_behavior: "beacon escort via Lantern Road".to_owned(),
                 presentation_palette: "cedar-snow".to_owned(),
                 authored_value_count: 46,
+            }
+        );
+    }
+
+    #[test]
+    fn reads_the_complete_character_profile_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(CHARACTER_STORY).expect("checked Character RON");
+        assert_eq!(
+            character_reading(&story).expect("read Character values"),
+            CharacterReading {
+                id: "org.weave.character.ari_vale".to_owned(),
+                display_name: "Ari Vale, Wayfinder".to_owned(),
+                factor_scores: [0.72, 0.57, 0.68, 0.63, 0.78, 0.83],
+                creativity: 0.86,
+                ocean_openness: 0.83,
+                ocean_is_lossy: true,
             }
         );
     }

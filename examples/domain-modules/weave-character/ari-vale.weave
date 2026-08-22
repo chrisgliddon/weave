@@ -1,0 +1,19 @@
+module character {
+    id: "org.weave.character"
+    version: "=1.0.0"
+    pack: "ari_vale@=1.0.0"
+    override profile.identity.display_name.value: "Ari Vale, Wayfinder"
+}
+
+VAR character_name = character.profile.identity.display_name.value
+VAR openness = character.profile.hexaco.openness.summary.projection_score
+VAR creativity = character.profile.hexaco.openness.creativity.projection_score
+VAR ocean_openness = character.profile.ocean.openness.score
+
+=== start ===
+{character.profile.ocean.lossy:
+    {character_name} carries {creativity} creativity evidence and a derived OCEAN openness view of {ocean_openness}.
+- else:
+    The compatibility projection is unavailable.
+}
+-> END

@@ -5,6 +5,7 @@
 //! Inputs are data-only, strictly versioned, and suitable for source tooling, editors, command-line
 //! workflows, RON/JSON interchange, and game-engine consumers without network or provider access.
 
+mod domain;
 mod model;
 mod synthesis;
 mod validation;
@@ -14,6 +15,10 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 use weave_domain::{parse_strict_json, to_pretty_json, to_pretty_ron};
 
+pub use domain::{
+    CHARACTER_DOMAIN_MODULE_VERSION, CharacterDomainError, character_domain_pack,
+    character_module_manifest, character_profile_domain_value,
+};
 pub use model::*;
 pub use synthesis::{synthesize_character, template_fingerprint, validate_synthesis_result};
 pub use validation::{

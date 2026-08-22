@@ -7,7 +7,8 @@ use weave_core::ast::{Expr, Item, Literal, ModuleEntry, Span, Spanned, UnaryOper
 use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Document, parse_document};
 use weave_domain::{
-    DomainCatalog, DomainValue, ExportSource, Provenance, ResolvedDomainModule, TypeExpression,
+    DomainCatalog, DomainValue, ExportSource, Provenance, ReadOnlyPathDeclaration,
+    ResolvedDomainModule, TypeExpression,
 };
 use weave_patterns::{
     PatternDefinition, elder_futhark_definition, i_ching_definition, tarot_definition,
@@ -137,6 +138,8 @@ pub struct ModuleInspection {
     pub exports: Vec<ModuleExportInspection>,
     /// Generic place/entity hierarchies declared by the selected manifest.
     pub entity_collections: Vec<EntityCollectionInspection>,
+    /// Typed paths that the module exposes for inspection but protects from source writeback.
+    pub read_only_paths: Vec<ReadOnlyPathDeclaration>,
     /// Resolved World environment/climate inheritance when this is the Weave World module.
     pub resolved_world: Option<weave_world::ResolvedWorld>,
     /// Selected composition layers and differences when this pack was produced by a World plan.
@@ -303,6 +306,7 @@ impl DomainSession {
                     })
                     .collect(),
                 entity_collections: entity_collection_inspections(resolved),
+                read_only_paths: resolved.manifest.authoring.read_only_paths.clone(),
                 resolved_world: weave_world::resolve_world(resolved).ok(),
                 world_composition: self
                     .world_compositions
@@ -1045,6 +1049,18 @@ mod tests {
         DomainCatalog::from_artifacts([manifest], packs).expect("world catalog")
     }
 
+    fn character_catalog() -> DomainCatalog {
+        let manifest = weave_domain::ModuleManifest::from_json(include_str!(
+            "../../examples/domain-modules/weave-character/module.weave-module.json"
+        ))
+        .expect("canonical Character manifest");
+        let pack = weave_domain::DomainPack::from_json(include_str!(
+            "../../examples/domain-modules/weave-character/ari_vale.weave-domain.json"
+        ))
+        .expect("canonical Character pack");
+        DomainCatalog::from_artifacts([manifest], [pack]).expect("Character catalog")
+    }
+
     #[test]
     fn compiler_runtime_and_pattern_models_are_shared_directly() {
         let mut session = DomainSession::new(17);
@@ -1188,6 +1204,107 @@ mod tests {
         assert_eq!(
             session.last_valid_story().expect("world story").modules,
             formatted.story.modules
+        );
+    }
+
+    #[test]
+    fn character_profile_is_typed_editable_and_derived_writeback_safe() {
+        let source = include_str!("../../examples/domain-modules/weave-character/ari-vale.weave");
+        let catalog = character_catalog();
+        let mut session = DomainSession::with_domain_catalog(31, catalog.clone());
+        session
+            .compile_source(source, Some("ari-vale.weave".to_owned()))
+            .expect("editor compiles Character source");
+
+        let inspection = &session.module_inspections()[0];
+        assert_eq!(inspection.alias, "character");
+        assert_eq!(inspection.id, "org.weave.character");
+        assert_eq!(inspection.pack_id, "ari_vale");
+        assert_eq!(inspection.read_only_paths.len(), 5);
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "ocean"].map(str::to_owned)
+                && declaration.reason.contains("lossy derived")
+        }));
+        let profile = inspection
+            .exports
+            .iter()
+            .find(|export| export.name == "profile")
+            .expect("Character profile schema and value are inspectable");
+        assert_eq!(
+            profile.origins.get("profile.identity.display_name.value"),
+            Some(&DomainValueOrigin::Authored)
+        );
+        assert_eq!(
+            profile.origins.get("profile.ocean.openness.score"),
+            Some(&DomainValueOrigin::Generated)
+        );
+        assert_eq!(
+            domain_value_at(
+                &session.active_modules()["character"].effective_values,
+                &[
+                    "profile",
+                    "hexaco",
+                    "openness",
+                    "creativity",
+                    "projection_score",
+                ]
+                .map(str::to_owned),
+            ),
+            Some(&DomainValue::Number(0.86))
+        );
+
+        session
+            .set_module_override(
+                "character",
+                &["profile", "identity", "display_name", "value"],
+                DomainValue::String("Ari Vale of the Lantern Road".to_owned()),
+            )
+            .expect("editor revises the presentation-facing name");
+        assert!(session.source().contains("Ari Vale of the Lantern Road"));
+        assert_eq!(
+            domain_value_at(
+                &session.active_modules()["character"].effective_values,
+                &["profile", "identity", "id"].map(str::to_owned),
+            ),
+            Some(&DomainValue::String(
+                "org.weave.character.ari_vale".to_owned()
+            ))
+        );
+
+        let before_writeback = session.source().to_owned();
+        assert!(
+            session
+                .set_module_override(
+                    "character",
+                    &["profile", "ocean", "openness", "score"],
+                    DomainValue::Number(0.1),
+                )
+                .is_err()
+        );
+        assert_eq!(session.source(), before_writeback);
+        assert!(session.diagnostics().is_empty());
+
+        let mut buffer = TextBuffer::with_domain_catalog(source, catalog);
+        buffer.format().expect("Character source formats");
+        assert!(buffer.diagnostics().is_empty());
+        let formatted = weave_compiler::compile_with_modules(
+            buffer.source(),
+            &CompileOptions {
+                source_name: Some("ari-vale.weave".to_owned()),
+            },
+            &character_catalog(),
+        )
+        .expect("formatted Character source compiles");
+        assert_eq!(
+            formatted.story.modules,
+            weave_compiler::compile_with_modules(
+                source,
+                &CompileOptions::default(),
+                &character_catalog()
+            )
+            .expect("original Character source compiles")
+            .story
+            .modules
         );
     }
 

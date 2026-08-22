@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
+import { characterPresentation } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
@@ -14,6 +15,10 @@ const worldStoryUrls = [
 ].map((path) => new URL(path, import.meta.url));
 const composedWorldUrl = new URL(
   "../../domain-modules/weave-world/composed-setting.story.json",
+  import.meta.url,
+);
+const characterUrl = new URL(
+  "../../domain-modules/weave-character/ari-vale.story.json",
   import.meta.url,
 );
 
@@ -83,6 +88,26 @@ test("composed world rules, places, and environment alter PixiJS presentation", 
     "booleans",
     "has_beacon",
   ]);
+});
+
+test("reads the complete portable Character profile", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  assert.deepEqual(characterPresentation(story), {
+    id: "org.weave.character.ari_vale",
+    displayName: "Ari Vale, Wayfinder",
+    factorScores: {
+      honestyHumility: 0.72,
+      emotionality: 0.57,
+      extraversion: 0.68,
+      agreeableness: 0.63,
+      conscientiousness: 0.78,
+      openness: 0.83,
+    },
+    creativity: 0.86,
+    oceanOpenness: 0.83,
+    oceanIsLossy: true,
+    oceanIsIndependentEvidence: false,
+  });
 });
 
 test("rejects invalid tagged values without echoing them", () => {

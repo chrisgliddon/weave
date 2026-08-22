@@ -56,14 +56,27 @@ pub struct ModuleManifest {
 pub struct ModuleAuthoring {
     /// Stable entity maps exposed by this module, sorted by export name.
     pub entity_collections: Vec<EntityCollectionDeclaration>,
+    /// Typed value paths that source and editor overrides must not replace.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub read_only_paths: Vec<ReadOnlyPathDeclaration>,
 }
 
 impl ModuleAuthoring {
     /// Whether this manifest declares no structured authoring surfaces.
     #[must_use]
     pub const fn is_empty(&self) -> bool {
-        self.entity_collections.is_empty()
+        self.entity_collections.is_empty() && self.read_only_paths.is_empty()
     }
+}
+
+/// One manifest-declared path that remains inspectable but cannot be authored as an override.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ReadOnlyPathDeclaration {
+    /// Export path segments beginning with the export name.
+    pub path: Vec<String>,
+    /// Author-facing explanation of why the path is protected.
+    pub reason: String,
 }
 
 /// Schema paths that let a generic editor create and safely reorganize stable entities.

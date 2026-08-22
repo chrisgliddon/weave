@@ -1,0 +1,894 @@
+{
+  "contract_version": 1,
+  "pack_format_version": 1,
+  "id": "org.weave.character",
+  "version": "1.0.0",
+  "namespace": "character",
+  "title": "Weave Character",
+  "summary": "Typed, provenance-aware Character Profiles with canonical HEXACO evidence and a visibly lossy derived OCEAN view.",
+  "authors": [
+    {
+      "name": "Weave Contributors",
+      "url": "https://github.com/chrisgliddon/weave"
+    }
+  ],
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "capabilities": [
+    {
+      "id": "data",
+      "version": 1
+    },
+    {
+      "id": "editor_schema",
+      "version": 1
+    }
+  ],
+  "dependencies": [],
+  "types": {
+    "Agreeableness": {
+      "kind": "object",
+      "fields": {
+        "flexibility": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "forgivingness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "gentleness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "patience": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        }
+      }
+    },
+    "AttributedText": {
+      "kind": "object",
+      "fields": {
+        "confidence": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "high",
+              "low",
+              "moderate",
+              "unknown"
+            ]
+          },
+          "required": true,
+          "description": "Confidence in this representation."
+        },
+        "freshness": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "current",
+              "stale"
+            ]
+          },
+          "required": true,
+          "description": "Whether exact upstream inputs remain current."
+        },
+        "lineage": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 1,
+            "max_items": 256
+          },
+          "required": true,
+          "description": "Sorted profile provenance identifiers."
+        },
+        "lock": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "locked",
+              "unlocked"
+            ]
+          },
+          "required": true,
+          "description": "Author lock state."
+        },
+        "rationale": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 2048
+          },
+          "required": false,
+          "description": "Explanation retained for non-trivial value states."
+        },
+        "review": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "accepted",
+              "not_required",
+              "pending",
+              "rejected"
+            ]
+          },
+          "required": true,
+          "description": "Editorial review state."
+        },
+        "state": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "authored",
+              "derived",
+              "imported",
+              "overridden",
+              "reviewed",
+              "suggested"
+            ]
+          },
+          "required": true,
+          "description": "How the value entered the record."
+        },
+        "value": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Authored or reviewed text value."
+        }
+      }
+    },
+    "CharacterIdentity": {
+      "kind": "object",
+      "fields": {
+        "aliases": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 0,
+            "max_items": 256
+          },
+          "required": true,
+          "description": "Ordered aliases, empty when no aliases are asserted."
+        },
+        "display_name": {
+          "type": {
+            "kind": "named",
+            "name": "AttributedText"
+          },
+          "required": true,
+          "description": "Primary display name with authority and lineage."
+        },
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Stable namespaced character identifier."
+        }
+      }
+    },
+    "CharacterProfile": {
+      "kind": "object",
+      "fields": {
+        "hexaco": {
+          "type": {
+            "kind": "named",
+            "name": "HexacoProfile"
+          },
+          "required": true,
+          "description": "Canonical six-factor, 24-facet HEXACO evidence."
+        },
+        "identity": {
+          "type": {
+            "kind": "named",
+            "name": "CharacterIdentity"
+          },
+          "required": true,
+          "description": "Stable identity separated from optional presentation."
+        },
+        "ocean": {
+          "type": {
+            "kind": "named",
+            "name": "OceanView"
+          },
+          "required": true,
+          "description": "Lossy and read-only OCEAN compatibility view."
+        },
+        "profile_format_version": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 1.0,
+            "maximum": 1.0
+          },
+          "required": true,
+          "description": "Exact Character Profile contract version."
+        },
+        "provenance": {
+          "type": {
+            "kind": "named",
+            "name": "CharacterProvenance"
+          },
+          "required": true,
+          "description": "Profile source and transformation identifiers."
+        }
+      }
+    },
+    "CharacterProvenance": {
+      "kind": "object",
+      "fields": {
+        "sources": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 1,
+            "max_items": 4096
+          },
+          "required": true,
+          "description": "Sorted source identifiers retained from the profile."
+        },
+        "transformations": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 0,
+            "max_items": 4096
+          },
+          "required": true,
+          "description": "Sorted transformation identifiers retained from the profile."
+        }
+      }
+    },
+    "Conscientiousness": {
+      "kind": "object",
+      "fields": {
+        "diligence": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "organization": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "perfectionism": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "prudence": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        }
+      }
+    },
+    "Emotionality": {
+      "kind": "object",
+      "fields": {
+        "anxiety": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "dependence": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "fearfulness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "sentimentality": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        }
+      }
+    },
+    "Extraversion": {
+      "kind": "object",
+      "fields": {
+        "liveliness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "sociability": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "social_boldness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "social_self_esteem": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        }
+      }
+    },
+    "HexacoProfile": {
+      "kind": "object",
+      "fields": {
+        "agreeableness": {
+          "type": {
+            "kind": "named",
+            "name": "Agreeableness"
+          },
+          "required": true,
+          "description": "Agreeableness factor and four facets."
+        },
+        "conscientiousness": {
+          "type": {
+            "kind": "named",
+            "name": "Conscientiousness"
+          },
+          "required": true,
+          "description": "Conscientiousness factor and four facets."
+        },
+        "emotionality": {
+          "type": {
+            "kind": "named",
+            "name": "Emotionality"
+          },
+          "required": true,
+          "description": "Emotionality factor and four facets."
+        },
+        "extraversion": {
+          "type": {
+            "kind": "named",
+            "name": "Extraversion"
+          },
+          "required": true,
+          "description": "Extraversion factor and four facets."
+        },
+        "honesty_humility": {
+          "type": {
+            "kind": "named",
+            "name": "HonestyHumility"
+          },
+          "required": true,
+          "description": "Honesty-Humility factor and four facets."
+        },
+        "openness": {
+          "type": {
+            "kind": "named",
+            "name": "Openness"
+          },
+          "required": true,
+          "description": "Openness to Experience factor and four facets."
+        }
+      }
+    },
+    "HonestyHumility": {
+      "kind": "object",
+      "fields": {
+        "fairness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "greed_avoidance": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "modesty": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "sincerity": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        }
+      }
+    },
+    "OceanDimension": {
+      "kind": "object",
+      "fields": {
+        "confidence": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "high",
+              "low",
+              "moderate",
+              "unknown"
+            ]
+          },
+          "required": true,
+          "description": "Minimum confidence of the exact HEXACO inputs."
+        },
+        "input_paths": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 512
+            },
+            "min_items": 1,
+            "max_items": 4
+          },
+          "required": true,
+          "description": "Exact canonical HEXACO input paths."
+        },
+        "score": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "required": true,
+          "description": "Deterministically projected compatibility score."
+        }
+      }
+    },
+    "OceanView": {
+      "kind": "object",
+      "fields": {
+        "agreeableness": {
+          "type": {
+            "kind": "named",
+            "name": "OceanDimension"
+          },
+          "required": false,
+          "description": "Optional derived dimension; absent when required canonical inputs are missing."
+        },
+        "algorithm": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Stable projection algorithm identifier."
+        },
+        "algorithm_version": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 1.0,
+            "maximum": 1.0
+          },
+          "required": true,
+          "description": "Exact projection algorithm version."
+        },
+        "conscientiousness": {
+          "type": {
+            "kind": "named",
+            "name": "OceanDimension"
+          },
+          "required": false,
+          "description": "Optional derived dimension; absent when required canonical inputs are missing."
+        },
+        "extraversion": {
+          "type": {
+            "kind": "named",
+            "name": "OceanDimension"
+          },
+          "required": false,
+          "description": "Optional derived dimension; absent when required canonical inputs are missing."
+        },
+        "independent_evidence": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Always false; this view is not independent personality evidence."
+        },
+        "lossy": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Always true for the five-factor compatibility projection."
+        },
+        "neuroticism": {
+          "type": {
+            "kind": "named",
+            "name": "OceanDimension"
+          },
+          "required": false,
+          "description": "Optional derived dimension; absent when required canonical inputs are missing."
+        },
+        "omitted_factor": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "honesty_humility"
+            ]
+          },
+          "required": true,
+          "description": "Canonical HEXACO factor omitted by OCEAN."
+        },
+        "openness": {
+          "type": {
+            "kind": "named",
+            "name": "OceanDimension"
+          },
+          "required": false,
+          "description": "Optional derived dimension; absent when required canonical inputs are missing."
+        }
+      }
+    },
+    "Openness": {
+      "kind": "object",
+      "fields": {
+        "aesthetic_appreciation": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "creativity": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "inquisitiveness": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        },
+        "summary": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical factor summary; absence is explicit missing data."
+        },
+        "unconventionality": {
+          "type": {
+            "kind": "named",
+            "name": "TraitEvidence"
+          },
+          "required": false,
+          "description": "Optional canonical HEXACO facet evidence; absence is never imputed."
+        }
+      }
+    },
+    "TraitEvidence": {
+      "kind": "object",
+      "fields": {
+        "confidence": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "high",
+              "low",
+              "moderate",
+              "unknown"
+            ]
+          },
+          "required": true,
+          "description": "Confidence in this representation."
+        },
+        "form": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "high",
+              "low",
+              "middle",
+              "score",
+              "very_high",
+              "very_low"
+            ]
+          },
+          "required": true,
+          "description": "Exact numeric input form or the retained five-band input form."
+        },
+        "freshness": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "current",
+              "stale"
+            ]
+          },
+          "required": true,
+          "description": "Whether exact upstream inputs remain current."
+        },
+        "lineage": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 1,
+            "max_items": 256
+          },
+          "required": true,
+          "description": "Sorted profile provenance identifiers."
+        },
+        "lock": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "locked",
+              "unlocked"
+            ]
+          },
+          "required": true,
+          "description": "Author lock state."
+        },
+        "projection_score": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "required": true,
+          "description": "Exact normalized score, or the documented projection anchor for a band."
+        },
+        "rationale": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 2048
+          },
+          "required": false,
+          "description": "Explanation retained for non-trivial value states."
+        },
+        "review": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "accepted",
+              "not_required",
+              "pending",
+              "rejected"
+            ]
+          },
+          "required": true,
+          "description": "Editorial review state."
+        },
+        "state": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "authored",
+              "derived",
+              "imported",
+              "overridden",
+              "reviewed",
+              "suggested"
+            ]
+          },
+          "required": true,
+          "description": "How the value entered the record."
+        }
+      }
+    }
+  },
+  "exports": {
+    "profile": {
+      "type": {
+        "kind": "named",
+        "name": "CharacterProfile"
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Validated runtime projection of one Character Profile; canonical evidence and derived compatibility fields retain explicit state and lineage."
+    }
+  },
+  "authoring": {
+    "entity_collections": [],
+    "read_only_paths": [
+      {
+        "path": [
+          "profile",
+          "hexaco"
+        ],
+        "reason": "Canonical HEXACO evidence is revised in the profile artifact so dependent views can be recomputed and reviewed."
+      },
+      {
+        "path": [
+          "profile",
+          "identity",
+          "id"
+        ],
+        "reason": "The stable character identifier is not a display label and cannot be rewritten by a story override."
+      },
+      {
+        "path": [
+          "profile",
+          "ocean"
+        ],
+        "reason": "OCEAN is a lossy derived compatibility view and cannot be authored as independent evidence."
+      },
+      {
+        "path": [
+          "profile",
+          "profile_format_version"
+        ],
+        "reason": "The profile contract version is fixed by the selected pack."
+      },
+      {
+        "path": [
+          "profile",
+          "provenance"
+        ],
+        "reason": "Pack provenance is immutable and cannot be replaced by story source."
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_character_module",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/crates/weave-character",
+        "revision": "character-domain-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Weave Character domain projection authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "authoring.read_only_paths": [
+        "weave_character_module"
+      ],
+      "exports.profile": [
+        "weave_character_module"
+      ],
+      "types.CharacterProfile": [
+        "weave_character_module"
+      ]
+    }
+  }
+}

@@ -13,7 +13,8 @@ Contract v1 deliberately has no executable third-party extension surface. A modu
 - immutable pack data and initial values for isolated state;
 - versioned host capabilities from Weave's allowlist;
 - exact dependency requirements;
-- editor labels and schema metadata carried by those declarations; and
+- editor labels and schema metadata carried by those declarations;
+- typed read-only paths that prevent source or editor writeback into derived, canonical, or otherwise protected values; and
 - machine-readable license, source, transformation, and field provenance.
 
 The `operations` capability is a versioned declarative data contract interpreted by trusted Weave code; it is not permission to execute package code. Adding any executable extension boundary would require a new contract version, a separate trust policy, explicit host opt-in, and a security review.
@@ -91,6 +92,8 @@ The compiler resolves the complete dependency closure against that bounded catal
 
 For structured authoring, a manifest may declare an `authoring.entity_collections` entry over a bounded map export. It names the stable id, editable label, integer order, parent, symmetric relation, and explicit inheritance-source fields. Generic editor actions can then create, rename, reorder, nest, relate, or reset entities without package code. Validation requires each id to equal its map key, every reference to resolve, relationships to be symmetric, and parent/inheritance chains to be acyclic.
 
+A manifest may also declare sorted, non-overlapping `authoring.read_only_paths`. Each path must resolve through the same closed export schema. Source and editor replacements that target, enclose, or descend from a protected path fail before effective values are produced. Weave Character uses this generic policy to expose canonical HEXACO evidence and lossy OCEAN fields for static inspection while requiring canonical revisions to pass through profile validation and deterministic projection.
+
 ## End-to-end synthetic tracer
 
 [`tracer.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.weave) is the minimal contract proof. It activates the fictional `Synthetic Constellation` module, initializes an ordinary story variable from its `phase` export, branches on the semantic symbol, and interpolates nested observation data. Repeated compilation produces byte-identical [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.story.ron) and [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.story.json).
@@ -120,7 +123,7 @@ Resolution follows these rules:
 4. Resolve the complete dependency graph. Missing, incompatible, or cyclic dependencies fail the build.
 5. Topologically order dependencies before dependents. When several nodes are ready, sort by full module identity.
 6. Validate every pack value against its closed export type and every exported pack value against a provenance claim.
-7. Apply source-authored replacements in sorted path order, validate the complete effective values and declared entity constraints, and preserve the replacements separately from pack provenance.
+7. Reject replacements that overlap declared read-only paths; apply the remaining source-authored replacements in sorted path order, validate the complete effective values and declared entity constraints, and preserve the replacements separately from pack provenance.
 8. Record exact versions and hashes in the project lock. Repeated locked builds must produce byte-equivalent module IR.
 
 The Rust `resolve_module_order` contract test passes the same manifests in opposite discovery orders and requires the same result.

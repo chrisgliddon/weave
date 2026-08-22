@@ -1,7 +1,8 @@
 use semver::Version;
 use weave_domain::{
-    DOMAIN_CONTRACT_VERSION, DomainCatalog, DomainError, DomainPack, DomainValue, ModuleDependency,
-    ModuleManifest, ProvenanceKind, domain_lock_schema, domain_pack_schema, domain_project_schema,
+    DOMAIN_CONTRACT_VERSION, DomainCatalog, DomainError, DomainOverride, DomainPack, DomainValue,
+    ModuleDependency, ModuleManifest, ProvenanceKind, ReadOnlyPathDeclaration,
+    apply_authored_overrides, domain_lock_schema, domain_pack_schema, domain_project_schema,
     domain_registry_index_schema, module_manifest_schema, resolve_module_order, validate_manifest,
     validate_pack,
 };
@@ -94,6 +95,39 @@ fn version_negotiation_fails_closed() {
         validate_pack(&incompatible_pack, &manifest(), &current_weave()),
         Err(DomainError::IncompatibleModule { .. })
     ));
+}
+
+#[test]
+fn manifest_read_only_paths_block_source_writeback_without_hiding_values() {
+    let mut manifest = manifest();
+    manifest.authoring.read_only_paths = vec![ReadOnlyPathDeclaration {
+        path: vec!["observation".into(), "intensity".into()],
+        reason: "The checked projection remains inspectable but is not independent evidence."
+            .into(),
+    }];
+    validate_manifest(&manifest, &current_weave()).expect("protected path is declared and typed");
+
+    let exact = DomainOverride {
+        path: vec!["observation".into(), "intensity".into()],
+        value: DomainValue::Number(0.5),
+    };
+    let ancestor = DomainOverride {
+        path: vec!["observation".into()],
+        value: pack().values["observation"].clone(),
+    };
+    for rejected in [exact, ancestor] {
+        let error = apply_authored_overrides(&manifest, &pack().values, &[rejected])
+            .expect_err("read-only value must reject direct and enclosing overrides");
+        assert!(error.to_string().contains("read-only path"));
+    }
+
+    let allowed = DomainOverride {
+        path: vec!["phase".into()],
+        value: DomainValue::Symbol("midnight".into()),
+    };
+    let values = apply_authored_overrides(&manifest, &pack().values, &[allowed])
+        .expect("an unrelated authored value remains replaceable");
+    assert_eq!(values["phase"], DomainValue::Symbol("midnight".into()));
 }
 
 #[test]
