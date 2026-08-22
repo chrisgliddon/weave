@@ -1,6 +1,6 @@
 # Weave World reference seeds
 
-Weave World is an optional data-only domain module. Its first complete preset turns one exact reference-place selector into a closed `WorldSeed` that the compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read through the shared domain-module contract.
+Weave World is an optional data-only domain module. Four checked presets turn exact reference-place selectors into closed `WorldSeed` values that the compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read through the shared domain-module contract.
 
 The checked fixture is [`examples/domain-modules/weave-world`](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world). It is an environmental seed for fictional authoring, not a cultural profile. The exported identity explicitly records `culture_included: false`; the preset does not infer people, language, naming, or behavior from geography.
 
@@ -29,26 +29,80 @@ VAR reference_climate = world.seed.climate.band
 
 The exact selector keeps resolution deterministic. The adjacent `weave.modules.json` bounds discovery to reviewed project files, while `weave.lock` pins the canonical manifest and pack hashes. Compilation with `--locked` neither searches user directories nor contacts the network.
 
+The corpus deliberately covers different environments and geographic scales:
+
+| Preset coordinate | Scope | Climate cue | Primary biome |
+|---|---|---|---|
+| `aotearoa_new_zealand@=1.0.0` | Country, selected-station envelope | Temperate oceanic | Temperate broadleaf and mixed forest |
+| `hokkaido_japan@=1.0.0` | Region, representative grid point | Humid continental | Temperate broadleaf and mixed forest |
+| `maldives@=1.0.0` | Country, representative grid point | Tropical oceanic | Tropical and subtropical moist broadleaf forest |
+| `british_columbia_temperate_forest@=1.0.0` | Ecosystem, representative grid point | Temperate oceanic | Temperate conifer forest |
+
+Each preset has its own runnable `.weave` source and checked RON/JSON pair. A story activates one pack at a time because mutable domain state is isolated by module identity.
+
 ## Typed seed
 
 `world.seed` exposes statically discoverable fields for:
 
 - a compact attribution notice retained in portable runtime exports;
 - identity and stable preset coordinate;
-- climate band, `1991-2020` reference period, units in field names, station-range values, spatial resolution, and confidence;
+- climate band, `1991-2020` reference period, explicit Celsius and annual-millimetre units, observation ranges, source resolution, confidence, and uncertainty;
+- geographic resolution and the exact selected-station or representative-grid-point approximation policy;
 - representative biome classes and one primary biome for concise conditions;
-- country-scale coastal, island, and mountain terrain;
-- coastal and oceanic-island water context;
-- southern-hemisphere warmest and coolest months; and
-- evidence-backed alpine cooling, rainfall contrast, and seasonal temperature tendencies.
+- conservative terrain and water context;
+- hemisphere-aware warmest and coolest months;
+- idealized solstice daylight calculated from a declared representative latitude; and
+- evidence-backed weather cues plus deterministic environmental hazard tendencies.
 
-The reference pack is deliberately approximate. Its selected-station range is not a local forecast, and broad symbols are authoring cues rather than exhaustive geographic claims. Later fictional places and overrides should remain separate authored layers rather than silently changing this pinned source seed.
+Every reference pack is deliberately approximate. A selected-station envelope or source-native grid point is not a local forecast, and broad symbols are authoring cues rather than exhaustive geographic claims. Hazard entries are tendencies derived by a closed threshold policy, never event forecasts, probabilities, or risk scores. Later fictional places and overrides should remain separate authored layers rather than silently changing a pinned source seed.
 
 ## Provenance and normalization
 
-The pack uses [Natural Earth v5.1.2 physical vectors](https://github.com/nvkelso/natural-earth-vector/releases/tag/v5.1.2), whose vector data are [public domain](https://www.naturalearthdata.com/about/terms-of-use/); Earth Sciences New Zealand / NIWA `1991-2020` temperature and rainfall workbooks, whose downloads are [CC BY 4.0](https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse); and [RESOLVE Ecoregions 2017](https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017), also CC BY 4.0.
+The corpus uses [Natural Earth v5.1.2 physical vectors](https://github.com/nvkelso/natural-earth-vector/releases/tag/v5.1.2), whose vector data are [public domain](https://www.naturalearthdata.com/about/terms-of-use/); Earth Sciences New Zealand / NIWA `1991-2020` temperature and rainfall workbooks, whose downloads are [CC BY 4.0](https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse); [RESOLVE Ecoregions 2017](https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017), also CC BY 4.0; and stable CSV responses from NASA POWER `1991-2020` climatologies derived from MERRA-2.
 
-Every acquired artifact has an HTTPS URL, revision, SHA-256, SPDX or `LicenseRef` expression, license URL, attribution, and modification flag in `pack.weave-domain.json`. Named transformations explain filtering, aggregation, symbol normalization, and final seed assembly. Nested claims connect climate, biomes, identity, terrain, water, seasonality, and weather tendencies to those transformations. A compact attribution string also remains inside `WorldSeed` when only compiled RON or JSON is redistributed. The editor's module inspection model exposes the selected values plus both manifest and pack provenance unchanged.
+NASA describes POWER as free, globally available analysis-ready climate data. Its [science-data license policy](https://science.data.nasa.gov/about/license) covers NASA public data, while the POWER [referencing guide](https://power.larc.nasa.gov/docs/referencing/) requests the project reference, service version, access date, and notification when data is redistributed. The generated packs retain that requested attribution and classify the reviewed data under `LicenseRef-NASA-Public-Data`; this avoids implying that NASA names or logos are licensed material.
+
+Every acquired artifact has an HTTPS URL, citation or revision and retrieval date, SHA-256, SPDX or `LicenseRef` expression, license URL, attribution, and modification flag in its generated pack. Named transformations explain filtering, unit conversion, aggregation, daylight calculation, threshold-based hazards, symbol normalization, and final seed assembly. Nested claims connect every major seed field to those transformations. A compact attribution string also remains inside `WorldSeed` when only compiled RON or JSON is redistributed. The editor's module inspection model exposes the selected values plus both manifest and pack provenance unchanged.
+
+## Offline corpus pipeline
+
+The checked [preset schema](downloads/weave-world-corpus-preset-v1.schema.json) and [index schema](downloads/weave-world-corpus-index-v1.schema.json) define a closed contributor format. `corpus.weave-world.json` maps local source records to generated pack paths. `weave-world-corpus` reads only those local files and the local module manifest; the builder has no acquisition or network step.
+
+Rebuild and then prove the outputs are byte-exact:
+
+```bash
+cargo run -p weave-world-corpus -- build \
+  examples/domain-modules/weave-world/corpus.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json
+
+cargo run -p weave-world-corpus -- check \
+  examples/domain-modules/weave-world/corpus.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json
+```
+
+Corpus v1 applies these deterministic policies:
+
+| Input situation | Closed policy |
+|---|---|
+| Missing required fact, units, resolution, uncertainty, source role, or attribution | Reject the source record before generation. |
+| Multiple source observations disagree | Combine only observations declared under the same reference period, units, source resolution, and geographic approximation; preserve their extrema as a range and deterministically average monthly values for season ranking. Reject incompatible scope, period, unit, or record shape instead of silently choosing a source. |
+| Primary biome absent from the declared biome set, island system without coast, inverted range, or warm/cool month contradiction | Reject the contradictory record. |
+| Temperature or precipitation unit outside the closed vocabulary | Reject it; v1 accepts Celsius plus either source daily millimetres or already annual millimetres. |
+| Daily precipitation rate | Multiply by the exact mean Gregorian days per year in the inclusive reference period, then round to one decimal annual millimetre. |
+| Representative grid point used for a broad country, region, or ecosystem | Require `representative_not_exhaustive`, an explicit scale, source resolution, approximation tag, and uncertainty statement. |
+| Daylight | Use WGS84 representative latitude, 23.44° solstice declination, polar clamping, and one-decimal hours; exclude refraction, terrain, and twilight. |
+| Hazards | Apply only the documented v1 precipitation, freezing, wet-slope, coastal-atoll, and curated-cyclone rules. Missing evidence produces no inferred tendency. |
+| Public source without exact hash or a reviewed open license | Reject it. |
+
+To add a preset without changing module, compiler, runtime, or editor code:
+
+1. Review redistribution terms for every source and acquire the exact bytes outside the runtime pipeline.
+2. Add one `corpus/presets/*.json` record with facts, units, scale, uncertainty, exact URL/revision/hash/license/attribution, and source roles.
+3. Add its sorted source/output entry to `corpus.weave-world.json`.
+4. Run `weave-world-corpus build`, then `check` and `weave-module validate`.
+5. Add one single-pack `.weave` story plus exact RON/JSON artifacts and run the workspace tests.
+
+No cultural, linguistic, population, naming, or behavioral facts belong in these environmental records.
 
 ## Diagnostics
 
@@ -77,4 +131,4 @@ cargo run -p weave-compiler -- \
 
 Both files decode to the same `StoryIr` and embed the selected values, so hosts need neither the editor nor the source datasets. The finite [Bevy consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy) reads the RON into resources; the [PixiJS v8 consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) decodes the JSON with the same portable value reader.
 
-To author another preset, add a validated pack and project activation without editing the parser, compiler, runtime, or editor schema. Keep cultural or linguistic material in a separately sourced, explicitly reviewed pack; environmental reference shorthand must never synthesize it.
+The three additional checked story pairs live under `examples/domain-modules/weave-world/corpus/stories`. Keep cultural or linguistic material in a separately sourced, explicitly reviewed module; environmental reference shorthand must never synthesize it.

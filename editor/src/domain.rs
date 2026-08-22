@@ -257,11 +257,22 @@ mod tests {
             "../../examples/domain-modules/weave-world/module.weave-module.json"
         ))
         .expect("canonical world manifest");
-        let pack = weave_domain::DomainPack::from_json(include_str!(
-            "../../examples/domain-modules/weave-world/pack.weave-domain.json"
-        ))
-        .expect("canonical world pack");
-        DomainCatalog::from_artifacts([manifest], [pack]).expect("world catalog")
+        let packs = [
+            include_str!("../../examples/domain-modules/weave-world/pack.weave-domain.json"),
+            include_str!(
+                "../../examples/domain-modules/weave-world/packs/british_columbia_temperate_forest.weave-domain.json"
+            ),
+            include_str!(
+                "../../examples/domain-modules/weave-world/packs/hokkaido_japan.weave-domain.json"
+            ),
+            include_str!(
+                "../../examples/domain-modules/weave-world/packs/maldives.weave-domain.json"
+            ),
+        ]
+        .map(|source| {
+            weave_domain::DomainPack::from_json(source).expect("canonical world corpus pack")
+        });
+        DomainCatalog::from_artifacts([manifest], packs).expect("world catalog")
     }
 
     #[test]
@@ -407,6 +418,81 @@ mod tests {
         assert_eq!(
             session.last_valid_story().expect("world story").modules,
             formatted.story.modules
+        );
+    }
+
+    #[test]
+    fn editor_inspects_four_distinct_world_presets_with_exact_lineage() {
+        let fixtures = [
+            (
+                include_str!(
+                    "../../examples/domain-modules/weave-world/corpus/stories/british-columbia-temperate-forest.weave"
+                ),
+                "british_columbia_temperate_forest",
+            ),
+            (
+                include_str!(
+                    "../../examples/domain-modules/weave-world/corpus/stories/hokkaido-japan.weave"
+                ),
+                "hokkaido_japan",
+            ),
+            (
+                include_str!(
+                    "../../examples/domain-modules/weave-world/corpus/stories/maldives.weave"
+                ),
+                "maldives",
+            ),
+            (
+                include_str!("../../examples/domain-modules/weave-world/reference-place.weave"),
+                "aotearoa_new_zealand",
+            ),
+        ];
+        let catalog = world_catalog();
+        let mut inspected = Vec::new();
+        for (source, expected_pack) in fixtures {
+            let mut session = DomainSession::with_domain_catalog(13, catalog.clone());
+            session
+                .compile_source(source, Some(format!("{expected_pack}.weave")))
+                .expect("editor compiles one corpus preset");
+            let inspections = session.module_inspections();
+            assert_eq!(inspections.len(), 1);
+            let inspection = &inspections[0];
+            assert_eq!(inspection.pack_id, expected_pack);
+            assert!(
+                inspection
+                    .pack_provenance
+                    .claims
+                    .contains_key("values.seed.context")
+            );
+            assert!(
+                inspection
+                    .pack_provenance
+                    .claims
+                    .contains_key("values.seed.daylight")
+            );
+            assert!(
+                inspection
+                    .pack_provenance
+                    .claims
+                    .contains_key("values.seed.hazards")
+            );
+            if expected_pack == "maldives" {
+                assert!(inspection.pack_provenance.sources.iter().any(|source| {
+                    source.id == "nasa_power_climate"
+                        && source.revision.contains("v2.9.7")
+                        && source.sha256.is_some()
+                }));
+            }
+            inspected.push(inspection.pack_id.clone());
+        }
+        assert_eq!(
+            inspected,
+            vec![
+                "british_columbia_temperate_forest",
+                "hokkaido_japan",
+                "maldives",
+                "aotearoa_new_zealand",
+            ]
         );
     }
 }

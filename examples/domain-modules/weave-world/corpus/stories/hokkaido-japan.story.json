@@ -1,66 +1,15 @@
 {
   "version": 3,
-  "source_name": "examples/domain-modules/weave-world/reference-place.weave",
+  "source_name": "examples/domain-modules/weave-world/corpus/stories/hokkaido-japan.weave",
   "entry": "start",
-  "globals": [
-    {
-      "span": {
-        "start": 106,
-        "end": 160,
-        "line": 7,
-        "column": 1
-      },
-      "kind": {
-        "kind": "declare",
-        "value": {
-          "kind": "variable",
-          "name": "reference_name",
-          "value": {
-            "kind": "path",
-            "value": [
-              "world",
-              "seed",
-              "identity",
-              "display_name"
-            ]
-          },
-          "allowed_states": []
-        }
-      }
-    },
-    {
-      "span": {
-        "start": 160,
-        "end": 208,
-        "line": 8,
-        "column": 1
-      },
-      "kind": {
-        "kind": "declare",
-        "value": {
-          "kind": "variable",
-          "name": "reference_climate",
-          "value": {
-            "kind": "path",
-            "value": [
-              "world",
-              "seed",
-              "climate",
-              "band"
-            ]
-          },
-          "allowed_states": []
-        }
-      }
-    }
-  ],
+  "globals": [],
   "grammars": {},
   "patterns": {},
   "modules": {
     "world": {
       "id": "org.weave.world",
       "version": "1.0.0",
-      "pack_id": "aotearoa_new_zealand",
+      "pack_id": "hokkaido_japan",
       "pack_version": "1.0.0",
       "exports": {
         "seed": {
@@ -70,22 +19,18 @@
             "value": {
               "attribution": {
                 "kind": "string",
-                "value": "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
+                "value": "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
               },
               "biomes": {
                 "kind": "list",
                 "value": [
                   {
                     "kind": "symbol",
-                    "value": "montane_grassland_and_shrubland"
-                  },
-                  {
-                    "kind": "symbol",
                     "value": "temperate_broadleaf_and_mixed_forest"
                   },
                   {
                     "kind": "symbol",
-                    "value": "temperate_grassland_savanna_and_shrubland"
+                    "value": "temperate_conifer_forest"
                   }
                 ]
               },
@@ -97,11 +42,11 @@
                     "value": {
                       "maximum": {
                         "kind": "number",
-                        "value": 16.0
+                        "value": 6.13
                       },
                       "minimum": {
                         "kind": "number",
-                        "value": 8.8
+                        "value": 6.13
                       }
                     }
                   },
@@ -110,17 +55,17 @@
                     "value": {
                       "maximum": {
                         "kind": "number",
-                        "value": 6545.1
+                        "value": 1267.5
                       },
                       "minimum": {
                         "kind": "number",
-                        "value": 365.1
+                        "value": 1267.5
                       }
                     }
                   },
                   "band": {
                     "kind": "symbol",
-                    "value": "temperate_oceanic"
+                    "value": "humid_continental"
                   },
                   "confidence": {
                     "kind": "symbol",
@@ -132,15 +77,15 @@
                   },
                   "source_resolution": {
                     "kind": "string",
-                    "value": "Country-scale selected-station normals; coverage varies by published table."
+                    "value": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude."
                   },
                   "spatial_resolution": {
                     "kind": "symbol",
-                    "value": "country_scale_selected_stations"
+                    "value": "region_scale_representative_point"
                   },
                   "uncertainty": {
                     "kind": "string",
-                    "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+                    "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
                   },
                   "units": {
                     "kind": "object",
@@ -162,15 +107,15 @@
                 "value": {
                   "approximation": {
                     "kind": "symbol",
-                    "value": "selected_station_envelope"
+                    "value": "representative_grid_point"
                   },
                   "geographic_resolution": {
                     "kind": "symbol",
-                    "value": "country_scale_selected_stations"
+                    "value": "region_scale_representative_point"
                   },
                   "uncertainty": {
                     "kind": "string",
-                    "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+                    "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
                   }
                 }
               },
@@ -179,7 +124,7 @@
                 "value": {
                   "longest_daylight_hours": {
                     "kind": "number",
-                    "value": 15.0
+                    "value": 15.2
                   },
                   "method": {
                     "kind": "symbol",
@@ -187,11 +132,11 @@
                   },
                   "representative_latitude_degrees": {
                     "kind": "number",
-                    "value": -41.0
+                    "value": 43.06
                   },
                   "shortest_daylight_hours": {
                     "kind": "number",
-                    "value": 9.0
+                    "value": 8.8
                   },
                   "unit": {
                     "kind": "symbol",
@@ -215,11 +160,7 @@
                     "value": [
                       {
                         "kind": "symbol",
-                        "value": "heavy_precipitation"
-                      },
-                      {
-                        "kind": "symbol",
-                        "value": "slope_instability"
+                        "value": "seasonal_freeze"
                       }
                     ]
                   }
@@ -234,19 +175,19 @@
                   },
                   "display_name": {
                     "kind": "string",
-                    "value": "Aotearoa New Zealand"
+                    "value": "Hokkaido, Japan"
                   },
                   "preset": {
                     "kind": "string",
-                    "value": "aotearoa_new_zealand"
+                    "value": "hokkaido_japan"
                   },
                   "reference_code": {
                     "kind": "string",
-                    "value": "NZL"
+                    "value": "JPN"
                   },
                   "reference_kind": {
                     "kind": "symbol",
-                    "value": "country"
+                    "value": "region"
                   }
                 }
               },
@@ -259,22 +200,18 @@
                 "value": {
                   "coolest_month": {
                     "kind": "symbol",
-                    "value": "july"
+                    "value": "january"
                   },
                   "hemisphere": {
                     "kind": "symbol",
-                    "value": "southern"
+                    "value": "northern"
                   },
                   "warmest_months": {
                     "kind": "list",
                     "value": [
                       {
                         "kind": "symbol",
-                        "value": "january"
-                      },
-                      {
-                        "kind": "symbol",
-                        "value": "february"
+                        "value": "august"
                       }
                     ]
                   }
@@ -310,7 +247,7 @@
                   },
                   "setting": {
                     "kind": "symbol",
-                    "value": "oceanic_islands"
+                    "value": "semi_enclosed_sea_coast"
                   }
                 }
               },
@@ -319,15 +256,19 @@
                 "value": [
                   {
                     "kind": "symbol",
-                    "value": "alpine_cooling"
+                    "value": "coastal_moderation"
                   },
                   {
                     "kind": "symbol",
-                    "value": "regional_rainfall_contrast"
+                    "value": "freeze_thaw"
                   },
                   {
                     "kind": "symbol",
                     "value": "seasonal_temperature_cycle"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "snow_season"
                   }
                 ]
               }
@@ -342,116 +283,61 @@
       "content": [
         {
           "span": {
-            "start": 223,
-            "end": 426,
-            "line": 11,
+            "start": 114,
+            "end": 232,
+            "line": 8,
             "column": 1
           },
           "kind": {
-            "kind": "conditional",
+            "kind": "text",
             "value": {
-              "branches": [
+              "parts": [
                 {
-                  "condition": {
-                    "kind": "binary",
-                    "value": {
-                      "left": {
-                        "kind": "path",
-                        "value": [
-                          "reference_climate"
-                        ]
-                      },
-                      "operator": "equal",
-                      "right": {
-                        "kind": "path",
-                        "value": [
-                          "temperate_oceanic"
-                        ]
-                      }
-                    }
-                  },
-                  "body": [
-                    {
-                      "span": {
-                        "start": 268,
-                        "end": 369,
-                        "line": 12,
-                        "column": 5
-                      },
-                      "kind": {
-                        "kind": "text",
-                        "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "reference_name"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " seeds a "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "world",
-                                  "seed",
-                                  "primary_biome"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " world with an "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "world",
-                                  "seed",
-                                  "water",
-                                  "setting"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " setting."
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  ]
-                }
-              ],
-              "fallback": [
-                {
-                  "span": {
-                    "start": 382,
-                    "end": 424,
-                    "line": 14,
-                    "column": 5
-                  },
-                  "kind": {
-                    "kind": "text",
-                    "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "The reference-place preset is unavailable."
-                        }
-                      ]
-                    }
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "seed",
+                      "identity",
+                      "display_name"
+                    ]
                   }
+                },
+                {
+                  "kind": "text",
+                  "value": " seeds a "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "seed",
+                      "primary_biome"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": " world with "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "seed",
+                      "climate",
+                      "band"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": " conditions."
                 }
               ]
             }
@@ -459,9 +345,9 @@
         },
         {
           "span": {
-            "start": 427,
-            "end": 433,
-            "line": 16,
+            "start": 233,
+            "end": 239,
+            "line": 9,
             "column": 1
           },
           "kind": {

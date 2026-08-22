@@ -1,0 +1,9 @@
+module world {
+    id: "org.weave.world"
+    version: "=1.0.0"
+    pack: "british_columbia_temperate_forest@=1.0.0"
+}
+
+=== start ===
+{world.seed.identity.display_name} seeds a {world.seed.primary_biome} world with {world.seed.climate.band} conditions.
+-> END

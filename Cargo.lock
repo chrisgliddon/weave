@@ -8830,6 +8830,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-world-corpus"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "weave-domain",
+]
+
+[[package]]
 name = "weave_editor"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,21 @@
+{
+  "corpus_format_version": 1,
+  "presets": [
+    {
+      "source": "corpus/presets/aotearoa_new_zealand.json",
+      "output": "pack.weave-domain.json"
+    },
+    {
+      "source": "corpus/presets/british_columbia_temperate_forest.json",
+      "output": "packs/british_columbia_temperate_forest.weave-domain.json"
+    },
+    {
+      "source": "corpus/presets/hokkaido_japan.json",
+      "output": "packs/hokkaido_japan.weave-domain.json"
+    },
+    {
+      "source": "corpus/presets/maldives.json",
+      "output": "packs/maldives.weave-domain.json"
+    }
+  ]
+}

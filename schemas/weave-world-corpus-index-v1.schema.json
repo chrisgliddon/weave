@@ -1,0 +1,50 @@
+{
+  "$defs": {
+    "CorpusEntry": {
+      "additionalProperties": false,
+      "description": "One local source record and its generated pack destination.",
+      "properties": {
+        "output": {
+          "description": "Generated pack path relative to the index directory.",
+          "type": "string"
+        },
+        "source": {
+          "description": "Source-record path relative to the index directory.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "output"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:world-corpus-index:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One deterministic corpus build index.",
+  "properties": {
+    "corpus_format_version": {
+      "const": 1,
+      "description": "Serialized corpus format.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "presets": {
+      "description": "Presets sorted by source path.",
+      "items": {
+        "$ref": "#/$defs/CorpusEntry"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "corpus_format_version",
+    "presets"
+  ],
+  "title": "Weave World corpus index",
+  "type": "object",
+  "x-weave-world-corpus-format-version": 1
+}

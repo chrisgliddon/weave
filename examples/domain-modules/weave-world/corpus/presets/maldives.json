@@ -1,0 +1,163 @@
+{
+  "corpus_format_version": 1,
+  "id": "maldives",
+  "version": "1.0.0",
+  "title": "Maldives Environmental Reference",
+  "module": {
+    "id": "org.weave.world",
+    "version": "=1.0.0"
+  },
+  "identity": {
+    "display_name": "Maldives",
+    "preset": "maldives",
+    "reference_code": "MDV",
+    "reference_kind": "country",
+    "culture_included": false
+  },
+  "climate": {
+    "band": "tropical_oceanic",
+    "confidence": "representative_not_exhaustive",
+    "reference_period": "1991-2020",
+    "spatial_resolution": "country_scale_representative_point",
+    "approximation": "representative_grid_point",
+    "representative_latitude_degrees": 4.18,
+    "source_resolution": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude.",
+    "uncertainty": "One source-native oceanic grid point near Male represents a dispersed atoll country and does not resolve individual islands, lagoon effects, or local storms.",
+    "temperature_unit": "degrees_celsius",
+    "precipitation_unit": "millimetres_per_day",
+    "data": {
+      "kind": "representative_grid_points",
+      "points": [
+        {
+          "latitude_degrees": 4.18,
+          "longitude_degrees": 73.51,
+          "annual_mean_temperature_c": 27.71,
+          "annual_mean_precipitation_mm_per_day": 4.57,
+          "monthly_mean_temperature_c": [
+            27.22,
+            27.38,
+            27.95,
+            28.46,
+            28.49,
+            28.09,
+            27.81,
+            27.6,
+            27.48,
+            27.47,
+            27.27,
+            27.3
+          ]
+        }
+      ]
+    }
+  },
+  "biomes": [
+    "tropical_and_subtropical_moist_broadleaf_forest"
+  ],
+  "primary_biome": "tropical_and_subtropical_moist_broadleaf_forest",
+  "terrain": [
+    "atoll",
+    "coastal",
+    "island",
+    "plain"
+  ],
+  "water": {
+    "coastal": true,
+    "island_system": true,
+    "setting": "oceanic_atolls"
+  },
+  "weather_tendencies": [
+    "monsoon_cycle",
+    "tropical_rainfall"
+  ],
+  "attribution": "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=73.51&latitude=4.18&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "452482177ba2136b5351c7248c018430cebcfffc86c334987479fceea87218c3",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_minor_islands",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_minor_islands.shp",
+        "revision": "v5.1.2",
+        "sha256": "efc446b18c3496c88ccec8cfe937f1af3f3f8c2dd1b63d9722a153b0744f0b48",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m minor-island vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=72.5%2C-1%2C74.5%2C8.5&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-country-envelope-retrieved-2026-08-21",
+        "sha256": "26d3f302919a730e26ed8bd7ca3e29d9ccd862bde3cec0113da56caa31a81e42",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; country envelope normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "maldives-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "lineage": {
+      "biomes": [
+        "resolve_ecoregions"
+      ],
+      "climate": [
+        "nasa_power_climate"
+      ],
+      "identity": [
+        "natural_earth_land",
+        "natural_earth_minor_islands",
+        "weave_world_fixture"
+      ],
+      "terrain_water": [
+        "natural_earth_land",
+        "natural_earth_minor_islands",
+        "natural_earth_ocean",
+        "resolve_ecoregions",
+        "weave_world_fixture"
+      ]
+    }
+  }
+}

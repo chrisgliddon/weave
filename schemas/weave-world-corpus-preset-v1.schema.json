@@ -1,0 +1,643 @@
+{
+  "$defs": {
+    "Approximation": {
+      "enum": [
+        "representative_grid_point",
+        "selected_station_envelope"
+      ],
+      "type": "string"
+    },
+    "Biome": {
+      "enum": [
+        "boreal_forest_taiga",
+        "deserts_and_xeric_shrublands",
+        "flooded_grasslands_and_savannas",
+        "mangroves",
+        "mediterranean_forests_woodlands_and_scrub",
+        "montane_grassland_and_shrubland",
+        "temperate_broadleaf_and_mixed_forest",
+        "temperate_conifer_forest",
+        "temperate_grassland_savanna_and_shrubland",
+        "tropical_and_subtropical_coniferous_forest",
+        "tropical_and_subtropical_dry_broadleaf_forest",
+        "tropical_and_subtropical_grassland_savanna_and_shrubland",
+        "tropical_and_subtropical_moist_broadleaf_forest",
+        "tundra"
+      ],
+      "type": "string"
+    },
+    "ClimateBand": {
+      "enum": [
+        "alpine",
+        "arid",
+        "humid_continental",
+        "polar",
+        "subtropical",
+        "temperate_oceanic",
+        "tropical_oceanic"
+      ],
+      "type": "string"
+    },
+    "ClimateData": {
+      "description": "Two supported climate acquisition shapes with explicit unit policy.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A reviewed published range already expressed in annual output units.",
+          "properties": {
+            "annual_mean_temperature_c": {
+              "$ref": "#/$defs/NumericRangeInput",
+              "description": "Annual mean air temperature range in degrees Celsius."
+            },
+            "annual_precipitation_mm": {
+              "$ref": "#/$defs/NumericRangeInput",
+              "description": "Annual precipitation range in millimetres per year."
+            },
+            "coolest_month": {
+              "$ref": "#/$defs/Month",
+              "description": "Published or deterministically aggregated coolest month."
+            },
+            "kind": {
+              "const": "selected_station_summary",
+              "type": "string"
+            },
+            "warmest_months": {
+              "description": "Published or deterministically aggregated warmest months.",
+              "items": {
+                "$ref": "#/$defs/Month"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "annual_mean_temperature_c",
+            "annual_precipitation_mm",
+            "warmest_months",
+            "coolest_month"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Source-native representative points with monthly values and annual means.",
+          "properties": {
+            "kind": {
+              "const": "representative_grid_points",
+              "type": "string"
+            },
+            "points": {
+              "description": "Non-empty set of reviewed points; the builder forms a range across them.",
+              "items": {
+                "$ref": "#/$defs/GridPointInput"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "points"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ClimateInput": {
+      "additionalProperties": false,
+      "description": "Climate observations and the policy context needed to normalize them.",
+      "properties": {
+        "approximation": {
+          "$ref": "#/$defs/Approximation",
+          "description": "Deterministic broad-area approximation policy."
+        },
+        "band": {
+          "$ref": "#/$defs/ClimateBand",
+          "description": "Broad narrative climate class."
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Representation confidence."
+        },
+        "data": {
+          "$ref": "#/$defs/ClimateData",
+          "description": "Selected-station summary or one or more source grid points."
+        },
+        "precipitation_unit": {
+          "$ref": "#/$defs/PrecipitationUnit",
+          "description": "Declared source precipitation unit."
+        },
+        "reference_period": {
+          "description": "Inclusive climatology period in `YYYY-YYYY` form.",
+          "type": "string"
+        },
+        "representative_latitude_degrees": {
+          "description": "Latitude used only for the idealized daylight calculation.",
+          "format": "double",
+          "type": "number"
+        },
+        "source_resolution": {
+          "description": "Published source grid, station, or area resolution.",
+          "type": "string"
+        },
+        "spatial_resolution": {
+          "$ref": "#/$defs/SpatialResolution",
+          "description": "Geographic scale represented by the normalized facts."
+        },
+        "temperature_unit": {
+          "$ref": "#/$defs/TemperatureUnit",
+          "description": "Declared source temperature unit."
+        },
+        "uncertainty": {
+          "description": "Concise limitation or uncertainty statement.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "band",
+        "confidence",
+        "reference_period",
+        "spatial_resolution",
+        "approximation",
+        "representative_latitude_degrees",
+        "source_resolution",
+        "uncertainty",
+        "temperature_unit",
+        "precipitation_unit",
+        "data"
+      ],
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "low",
+        "moderate",
+        "representative_not_exhaustive",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "CorpusProvenance": {
+      "additionalProperties": false,
+      "description": "Reviewed public sources plus explicit source roles.",
+      "properties": {
+        "lineage": {
+          "$ref": "#/$defs/SourceLineage",
+          "description": "Sources supporting each standard normalization step."
+        },
+        "sources": {
+          "description": "Public and original inputs; the builder sorts them by identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "GridPointInput": {
+      "additionalProperties": false,
+      "description": "One representative climatology grid point.",
+      "properties": {
+        "annual_mean_precipitation_mm_per_day": {
+          "description": "Source-reported annual mean precipitation rate in millimetres per day.",
+          "format": "double",
+          "type": "number"
+        },
+        "annual_mean_temperature_c": {
+          "description": "Source-reported annual mean temperature in degrees Celsius.",
+          "format": "double",
+          "type": "number"
+        },
+        "latitude_degrees": {
+          "description": "WGS84 latitude.",
+          "format": "double",
+          "type": "number"
+        },
+        "longitude_degrees": {
+          "description": "WGS84 longitude.",
+          "format": "double",
+          "type": "number"
+        },
+        "monthly_mean_temperature_c": {
+          "description": "January through December mean temperatures in degrees Celsius.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        }
+      },
+      "required": [
+        "latitude_degrees",
+        "longitude_degrees",
+        "annual_mean_temperature_c",
+        "annual_mean_precipitation_mm_per_day",
+        "monthly_mean_temperature_c"
+      ],
+      "type": "object"
+    },
+    "IdentityInput": {
+      "additionalProperties": false,
+      "description": "Environmental reference identity. Culture must remain excluded.",
+      "properties": {
+        "culture_included": {
+          "description": "Must be false; the corpus does not infer culture from place.",
+          "type": "boolean"
+        },
+        "display_name": {
+          "description": "Human-readable reference name.",
+          "type": "string"
+        },
+        "preset": {
+          "description": "Stable shorthand, equal to the preset identifier.",
+          "type": "string"
+        },
+        "reference_code": {
+          "description": "Three-letter country reference code.",
+          "type": "string"
+        },
+        "reference_kind": {
+          "$ref": "#/$defs/ReferenceKind",
+          "description": "Geographic reference kind."
+        }
+      },
+      "required": [
+        "display_name",
+        "preset",
+        "reference_code",
+        "reference_kind",
+        "culture_included"
+      ],
+      "type": "object"
+    },
+    "ModuleRequirement": {
+      "additionalProperties": false,
+      "description": "Module requirement declared by a pack or project activation.",
+      "properties": {
+        "id": {
+          "description": "Globally stable module identity.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Accepted semantic versions.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "Month": {
+      "enum": [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december"
+      ],
+      "type": "string"
+    },
+    "NumericRangeInput": {
+      "additionalProperties": false,
+      "description": "Inclusive finite numeric range.",
+      "properties": {
+        "maximum": {
+          "description": "Inclusive upper endpoint.",
+          "format": "double",
+          "type": "number"
+        },
+        "minimum": {
+          "description": "Inclusive lower endpoint.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "minimum",
+        "maximum"
+      ],
+      "type": "object"
+    },
+    "PrecipitationUnit": {
+      "enum": [
+        "millimetres_per_day",
+        "millimetres_per_year"
+      ],
+      "type": "string"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ReferenceKind": {
+      "enum": [
+        "country",
+        "ecosystem",
+        "island_group",
+        "region",
+        "subregion"
+      ],
+      "type": "string"
+    },
+    "SourceLineage": {
+      "additionalProperties": false,
+      "description": "Source identifiers assigned to each standard transformation.",
+      "properties": {
+        "biomes": {
+          "description": "Ecoregion or biome inputs.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "climate": {
+          "description": "Climate observations.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "identity": {
+          "description": "Geographic identity and curation.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "terrain_water": {
+          "description": "Terrain, land, water, and curation inputs.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "biomes",
+        "climate",
+        "identity",
+        "terrain_water"
+      ],
+      "type": "object"
+    },
+    "SpatialResolution": {
+      "enum": [
+        "country_scale_representative_point",
+        "country_scale_selected_stations",
+        "ecosystem_scale_representative_point",
+        "region_scale_representative_point",
+        "subregion_scale_representative_point"
+      ],
+      "type": "string"
+    },
+    "TemperatureUnit": {
+      "enum": [
+        "degrees_celsius"
+      ],
+      "type": "string"
+    },
+    "Terrain": {
+      "enum": [
+        "atoll",
+        "coastal",
+        "island",
+        "mountain",
+        "plain",
+        "volcanic"
+      ],
+      "type": "string"
+    },
+    "WaterInput": {
+      "additionalProperties": false,
+      "description": "Broad water setting.",
+      "properties": {
+        "coastal": {
+          "description": "Whether coast is a defining feature.",
+          "type": "boolean"
+        },
+        "island_system": {
+          "description": "Whether the reference is represented as an island system.",
+          "type": "boolean"
+        },
+        "setting": {
+          "$ref": "#/$defs/WaterSetting",
+          "description": "Broad narrative water setting."
+        }
+      },
+      "required": [
+        "coastal",
+        "island_system",
+        "setting"
+      ],
+      "type": "object"
+    },
+    "WaterSetting": {
+      "enum": [
+        "freshwater_dominated",
+        "open_ocean_coast",
+        "oceanic_archipelago",
+        "oceanic_atolls",
+        "oceanic_islands",
+        "river_delta",
+        "semi_enclosed_sea_coast"
+      ],
+      "type": "string"
+    },
+    "WeatherTendency": {
+      "enum": [
+        "alpine_cooling",
+        "coastal_moderation",
+        "cyclone_exposure",
+        "dry_season",
+        "freeze_thaw",
+        "monsoon_cycle",
+        "regional_rainfall_contrast",
+        "seasonal_temperature_cycle",
+        "snow_season",
+        "tropical_rainfall"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:world-corpus-preset:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One reviewed, contributor-owned environmental preset.",
+  "properties": {
+    "attribution": {
+      "description": "Compact attribution retained in every runtime export.",
+      "type": "string"
+    },
+    "biomes": {
+      "description": "Representative ecoregion biome classes.",
+      "items": {
+        "$ref": "#/$defs/Biome"
+      },
+      "type": "array"
+    },
+    "climate": {
+      "$ref": "#/$defs/ClimateInput",
+      "description": "Climate observations plus explicit measurement context."
+    },
+    "corpus_format_version": {
+      "const": 1,
+      "description": "Serialized corpus format.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "id": {
+      "description": "Stable pack and shorthand identifier.",
+      "type": "string"
+    },
+    "identity": {
+      "$ref": "#/$defs/IdentityInput",
+      "description": "Environmental-only identity."
+    },
+    "module": {
+      "$ref": "#/$defs/ModuleRequirement",
+      "description": "Exact owning module requirement."
+    },
+    "primary_biome": {
+      "$ref": "#/$defs/Biome",
+      "description": "Dominant concise narrative biome."
+    },
+    "provenance": {
+      "$ref": "#/$defs/CorpusProvenance",
+      "description": "Reviewed sources and their fact roles."
+    },
+    "terrain": {
+      "description": "Conservative physical terrain categories.",
+      "items": {
+        "$ref": "#/$defs/Terrain"
+      },
+      "type": "array"
+    },
+    "title": {
+      "description": "Human-readable preset title.",
+      "type": "string"
+    },
+    "version": {
+      "description": "Semantic preset release.",
+      "type": "string"
+    },
+    "water": {
+      "$ref": "#/$defs/WaterInput",
+      "description": "Conservative coastal and island context."
+    },
+    "weather_tendencies": {
+      "description": "Evidence-backed weather cues, not forecasts.",
+      "items": {
+        "$ref": "#/$defs/WeatherTendency"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "corpus_format_version",
+    "id",
+    "version",
+    "title",
+    "module",
+    "identity",
+    "climate",
+    "biomes",
+    "primary_biome",
+    "terrain",
+    "water",
+    "weather_tendencies",
+    "attribution",
+    "provenance"
+  ],
+  "title": "Weave World corpus preset",
+  "type": "object",
+  "x-weave-world-corpus-format-version": 1
+}

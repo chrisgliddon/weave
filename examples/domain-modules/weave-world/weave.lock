@@ -4,7 +4,7 @@
     {
       "id": "org.weave.world",
       "version": "1.0.0",
-      "sha256": "ff27fa31b90d60ac06fef0b42380434e7a08b231a768321ece4224a02e94598a",
+      "sha256": "2688c5403052a9d8f843d0100116d510fcc98dc8eabac170168e6422bbd8f0a8",
       "dependencies": []
     }
   ],
@@ -14,7 +14,7 @@
       "module_version": "1.0.0",
       "pack_id": "aotearoa_new_zealand",
       "version": "1.0.0",
-      "sha256": "57c6d87b32eefdba8d95ffa9616a6c492f6c14e511ac46b8882508774f802c33",
+      "sha256": "768f77568b99689f86e62c6d4ae67c4bc29094f2625276a59f043f6d8b27a649",
       "dependencies": []
     }
   ]

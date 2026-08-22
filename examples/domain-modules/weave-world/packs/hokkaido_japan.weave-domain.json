@@ -1,8 +1,8 @@
 {
   "pack_format_version": 1,
-  "id": "aotearoa_new_zealand",
+  "id": "hokkaido_japan",
   "version": "1.0.0",
-  "title": "Aotearoa New Zealand Environmental Reference",
+  "title": "Hokkaido Japan Environmental Reference",
   "module": {
     "id": "org.weave.world",
     "version": "=1.0.0"
@@ -14,22 +14,18 @@
       "value": {
         "attribution": {
           "kind": "string",
-          "value": "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
+          "value": "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
         },
         "biomes": {
           "kind": "list",
           "value": [
             {
               "kind": "symbol",
-              "value": "montane_grassland_and_shrubland"
-            },
-            {
-              "kind": "symbol",
               "value": "temperate_broadleaf_and_mixed_forest"
             },
             {
               "kind": "symbol",
-              "value": "temperate_grassland_savanna_and_shrubland"
+              "value": "temperate_conifer_forest"
             }
           ]
         },
@@ -41,11 +37,11 @@
               "value": {
                 "maximum": {
                   "kind": "number",
-                  "value": 16.0
+                  "value": 6.13
                 },
                 "minimum": {
                   "kind": "number",
-                  "value": 8.8
+                  "value": 6.13
                 }
               }
             },
@@ -54,17 +50,17 @@
               "value": {
                 "maximum": {
                   "kind": "number",
-                  "value": 6545.1
+                  "value": 1267.5
                 },
                 "minimum": {
                   "kind": "number",
-                  "value": 365.1
+                  "value": 1267.5
                 }
               }
             },
             "band": {
               "kind": "symbol",
-              "value": "temperate_oceanic"
+              "value": "humid_continental"
             },
             "confidence": {
               "kind": "symbol",
@@ -76,15 +72,15 @@
             },
             "source_resolution": {
               "kind": "string",
-              "value": "Country-scale selected-station normals; coverage varies by published table."
+              "value": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude."
             },
             "spatial_resolution": {
               "kind": "symbol",
-              "value": "country_scale_selected_stations"
+              "value": "region_scale_representative_point"
             },
             "uncertainty": {
               "kind": "string",
-              "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+              "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
             },
             "units": {
               "kind": "object",
@@ -106,15 +102,15 @@
           "value": {
             "approximation": {
               "kind": "symbol",
-              "value": "selected_station_envelope"
+              "value": "representative_grid_point"
             },
             "geographic_resolution": {
               "kind": "symbol",
-              "value": "country_scale_selected_stations"
+              "value": "region_scale_representative_point"
             },
             "uncertainty": {
               "kind": "string",
-              "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+              "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
             }
           }
         },
@@ -123,7 +119,7 @@
           "value": {
             "longest_daylight_hours": {
               "kind": "number",
-              "value": 15.0
+              "value": 15.2
             },
             "method": {
               "kind": "symbol",
@@ -131,11 +127,11 @@
             },
             "representative_latitude_degrees": {
               "kind": "number",
-              "value": -41.0
+              "value": 43.06
             },
             "shortest_daylight_hours": {
               "kind": "number",
-              "value": 9.0
+              "value": 8.8
             },
             "unit": {
               "kind": "symbol",
@@ -159,11 +155,7 @@
               "value": [
                 {
                   "kind": "symbol",
-                  "value": "heavy_precipitation"
-                },
-                {
-                  "kind": "symbol",
-                  "value": "slope_instability"
+                  "value": "seasonal_freeze"
                 }
               ]
             }
@@ -178,19 +170,19 @@
             },
             "display_name": {
               "kind": "string",
-              "value": "Aotearoa New Zealand"
+              "value": "Hokkaido, Japan"
             },
             "preset": {
               "kind": "string",
-              "value": "aotearoa_new_zealand"
+              "value": "hokkaido_japan"
             },
             "reference_code": {
               "kind": "string",
-              "value": "NZL"
+              "value": "JPN"
             },
             "reference_kind": {
               "kind": "symbol",
-              "value": "country"
+              "value": "region"
             }
           }
         },
@@ -203,22 +195,18 @@
           "value": {
             "coolest_month": {
               "kind": "symbol",
-              "value": "july"
+              "value": "january"
             },
             "hemisphere": {
               "kind": "symbol",
-              "value": "southern"
+              "value": "northern"
             },
             "warmest_months": {
               "kind": "list",
               "value": [
                 {
                   "kind": "symbol",
-                  "value": "january"
-                },
-                {
-                  "kind": "symbol",
-                  "value": "february"
+                  "value": "august"
                 }
               ]
             }
@@ -254,7 +242,7 @@
             },
             "setting": {
               "kind": "symbol",
-              "value": "oceanic_islands"
+              "value": "semi_enclosed_sea_coast"
             }
           }
         },
@@ -263,15 +251,19 @@
           "value": [
             {
               "kind": "symbol",
-              "value": "alpine_cooling"
+              "value": "coastal_moderation"
             },
             {
               "kind": "symbol",
-              "value": "regional_rainfall_contrast"
+              "value": "freeze_thaw"
             },
             {
               "kind": "symbol",
               "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
             }
           ]
         }
@@ -281,68 +273,57 @@
   "provenance": {
     "sources": [
       {
+        "id": "nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=141.35&latitude=43.06&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "0e61f7f29468c9eccfdfdbca62e41984e99b7800179a8df91bc3b055d0b5eec0",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
         "id": "natural_earth_land",
         "kind": "public_source",
-        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_land.shp",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
         "revision": "v5.1.2",
-        "sha256": "8689e6932b8e370e2ca4587cf3ba21e460b1235db37b6ed3c172c35b4a6088de",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
         "license": "LicenseRef-Natural-Earth-Public-Domain",
         "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
-        "attribution": "Natural Earth land vectors, public domain; normalized by Weave Contributors.",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
         "modified": true
       },
       {
         "id": "natural_earth_ocean",
         "kind": "public_source",
-        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_ocean.shp",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
         "revision": "v5.1.2",
-        "sha256": "8006f16c5af40875fbe8e975bef6d4b6c1ffc7b767491bdc277fbc0b62ba5d02",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
         "license": "LicenseRef-Natural-Earth-Public-Domain",
         "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
-        "attribution": "Natural Earth ocean vectors, public domain; normalized by Weave Contributors.",
-        "modified": true
-      },
-      {
-        "id": "niwa_rainfall",
-        "kind": "public_source",
-        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_rainfall_1991-2020_1.xlsx",
-        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
-        "sha256": "cff6bd6e4c4730850b744fe11b40a5867ad0efccee14a25adcffc6627174030b",
-        "license": "CC-BY-4.0",
-        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
-        "attribution": "Earth Sciences New Zealand / NIWA mean monthly rainfall 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
-        "modified": true
-      },
-      {
-        "id": "niwa_temperature",
-        "kind": "public_source",
-        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_air_temperature_1991-2020_1.xlsx",
-        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
-        "sha256": "671feaf14025d344e421cd697c7a0338e0c7b332dc11d2c24a2107d07113a11a",
-        "license": "CC-BY-4.0",
-        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
-        "attribution": "Earth Sciences New Zealand / NIWA mean monthly air temperature 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
         "modified": true
       },
       {
         "id": "resolve_ecoregions",
         "kind": "public_source",
-        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=166%2C-48%2C179%2C-34&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
-        "revision": "ecoregions-2017-country-envelope-retrieved-2026-08-21",
-        "sha256": "1fe165b148ad6936060ad8b7207dcd8a861f4c35f16c406fa119e5f62f7e6681",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=139.3%2C41.3%2C146%2C45.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-region-envelope-retrieved-2026-08-21",
+        "sha256": "5fcd68f5b72f1b1b8f131525d7cf02bc7249002d163adcb60e0fc7dd1d8ca51e",
         "license": "CC-BY-4.0",
         "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
-        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; country-envelope subset normalized by Weave Contributors.",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; regional envelope normalized by Weave Contributors.",
         "modified": true
       },
       {
         "id": "weave_world_fixture",
         "kind": "original",
         "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
-        "revision": "aotearoa-new-zealand-reference-v1",
+        "revision": "hokkaido-japan-reference-v1",
         "license": "MIT",
         "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
-        "attribution": "Original environmental-only normalization and reference selector authored by Weave Contributors.",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
         "modified": false
       }
     ],
@@ -357,17 +338,15 @@
       {
         "id": "normalize_climate",
         "inputs": [
-          "niwa_rainfall",
-          "niwa_temperature"
+          "nasa_power_climate"
         ],
         "description": "Validate declared source units, convert daily precipitation rates to annual millimetres using the exact inclusive reference-period day count, form deterministic ranges, and rank monthly temperatures without interpolation."
       },
       {
         "id": "normalize_daylight",
         "inputs": [
+          "nasa_power_climate",
           "natural_earth_land",
-          "niwa_rainfall",
-          "niwa_temperature",
           "weave_world_fixture"
         ],
         "description": "Calculate idealized June and December solstice daylight from the declared representative WGS84 latitude and 23.44 degree solar declination, clamp polar results, and round to one decimal hour; atmospheric refraction, terrain, and twilight are excluded."
@@ -375,10 +354,9 @@
       {
         "id": "normalize_hazards",
         "inputs": [
+          "nasa_power_climate",
           "natural_earth_land",
           "natural_earth_ocean",
-          "niwa_rainfall",
-          "niwa_temperature",
           "resolve_ecoregions",
           "weave_world_fixture"
         ],
@@ -405,10 +383,9 @@
       {
         "id": "normalize_weather",
         "inputs": [
+          "nasa_power_climate",
           "natural_earth_land",
           "natural_earth_ocean",
-          "niwa_rainfall",
-          "niwa_temperature",
           "resolve_ecoregions",
           "weave_world_fixture"
         ],

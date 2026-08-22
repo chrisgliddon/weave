@@ -1,0 +1,155 @@
+{
+  "corpus_format_version": 1,
+  "id": "aotearoa_new_zealand",
+  "version": "1.0.0",
+  "title": "Aotearoa New Zealand Environmental Reference",
+  "module": {
+    "id": "org.weave.world",
+    "version": "=1.0.0"
+  },
+  "identity": {
+    "display_name": "Aotearoa New Zealand",
+    "preset": "aotearoa_new_zealand",
+    "reference_code": "NZL",
+    "reference_kind": "country",
+    "culture_included": false
+  },
+  "climate": {
+    "band": "temperate_oceanic",
+    "confidence": "representative_not_exhaustive",
+    "reference_period": "1991-2020",
+    "spatial_resolution": "country_scale_selected_stations",
+    "approximation": "selected_station_envelope",
+    "representative_latitude_degrees": -41.0,
+    "source_resolution": "Country-scale selected-station normals; coverage varies by published table.",
+    "uncertainty": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate.",
+    "temperature_unit": "degrees_celsius",
+    "precipitation_unit": "millimetres_per_year",
+    "data": {
+      "kind": "selected_station_summary",
+      "annual_mean_temperature_c": {
+        "minimum": 8.8,
+        "maximum": 16.0
+      },
+      "annual_precipitation_mm": {
+        "minimum": 365.1,
+        "maximum": 6545.1
+      },
+      "warmest_months": [
+        "january",
+        "february"
+      ],
+      "coolest_month": "july"
+    }
+  },
+  "biomes": [
+    "montane_grassland_and_shrubland",
+    "temperate_broadleaf_and_mixed_forest",
+    "temperate_grassland_savanna_and_shrubland"
+  ],
+  "primary_biome": "temperate_broadleaf_and_mixed_forest",
+  "terrain": [
+    "coastal",
+    "island",
+    "mountain"
+  ],
+  "water": {
+    "coastal": true,
+    "island_system": true,
+    "setting": "oceanic_islands"
+  },
+  "weather_tendencies": [
+    "alpine_cooling",
+    "regional_rainfall_contrast",
+    "seasonal_temperature_cycle"
+  ],
+  "attribution": "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "8689e6932b8e370e2ca4587cf3ba21e460b1235db37b6ed3c172c35b4a6088de",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "8006f16c5af40875fbe8e975bef6d4b6c1ffc7b767491bdc277fbc0b62ba5d02",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "niwa_rainfall",
+        "kind": "public_source",
+        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_rainfall_1991-2020_1.xlsx",
+        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
+        "sha256": "cff6bd6e4c4730850b744fe11b40a5867ad0efccee14a25adcffc6627174030b",
+        "license": "CC-BY-4.0",
+        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
+        "attribution": "Earth Sciences New Zealand / NIWA mean monthly rainfall 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "niwa_temperature",
+        "kind": "public_source",
+        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_air_temperature_1991-2020_1.xlsx",
+        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
+        "sha256": "671feaf14025d344e421cd697c7a0338e0c7b332dc11d2c24a2107d07113a11a",
+        "license": "CC-BY-4.0",
+        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
+        "attribution": "Earth Sciences New Zealand / NIWA mean monthly air temperature 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=166%2C-48%2C179%2C-34&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-country-envelope-retrieved-2026-08-21",
+        "sha256": "1fe165b148ad6936060ad8b7207dcd8a861f4c35f16c406fa119e5f62f7e6681",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; country-envelope subset normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "aotearoa-new-zealand-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only normalization and reference selector authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "lineage": {
+      "biomes": [
+        "resolve_ecoregions"
+      ],
+      "climate": [
+        "niwa_rainfall",
+        "niwa_temperature"
+      ],
+      "identity": [
+        "natural_earth_land",
+        "weave_world_fixture"
+      ],
+      "terrain_water": [
+        "natural_earth_land",
+        "natural_earth_ocean",
+        "resolve_ecoregions",
+        "weave_world_fixture"
+      ]
+    }
+  }
+}

@@ -1,66 +1,15 @@
 StoryIr(
     version: 3,
-    source_name: Some("examples/domain-modules/weave-world/reference-place.weave"),
+    source_name: Some("examples/domain-modules/weave-world/corpus/stories/hokkaido-japan.weave"),
     entry: "start",
-    globals: [
-        Instruction(
-            span: Span(
-                start: 106,
-                end: 160,
-                line: 7,
-                column: 1,
-            ),
-            kind: InstructionKind(
-                kind: declare,
-                value: DeclarationIr(
-                    kind: variable,
-                    name: "reference_name",
-                    value: Expression(
-                        kind: path,
-                        value: [
-                            "world",
-                            "seed",
-                            "identity",
-                            "display_name",
-                        ],
-                    ),
-                    allowed_states: [],
-                ),
-            ),
-        ),
-        Instruction(
-            span: Span(
-                start: 160,
-                end: 208,
-                line: 8,
-                column: 1,
-            ),
-            kind: InstructionKind(
-                kind: declare,
-                value: DeclarationIr(
-                    kind: variable,
-                    name: "reference_climate",
-                    value: Expression(
-                        kind: path,
-                        value: [
-                            "world",
-                            "seed",
-                            "climate",
-                            "band",
-                        ],
-                    ),
-                    allowed_states: [],
-                ),
-            ),
-        ),
-    ],
+    globals: [],
     grammars: {},
     patterns: {},
     modules: {
         "world": DomainModuleIr(
             id: "org.weave.world",
             version: "1.0.0",
-            pack_id: "aotearoa_new_zealand",
+            pack_id: "hokkaido_japan",
             pack_version: "1.0.0",
             exports: {
                 "seed": DomainExportIr(
@@ -70,22 +19,18 @@ StoryIr(
                         value: {
                             "attribution": DomainValueIr(
                                 kind: string,
-                                value: "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+                                value: "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
                             ),
                             "biomes": DomainValueIr(
                                 kind: list,
                                 value: [
                                     DomainValueIr(
                                         kind: symbol,
-                                        value: "montane_grassland_and_shrubland",
-                                    ),
-                                    DomainValueIr(
-                                        kind: symbol,
                                         value: "temperate_broadleaf_and_mixed_forest",
                                     ),
                                     DomainValueIr(
                                         kind: symbol,
-                                        value: "temperate_grassland_savanna_and_shrubland",
+                                        value: "temperate_conifer_forest",
                                     ),
                                 ],
                             ),
@@ -97,11 +42,11 @@ StoryIr(
                                         value: {
                                             "maximum": DomainValueIr(
                                                 kind: number,
-                                                value: 16.0,
+                                                value: 6.13,
                                             ),
                                             "minimum": DomainValueIr(
                                                 kind: number,
-                                                value: 8.8,
+                                                value: 6.13,
                                             ),
                                         },
                                     ),
@@ -110,17 +55,17 @@ StoryIr(
                                         value: {
                                             "maximum": DomainValueIr(
                                                 kind: number,
-                                                value: 6545.1,
+                                                value: 1267.5,
                                             ),
                                             "minimum": DomainValueIr(
                                                 kind: number,
-                                                value: 365.1,
+                                                value: 1267.5,
                                             ),
                                         },
                                     ),
                                     "band": DomainValueIr(
                                         kind: symbol,
-                                        value: "temperate_oceanic",
+                                        value: "humid_continental",
                                     ),
                                     "confidence": DomainValueIr(
                                         kind: symbol,
@@ -132,15 +77,15 @@ StoryIr(
                                     ),
                                     "source_resolution": DomainValueIr(
                                         kind: string,
-                                        value: "Country-scale selected-station normals; coverage varies by published table.",
+                                        value: "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude.",
                                     ),
                                     "spatial_resolution": DomainValueIr(
                                         kind: symbol,
-                                        value: "country_scale_selected_stations",
+                                        value: "region_scale_representative_point",
                                     ),
                                     "uncertainty": DomainValueIr(
                                         kind: string,
-                                        value: "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate.",
+                                        value: "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects.",
                                     ),
                                     "units": DomainValueIr(
                                         kind: object,
@@ -162,15 +107,15 @@ StoryIr(
                                 value: {
                                     "approximation": DomainValueIr(
                                         kind: symbol,
-                                        value: "selected_station_envelope",
+                                        value: "representative_grid_point",
                                     ),
                                     "geographic_resolution": DomainValueIr(
                                         kind: symbol,
-                                        value: "country_scale_selected_stations",
+                                        value: "region_scale_representative_point",
                                     ),
                                     "uncertainty": DomainValueIr(
                                         kind: string,
-                                        value: "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate.",
+                                        value: "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects.",
                                     ),
                                 },
                             ),
@@ -179,7 +124,7 @@ StoryIr(
                                 value: {
                                     "longest_daylight_hours": DomainValueIr(
                                         kind: number,
-                                        value: 15.0,
+                                        value: 15.2,
                                     ),
                                     "method": DomainValueIr(
                                         kind: symbol,
@@ -187,11 +132,11 @@ StoryIr(
                                     ),
                                     "representative_latitude_degrees": DomainValueIr(
                                         kind: number,
-                                        value: -41.0,
+                                        value: 43.06,
                                     ),
                                     "shortest_daylight_hours": DomainValueIr(
                                         kind: number,
-                                        value: 9.0,
+                                        value: 8.8,
                                     ),
                                     "unit": DomainValueIr(
                                         kind: symbol,
@@ -215,11 +160,7 @@ StoryIr(
                                         value: [
                                             DomainValueIr(
                                                 kind: symbol,
-                                                value: "heavy_precipitation",
-                                            ),
-                                            DomainValueIr(
-                                                kind: symbol,
-                                                value: "slope_instability",
+                                                value: "seasonal_freeze",
                                             ),
                                         ],
                                     ),
@@ -234,19 +175,19 @@ StoryIr(
                                     ),
                                     "display_name": DomainValueIr(
                                         kind: string,
-                                        value: "Aotearoa New Zealand",
+                                        value: "Hokkaido, Japan",
                                     ),
                                     "preset": DomainValueIr(
                                         kind: string,
-                                        value: "aotearoa_new_zealand",
+                                        value: "hokkaido_japan",
                                     ),
                                     "reference_code": DomainValueIr(
                                         kind: string,
-                                        value: "NZL",
+                                        value: "JPN",
                                     ),
                                     "reference_kind": DomainValueIr(
                                         kind: symbol,
-                                        value: "country",
+                                        value: "region",
                                     ),
                                 },
                             ),
@@ -259,22 +200,18 @@ StoryIr(
                                 value: {
                                     "coolest_month": DomainValueIr(
                                         kind: symbol,
-                                        value: "july",
+                                        value: "january",
                                     ),
                                     "hemisphere": DomainValueIr(
                                         kind: symbol,
-                                        value: "southern",
+                                        value: "northern",
                                     ),
                                     "warmest_months": DomainValueIr(
                                         kind: list,
                                         value: [
                                             DomainValueIr(
                                                 kind: symbol,
-                                                value: "january",
-                                            ),
-                                            DomainValueIr(
-                                                kind: symbol,
-                                                value: "february",
+                                                value: "august",
                                             ),
                                         ],
                                     ),
@@ -310,7 +247,7 @@ StoryIr(
                                     ),
                                     "setting": DomainValueIr(
                                         kind: symbol,
-                                        value: "oceanic_islands",
+                                        value: "semi_enclosed_sea_coast",
                                     ),
                                 },
                             ),
@@ -319,15 +256,19 @@ StoryIr(
                                 value: [
                                     DomainValueIr(
                                         kind: symbol,
-                                        value: "alpine_cooling",
+                                        value: "coastal_moderation",
                                     ),
                                     DomainValueIr(
                                         kind: symbol,
-                                        value: "regional_rainfall_contrast",
+                                        value: "freeze_thaw",
                                     ),
                                     DomainValueIr(
                                         kind: symbol,
                                         value: "seasonal_temperature_cycle",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "snow_season",
                                     ),
                                 ],
                             ),
@@ -342,126 +283,71 @@ StoryIr(
             content: [
                 Instruction(
                     span: Span(
-                        start: 223,
-                        end: 426,
-                        line: 11,
+                        start: 114,
+                        end: 232,
+                        line: 8,
                         column: 1,
                     ),
                     kind: InstructionKind(
-                        kind: conditional,
-                        value: ConditionalIr(
-                            branches: [
-                                ConditionalBranchIr(
-                                    condition: Expression(
-                                        kind: binary,
-                                        value: binary(
-                                            left: Expression(
-                                                kind: path,
-                                                value: [
-                                                    "reference_climate",
-                                                ],
-                                            ),
-                                            operator: equal,
-                                            right: Expression(
-                                                kind: path,
-                                                value: [
-                                                    "temperate_oceanic",
-                                                ],
-                                            ),
-                                        ),
+                        kind: text,
+                        value: Template(
+                            parts: [
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "seed",
+                                            "identity",
+                                            "display_name",
+                                        ],
                                     ),
-                                    body: [
-                                        Instruction(
-                                            span: Span(
-                                                start: 268,
-                                                end: 369,
-                                                line: 12,
-                                                column: 5,
-                                            ),
-                                            kind: InstructionKind(
-                                                kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "reference_name",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " seeds a ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "world",
-                                                                    "seed",
-                                                                    "primary_biome",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " world with an ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "world",
-                                                                    "seed",
-                                                                    "water",
-                                                                    "setting",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " setting.",
-                                                        ),
-                                                    ],
-                                                ),
-                                            ),
-                                        ),
-                                    ],
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: " seeds a ",
+                                ),
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "seed",
+                                            "primary_biome",
+                                        ],
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: " world with ",
+                                ),
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "seed",
+                                            "climate",
+                                            "band",
+                                        ],
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: " conditions.",
                                 ),
                             ],
-                            fallback: Some([
-                                Instruction(
-                                    span: Span(
-                                        start: 382,
-                                        end: 424,
-                                        line: 14,
-                                        column: 5,
-                                    ),
-                                    kind: InstructionKind(
-                                        kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "The reference-place preset is unavailable.",
-                                                ),
-                                            ],
-                                        ),
-                                    ),
-                                ),
-                            ]),
                         ),
                     ),
                 ),
                 Instruction(
                     span: Span(
-                        start: 427,
-                        end: 433,
-                        line: 16,
+                        start: 233,
+                        end: 239,
+                        line: 9,
                         column: 1,
                     ),
                     kind: InstructionKind(

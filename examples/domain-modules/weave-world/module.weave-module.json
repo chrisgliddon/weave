@@ -27,6 +27,13 @@
   ],
   "dependencies": [],
   "types": {
+    "Approximation": {
+      "kind": "symbol",
+      "values": [
+        "representative_grid_point",
+        "selected_station_envelope"
+      ]
+    },
     "Biome": {
       "kind": "symbol",
       "values": [
@@ -61,6 +68,22 @@
     "ClimateSummary": {
       "kind": "object",
       "fields": {
+        "annual_mean_temperature_c": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": true,
+          "description": "Minimum and maximum annual mean air temperature across the reviewed observations, in degrees Celsius."
+        },
+        "annual_precipitation_mm": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": true,
+          "description": "Minimum and maximum annual precipitation across the reviewed observations, in millimetres per year."
+        },
         "band": {
           "type": {
             "kind": "named",
@@ -86,21 +109,14 @@
           "required": true,
           "description": "The climatological normal period in YYYY-YYYY form."
         },
-        "selected_station_annual_mean_temperature_c": {
+        "source_resolution": {
           "type": {
-            "kind": "named",
-            "name": "NumericRange"
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 256
           },
           "required": true,
-          "description": "Minimum and maximum annual mean air temperature across selected in-scope stations, in degrees Celsius."
-        },
-        "selected_station_annual_precipitation_mm": {
-          "type": {
-            "kind": "named",
-            "name": "NumericRange"
-          },
-          "required": true,
-          "description": "Minimum and maximum annual precipitation across selected in-scope stations, in millimetres."
+          "description": "Published observation grid, station, or area resolution."
         },
         "spatial_resolution": {
           "type": {
@@ -109,6 +125,44 @@
           },
           "required": true,
           "description": "The geographic resolution represented by the normalized values."
+        },
+        "uncertainty": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Concise limitations and uncertainty for this broad environmental approximation."
+        },
+        "units": {
+          "type": {
+            "kind": "named",
+            "name": "ClimateUnits"
+          },
+          "required": true,
+          "description": "Explicit canonical units for the normalized climate ranges."
+        }
+      }
+    },
+    "ClimateUnits": {
+      "kind": "object",
+      "fields": {
+        "precipitation": {
+          "type": {
+            "kind": "named",
+            "name": "PrecipitationUnit"
+          },
+          "required": true,
+          "description": "Canonical annual precipitation unit."
+        },
+        "temperature": {
+          "type": {
+            "kind": "named",
+            "name": "TemperatureUnit"
+          },
+          "required": true,
+          "description": "Canonical air-temperature unit."
         }
       }
     },
@@ -120,6 +174,149 @@
         "moderate",
         "representative_not_exhaustive",
         "unknown"
+      ]
+    },
+    "DaylightMethod": {
+      "kind": "symbol",
+      "values": [
+        "astronomical_solstice_estimate"
+      ]
+    },
+    "DaylightSummary": {
+      "kind": "object",
+      "fields": {
+        "longest_daylight_hours": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": 0.0,
+            "maximum": 24.0
+          },
+          "required": true,
+          "description": "Idealized longer-solstice daylight rounded to one decimal hour."
+        },
+        "method": {
+          "type": {
+            "kind": "named",
+            "name": "DaylightMethod"
+          },
+          "required": true,
+          "description": "Closed deterministic daylight method."
+        },
+        "representative_latitude_degrees": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": -90.0,
+            "maximum": 90.0
+          },
+          "required": true,
+          "description": "WGS84 latitude used for the broad daylight approximation."
+        },
+        "shortest_daylight_hours": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": 0.0,
+            "maximum": 24.0
+          },
+          "required": true,
+          "description": "Idealized shorter-solstice daylight rounded to one decimal hour."
+        },
+        "unit": {
+          "type": {
+            "kind": "named",
+            "name": "DaylightUnit"
+          },
+          "required": true,
+          "description": "Canonical daylight duration unit."
+        }
+      }
+    },
+    "DaylightUnit": {
+      "kind": "symbol",
+      "values": [
+        "hours_per_day"
+      ]
+    },
+    "FactContext": {
+      "kind": "object",
+      "fields": {
+        "approximation": {
+          "type": {
+            "kind": "named",
+            "name": "Approximation"
+          },
+          "required": true,
+          "description": "Deterministic policy used to represent a broader area."
+        },
+        "geographic_resolution": {
+          "type": {
+            "kind": "named",
+            "name": "SpatialResolution"
+          },
+          "required": true,
+          "description": "Geographic scope represented by the seed."
+        },
+        "uncertainty": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Concise limitations for interpreting this environmental seed."
+        }
+      }
+    },
+    "HazardMethod": {
+      "kind": "symbol",
+      "values": [
+        "deterministic_environmental_thresholds_v1"
+      ]
+    },
+    "HazardSummary": {
+      "kind": "object",
+      "fields": {
+        "confidence": {
+          "type": {
+            "kind": "named",
+            "name": "Confidence"
+          },
+          "required": true,
+          "description": "Confidence inherited from the environmental approximation."
+        },
+        "method": {
+          "type": {
+            "kind": "named",
+            "name": "HazardMethod"
+          },
+          "required": true,
+          "description": "Closed deterministic environmental tendency policy."
+        },
+        "tendencies": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "HazardTendency"
+            },
+            "min_items": 0,
+            "max_items": 8
+          },
+          "required": true,
+          "description": "Broad environmental tendencies, never forecasts or risk scores."
+        }
+      }
+    },
+    "HazardTendency": {
+      "kind": "symbol",
+      "values": [
+        "coastal_inundation",
+        "heavy_precipitation",
+        "seasonal_freeze",
+        "slope_instability",
+        "tropical_cyclone"
       ]
     },
     "Hemisphere": {
@@ -171,6 +368,12 @@
           "description": "Inclusive lower endpoint."
         }
       }
+    },
+    "PrecipitationUnit": {
+      "kind": "symbol",
+      "values": [
+        "millimetres_per_year"
+      ]
     },
     "ReferenceKind": {
       "kind": "symbol",
@@ -224,10 +427,17 @@
     "SpatialResolution": {
       "kind": "symbol",
       "values": [
+        "country_scale_representative_point",
         "country_scale_selected_stations",
-        "ecosystem_scale",
-        "region_scale",
-        "subregion_scale"
+        "ecosystem_scale_representative_point",
+        "region_scale_representative_point",
+        "subregion_scale_representative_point"
+      ]
+    },
+    "TemperatureUnit": {
+      "kind": "symbol",
+      "values": [
+        "degrees_celsius"
       ]
     },
     "Terrain": {
@@ -275,6 +485,7 @@
         "oceanic_archipelago",
         "oceanic_atolls",
         "oceanic_islands",
+        "open_ocean_coast",
         "river_delta",
         "semi_enclosed_sea_coast"
       ]
@@ -372,6 +583,30 @@
           },
           "required": true,
           "description": "Normalized representative climate facts."
+        },
+        "context": {
+          "type": {
+            "kind": "named",
+            "name": "FactContext"
+          },
+          "required": true,
+          "description": "Explicit geographic scale, approximation, and uncertainty."
+        },
+        "daylight": {
+          "type": {
+            "kind": "named",
+            "name": "DaylightSummary"
+          },
+          "required": true,
+          "description": "Idealized latitude-derived solstice daylight range."
+        },
+        "hazards": {
+          "type": {
+            "kind": "named",
+            "name": "HazardSummary"
+          },
+          "required": true,
+          "description": "Deterministically derived environmental hazard tendencies."
         },
         "identity": {
           "type": {

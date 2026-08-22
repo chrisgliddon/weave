@@ -1,0 +1,150 @@
+{
+  "corpus_format_version": 1,
+  "id": "british_columbia_temperate_forest",
+  "version": "1.0.0",
+  "title": "British Columbia Temperate Forest Environmental Reference",
+  "module": {
+    "id": "org.weave.world",
+    "version": "=1.0.0"
+  },
+  "identity": {
+    "display_name": "British Columbia Temperate Forests",
+    "preset": "british_columbia_temperate_forest",
+    "reference_code": "CAN",
+    "reference_kind": "ecosystem",
+    "culture_included": false
+  },
+  "climate": {
+    "band": "temperate_oceanic",
+    "confidence": "representative_not_exhaustive",
+    "reference_period": "1991-2020",
+    "spatial_resolution": "ecosystem_scale_representative_point",
+    "approximation": "representative_grid_point",
+    "representative_latitude_degrees": 52.5,
+    "source_resolution": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude.",
+    "uncertainty": "One source-native coastal grid point represents a broad temperate-forest ecosystem and does not resolve elevation, fjords, rain shadows, glaciers, or inland transitions.",
+    "temperature_unit": "degrees_celsius",
+    "precipitation_unit": "millimetres_per_day",
+    "data": {
+      "kind": "representative_grid_points",
+      "points": [
+        {
+          "latitude_degrees": 52.5,
+          "longitude_degrees": -128.0,
+          "annual_mean_temperature_c": 7.0,
+          "annual_mean_precipitation_mm_per_day": 7.71,
+          "monthly_mean_temperature_c": [
+            -0.03,
+            0.8,
+            2.52,
+            5.74,
+            9.8,
+            12.29,
+            14.61,
+            14.82,
+            12.17,
+            7.71,
+            3.11,
+            0.04
+          ]
+        }
+      ]
+    }
+  },
+  "biomes": [
+    "temperate_conifer_forest"
+  ],
+  "primary_biome": "temperate_conifer_forest",
+  "terrain": [
+    "coastal",
+    "mountain"
+  ],
+  "water": {
+    "coastal": true,
+    "island_system": false,
+    "setting": "open_ocean_coast"
+  },
+  "weather_tendencies": [
+    "coastal_moderation",
+    "regional_rainfall_contrast",
+    "seasonal_temperature_cycle",
+    "snow_season"
+  ],
+  "attribution": "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=-128.0&latitude=52.5&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "0d46f13589f3d7e198c415a6c07372b72aabe606e9b762c2911f8f3606ebee2f",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=-130%2C48.3%2C-121%2C55&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-ecosystem-envelope-retrieved-2026-08-21",
+        "sha256": "0d68f18ae7577e6a8fb10dda13305504dc079dd8c5d05b959ddb6737c52a6e35",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; British Columbia coastal conifer class selected by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "british-columbia-temperate-forest-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "lineage": {
+      "biomes": [
+        "resolve_ecoregions"
+      ],
+      "climate": [
+        "nasa_power_climate"
+      ],
+      "identity": [
+        "natural_earth_land",
+        "weave_world_fixture"
+      ],
+      "terrain_water": [
+        "natural_earth_land",
+        "natural_earth_ocean",
+        "resolve_ecoregions",
+        "weave_world_fixture"
+      ]
+    }
+  }
+}

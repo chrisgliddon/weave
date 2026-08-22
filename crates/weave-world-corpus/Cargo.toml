@@ -1,0 +1,21 @@
+[package]
+name = "weave-world-corpus"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Offline, provenance-aware data-pack builder for the Weave World module"
+
+[dependencies]
+clap.workspace = true
+schemars.workspace = true
+semver.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+weave-domain = { path = "../weave-domain" }
+
+[lints]
+workspace = true

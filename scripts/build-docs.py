@@ -58,6 +58,7 @@ RUSTDOC_PACKAGES = (
     "weave-bevy",
     "weave-web",
     "weave-lsp",
+    "weave-world-corpus",
     "tree-sitter-weave",
 )
 
@@ -258,6 +259,28 @@ def domain_tool_binary() -> Path:
     return binary
 
 
+def world_corpus_tool_binary() -> Path:
+    """Build and locate the offline Weave World corpus builder."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-world-corpus",
+            "--bin",
+            "weave-world-corpus",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-world-corpus{suffix}"
+    if not binary.is_file():
+        raise DocsError(f"world corpus tool was not produced at {binary}")
+    return binary
+
+
 def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
@@ -265,10 +288,14 @@ def compile_examples() -> None:
     domain_tracer = ROOT / "examples/domain-modules/contract/tracer.weave"
     domain_tutorial = ROOT / "examples/domain-modules/third-party-tutorial/story.weave"
     domain_world = ROOT / "examples/domain-modules/weave-world/reference-place.weave"
+    domain_world_corpus = set(
+        (ROOT / "examples/domain-modules/weave-world/corpus/stories").glob("*.weave")
+    )
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
         if source not in {domain_tracer, domain_tutorial, domain_world}
+        and source not in domain_world_corpus
     ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
     sources.append(readme_fixture)
@@ -409,6 +436,7 @@ def verify_domain_contract() -> None:
     """Verify schemas, artifacts, and the compiled domain-module tracer."""
 
     domain_tool = domain_tool_binary()
+    world_corpus_tool = world_corpus_tool_binary()
     compiler = compiler_binary()
     fixture = ROOT / "examples" / "domain-modules" / "contract"
     manifest_json = fixture / "module.weave-module.json"
@@ -420,6 +448,50 @@ def verify_domain_contract() -> None:
     world_manifest = world_fixture / "module.weave-module.json"
     world_pack = world_fixture / "pack.weave-domain.json"
     world_source = world_fixture / "reference-place.weave"
+    world_index = world_fixture / "corpus.weave-world.json"
+    world_packs = (
+        world_pack,
+        world_fixture
+        / "packs"
+        / "british_columbia_temperate_forest.weave-domain.json",
+        world_fixture / "packs" / "hokkaido_japan.weave-domain.json",
+        world_fixture / "packs" / "maldives.weave-domain.json",
+    )
+    world_story_fixtures = (
+        (
+            world_fixture
+            / "corpus"
+            / "stories"
+            / "british-columbia-temperate-forest.weave",
+            world_packs[1],
+            world_fixture
+            / "corpus"
+            / "stories"
+            / "british-columbia-temperate-forest.story.ron",
+            world_fixture
+            / "corpus"
+            / "stories"
+            / "british-columbia-temperate-forest.story.json",
+            "british_columbia_temperate_forest",
+            "ecosystem_scale_representative_point",
+        ),
+        (
+            world_fixture / "corpus" / "stories" / "hokkaido-japan.weave",
+            world_packs[2],
+            world_fixture / "corpus" / "stories" / "hokkaido-japan.story.ron",
+            world_fixture / "corpus" / "stories" / "hokkaido-japan.story.json",
+            "hokkaido_japan",
+            "region_scale_representative_point",
+        ),
+        (
+            world_fixture / "corpus" / "stories" / "maldives.weave",
+            world_packs[3],
+            world_fixture / "corpus" / "stories" / "maldives.story.ron",
+            world_fixture / "corpus" / "stories" / "maldives.story.json",
+            "maldives",
+            "country_scale_representative_point",
+        ),
+    )
 
     run(
         [
@@ -431,13 +503,21 @@ def verify_domain_contract() -> None:
         ],
         capture=True,
     )
+    world_validation = [
+        str(domain_tool),
+        "validate",
+        str(world_manifest.relative_to(ROOT)),
+    ]
+    for pack in world_packs:
+        world_validation.extend(("--pack", str(pack.relative_to(ROOT))))
+    run(world_validation, capture=True)
     run(
         [
-            str(domain_tool),
-            "validate",
+            str(world_corpus_tool),
+            "check",
+            str(world_index.relative_to(ROOT)),
+            "--manifest",
             str(world_manifest.relative_to(ROOT)),
-            "--pack",
-            str(world_pack.relative_to(ROOT)),
         ],
         capture=True,
     )
@@ -459,12 +539,17 @@ def verify_domain_contract() -> None:
         generated_project_schema = workspace / "domain-project-v1.schema.json"
         generated_lock_schema = workspace / "domain-lock-v1.schema.json"
         generated_registry_schema = workspace / "domain-registry-index-v1.schema.json"
+        generated_world_index_schema = workspace / "weave-world-corpus-index-v1.schema.json"
+        generated_world_preset_schema = workspace / "weave-world-corpus-preset-v1.schema.json"
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
         normalized_pack_ron = workspace / "pack.weave-domain.ron"
         normalized_world_manifest_json = workspace / "world-module.weave-module.json"
-        normalized_world_pack_json = workspace / "world-pack.weave-domain.json"
+        normalized_world_packs = tuple(
+            (workspace / f"world-pack-{index}.weave-domain.json", pack)
+            for index, pack in enumerate(world_packs)
+        )
         compiled_tracer_ron = workspace / "tracer.story.ron"
         compiled_tracer_json = workspace / "tracer.story.json"
         compiled_world_ron = workspace / "reference-place.story.ron"
@@ -481,6 +566,14 @@ def verify_domain_contract() -> None:
                 [str(domain_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in (
+            ("index", generated_world_index_schema),
+            ("preset", generated_world_preset_schema),
+        ):
+            run(
+                [str(world_corpus_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for generated, checked in (
             (
                 generated_manifest_schema,
@@ -493,6 +586,14 @@ def verify_domain_contract() -> None:
                 generated_registry_schema,
                 ROOT / "schemas" / "domain-registry-index-v1.schema.json",
             ),
+            (
+                generated_world_index_schema,
+                ROOT / "schemas" / "weave-world-corpus-index-v1.schema.json",
+            ),
+            (
+                generated_world_preset_schema,
+                ROOT / "schemas" / "weave-world-corpus-preset-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -503,7 +604,9 @@ def verify_domain_contract() -> None:
             ("pack", pack_json, "json", normalized_pack_json),
             ("pack", pack_json, "ron", normalized_pack_ron),
             ("manifest", world_manifest, "json", normalized_world_manifest_json),
-            ("pack", world_pack, "json", normalized_world_pack_json),
+        ) + tuple(
+            ("pack", pack, "json", generated)
+            for generated, pack in normalized_world_packs
         )
         for kind, source, encoding, output in normalization_jobs:
             run(
@@ -519,16 +622,42 @@ def verify_domain_contract() -> None:
                 ],
                 capture=True,
             )
-        for generated, checked in (
+        normalized_checks = (
             (normalized_manifest_json, manifest_json),
             (normalized_manifest_ron, manifest_ron),
             (normalized_pack_json, pack_json),
             (normalized_pack_ron, pack_ron),
             (normalized_world_manifest_json, world_manifest),
-            (normalized_world_pack_json, world_pack),
-        ):
+        ) + normalized_world_packs
+        for generated, checked in normalized_checks:
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"canonical domain fixture is stale: {checked.name}")
+
+        staged_world = workspace / "offline-world-corpus"
+        shutil.copytree(world_fixture / "corpus", staged_world / "corpus")
+        shutil.copy2(world_index, staged_world / world_index.name)
+        shutil.copy2(world_manifest, staged_world / world_manifest.name)
+        run(
+            [
+                str(world_corpus_tool),
+                "build",
+                str(staged_world / world_index.name),
+                "--manifest",
+                str(staged_world / world_manifest.name),
+            ],
+            capture=True,
+        )
+        staged_outputs = (
+            staged_world / "pack.weave-domain.json",
+            staged_world
+            / "packs"
+            / "british_columbia_temperate_forest.weave-domain.json",
+            staged_world / "packs" / "hokkaido_japan.weave-domain.json",
+            staged_world / "packs" / "maldives.weave-domain.json",
+        )
+        for generated, checked in zip(staged_outputs, world_packs, strict=True):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"offline world corpus output is stale: {checked.name}")
 
         for encoding, output in (
             ("ron", compiled_tracer_ron),
@@ -614,8 +743,97 @@ def verify_domain_contract() -> None:
             .get("culture_included", {})
             .get("value")
             is not False
+            or world_seed.get("context", {})
+            .get("value", {})
+            .get("geographic_resolution", {})
+            .get("value")
+            != "country_scale_selected_stations"
+            or world_seed.get("climate", {})
+            .get("value", {})
+            .get("units", {})
+            .get("value", {})
+            .get("precipitation", {})
+            .get("value")
+            != "millimetres_per_year"
+            or "daylight" not in world_seed
+            or "hazards" not in world_seed
         ):
             raise DocsError("compiled Weave World fixture omitted its environmental seed")
+
+        observed_world_presets = {
+            "aotearoa_new_zealand": "country_scale_selected_stations"
+        }
+        for (
+            source,
+            pack,
+            checked_ron,
+            checked_json,
+            expected_preset,
+            expected_resolution,
+        ) in world_story_fixtures:
+            generated_ron = workspace / checked_ron.name
+            generated_json = workspace / checked_json.name
+            for encoding, output in (("ron", generated_ron), ("json", generated_json)):
+                run(
+                    [
+                        str(compiler),
+                        str(source.relative_to(ROOT)),
+                        "--module-manifest",
+                        str(world_manifest.relative_to(ROOT)),
+                        "--module-pack",
+                        str(pack.relative_to(ROOT)),
+                        "--format",
+                        encoding,
+                        "--output",
+                        str(output),
+                    ],
+                    capture=True,
+                )
+            for generated, checked in (
+                (generated_ron, checked_ron),
+                (generated_json, checked_json),
+            ):
+                if generated.read_bytes() != checked.read_bytes():
+                    raise DocsError(f"compiled Weave World corpus story is stale: {checked.name}")
+            story = json.loads(generated_json.read_text(encoding="utf-8"))
+            seed = (
+                story.get("modules", {})
+                .get("world", {})
+                .get("exports", {})
+                .get("seed", {})
+                .get("value", {})
+                .get("value", {})
+            )
+            preset = (
+                seed.get("identity", {})
+                .get("value", {})
+                .get("preset", {})
+                .get("value")
+            )
+            resolution = (
+                seed.get("context", {})
+                .get("value", {})
+                .get("geographic_resolution", {})
+                .get("value")
+            )
+            culture_included = (
+                seed.get("identity", {})
+                .get("value", {})
+                .get("culture_included", {})
+                .get("value")
+            )
+            if (
+                story.get("version") != 3
+                or preset != expected_preset
+                or resolution != expected_resolution
+                or culture_included is not False
+                or "daylight" not in seed
+                or "hazards" not in seed
+            ):
+                raise DocsError(f"compiled world corpus seed is incomplete: {expected_preset}")
+            observed_world_presets[preset] = resolution
+        if len(observed_world_presets) != 4 or len(set(observed_world_presets.values())) != 4:
+            raise DocsError("world corpus fixtures are not distinct across four geographic scales")
 
         publication = workspace / "publication"
         registry = workspace / "registry"
@@ -701,7 +919,7 @@ def verify_domain_contract() -> None:
             raise DocsError("third-party tutorial module data was not embedded")
 
     print(
-        "verified domain module schemas, packaging, locks, tutorial, tracer, and Weave World seed",
+        "verified domain schemas, packaging, locks, tutorial, tracer, and four-preset Weave World corpus",
         flush=True,
     )
 
@@ -778,6 +996,8 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "domain-project-v1.schema.json",
         "domain-lock-v1.schema.json",
         "domain-registry-index-v1.schema.json",
+        "weave-world-corpus-index-v1.schema.json",
+        "weave-world-corpus-preset-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

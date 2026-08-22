@@ -1,0 +1,152 @@
+{
+  "corpus_format_version": 1,
+  "id": "hokkaido_japan",
+  "version": "1.0.0",
+  "title": "Hokkaido Japan Environmental Reference",
+  "module": {
+    "id": "org.weave.world",
+    "version": "=1.0.0"
+  },
+  "identity": {
+    "display_name": "Hokkaido, Japan",
+    "preset": "hokkaido_japan",
+    "reference_code": "JPN",
+    "reference_kind": "region",
+    "culture_included": false
+  },
+  "climate": {
+    "band": "humid_continental",
+    "confidence": "representative_not_exhaustive",
+    "reference_period": "1991-2020",
+    "spatial_resolution": "region_scale_representative_point",
+    "approximation": "representative_grid_point",
+    "representative_latitude_degrees": 43.06,
+    "source_resolution": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude.",
+    "uncertainty": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects.",
+    "temperature_unit": "degrees_celsius",
+    "precipitation_unit": "millimetres_per_day",
+    "data": {
+      "kind": "representative_grid_points",
+      "points": [
+        {
+          "latitude_degrees": 43.06,
+          "longitude_degrees": 141.35,
+          "annual_mean_temperature_c": 6.13,
+          "annual_mean_precipitation_mm_per_day": 3.47,
+          "monthly_mean_temperature_c": [
+            -6.83,
+            -6.62,
+            -3.14,
+            3.53,
+            9.9,
+            14.68,
+            18.87,
+            19.87,
+            15.86,
+            9.21,
+            1.99,
+            -4.5
+          ]
+        }
+      ]
+    }
+  },
+  "biomes": [
+    "temperate_broadleaf_and_mixed_forest",
+    "temperate_conifer_forest"
+  ],
+  "primary_biome": "temperate_broadleaf_and_mixed_forest",
+  "terrain": [
+    "coastal",
+    "island",
+    "mountain"
+  ],
+  "water": {
+    "coastal": true,
+    "island_system": true,
+    "setting": "semi_enclosed_sea_coast"
+  },
+  "weather_tendencies": [
+    "coastal_moderation",
+    "freeze_thaw",
+    "seasonal_temperature_cycle",
+    "snow_season"
+  ],
+  "attribution": "Climate: NASA POWER / MERRA-2, NASA public data. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=141.35&latitude=43.06&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "0e61f7f29468c9eccfdfdbca62e41984e99b7800179a8df91bc3b055d0b5eec0",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=139.3%2C41.3%2C146%2C45.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-region-envelope-retrieved-2026-08-21",
+        "sha256": "5fcd68f5b72f1b1b8f131525d7cf02bc7249002d163adcb60e0fc7dd1d8ca51e",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; regional envelope normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "hokkaido-japan-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "lineage": {
+      "biomes": [
+        "resolve_ecoregions"
+      ],
+      "climate": [
+        "nasa_power_climate"
+      ],
+      "identity": [
+        "natural_earth_land",
+        "weave_world_fixture"
+      ],
+      "terrain_water": [
+        "natural_earth_land",
+        "natural_earth_ocean",
+        "resolve_ecoregions",
+        "weave_world_fixture"
+      ]
+    }
+  }
+}

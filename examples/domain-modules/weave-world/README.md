@@ -1,6 +1,6 @@
-# Weave World reference-place fixture
+# Weave World environmental corpus
 
-This fixture is the first complete `org.weave.world` path. The source selects the exact `aotearoa_new_zealand@=1.0.0` pack, and that pack materializes one closed, deterministic `WorldSeed`. It is environmental reference material for fictional authoring: `culture_included` is explicitly `false`, and the pack makes no claims about people, language, identity, or culture.
+This fixture contains four complete `org.weave.world` reference paths: Aotearoa New Zealand, Hokkaido in Japan, Maldives, and the temperate forests of British Columbia. Each exact pack materializes one closed, deterministic `WorldSeed` at country, region, or ecosystem scale. All are environmental reference material for fictional authoring: `culture_included` is explicitly `false`, and no pack makes claims about people, language, identity, or culture.
 
 Compile both portable forms from the repository root:
 
@@ -17,7 +17,32 @@ cargo run -p weave-compiler -- \
 
 The adjacent `weave.modules.json` is the complete preset-selection boundary. The exact lock pins the module and pack bytes; authoring and runtime do not contact the network.
 
-## Reviewed public inputs
+## Build the corpus offline
+
+Contributor records live in `corpus/presets`, while `corpus.weave-world.json` maps those records to the canonical packs. The Rust builder validates the closed format, explicit units and scale, open licenses, exact public-source hashes, contradictions, uncertainty, and broad-approximation policy before it uses the shared domain contract:
+
+```bash
+cargo run -p weave-world-corpus -- build \
+  examples/domain-modules/weave-world/corpus.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json
+
+cargo run -p weave-world-corpus -- check \
+  examples/domain-modules/weave-world/corpus.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json
+```
+
+The command never downloads data. It deterministically converts reviewed daily precipitation to annual millimetres, ranks monthly temperature, estimates solstice daylight, applies the documented environmental hazard thresholds, sorts all closed sets, generates provenance transformations and claims, and validates each result against `module.weave-module.json`.
+
+| Preset | Scale | Checked source and portable artifacts |
+|---|---|---|
+| `aotearoa_new_zealand` | Country, selected stations | `reference-place.weave`, `reference-place.story.ron`, `reference-place.story.json` |
+| `hokkaido_japan` | Region, representative grid point | `corpus/stories/hokkaido-japan.*` |
+| `maldives` | Country, representative grid point | `corpus/stories/maldives.*` |
+| `british_columbia_temperate_forest` | Ecosystem, representative grid point | `corpus/stories/british-columbia-temperate-forest.*` |
+
+To contribute another preset, add a schema-valid source record with its reviewed facts and complete source metadata, add one sorted index entry, run `build` and `check`, then add a single-pack story and its exact RON/JSON output. No Rust or shared module code changes are needed.
+
+## Aotearoa New Zealand reviewed inputs
 
 Every acquired file is named in `pack.weave-domain.json` with its URL, release or retrieval revision, SHA-256, license, attribution, and transformation. The checked hashes are:
 
@@ -30,3 +55,5 @@ Every acquired file is named in `pack.weave-domain.json` with its URL, release o
 | [RESOLVE Ecoregions 2017 country-envelope query](https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=166%2C-48%2C179%2C-34&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json) | `2017`, retrieved 2026-08-21 | [CC BY 4.0](https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use) | `1fe165b148ad6936060ad8b7207dcd8a861f4c35f16c406fa119e5f62f7e6681` |
 
 The climate transformation uses the published `YEAR` column for each in-scope station. It excludes the workbook's explicitly out-of-scope `Antarctica, Scott Base` row, producing a selected-station annual mean air-temperature range of `8.8–16.0 °C` and annual rainfall range of `365.1–6545.1 mm`. Cross-station monthly means identify January and February as the warmest months and July as the coolest. These are representative country-scale cues, not a forecast and not exhaustive local climate coverage.
+
+The three representative-grid-point records retain exact NASA POWER Climatology API v2.9.7 URLs, access dates, response hashes, source-native MERRA-2 resolution, Celsius and `mm/day` inputs, and requested NASA attribution. Their RESOLVE envelope queries and Natural Earth vector files likewise retain exact hashes and open terms in each generated pack. See the [Weave World guide](../../../docs/world_module.md) for the complete normalization and failure policies.
