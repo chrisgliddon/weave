@@ -171,7 +171,7 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
-Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, protected read-only paths, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add permitted typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), follow the four-preset [Weave World guide](docs/world_module.md), or follow the [Weave Character guide](docs/character_module.md) from a provenance-aware six-factor/24-facet profile through recomputed lossy OCEAN, explainable reviewed alignment views, temporal context, a locked domain pack, source/editor inspection, RON/JSON, Bevy, and PixiJS. Portable fixtures remain data-only and do not load third-party code or depend on the editor.
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, protected read-only paths, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add permitted typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), follow the four-preset [Weave World guide](docs/world_module.md), follow the [Weave Character guide](docs/character_module.md) from a provenance-aware six-factor/24-facet profile through reviewed enrichments and portable hosts, or inspect the [selectable tabletop adapter contract](docs/tabletop_adapters.md) for exact capability discovery, isolated state, deterministic replay, event visibility, switching, and the MIT/CC0/Apache public-source gate. Portable fixtures remain data-only and do not load third-party code or depend on the editor.
 
 ---
 
@@ -269,6 +269,7 @@ weave/
 ├── crates/
 │   ├── weave-core/          # Language parser, AST, type system
 │   ├── weave-runtime/       # Story runtime engine (no Bevy dependency)
+│   ├── weave-tabletop/      # Adapter manifests, state, resolver, events, and license gate
 │   ├── weave-patterns/      # Built-ins plus data-only community packages and registry CLI
 │   ├── weave-domain/        # Versioned domain-module manifests, packs, validation, and schemas
 │   ├── weave-character/     # Portable character profiles, extensions, and deterministic synthesis
@@ -301,6 +302,7 @@ weave/
 │   ├── domain-modules/      # Contract fixtures and compiled synthetic tracer
 │   ├── domain-module-bevy/  # Portable tracer/composed World RON consumed as Bevy resources
 │   ├── domain-module-pixijs/ # Portable tracer/composed World JSON rendered with PixiJS
+│   ├── tabletop-adapters/   # Portable adapter contract and synthetic conformance fixtures
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples
@@ -312,6 +314,7 @@ weave/
 │   ├── pattern_systems.md  # How to define and use pattern systems
 │   ├── community_patterns.md # Package format, registry, provenance, and moderation
 │   ├── domain_modules.md    # Manifest, namespace, compatibility, and provenance contract
+│   ├── tabletop_adapters.md # Adapter capabilities, state, replay, visibility, and licensing
 │   ├── bevy_integration.md # Using Weave in Bevy games
 │   ├── editor_guide.md     # Using the visual editor
 │   └── api_reference.md    # Generated rustdoc entry points

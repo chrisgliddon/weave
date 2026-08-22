@@ -1,0 +1,123 @@
+{
+  "pack_format_version": 1,
+  "id": "lumen_reed",
+  "version": "1.0.0",
+  "title": "Lumen Reed Lantern Trail Projection",
+  "module": {
+    "id": "org.weave.tabletop.lantern_trail",
+    "version": "=1.0.0"
+  },
+  "dependencies": [],
+  "values": {
+    "adapter": {
+      "kind": "object",
+      "value": {
+        "content_sha256": {
+          "kind": "string",
+          "value": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+        },
+        "id": {
+          "kind": "string",
+          "value": "org.weave.tabletop.lantern_trail"
+        },
+        "schema_version": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "version": {
+          "kind": "string",
+          "value": "1.0.0"
+        }
+      }
+    },
+    "capabilities": {
+      "kind": "object",
+      "value": {
+        "character_creation": {
+          "kind": "bool",
+          "value": true
+        },
+        "checks_and_conflicts": {
+          "kind": "bool",
+          "value": true
+        },
+        "derived_values": {
+          "kind": "bool",
+          "value": true
+        },
+        "resources_and_conditions": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    "definition": {
+      "kind": "object",
+      "value": {
+        "approach": {
+          "kind": "symbol",
+          "value": "careful"
+        },
+        "call_sign": {
+          "kind": "string",
+          "value": "Lumen Reed"
+        },
+        "focus": {
+          "kind": "number",
+          "value": 3.0
+        },
+        "resilience": {
+          "kind": "number",
+          "value": 2.0
+        }
+      }
+    },
+    "state": {
+      "kind": "object",
+      "value": {
+        "conditions": {
+          "kind": "list",
+          "value": []
+        },
+        "last_total": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "momentum": {
+          "kind": "number",
+          "value": 2.0
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "adapter_source",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "weave-tabletop-contract-v1",
+        "sha256": "2dce380b2d315cf56fc7f821e10f26370d43ca63cdefc5afc3ed0d3eb8891949",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Lantern Trail synthetic contract fixture, authored for Weave under MIT.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "values.adapter": [
+        "adapter_source"
+      ],
+      "values.capabilities": [
+        "adapter_source"
+      ],
+      "values.definition": [
+        "adapter_source"
+      ],
+      "values.state": [
+        "adapter_source"
+      ]
+    }
+  }
+}

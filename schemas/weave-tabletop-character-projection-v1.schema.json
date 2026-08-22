@@ -1,0 +1,328 @@
+{
+  "$defs": {
+    "AdapterCharacterDefinition": {
+      "additionalProperties": false,
+      "description": "Active immutable adapter-owned character definition.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "completed_creation_steps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "definition": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "definition_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "definition",
+        "definition_sha256",
+        "completed_creation_steps"
+      ],
+      "type": "object"
+    },
+    "ArchivedAdapterProjection": {
+      "additionalProperties": false,
+      "description": "Inactive adapter data retained without conversion.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "definition": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "definition_sha256": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "definition",
+        "definition_sha256",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "CanonicalSuggestion": {
+      "additionalProperties": false,
+      "description": "Explainable cross-domain suggestion. It is lineage only and never writes the target itself.",
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/SuggestionDecision"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "proposed_value": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "target_path": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "target_path",
+        "proposed_value",
+        "explanation",
+        "source_paths",
+        "decision"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "SuggestionDecision": {
+      "description": "Review state for a suggestion that targets canonical Character data.",
+      "enum": [
+        "proposed",
+        "accepted",
+        "rejected",
+        "overridden",
+        "withheld"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-character-projection:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "System-neutral Character reference plus isolated adapter projections.",
+  "properties": {
+    "active": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AdapterCharacterDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "canonical_character_write_back": {
+      "type": "boolean"
+    },
+    "canonical_profile_sha256": {
+      "type": "string"
+    },
+    "character_id": {
+      "type": "string"
+    },
+    "inactive": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ArchivedAdapterProjection"
+      },
+      "type": "object"
+    },
+    "projection_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "suggestions": {
+      "items": {
+        "$ref": "#/$defs/CanonicalSuggestion"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "projection_format_version",
+    "character_id",
+    "canonical_profile_sha256",
+    "canonical_character_write_back",
+    "inactive",
+    "suggestions"
+  ],
+  "title": "Weave Tabletop Character Projection v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

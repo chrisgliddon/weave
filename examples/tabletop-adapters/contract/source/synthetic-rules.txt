@@ -1,0 +1,7 @@
+Lantern Trail is a synthetic tabletop contract fixture authored for Weave.
+
+A character has a call sign, a fictional approach, Focus, and Resilience. An attempt consumes one
+deterministic six-sided entropy draw, adds an explicitly supplied bonus, compares the total with a
+difficulty, and emits separate public, authoring, and host-only event payloads. This tiny procedure
+exists only to test adapter boundaries, state replay, visibility, and portable serialization. It is
+not derived from or compatible with any published game system.

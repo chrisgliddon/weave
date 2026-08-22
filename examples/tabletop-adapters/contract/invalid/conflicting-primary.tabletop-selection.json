@@ -1,0 +1,25 @@
+{
+  "selection_format_version": 1,
+  "installed": [
+    {
+      "id": "org.weave.tabletop.lantern_trail",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+    }
+  ],
+  "primary": [
+    {
+      "id": "org.weave.tabletop.lantern_trail",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+    },
+    {
+      "id": "org.weave.tabletop.lantern_trail",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+    }
+  ]
+}

@@ -36,6 +36,7 @@ REQUIRED_CHAPTERS = {
     "domain_module_tutorial.md",
     "world_module.md",
     "character_module.md",
+    "tabletop_adapters.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -62,6 +63,7 @@ RUSTDOC_PACKAGES = (
     "weave-world",
     "weave-world-corpus",
     "weave-character",
+    "weave-tabletop",
     "tree-sitter-weave",
 )
 
@@ -337,6 +339,28 @@ def character_tool_binary() -> Path:
     binary = cargo_target_directory() / "debug" / f"weave-character{suffix}"
     if not binary.is_file():
         raise DocsError(f"Character contract tool was not produced at {binary}")
+    return binary
+
+
+def tabletop_tool_binary() -> Path:
+    """Build and locate the portable tabletop adapter contract tool."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-tabletop",
+            "--bin",
+            "weave-tabletop",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-tabletop{suffix}"
+    if not binary.is_file():
+        raise DocsError("tabletop contract tool was not produced")
     return binary
 
 
@@ -2577,6 +2601,186 @@ def verify_domain_contract() -> None:
     )
 
 
+def verify_tabletop_contract() -> None:
+    """Verify the adapter schemas, portable pairs, replay fixture, and license gate."""
+
+    tool = tabletop_tool_binary()
+    compiler = compiler_binary()
+    fixture = ROOT / "examples/tabletop-adapters/contract"
+    manifest_json = fixture / "synthetic.tabletop-adapter.json"
+    manifest_ron = fixture / "synthetic.tabletop-adapter.ron"
+    selection_json = fixture / "selection.tabletop-selection.json"
+    selection_ron = fixture / "selection.tabletop-selection.ron"
+    projection_json = fixture / "character.tabletop-projection.json"
+    projection_ron = fixture / "character.tabletop-projection.ron"
+    state_json = fixture / "state.tabletop-state.json"
+    state_ron = fixture / "state.tabletop-state.ron"
+    request_json = fixture / "request.tabletop-request.json"
+    request_ron = fixture / "request.tabletop-request.ron"
+    receipt_json = fixture / "receipt.tabletop-receipt.json"
+    receipt_ron = fixture / "receipt.tabletop-receipt.ron"
+
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-tabletop",
+            "--example",
+            "tabletop_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    for artifact in (manifest_json, manifest_ron):
+        run([str(tool), "validate", "manifest", str(artifact.relative_to(ROOT))])
+    for artifact in (selection_json, selection_ron):
+        run(
+            [
+                str(tool),
+                "validate",
+                "selection",
+                str(artifact.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+            ]
+        )
+    for artifact in (projection_json, projection_ron):
+        run(
+            [
+                str(tool),
+                "validate",
+                "projection",
+                str(artifact.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+            ]
+        )
+    for artifact in (state_json, state_ron):
+        run(
+            [
+                str(tool),
+                "validate",
+                "state",
+                str(artifact.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+            ]
+        )
+    for artifact, state in ((request_json, state_json), (request_ron, state_ron)):
+        run(
+            [
+                str(tool),
+                "validate",
+                "request",
+                str(artifact.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+                "--state",
+                str(state.relative_to(ROOT)),
+            ]
+        )
+    for artifact in (receipt_json, receipt_ron):
+        run(
+            [
+                str(tool),
+                "validate",
+                "receipt",
+                str(artifact.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+                "--request",
+                str(request_json.relative_to(ROOT)),
+            ]
+        )
+    run(
+        [
+            str(tool),
+            "license-gate",
+            str(manifest_json.relative_to(ROOT)),
+            "--source-artifact",
+            str((fixture / "source/synthetic-rules.txt").relative_to(ROOT)),
+            "--license-text",
+            str((fixture / "LICENSE").relative_to(ROOT)),
+        ]
+    )
+
+    schemas = {
+        "manifest": "weave-tabletop-adapter-manifest-v1.schema.json",
+        "selection": "weave-tabletop-adapter-selection-v1.schema.json",
+        "projection": "weave-tabletop-character-projection-v1.schema.json",
+        "state": "weave-tabletop-state-v1.schema.json",
+        "request": "weave-tabletop-resolution-request-v1.schema.json",
+        "receipt": "weave-tabletop-resolution-receipt-v1.schema.json",
+    }
+    with tempfile.TemporaryDirectory(prefix="weave-tabletop-contract-") as temporary:
+        workspace = Path(temporary)
+        for kind, name in schemas.items():
+            generated = workspace / name
+            run([str(tool), "schema", kind, "--output", str(generated)])
+            if generated.read_bytes() != (ROOT / "schemas" / name).read_bytes():
+                raise DocsError(f"checked tabletop schema is stale: {name}")
+        runtime = workspace / "runtime.tabletop-receipt.json"
+        run(
+            [
+                str(tool),
+                "project-events",
+                str(receipt_json.relative_to(ROOT)),
+                "--manifest",
+                str(manifest_json.relative_to(ROOT)),
+                "--audience",
+                "runtime",
+                "--output",
+                str(runtime),
+            ]
+        )
+        if runtime.read_bytes() != (fixture / "runtime.tabletop-receipt.json").read_bytes():
+            raise DocsError("checked tabletop runtime event projection is stale")
+        compiled = workspace / "lantern-trail.story.json"
+        run(
+            [
+                str(compiler),
+                str((fixture / "runtime/lantern-trail.weave").relative_to(ROOT)),
+                "--module-manifest",
+                str((fixture / "runtime/module.weave-module.json").relative_to(ROOT)),
+                "--module-pack",
+                str((fixture / "runtime/lumen_reed.weave-domain.json").relative_to(ROOT)),
+                "--format",
+                "json",
+                "--output",
+                str(compiled),
+            ]
+        )
+        if compiled.read_bytes() != (fixture / "runtime/lantern-trail.story.json").read_bytes():
+            raise DocsError("checked tabletop source projection is stale")
+
+    manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
+    selection = json.loads(selection_json.read_text(encoding="utf-8"))
+    projection = json.loads(projection_json.read_text(encoding="utf-8"))
+    runtime = json.loads(
+        (fixture / "runtime.tabletop-receipt.json").read_text(encoding="utf-8")
+    )
+    if (
+        manifest.get("extension_surface", {}).get("kind")
+        != "declarative_data_with_registered_resolver"
+        or manifest.get("provenance", {}).get("license") != "MIT"
+        or len(selection.get("primary", [])) != 1
+        or projection.get("canonical_character_write_back") is not False
+        or sum(event.get("payload") is not None for event in runtime.get("events", []))
+        != 1
+    ):
+        raise DocsError(
+            "tabletop fixture omitted declarative isolation, exact selection, write-back prohibition, or runtime redaction"
+        )
+    print(
+        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixture, typed event visibility, and source-license gate",
+        flush=True,
+    )
+
+
 def run_finite_examples() -> None:
     """Exercise the non-interactive Rust example programs advertised by the site."""
 
@@ -2675,6 +2879,12 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-alignment-proposal-v1.schema.json",
         "weave-character-alignment-review-v1.schema.json",
         "weave-character-alignment-receipt-v1.schema.json",
+        "weave-tabletop-adapter-manifest-v1.schema.json",
+        "weave-tabletop-adapter-selection-v1.schema.json",
+        "weave-tabletop-character-projection-v1.schema.json",
+        "weave-tabletop-state-v1.schema.json",
+        "weave-tabletop-resolution-request-v1.schema.json",
+        "weave-tabletop-resolution-receipt-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")
@@ -2856,6 +3066,7 @@ def main() -> None:
     compile_examples()
     verify_community_package()
     verify_domain_contract()
+    verify_tabletop_contract()
     run_finite_examples()
     verify_pixijs_domain_consumer()
     rustdoc = build_rustdoc()

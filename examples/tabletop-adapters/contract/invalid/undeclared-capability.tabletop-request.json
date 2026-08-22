@@ -1,0 +1,48 @@
+{
+  "resolver_format_version": 1,
+  "request_id": "crossing_attempt",
+  "adapter": {
+    "id": "org.weave.tabletop.lantern_trail",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+  },
+  "operation": "advance",
+  "capability": "advancement",
+  "definition_sha256": "505533cbeaeadc0003d097bdd54b6bd16ffe602604d56866cce7e311e4c24419",
+  "definition": {
+    "kind": "object",
+    "value": {
+      "approach": {
+        "kind": "symbol",
+        "value": "careful"
+      },
+      "call_sign": {
+        "kind": "string",
+        "value": "Lumen Reed"
+      },
+      "focus": {
+        "kind": "number",
+        "value": 3.0
+      },
+      "resilience": {
+        "kind": "number",
+        "value": 2.0
+      }
+    }
+  },
+  "expected_state_sha256": "b42d334c3a957aa64567f7abac4983d58d5247bffa18b82659b1f6433207d207",
+  "input": {
+    "kind": "object",
+    "value": {
+      "bonus": {
+        "kind": "number",
+        "value": 2.0
+      },
+      "difficulty": {
+        "kind": "number",
+        "value": 6.0
+      }
+    }
+  }
+}

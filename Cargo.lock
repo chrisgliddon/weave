@@ -8830,6 +8830,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-tabletop"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "ron",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tempfile",
+ "thiserror 2.0.20",
+ "url",
+ "weave-character",
+ "weave-compiler",
+ "weave-core",
+ "weave-domain",
+]
+
+[[package]]
 name = "weave-web"
 version = "0.1.0"
 dependencies = [
@@ -8897,6 +8917,7 @@ dependencies = [
  "weave-fmt",
  "weave-patterns",
  "weave-runtime",
+ "weave-tabletop",
  "weave-world",
 ]
 

@@ -1,0 +1,335 @@
+{
+  "manifest_format_version": 1,
+  "id": "org.weave.tabletop.lantern_trail",
+  "version": "1.0.0",
+  "schema_version": 1,
+  "namespace": "lantern_trail",
+  "title": "Lantern Trail Synthetic Adapter",
+  "compatibility_label": "Original Weave contract fixture; no external system compatibility",
+  "summary": "A deliberately tiny original rules procedure that tests portable creation, state, entropy, events, visibility, and replay without representing a published game.",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "character_contract_version": ">=1.0.0, <2.0.0",
+  "extension_surface": {
+    "kind": "declarative_data_with_registered_resolver",
+    "resolver_contract_version": 1
+  },
+  "capabilities": [
+    {
+      "capability": "character_creation",
+      "version": 1
+    },
+    {
+      "capability": "derived_values",
+      "version": 1
+    },
+    {
+      "capability": "checks_and_conflicts",
+      "version": 1
+    },
+    {
+      "capability": "resources_and_conditions",
+      "version": 1
+    }
+  ],
+  "types": {},
+  "definition_type": {
+    "kind": "object",
+    "fields": {
+      "approach": {
+        "type": {
+          "kind": "symbol",
+          "values": [
+            "bold",
+            "careful",
+            "clever"
+          ]
+        },
+        "required": true,
+        "description": "Explicit fictional approach."
+      },
+      "call_sign": {
+        "type": {
+          "kind": "string",
+          "min_length": 1,
+          "max_length": 80
+        },
+        "required": true,
+        "description": "Adapter-owned display call sign."
+      },
+      "focus": {
+        "type": {
+          "kind": "number",
+          "integer": true,
+          "minimum": 0.0,
+          "maximum": 4.0
+        },
+        "required": true,
+        "description": "Explicit Focus rating."
+      },
+      "resilience": {
+        "type": {
+          "kind": "number",
+          "integer": true,
+          "minimum": 0.0,
+          "maximum": 4.0
+        },
+        "required": true,
+        "description": "Explicit Resilience rating."
+      }
+    }
+  },
+  "state_type": {
+    "kind": "object",
+    "fields": {
+      "conditions": {
+        "type": {
+          "kind": "list",
+          "items": {
+            "kind": "symbol",
+            "values": [
+              "fatigued",
+              "rattled"
+            ]
+          },
+          "min_items": 0,
+          "max_items": 2
+        },
+        "required": true,
+        "description": "Current adapter-owned conditions."
+      },
+      "last_total": {
+        "type": {
+          "kind": "number",
+          "integer": true,
+          "minimum": -2.0,
+          "maximum": 9.0
+        },
+        "required": true,
+        "description": "Most recent resolved total."
+      },
+      "momentum": {
+        "type": {
+          "kind": "number",
+          "integer": true,
+          "minimum": 0.0,
+          "maximum": 6.0
+        },
+        "required": true,
+        "description": "Mutable fictional momentum."
+      }
+    }
+  },
+  "creation_steps": [
+    {
+      "id": "identity",
+      "title": "Trail identity",
+      "description": "Choose adapter-owned identity details; do not infer them from Character personality.",
+      "required_capability": "character_creation",
+      "fields": [
+        {
+          "id": "call_sign",
+          "label": "Call sign",
+          "description": "Explicit adapter-owned Call sign value.",
+          "value_type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 80
+          },
+          "required": true,
+          "authority": "adapter_owned"
+        },
+        {
+          "id": "approach",
+          "label": "Approach",
+          "description": "Explicit adapter-owned Approach value.",
+          "value_type": {
+            "kind": "symbol",
+            "values": [
+              "bold",
+              "careful",
+              "clever"
+            ]
+          },
+          "required": true,
+          "authority": "adapter_owned"
+        }
+      ]
+    },
+    {
+      "id": "ratings",
+      "title": "Trail ratings",
+      "description": "Assign the two adapter ratings explicitly without personality-derived defaults.",
+      "required_capability": "character_creation",
+      "fields": [
+        {
+          "id": "focus",
+          "label": "Focus",
+          "description": "Explicit adapter-owned Focus value.",
+          "value_type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 4.0
+          },
+          "required": true,
+          "authority": "adapter_owned"
+        },
+        {
+          "id": "resilience",
+          "label": "Resilience",
+          "description": "Explicit adapter-owned Resilience value.",
+          "value_type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 4.0
+          },
+          "required": true,
+          "authority": "adapter_owned"
+        }
+      ]
+    }
+  ],
+  "operations": {
+    "attempt": {
+      "id": "attempt",
+      "title": "Resolve an attempt",
+      "description": "Consume one deterministic draw, compare an explicit total, and emit visibility-scoped typed events.",
+      "required_capability": "checks_and_conflicts",
+      "request_type": {
+        "kind": "object",
+        "fields": {
+          "bonus": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": -3.0,
+              "maximum": 3.0
+            },
+            "required": true,
+            "description": "Explicit attempt bonus."
+          },
+          "difficulty": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 2.0,
+              "maximum": 12.0
+            },
+            "required": true,
+            "description": "Explicit target difficulty."
+          }
+        }
+      },
+      "event_kinds": [
+        "attempt_resolved",
+        "private_roll",
+        "resource_changed"
+      ],
+      "consumes_entropy": true
+    }
+  },
+  "event_types": {
+    "attempt_resolved": {
+      "kind": "object",
+      "fields": {
+        "outcome": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "failure",
+              "success"
+            ]
+          },
+          "required": true,
+          "description": "Public outcome."
+        },
+        "total": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": -2.0,
+            "maximum": 9.0
+          },
+          "required": true,
+          "description": "Resolved total."
+        }
+      }
+    },
+    "private_roll": {
+      "kind": "object",
+      "fields": {
+        "die": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 1.0,
+            "maximum": 6.0
+          },
+          "required": true,
+          "description": "Authority-host entropy result."
+        }
+      }
+    },
+    "resource_changed": {
+      "kind": "object",
+      "fields": {
+        "momentum": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 6.0
+          },
+          "required": true,
+          "description": "Remaining fictional momentum."
+        }
+      }
+    }
+  },
+  "visibility": {
+    "runtime": [
+      "public"
+    ],
+    "authoring": [
+      "public",
+      "authoring"
+    ],
+    "authority_host": [
+      "public",
+      "authoring",
+      "host_only"
+    ]
+  },
+  "migrations": [],
+  "provenance": {
+    "source_class": "original",
+    "source_url": "https://github.com/chrisgliddon/weave",
+    "exact_artifact": "source/synthetic-rules.txt",
+    "revision": "weave-tabletop-contract-v1",
+    "retrieved_on": "2026-08-22",
+    "sha256": "2dce380b2d315cf56fc7f821e10f26370d43ca63cdefc5afc3ed0d3eb8891949",
+    "license": "MIT",
+    "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+    "covered_files_or_sections": [
+      "Complete independently authored Lantern Trail synthetic fixture"
+    ],
+    "exclusions": [
+      "community_supplements",
+      "logos",
+      "trade_dress",
+      "artwork",
+      "layout",
+      "unverified_assets"
+    ],
+    "attribution": "Lantern Trail synthetic contract fixture, authored for Weave under MIT.",
+    "required_license_text": {
+      "artifact": "LICENSE",
+      "sha256": "d28e11b943fd3cddc396f77571109502938636b2a792e6055e585d38499d4cfb"
+    },
+    "notices": [
+      "Factual compatibility labels must not imply endorsement."
+    ],
+    "compatibility_statement": "This original fixture has no external ruleset compatibility and names no third-party product."
+  }
+}

@@ -24,6 +24,7 @@ weave-domain = { path = "../crates/weave-domain" }
 weave-fmt = { path = "../crates/weave-fmt" }
 weave-patterns = { path = "../crates/weave-patterns" }
 weave-runtime = { path = "../crates/weave-runtime" }
+weave-tabletop = { path = "../crates/weave-tabletop" }
 weave-world = { path = "../crates/weave-world" }
 
 [target.'cfg(target_os = "macos")'.dependencies]

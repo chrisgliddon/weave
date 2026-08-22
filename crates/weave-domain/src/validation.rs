@@ -176,6 +176,21 @@ pub fn validate_effective_values(
     validate_entity_collections(manifest, values)
 }
 
+/// Validate one bounded portable value against a closed type expression.
+///
+/// Companion domain crates use this entry point for their immutable definitions, mutable state,
+/// and resolver payloads without manufacturing a synthetic module manifest. Named references are
+/// resolved only from the explicit `types` map supplied by the caller.
+pub fn validate_typed_value(
+    path: &str,
+    value: &DomainValue,
+    value_type: &TypeExpression,
+    types: &BTreeMap<String, TypeExpression>,
+) -> Result<(), DomainError> {
+    let mut nodes = 0;
+    validate_value(path, value, value_type, types, 0, &mut nodes)
+}
+
 /// Apply compile-time constant replacements to immutable pack defaults.
 ///
 /// Replacement order is canonicalized by path and duplicate paths fail closed. Intermediate

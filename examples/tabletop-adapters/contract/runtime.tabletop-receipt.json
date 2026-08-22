@@ -1,0 +1,93 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.lantern_trail",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+  },
+  "operation": "attempt",
+  "capability": "checks_and_conflicts",
+  "request_sha256": "4da9baa7d3cf9a1d4e6d6d1031204e76719160199101c47b68478bbc0e6c2abe",
+  "before_state_sha256": "b42d334c3a957aa64567f7abac4983d58d5247bffa18b82659b1f6433207d207",
+  "before_revision": 0,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 20260822,
+    "cursor": 0
+  },
+  "after_state_sha256": "e18fcbf6ab936664c1f58fe364edbe211259aa6ad07f88713e284db72210d9c6",
+  "entropy_consumed": 1,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.lantern_trail",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+    },
+    "owner_id": "org.weave.character.lumen_reed",
+    "definition_sha256": "505533cbeaeadc0003d097bdd54b6bd16ffe602604d56866cce7e311e4c24419",
+    "revision": 1,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 20260822,
+      "cursor": 1
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "conditions": {
+          "kind": "list",
+          "value": []
+        },
+        "last_total": {
+          "kind": "number",
+          "value": 5.0
+        },
+        "momentum": {
+          "kind": "number",
+          "value": 1.0
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "attempt_resolved",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "954415ade2e09fe6b73221bd7b677a46782f15868a6467d38a578bf32fa6ad30",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "outcome": {
+            "kind": "symbol",
+            "value": "failure"
+          },
+          "total": {
+            "kind": "number",
+            "value": 5.0
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "private_roll",
+      "capability": "checks_and_conflicts",
+      "visibility": "host_only",
+      "payload_sha256": "109430cf0f22116bb5abfad602e1cd2f296aae24e77110fc94dfb43cf292cda4",
+      "payload": null
+    },
+    {
+      "sequence": 2,
+      "kind": "resource_changed",
+      "capability": "checks_and_conflicts",
+      "visibility": "authoring",
+      "payload_sha256": "72f625bfff05a03f5d7f532317a099c0527c2ca78ee6b8f41ea50dcc8648c28b",
+      "payload": null
+    }
+  ]
+}

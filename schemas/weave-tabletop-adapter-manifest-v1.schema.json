@@ -1,0 +1,742 @@
+{
+  "$defs": {
+    "AdapterExtensionSurface": {
+      "description": "Deliberately narrow extension surface.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Packs are inert data. A host may explicitly compile and register trusted resolver code.",
+          "properties": {
+            "kind": {
+              "const": "declarative_data_with_registered_resolver",
+              "type": "string"
+            },
+            "resolver_contract_version": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "resolver_contract_version"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AdapterMigrationDeclaration": {
+      "additionalProperties": false,
+      "description": "A reviewed migration advertised by an adapter.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "from_adapter_id": {
+          "type": "string"
+        },
+        "from_schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "from_version": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "preserves_canonical_character": {
+          "type": "boolean"
+        },
+        "reviewed": {
+          "type": "boolean"
+        },
+        "to_schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "from_adapter_id",
+        "from_version",
+        "from_schema_version",
+        "to_schema_version",
+        "reviewed",
+        "preserves_canonical_character",
+        "description"
+      ],
+      "type": "object"
+    },
+    "AdapterProvenance": {
+      "additionalProperties": false,
+      "description": "Conservative provenance record for an adapter's complete public source boundary.",
+      "properties": {
+        "attribution": {
+          "type": "string"
+        },
+        "compatibility_statement": {
+          "type": "string"
+        },
+        "covered_files_or_sections": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exact_artifact": {
+          "type": "string"
+        },
+        "exclusions": {
+          "items": {
+            "$ref": "#/$defs/ExcludedMaterial"
+          },
+          "type": "array"
+        },
+        "license": {
+          "type": "string"
+        },
+        "license_url": {
+          "type": "string"
+        },
+        "notices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_license_text": {
+          "$ref": "#/$defs/LicenseTextReference"
+        },
+        "retrieved_on": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "source_class": {
+          "$ref": "#/$defs/AdapterSourceClass"
+        },
+        "source_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_class",
+        "source_url",
+        "exact_artifact",
+        "revision",
+        "retrieved_on",
+        "sha256",
+        "license",
+        "license_url",
+        "covered_files_or_sections",
+        "exclusions",
+        "attribution",
+        "required_license_text",
+        "notices",
+        "compatibility_statement"
+      ],
+      "type": "object"
+    },
+    "AdapterSourceClass": {
+      "description": "Why a provenance source is eligible for distribution.",
+      "enum": [
+        "original",
+        "verified_cc0",
+        "separately_licensed_apache2"
+      ],
+      "type": "string"
+    },
+    "CreationField": {
+      "additionalProperties": false,
+      "description": "One field in a generic editor creation panel.",
+      "properties": {
+        "authority": {
+          "$ref": "#/$defs/CreationFieldAuthority"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "value_type": {
+          "$ref": "#/$defs/TypeExpression"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "value_type",
+        "required",
+        "authority"
+      ],
+      "type": "object"
+    },
+    "CreationFieldAuthority": {
+      "description": "Authority of one creation field.",
+      "enum": [
+        "adapter_owned",
+        "canonical_suggestion"
+      ],
+      "type": "string"
+    },
+    "CreationStep": {
+      "additionalProperties": false,
+      "description": "One ordered generic character-creation panel.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/CreationField"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "required_capability": {
+          "$ref": "#/$defs/TabletopCapability"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "required_capability",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "EventVisibility": {
+      "description": "Visibility assigned to one structured event payload.",
+      "enum": [
+        "public",
+        "authoring",
+        "host_only"
+      ],
+      "type": "string"
+    },
+    "ExcludedMaterial": {
+      "description": "Material categories that must remain outside every adapter bundle unless separately reviewed.",
+      "enum": [
+        "community_supplements",
+        "logos",
+        "trade_dress",
+        "artwork",
+        "layout",
+        "unverified_assets"
+      ],
+      "type": "string"
+    },
+    "FieldDeclaration": {
+      "additionalProperties": false,
+      "description": "One field in a closed object type.",
+      "properties": {
+        "description": {
+          "description": "Author-facing field purpose.",
+          "type": "string"
+        },
+        "required": {
+          "description": "Whether the field must be present.",
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/TypeExpression",
+          "description": "Field value type."
+        }
+      },
+      "required": [
+        "type",
+        "required",
+        "description"
+      ],
+      "type": "object"
+    },
+    "HostVisibilityPolicy": {
+      "additionalProperties": false,
+      "description": "Explicit visibility matrix. Validators require the conservative v1 matrix exactly.",
+      "properties": {
+        "authoring": {
+          "items": {
+            "$ref": "#/$defs/EventVisibility"
+          },
+          "type": "array"
+        },
+        "authority_host": {
+          "items": {
+            "$ref": "#/$defs/EventVisibility"
+          },
+          "type": "array"
+        },
+        "runtime": {
+          "items": {
+            "$ref": "#/$defs/EventVisibility"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "runtime",
+        "authoring",
+        "authority_host"
+      ],
+      "type": "object"
+    },
+    "LicenseTextReference": {
+      "additionalProperties": false,
+      "description": "Exact redistributed license text or notice file.",
+      "properties": {
+        "artifact": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "ResolverOperationDeclaration": {
+      "additionalProperties": false,
+      "description": "One resolver operation declared without host-specific types.",
+      "properties": {
+        "consumes_entropy": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "event_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "request_type": {
+          "$ref": "#/$defs/TypeExpression"
+        },
+        "required_capability": {
+          "$ref": "#/$defs/TabletopCapability"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "required_capability",
+        "request_type",
+        "event_kinds",
+        "consumes_entropy"
+      ],
+      "type": "object"
+    },
+    "TabletopCapability": {
+      "description": "Closed capability vocabulary shared by syntax, editor, resolver, and host integrations.",
+      "enum": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "advancement",
+        "encounters",
+        "clocks",
+        "scenes",
+        "factions",
+        "world_state",
+        "campaign_state"
+      ],
+      "type": "string"
+    },
+    "TabletopCapabilityDeclaration": {
+      "additionalProperties": false,
+      "description": "One supported capability contract.",
+      "properties": {
+        "capability": {
+          "$ref": "#/$defs/TabletopCapability"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "capability",
+        "version"
+      ],
+      "type": "object"
+    },
+    "TypeExpression": {
+      "description": "Closed, host-independent type language for domain values.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number with optional bounds.",
+          "properties": {
+            "integer": {
+              "description": "Require an integral numeric value.",
+              "type": "boolean"
+            },
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "maximum": {
+              "description": "Inclusive upper bound.",
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "minimum": {
+              "description": "Inclusive lower bound.",
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "integer"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text with scalar-length bounds.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "max_length": {
+              "description": "Maximum Unicode-scalar count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_length": {
+              "description": "Minimum Unicode-scalar count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "min_length",
+            "max_length"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom from a closed, sorted set.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "values": {
+              "description": "Allowed symbolic values.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "values"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Homogeneous, bounded ordered values.",
+          "properties": {
+            "items": {
+              "$ref": "#/$defs/TypeExpression",
+              "description": "Element type."
+            },
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "max_items": {
+              "description": "Maximum item count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_items": {
+              "description": "Minimum item count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "items",
+            "min_items",
+            "max_items"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Bounded stable-identifier map with homogeneous values.",
+          "properties": {
+            "kind": {
+              "const": "map",
+              "type": "string"
+            },
+            "max_entries": {
+              "description": "Maximum entry count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_entries": {
+              "description": "Minimum entry count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "values": {
+              "$ref": "#/$defs/TypeExpression",
+              "description": "Value type shared by every map entry."
+            }
+          },
+          "required": [
+            "kind",
+            "values",
+            "min_entries",
+            "max_entries"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "fields": {
+              "additionalProperties": {
+                "$ref": "#/$defs/FieldDeclaration"
+              },
+              "description": "Declared fields, sorted by name in serialized output.",
+              "type": "object"
+            },
+            "kind": {
+              "const": "object",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "fields"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Reference to a manifest-local named type.",
+          "properties": {
+            "kind": {
+              "const": "named",
+              "type": "string"
+            },
+            "name": {
+              "description": "Name in [`ModuleManifest::types`].",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-adapter-manifest:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete portable adapter contract.",
+  "properties": {
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/TabletopCapabilityDeclaration"
+      },
+      "type": "array"
+    },
+    "character_contract_version": {
+      "type": "string"
+    },
+    "compatibility_label": {
+      "type": "string"
+    },
+    "creation_steps": {
+      "items": {
+        "$ref": "#/$defs/CreationStep"
+      },
+      "type": "array"
+    },
+    "definition_type": {
+      "$ref": "#/$defs/TypeExpression"
+    },
+    "event_types": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypeExpression"
+      },
+      "type": "object"
+    },
+    "extension_surface": {
+      "$ref": "#/$defs/AdapterExtensionSurface"
+    },
+    "id": {
+      "type": "string"
+    },
+    "manifest_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "migrations": {
+      "items": {
+        "$ref": "#/$defs/AdapterMigrationDeclaration"
+      },
+      "type": "array"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "operations": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ResolverOperationDeclaration"
+      },
+      "type": "object"
+    },
+    "provenance": {
+      "$ref": "#/$defs/AdapterProvenance"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "state_type": {
+      "$ref": "#/$defs/TypeExpression"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "types": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TypeExpression"
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "string"
+    },
+    "visibility": {
+      "$ref": "#/$defs/HostVisibilityPolicy"
+    },
+    "weave_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_format_version",
+    "id",
+    "version",
+    "schema_version",
+    "namespace",
+    "title",
+    "compatibility_label",
+    "summary",
+    "weave_version",
+    "character_contract_version",
+    "extension_surface",
+    "capabilities",
+    "types",
+    "definition_type",
+    "state_type",
+    "creation_steps",
+    "operations",
+    "event_types",
+    "visibility",
+    "migrations",
+    "provenance"
+  ],
+  "title": "Weave Tabletop Adapter Manifest v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

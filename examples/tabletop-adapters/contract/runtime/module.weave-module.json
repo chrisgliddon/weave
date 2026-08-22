@@ -1,0 +1,266 @@
+{
+  "contract_version": 1,
+  "pack_format_version": 1,
+  "id": "org.weave.tabletop.lantern_trail",
+  "version": "1.0.0",
+  "namespace": "lantern_trail",
+  "title": "Lantern Trail Synthetic Adapter",
+  "summary": "A deliberately tiny original rules procedure that tests portable creation, state, entropy, events, visibility, and replay without representing a published game.",
+  "authors": [
+    {
+      "name": "Declared adapter source steward",
+      "url": "https://github.com/chrisgliddon/weave"
+    }
+  ],
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "capabilities": [
+    {
+      "id": "data",
+      "version": 1
+    },
+    {
+      "id": "editor_schema",
+      "version": 1
+    },
+    {
+      "id": "operations",
+      "version": 1
+    },
+    {
+      "id": "state",
+      "version": 1
+    }
+  ],
+  "dependencies": [],
+  "types": {},
+  "exports": {
+    "adapter": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "content_sha256": {
+            "type": {
+              "kind": "string",
+              "min_length": 64,
+              "max_length": 64
+            },
+            "required": true,
+            "description": "Exact validated manifest SHA-256."
+          },
+          "id": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 255
+            },
+            "required": true,
+            "description": "Globally namespaced adapter id."
+          },
+          "schema_version": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 1.0,
+              "maximum": 4294967295.0
+            },
+            "required": true,
+            "description": "Mutable state schema version."
+          },
+          "version": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 64
+            },
+            "required": true,
+            "description": "Exact adapter semantic version."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Exact adapter coordinate."
+    },
+    "capabilities": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "character_creation": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "checks_and_conflicts": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "derived_values": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "resources_and_conditions": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Only capabilities explicitly declared by this adapter release."
+    },
+    "definition": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "approach": {
+            "type": {
+              "kind": "symbol",
+              "values": [
+                "bold",
+                "careful",
+                "clever"
+              ]
+            },
+            "required": true,
+            "description": "Explicit fictional approach."
+          },
+          "call_sign": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 80
+            },
+            "required": true,
+            "description": "Adapter-owned display call sign."
+          },
+          "focus": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 4.0
+            },
+            "required": true,
+            "description": "Explicit Focus rating."
+          },
+          "resilience": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 4.0
+            },
+            "required": true,
+            "description": "Explicit Resilience rating."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Immutable adapter-owned character definition."
+    },
+    "state": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "conditions": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "symbol",
+                "values": [
+                  "fatigued",
+                  "rattled"
+                ]
+              },
+              "min_items": 0,
+              "max_items": 2
+            },
+            "required": true,
+            "description": "Current adapter-owned conditions."
+          },
+          "last_total": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": -2.0,
+              "maximum": 9.0
+            },
+            "required": true,
+            "description": "Most recent resolved total."
+          },
+          "momentum": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 6.0
+            },
+            "required": true,
+            "description": "Mutable fictional momentum."
+          }
+        }
+      },
+      "required": true,
+      "source": "state",
+      "description": "Versioned mutable adapter-owned state."
+    }
+  },
+  "authoring": {
+    "entity_collections": [],
+    "read_only_paths": [
+      {
+        "path": [
+          "adapter"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      },
+      {
+        "path": [
+          "capabilities"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      },
+      {
+        "path": [
+          "definition"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "adapter_source",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "weave-tabletop-contract-v1",
+        "sha256": "2dce380b2d315cf56fc7f821e10f26370d43ca63cdefc5afc3ed0d3eb8891949",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Lantern Trail synthetic contract fixture, authored for Weave under MIT.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "manifest": [
+        "adapter_source"
+      ]
+    }
+  }
+}

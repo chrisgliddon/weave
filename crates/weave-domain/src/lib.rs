@@ -35,7 +35,7 @@ pub use registry::{
 };
 pub use validation::{
     apply_authored_overrides, resolve_module_order, validate_effective_values, validate_manifest,
-    validate_pack, validate_provenance,
+    validate_pack, validate_provenance, validate_typed_value,
 };
 
 const MANIFEST_SCHEMA_ID: &str = "urn:weave:schema:domain-module-manifest:1";

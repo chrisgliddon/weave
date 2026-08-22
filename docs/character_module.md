@@ -160,7 +160,7 @@ Every extension header declares a namespace, positive version, authority, ration
 | `relationships` | Stable source/target character ids, namespaced kind, confidence | An owning profile cannot create a self-edge or impersonate another source id |
 | `alignment_view` | Exact pack/review/application fingerprints and approved pack-defined values | Rejected/withheld values stay in the receipt; labels are non-diagnostic and cannot mutate canon |
 | `date_context` | Exact context pack/version/hash and accepted record ids | Context is an authoring cue, never causal personality evidence |
-| `tabletop` | Preserved inactive portable payload | Ruleset adapters interpret a separately versioned contract |
+| `tabletop` | Preserved inactive portable payload | The separately versioned [tabletop adapter contract](tabletop_adapters.md) owns capabilities, definition, state, events, and switching; Character canon remains read-only |
 | `opaque` | Preserved inactive portable payload | Unknown semantics are retained but never executed or written back |
 
 Extension payloads use bounded, finite `DomainValue` trees. Asset paths are project-relative and reject absolute paths, empty segments, dot segments, traversal, and backslashes. Relationship targets, role taxonomies, expression references, and alignment views remain namespaced and independently inspectable.

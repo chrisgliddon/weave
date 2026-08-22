@@ -12,6 +12,7 @@ pub mod preview;
 pub mod project;
 pub mod state;
 pub mod sync;
+pub mod tabletop;
 pub mod temporal_context;
 pub mod text_editor;
 pub mod text_view;
@@ -50,6 +51,7 @@ pub use state::{
     menu_definitions,
 };
 pub use sync::{CanonicalProjectModel, GraphEdit, GraphSync, SyncConflict, TextSync};
+pub use tabletop::{TabletopEditorCatalog, TabletopPanelInspection};
 pub use temporal_context::TemporalContextSession;
 pub use text_editor::{SyntaxKind, SyntaxToken, TextBuffer, highlight_source};
 pub use text_view::TextSurface;

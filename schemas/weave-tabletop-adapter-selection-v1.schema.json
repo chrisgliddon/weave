@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-adapter-selection:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Project-level adapter installation and primary selection.\n\n`primary` is a vector only so malformed/conflicting input can be represented and diagnosed;\nvalidation permits zero or one entry.",
+  "properties": {
+    "installed": {
+      "items": {
+        "$ref": "#/$defs/ResolvedAdapter"
+      },
+      "type": "array"
+    },
+    "primary": {
+      "items": {
+        "$ref": "#/$defs/ResolvedAdapter"
+      },
+      "type": "array"
+    },
+    "selection_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "selection_format_version",
+    "installed",
+    "primary"
+  ],
+  "title": "Weave Tabletop Adapter Selection v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

@@ -1,0 +1,435 @@
+{
+  "version": 4,
+  "source_name": "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 113,
+        "end": 147,
+        "line": 7,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_id",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 147,
+        "end": 191,
+        "line": 8,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_version",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "version"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 191,
+        "end": 241,
+        "line": 9,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "content_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 241,
+        "end": 304,
+        "line": 10,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "checks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "capabilities",
+              "checks_and_conflicts"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 304,
+        "end": 347,
+        "line": 11,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "call_sign",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "call_sign"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 347,
+        "end": 382,
+        "line": 12,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "focus",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "focus"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 382,
+        "end": 418,
+        "line": 13,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "momentum",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "momentum"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "rules": {
+      "id": "org.weave.tabletop.lantern_trail",
+      "version": "1.0.0",
+      "pack_id": "lumen_reed",
+      "pack_version": "1.0.0",
+      "exports": {
+        "adapter": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "content_sha256": {
+                "kind": "string",
+                "value": "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec"
+              },
+              "id": {
+                "kind": "string",
+                "value": "org.weave.tabletop.lantern_trail"
+              },
+              "schema_version": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "version": {
+                "kind": "string",
+                "value": "1.0.0"
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "character_creation": {
+                "kind": "bool",
+                "value": true
+              },
+              "checks_and_conflicts": {
+                "kind": "bool",
+                "value": true
+              },
+              "derived_values": {
+                "kind": "bool",
+                "value": true
+              },
+              "resources_and_conditions": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        },
+        "definition": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "approach": {
+                "kind": "symbol",
+                "value": "careful"
+              },
+              "call_sign": {
+                "kind": "string",
+                "value": "Lumen Reed"
+              },
+              "focus": {
+                "kind": "number",
+                "value": 3.0
+              },
+              "resilience": {
+                "kind": "number",
+                "value": 2.0
+              }
+            }
+          }
+        },
+        "state": {
+          "source": "state",
+          "value": {
+            "kind": "object",
+            "value": {
+              "conditions": {
+                "kind": "list",
+                "value": []
+              },
+              "last_total": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "momentum": {
+                "kind": "number",
+                "value": 2.0
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 433,
+            "end": 661,
+            "line": 16,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "path",
+                    "value": [
+                      "checks_supported"
+                    ]
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 456,
+                        "end": 566,
+                        "line": 17,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "call_sign"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " uses "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_id"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "@"
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_version"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " ("
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_sha256"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ") with Focus "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "focus"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " and "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "momentum"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " Momentum."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 579,
+                    "end": 659,
+                    "line": 19,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "This branch is unreachable because the selected adapter does not declare checks."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 662,
+            "end": 668,
+            "line": 21,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

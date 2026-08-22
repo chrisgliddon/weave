@@ -1,0 +1,21 @@
+module rules {
+    id: "org.weave.tabletop.lantern_trail"
+    version: "=1.0.0"
+    pack: "lumen_reed@=1.0.0"
+}
+
+VAR adapter_id = rules.adapter.id
+VAR adapter_version = rules.adapter.version
+VAR adapter_sha256 = rules.adapter.content_sha256
+VAR checks_supported = rules.capabilities.checks_and_conflicts
+VAR call_sign = rules.definition.call_sign
+VAR focus = rules.definition.focus
+VAR momentum = rules.state.momentum
+
+=== start ===
+{checks_supported:
+    {call_sign} uses {adapter_id}@{adapter_version} ({adapter_sha256}) with Focus {focus} and {momentum} Momentum.
+- else:
+    This branch is unreachable because the selected adapter does not declare checks.
+}
+-> END

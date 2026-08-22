@@ -1,0 +1,61 @@
+(
+    projection_format_version: 1,
+    character_id: "org.weave.character.lumen_reed",
+    canonical_profile_sha256: "97d6751358b63e108324238e00fb8505d69059c7d8015d293537a5b725a91cfe",
+    canonical_character_write_back: false,
+    active: Some((
+        adapter: (
+            id: "org.weave.tabletop.lantern_trail",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "ce4d1ba6cfeddf84ffeff996fef6786590fb2decea920102d923ac5f803662ec",
+        ),
+        definition: (
+            kind: object,
+            value: {
+                "approach": (
+                    kind: symbol,
+                    value: "careful",
+                ),
+                "call_sign": (
+                    kind: string,
+                    value: "Lumen Reed",
+                ),
+                "focus": (
+                    kind: number,
+                    value: 3.0,
+                ),
+                "resilience": (
+                    kind: number,
+                    value: 2.0,
+                ),
+            },
+        ),
+        definition_sha256: "505533cbeaeadc0003d097bdd54b6bd16ffe602604d56866cce7e311e4c24419",
+        completed_creation_steps: [
+            "identity",
+            "ratings",
+        ],
+    )),
+    inactive: {},
+    suggestions: [
+        (
+            id: "possible_goal",
+            target_path: [
+                "canon",
+                "inner_life",
+                "goals",
+            ],
+            proposed_value: (
+                kind: string,
+                value: "Keep the trail lanterns lit through the long crossing.",
+            ),
+            explanation: "An optional fictional goal entered during adapter creation; it remains a reviewed suggestion and is not inferred from personality or applied to canon.",
+            source_paths: [
+                "adapter.definition.approach",
+            ],
+            decision: proposed,
+            rationale: None,
+        ),
+    ],
+)
