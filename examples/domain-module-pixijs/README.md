@@ -1,9 +1,11 @@
 # Domain module in PixiJS
 
 This PixiJS v8 example imports the canonical compiled JSON tracer, Weave World reference seed, and
-complete synthetic Weave Character profile. It decodes their tagged domain values and renders them
-with `Application` and `Text`. It reads the same trait variables as the Bevy example, labels OCEAN
-as derived and lossy, and has no dependency on the Weave Editor.
+complete synthetic Weave Character profile plus its reviewed temporal-context story. It decodes
+their tagged domain values and renders them with `Application` and `Text`. It reads the same trait
+variables as the Bevy example, labels OCEAN as derived and lossy, keeps fact lineage separate from
+original fictional-cue lineage, verifies temporal personality write-back is false, and has no
+dependency on the Weave Editor.
 
 ```bash
 cd examples/domain-module-pixijs

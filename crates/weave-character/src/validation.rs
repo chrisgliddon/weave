@@ -9,8 +9,8 @@ use crate::model::{
     CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar,
     CharacterDiagnostic, CharacterDiagnosticCode, CharacterExtension, CharacterOperation,
     CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterSuggestion,
-    CharacterTemplate, Confidence, DateContext, DiagnosticSeverity, ExpressionData,
-    ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, HexacoTrait,
+    CharacterTemplate, Confidence, DateContext, DateContextPackRef, DiagnosticSeverity,
+    ExpressionData, ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, HexacoTrait,
     IdentityPresentation, OceanView, OpaqueExtensionData, OpaqueInterpretation, RelationshipEdges,
     ReviewState, RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceDirection,
 };
@@ -406,7 +406,7 @@ fn validate_extension(
         }
         CharacterExtension::DateContext(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_date_context(namespace, &record.value)
+            validate_date_context(namespace, &record.value, lineage, &record.header.lineage)
         }
         CharacterExtension::Tabletop(record) | CharacterExtension::Opaque(record) => {
             validate_extension_record(namespace, record, lineage, true)?;
@@ -587,15 +587,166 @@ fn validate_relationships(
     Ok(())
 }
 
-fn validate_date_context(namespace: &str, value: &DateContext) -> Result<(), CharacterError> {
+fn validate_date_context(
+    namespace: &str,
+    value: &DateContext,
+    lineage: &BTreeSet<&str>,
+    header_lineage: &[String],
+) -> Result<(), CharacterError> {
     let path = format!("extensions.{namespace}.value");
-    validate_namespaced_id(&format!("{path}.context_pack"), &value.context_pack)?;
-    validate_semver(&format!("{path}.context_version"), &value.context_version)?;
-    validate_sha256(&format!("{path}.context_hash"), &value.context_hash)?;
+    let primary = DateContextPackRef {
+        id: value.context_pack.clone(),
+        version: value.context_version.clone(),
+        sha256: value.context_hash.clone(),
+    };
+    validate_date_context_pack_ref(&format!("{path}.context_pack"), &primary)?;
+    let mut prior: Option<&DateContextPackRef> = Some(&primary);
+    for pack in &value.additional_context_packs {
+        validate_date_context_pack_ref(&format!("{path}.additional_context_packs"), pack)?;
+        if prior.is_some_and(|prior| prior >= pack) {
+            return Err(invalid_value(
+                format!("{path}.additional_context_packs"),
+                "context packs must be unique and sorted after the primary pack",
+            ));
+        }
+        prior = Some(pack);
+    }
     validate_sorted_local_ids(
         &format!("{path}.accepted_record_ids"),
         &value.accepted_record_ids,
-    )
+    )?;
+    let mut cue_record_ids = BTreeSet::new();
+    let mut review_sha256 = None;
+    for (id, cue) in &value.accepted_cues {
+        let cue_path = format!("{path}.accepted_cues.{id}");
+        validate_date_context_candidate_id(&cue_path, id)?;
+        if cue.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{cue_path}.id"),
+                "accepted cue identifier must equal its containing map key",
+            ));
+        }
+        validate_local_id(&format!("{cue_path}.record_id"), &cue.record_id)?;
+        if value
+            .accepted_record_ids
+            .binary_search(&cue.record_id)
+            .is_err()
+        {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{cue_path}.record_id"),
+                "accepted cue record is absent from accepted_record_ids",
+            ));
+        }
+        cue_record_ids.insert(cue.record_id.clone());
+        validate_date_context_pack_ref(&format!("{cue_path}.pack"), &cue.pack)?;
+        if cue.pack != primary && !value.additional_context_packs.contains(&cue.pack) {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{cue_path}.pack"),
+                "accepted cue pack is absent from the retained context coordinates",
+            ));
+        }
+        validate_text(&format!("{cue_path}.content"), &cue.content, 1, 2_048)?;
+        validate_unit_interval(&format!("{cue_path}.relevance"), cue.relevance)?;
+        let relevance_micros = cue.relevance * 1_000_000.0;
+        if (relevance_micros - relevance_micros.round()).abs() > 0.000_001 {
+            return Err(invalid_value(
+                format!("{cue_path}.relevance"),
+                "accepted cue relevance must retain exact integer millionths",
+            ));
+        }
+        validate_lineage(
+            &format!("{cue_path}.fact_source_ids"),
+            &cue.fact_source_ids,
+            lineage,
+        )?;
+        validate_lineage(
+            &format!("{cue_path}.cue_source_ids"),
+            &cue.cue_source_ids,
+            lineage,
+        )?;
+        validate_lineage(&format!("{cue_path}.source_ids"), &cue.source_ids, lineage)?;
+        let union = cue
+            .fact_source_ids
+            .iter()
+            .chain(&cue.cue_source_ids)
+            .cloned()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        if cue.source_ids != union {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidLineage,
+                format!("{cue_path}.source_ids"),
+                "accepted cue lineage must be the sorted union of fact and cue sources",
+            ));
+        }
+        if cue
+            .source_ids
+            .iter()
+            .any(|source| header_lineage.binary_search(source).is_err())
+        {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidLineage,
+                format!("{cue_path}.source_ids"),
+                "accepted cue lineage must be retained by the extension header",
+            ));
+        }
+        validate_sha256(&format!("{cue_path}.review_sha256"), &cue.review_sha256)?;
+        if review_sha256.is_some_and(|prior| prior != cue.review_sha256.as_str()) {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidLineage,
+                format!("{cue_path}.review_sha256"),
+                "accepted cues in one extension must share one complete review",
+            ));
+        }
+        review_sha256 = Some(cue.review_sha256.as_str());
+        let transformation_id = format!("temporal_review_{}", &cue.review_sha256[..16]);
+        if header_lineage.binary_search(&transformation_id).is_err() {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidLineage,
+                format!("{cue_path}.review_sha256"),
+                "accepted cue review transformation is absent from extension lineage",
+            ));
+        }
+    }
+    if !value.accepted_cues.is_empty()
+        && cue_record_ids.into_iter().collect::<Vec<_>>() != value.accepted_record_ids
+    {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.accepted_record_ids"),
+            "accepted record ids must exactly cover the reviewed cues",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_date_context_pack_ref(
+    path: &str,
+    value: &DateContextPackRef,
+) -> Result<(), CharacterError> {
+    validate_namespaced_id(&format!("{path}.id"), &value.id)?;
+    validate_semver(&format!("{path}.version"), &value.version)?;
+    validate_sha256(&format!("{path}.sha256"), &value.sha256)
+}
+
+fn validate_date_context_candidate_id(path: &str, value: &str) -> Result<(), CharacterError> {
+    let digest = value.strip_prefix("cue_").unwrap_or_default();
+    if digest.len() != 24
+        || !digest
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidIdentifier,
+            path,
+            "expected a stable temporal candidate identifier",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_opaque(namespace: &str, value: &OpaqueExtensionData) -> Result<(), CharacterError> {

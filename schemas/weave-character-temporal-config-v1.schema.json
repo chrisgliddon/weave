@@ -1,0 +1,239 @@
+{
+  "$defs": {
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "TemporalAutoApprovePolicy": {
+      "description": "Explicit, narrow auto-review policy. Only low-sensitivity cues can qualify.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "policy": {
+              "const": "disabled",
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue_kinds": {
+              "items": {
+                "$ref": "#/$defs/DateContextCueKind"
+              },
+              "type": "array"
+            },
+            "minimum_relevance_micros": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "policy": {
+              "const": "low_sensitivity",
+              "type": "string"
+            },
+            "policy_id": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy",
+            "policy_id",
+            "minimum_relevance_micros",
+            "cue_kinds",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalRecordKind": {
+      "description": "Closed record taxonomy used for filters and coverage reporting.",
+      "enum": [
+        "calendrical_fact",
+        "seasonal_fact",
+        "environmental_fact",
+        "celestial_fact",
+        "commemoration",
+        "historical_event"
+      ],
+      "type": "string"
+    },
+    "TemporalTimeZone": {
+      "description": "Time-zone metadata retained for interpretation; date-only matching never shifts a date.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "utc",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "iana",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "unknown",
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-temporal-config:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Deterministic ranking and policy configuration.",
+  "properties": {
+    "allow_global_without_place": {
+      "type": "boolean"
+    },
+    "allowed_cue_kinds": {
+      "items": {
+        "$ref": "#/$defs/DateContextCueKind"
+      },
+      "type": "array"
+    },
+    "allowed_record_kinds": {
+      "items": {
+        "$ref": "#/$defs/TemporalRecordKind"
+      },
+      "type": "array"
+    },
+    "allowed_sensitivities": {
+      "items": {
+        "$ref": "#/$defs/DateContextSensitivity"
+      },
+      "type": "array"
+    },
+    "auto_approve": {
+      "$ref": "#/$defs/TemporalAutoApprovePolicy"
+    },
+    "config_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "maximum_candidates": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "minimum_relevance_micros": {
+      "description": "Inclusive relevance threshold in millionths.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "minimum_trait_coverage_micros": {
+      "description": "Inclusive trait-vector coverage threshold in millionths.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "override_locked_context": {
+      "type": "boolean"
+    },
+    "override_rationale": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "place_scope_ids": {
+      "description": "Exact place IDs considered applicable, sorted and pinned by the proposal.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "time_zone": {
+      "$ref": "#/$defs/TemporalTimeZone"
+    }
+  },
+  "required": [
+    "config_format_version",
+    "id",
+    "minimum_relevance_micros",
+    "minimum_trait_coverage_micros",
+    "maximum_candidates",
+    "allowed_record_kinds",
+    "allowed_cue_kinds",
+    "allowed_sensitivities",
+    "required_tags",
+    "place_scope_ids",
+    "time_zone",
+    "allow_global_without_place",
+    "auto_approve",
+    "override_locked_context"
+  ],
+  "title": "Weave Character Temporal Configuration v1",
+  "type": "object",
+  "x-weave-character-temporal-version": 1
+}

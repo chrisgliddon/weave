@@ -186,7 +186,9 @@ pub enum BirthDate {
 }
 
 /// Closed v1 calendar vocabulary. New calendars require a versioned extension.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum Calendar {
     ProlepticGregorian,
@@ -623,13 +625,97 @@ pub struct AlignmentView {
 }
 
 /// Accepted or proposed date-context references. They are authoring cues, never causal evidence.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DateContext {
     pub context_pack: String,
     pub context_version: String,
     pub context_hash: String,
+    /// Additional exact context packs used by one reviewed enrichment.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub additional_context_packs: Vec<DateContextPackRef>,
     pub accepted_record_ids: Vec<String>,
+    /// Approved public cues keyed by their stable candidate id.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub accepted_cues: BTreeMap<String, AcceptedDateContextCue>,
+}
+
+/// Exact temporal-context pack coordinate retained by an accepted public view.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct DateContextPackRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// Fictional authoring surface of one temporal cue.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum DateContextCueKind {
+    Affinity,
+    Tension,
+    Value,
+    Memory,
+    Voice,
+}
+
+/// Bounded uncertainty retained in the approved public projection.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum DateContextUncertainty {
+    Exact,
+    Bounded,
+    Disputed,
+}
+
+/// Sensitivity band controlling auto-approval and review policy.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum DateContextSensitivity {
+    Low,
+    Moderate,
+    High,
+}
+
+/// How an approved temporal cue entered the public view.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum DateContextDecision {
+    Accepted,
+    AutoApproved,
+    Edited,
+    Overridden,
+}
+
+/// One reviewed fictional cue exposed to narrative logic without writing into canon.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AcceptedDateContextCue {
+    pub id: String,
+    pub record_id: String,
+    pub pack: DateContextPackRef,
+    pub kind: DateContextCueKind,
+    pub content: String,
+    pub relevance: f64,
+    pub uncertainty: DateContextUncertainty,
+    pub sensitivity: DateContextSensitivity,
+    pub decision: DateContextDecision,
+    /// Public lineage for the matched dated fact; never used as personality evidence.
+    pub fact_source_ids: Vec<String>,
+    /// Public or original lineage for the fictional cue and its declared ranking vector.
+    pub cue_source_ids: Vec<String>,
+    /// Sorted union of fact and cue lineage retained for compatibility.
+    pub source_ids: Vec<String>,
+    pub review_sha256: String,
 }
 
 /// Forward-compatible payload preserved without interpretation or write-back.

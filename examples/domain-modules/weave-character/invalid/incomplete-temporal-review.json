@@ -1,0 +1,31 @@
+{
+  "decisions": {
+    "cue_58d0b61392a896966ba5a94e": {
+      "action": {
+        "decision": "reject",
+        "rationale": "The reviewer chose not to carry this otherwise valid fictional cue into the accepted context view."
+      },
+      "candidate_id": "cue_58d0b61392a896966ba5a94e"
+    },
+    "cue_7eafd04a34c7f45247e358f5": {
+      "action": {
+        "content": "Recall a long-light gathering where the character chose to listen before speaking.",
+        "decision": "edit",
+        "rationale": "Make the original seasonal prompt specific to this fictional character while retaining its non-causal status."
+      },
+      "candidate_id": "cue_7eafd04a34c7f45247e358f5"
+    },
+    "cue_afa4e07801cd5172193f83f1": {
+      "action": {
+        "decision": "accept",
+        "rationale": "Accept the original fictional value prompt after verifying that the historical date is context only and not causal personality evidence."
+      },
+      "candidate_id": "cue_afa4e07801cd5172193f83f1"
+    }
+  },
+  "profile_sha256": "11b6f71674c9991ed37a356e2378b15a03b53fd30751c5a9575ff7d33400a9af",
+  "proposal_sha256": "1ff1a13a36b15a7d9e38ec3fe2e352a536914442d46e68166032bf8359171798",
+  "rationale": "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
+  "review_format_version": 1,
+  "reviewer": "org.weave.reviewer.fixture"
+}

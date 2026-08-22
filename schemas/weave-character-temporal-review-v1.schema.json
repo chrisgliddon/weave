@@ -1,0 +1,177 @@
+{
+  "$defs": {
+    "TemporalReviewAction": {
+      "description": "Explicit editor decision. Edit and override retain both the changed content and rationale.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "accept",
+              "type": "string"
+            },
+            "rationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "decision"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "decision": {
+              "const": "edit",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "content",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "withhold",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "decision": {
+              "const": "override",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "content",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "auto_approve",
+              "type": "string"
+            },
+            "policy_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "policy_id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/TemporalReviewAction"
+        },
+        "candidate_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "action"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-temporal-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One complete review decision per proposed candidate.",
+  "properties": {
+    "decisions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TemporalReviewDecision"
+      },
+      "type": "object"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "proposal_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "proposal_sha256",
+    "profile_sha256",
+    "reviewer",
+    "rationale",
+    "decisions"
+  ],
+  "title": "Weave Character Temporal Review v1",
+  "type": "object",
+  "x-weave-character-temporal-version": 1
+}

@@ -10,13 +10,14 @@ use weave_domain::{
 };
 
 use crate::{
-    Attributed, CharacterError, CharacterProfile, Confidence, DerivedTrait, Freshness,
-    HexacoProfile, LockState, OceanView, ReviewState, TraitBand, TraitMeasurement, ValueState,
-    validate_profile,
+    AcceptedDateContextCue, Attributed, CharacterError, CharacterExtension, CharacterProfile,
+    Confidence, DateContextCueKind, DateContextDecision, DateContextSensitivity,
+    DateContextUncertainty, DerivedTrait, Freshness, HexacoProfile, LockState, OceanView,
+    ReviewState, TraitBand, TraitMeasurement, ValueState, validate_profile,
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.0.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.1.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -68,6 +69,12 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             factor_type(&["flexibility", "forgivingness", "gentleness", "patience"]),
         ),
         ("AttributedText".to_owned(), attributed_text_type()),
+        (
+            "CharacterDateContext".to_owned(),
+            character_date_context_type(),
+        ),
+        ("CharacterDateCue".to_owned(), character_date_cue_type()),
+        ("CharacterDatePack".to_owned(), character_date_pack_type()),
         ("CharacterIdentity".to_owned(), character_identity_type()),
         ("CharacterProfile".to_owned(), runtime_profile_type()),
         (
@@ -148,6 +155,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         authoring: ModuleAuthoring {
             entity_collections: Vec::new(),
             read_only_paths: [
+                (vec!["profile", "date_context"], "Reviewed temporal cues retain exact lineage and remain non-causal read-only context; canonical authoring requires a separate reviewed operation."),
                 (vec!["profile", "hexaco"], "Canonical HEXACO evidence is revised in the profile artifact so dependent views can be recomputed and reviewed."),
                 (vec!["profile", "identity", "id"], "The stable character identifier is not a display label and cannot be rewritten by a story override."),
                 (vec!["profile", "ocean"], "OCEAN is a lossy derived compatibility view and cannot be authored as independent evidence."),
@@ -228,70 +236,79 @@ pub fn character_domain_pack(
 /// Project one validated profile into the finite value tree embedded in Story IR.
 #[must_use]
 pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue {
-    object([
-        ("hexaco", hexaco_value(&profile.canon.personality)),
-        (
-            "identity",
-            object([
-                (
-                    "display_name",
-                    attributed_text_value(&profile.canon.identity.display_name),
-                ),
-                ("id", DomainValue::String(profile.id.clone())),
-                (
-                    "aliases",
-                    profile
-                        .canon
-                        .identity
-                        .aliases
-                        .as_ref()
-                        .map(|aliases| {
-                            DomainValue::List(
-                                aliases
-                                    .value
-                                    .iter()
-                                    .cloned()
-                                    .map(DomainValue::String)
-                                    .collect(),
-                            )
-                        })
-                        .unwrap_or_else(|| DomainValue::List(Vec::new())),
-                ),
-            ]),
-        ),
-        ("ocean", ocean_value(&profile.derived.ocean)),
-        (
-            "profile_format_version",
-            DomainValue::Number(f64::from(profile.profile_format_version)),
-        ),
-        (
-            "provenance",
-            object([
-                (
-                    "sources",
-                    DomainValue::List(
-                        profile
-                            .provenance
-                            .sources
-                            .iter()
-                            .map(|source| DomainValue::String(source.id.clone()))
-                            .collect(),
+    let mut fields = BTreeMap::from(
+        [
+            ("hexaco", hexaco_value(&profile.canon.personality)),
+            (
+                "identity",
+                object([
+                    (
+                        "display_name",
+                        attributed_text_value(&profile.canon.identity.display_name),
                     ),
-                ),
-                (
-                    "transformations",
-                    DomainValue::List(
+                    ("id", DomainValue::String(profile.id.clone())),
+                    (
+                        "aliases",
                         profile
-                            .provenance
-                            .transformations
-                            .iter()
-                            .map(|transformation| DomainValue::String(transformation.id.clone()))
-                            .collect(),
+                            .canon
+                            .identity
+                            .aliases
+                            .as_ref()
+                            .map(|aliases| {
+                                DomainValue::List(
+                                    aliases
+                                        .value
+                                        .iter()
+                                        .cloned()
+                                        .map(DomainValue::String)
+                                        .collect(),
+                                )
+                            })
+                            .unwrap_or_else(|| DomainValue::List(Vec::new())),
                     ),
-                ),
-            ]),
-        ),
-    ])
+                ]),
+            ),
+            ("ocean", ocean_value(&profile.derived.ocean)),
+            (
+                "profile_format_version",
+                DomainValue::Number(f64::from(profile.profile_format_version)),
+            ),
+            (
+                "provenance",
+                object([
+                    (
+                        "sources",
+                        DomainValue::List(
+                            profile
+                                .provenance
+                                .sources
+                                .iter()
+                                .map(|source| DomainValue::String(source.id.clone()))
+                                .collect(),
+                        ),
+                    ),
+                    (
+                        "transformations",
+                        DomainValue::List(
+                            profile
+                                .provenance
+                                .transformations
+                                .iter()
+                                .map(|transformation| {
+                                    DomainValue::String(transformation.id.clone())
+                                })
+                                .collect(),
+                        ),
+                    ),
+                ]),
+            ),
+        ]
+        .map(|(key, value)| (key.to_owned(), value)),
+    );
+    if let Some(date_context) = date_context_value(profile) {
+        fields.insert("date_context".to_owned(), date_context);
+    }
+    DomainValue::Object(fields)
 }
 
 fn current_weave() -> Result<Version, CharacterDomainError> {
@@ -299,7 +316,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v1";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v2";
     if input
         .transformations
         .iter()
@@ -315,7 +332,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -668,9 +685,178 @@ fn character_provenance_type() -> TypeExpression {
     }
 }
 
+fn character_date_pack_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact temporal context pack identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact lowercase pack content SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(text(1, 256), true, "Exact temporal context pack version."),
+            ),
+        ]),
+    }
+}
+
+fn character_date_cue_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "content".to_owned(),
+                field(text(1, 2_048), true, "Reviewed fictional authoring cue."),
+            ),
+            (
+                "cue_source_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Lineage for the fictional cue and declared ranking vector.",
+                ),
+            ),
+            (
+                "decision".to_owned(),
+                field(
+                    symbol(&["accepted", "auto_approved", "edited", "overridden"]),
+                    true,
+                    "Exact review path by which the cue entered the public view.",
+                ),
+            ),
+            (
+                "fact_source_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Separate lineage for the matched dated fact.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable accepted cue identity."),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&["affinity", "memory", "tension", "value", "voice"]),
+                    true,
+                    "Fictional authoring surface affected by this pending cue.",
+                ),
+            ),
+            (
+                "pack_id".to_owned(),
+                field(text(3, 256), true, "Owning exact context pack identity."),
+            ),
+            (
+                "record_id".to_owned(),
+                field(text(1, 128), true, "Matched temporal record identity."),
+            ),
+            (
+                "relevance".to_owned(),
+                field(
+                    number(false, 0.0, 1.0),
+                    true,
+                    "Deterministic fixed-point relevance exposed as a normalized number.",
+                ),
+            ),
+            (
+                "review_sha256".to_owned(),
+                field(text(64, 64), true, "Exact complete review fingerprint."),
+            ),
+            (
+                "sensitivity".to_owned(),
+                field(
+                    symbol(&["high", "low", "moderate"]),
+                    true,
+                    "Review sensitivity retained from the source record.",
+                ),
+            ),
+            (
+                "uncertainty".to_owned(),
+                field(
+                    symbol(&["bounded", "disputed", "exact"]),
+                    true,
+                    "Bounded fact uncertainty retained independently from relevance.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_date_context_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "accepted_record_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 128)),
+                        min_items: 0,
+                        max_items: 65_536,
+                    },
+                    true,
+                    "Sorted temporal records with accepted cues; empty means no reviewed cue was accepted.",
+                ),
+            ),
+            (
+                "canonical_personality_write_back".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; temporal context is never personality evidence.",
+                ),
+            ),
+            (
+                "cues".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterDateCue")),
+                        min_items: 0,
+                        max_items: 16_384,
+                    },
+                    true,
+                    "Reviewed fictional cues in stable candidate-id order.",
+                ),
+            ),
+            (
+                "packs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterDatePack")),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Exact context pack coordinates retained by the review.",
+                ),
+            ),
+        ]),
+    }
+}
+
 fn runtime_profile_type() -> TypeExpression {
     TypeExpression::Object {
         fields: BTreeMap::from([
+            (
+                "date_context".to_owned(),
+                field(
+                    named("CharacterDateContext"),
+                    false,
+                    "Optional reviewed, non-causal temporal authoring context.",
+                ),
+            ),
             (
                 "hexaco".to_owned(),
                 field(
@@ -747,6 +933,134 @@ fn number(integer: bool, minimum: f64, maximum: f64) -> TypeExpression {
 fn symbol(values: &[&str]) -> TypeExpression {
     TypeExpression::Symbol {
         values: values.iter().map(|value| (*value).to_owned()).collect(),
+    }
+}
+
+fn date_context_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::DateContext(extension) = profile
+        .extensions
+        .get(crate::DATE_CONTEXT_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    let value = &extension.value;
+    let packs = std::iter::once(crate::DateContextPackRef {
+        id: value.context_pack.clone(),
+        version: value.context_version.clone(),
+        sha256: value.context_hash.clone(),
+    })
+    .chain(value.additional_context_packs.iter().cloned())
+    .map(|pack| {
+        object([
+            ("id", DomainValue::String(pack.id)),
+            ("sha256", DomainValue::String(pack.sha256)),
+            ("version", DomainValue::String(pack.version)),
+        ])
+    })
+    .collect();
+    Some(object([
+        (
+            "accepted_record_ids",
+            DomainValue::List(
+                value
+                    .accepted_record_ids
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        ("canonical_personality_write_back", DomainValue::Bool(false)),
+        (
+            "cues",
+            DomainValue::List(value.accepted_cues.values().map(date_cue_value).collect()),
+        ),
+        ("packs", DomainValue::List(packs)),
+    ]))
+}
+
+fn date_cue_value(cue: &AcceptedDateContextCue) -> DomainValue {
+    object([
+        ("content", DomainValue::String(cue.content.clone())),
+        (
+            "cue_source_ids",
+            DomainValue::List(
+                cue.cue_source_ids
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        (
+            "decision",
+            DomainValue::Symbol(date_decision(cue.decision).to_owned()),
+        ),
+        (
+            "fact_source_ids",
+            DomainValue::List(
+                cue.fact_source_ids
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        ("id", DomainValue::String(cue.id.clone())),
+        (
+            "kind",
+            DomainValue::Symbol(date_cue_kind(cue.kind).to_owned()),
+        ),
+        ("pack_id", DomainValue::String(cue.pack.id.clone())),
+        ("record_id", DomainValue::String(cue.record_id.clone())),
+        ("relevance", DomainValue::Number(cue.relevance)),
+        (
+            "review_sha256",
+            DomainValue::String(cue.review_sha256.clone()),
+        ),
+        (
+            "sensitivity",
+            DomainValue::Symbol(date_sensitivity(cue.sensitivity).to_owned()),
+        ),
+        (
+            "uncertainty",
+            DomainValue::Symbol(date_uncertainty(cue.uncertainty).to_owned()),
+        ),
+    ])
+}
+
+const fn date_cue_kind(value: DateContextCueKind) -> &'static str {
+    match value {
+        DateContextCueKind::Affinity => "affinity",
+        DateContextCueKind::Tension => "tension",
+        DateContextCueKind::Value => "value",
+        DateContextCueKind::Memory => "memory",
+        DateContextCueKind::Voice => "voice",
+    }
+}
+
+const fn date_decision(value: DateContextDecision) -> &'static str {
+    match value {
+        DateContextDecision::Accepted => "accepted",
+        DateContextDecision::AutoApproved => "auto_approved",
+        DateContextDecision::Edited => "edited",
+        DateContextDecision::Overridden => "overridden",
+    }
+}
+
+const fn date_uncertainty(value: DateContextUncertainty) -> &'static str {
+    match value {
+        DateContextUncertainty::Exact => "exact",
+        DateContextUncertainty::Bounded => "bounded",
+        DateContextUncertainty::Disputed => "disputed",
+    }
+}
+
+const fn date_sensitivity(value: DateContextSensitivity) -> &'static str {
+    match value {
+        DateContextSensitivity::Low => "low",
+        DateContextSensitivity::Moderate => "moderate",
+        DateContextSensitivity::High => "high",
     }
 }
 

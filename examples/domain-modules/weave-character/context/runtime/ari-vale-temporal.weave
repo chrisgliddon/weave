@@ -1,0 +1,16 @@
+module character {
+    id: "org.weave.character"
+    version: "=1.1.0"
+    pack: "ari_vale_temporal@=1.0.0"
+}
+
+VAR character_name = character.profile.identity.display_name.value
+VAR temporal_personality_writeback = character.profile.date_context.canonical_personality_write_back
+
+=== start ===
+{temporal_personality_writeback:
+    This branch is unreachable because reviewed temporal context cannot become personality evidence.
+- else:
+    {character_name} carries reviewed fictional temporal cues with separate fact and cue lineage.
+}
+-> END

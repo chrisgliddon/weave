@@ -1,0 +1,39 @@
+(
+    config_format_version: 1,
+    id: "org.weave.context.reference_ranking",
+    minimum_relevance_micros: 350000,
+    minimum_trait_coverage_micros: 100000,
+    maximum_candidates: 16,
+    allowed_record_kinds: [
+        calendrical_fact,
+        seasonal_fact,
+        environmental_fact,
+        celestial_fact,
+        commemoration,
+        historical_event,
+    ],
+    allowed_cue_kinds: [
+        affinity,
+        tension,
+        value,
+        memory,
+        voice,
+    ],
+    allowed_sensitivities: [
+        low,
+        moderate,
+    ],
+    required_tags: [],
+    place_scope_ids: [
+        "org.weave.place.synthetic_coast",
+    ],
+    time_zone: (
+        kind: "iana",
+        id: "America/Los_Angeles",
+    ),
+    allow_global_without_place: true,
+    auto_approve: (
+        policy: "disabled",
+    ),
+    override_locked_context: false,
+)

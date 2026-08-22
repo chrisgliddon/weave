@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -7,13 +8,18 @@ use tempfile::NamedTempFile;
 use weave_character::{
     CharacterCollection, CharacterJobProgress, CharacterOperationRequest, CharacterOverlay,
     CharacterProfile, CharacterProposal, CharacterProposalReview, CharacterReviewDecision,
-    CharacterScope, CharacterSynthesisResult, CharacterTemplate, apply_reviewed_character_proposal,
+    CharacterScope, CharacterSynthesisResult, CharacterTemplate, TemporalContextConfig,
+    TemporalContextPack, TemporalContextProposal, TemporalContextReceipt, TemporalContextReview,
+    TemporalReviewDecision, apply_reviewed_character_proposal, apply_reviewed_temporal_context,
     character_collection_schema, character_diagnostic_schema, character_domain_pack,
     character_module_manifest, character_operation_request_schema, character_overlay_schema,
     character_profile_schema, character_progress_schema, character_proposal_schema,
     character_review_schema, character_synthesis_schema, character_template_schema,
-    collection_fingerprint, list_characters, propose_character_operation,
-    resume_character_operation, review_character_proposal, show_character, synthesize_character,
+    collection_fingerprint, create_temporal_context_review, list_characters,
+    propose_character_operation, propose_temporal_context, resume_character_operation,
+    review_character_proposal, show_character, synthesize_character,
+    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
+    temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
 };
 
 #[derive(Debug, Parser)]
@@ -151,6 +157,48 @@ enum Command {
         #[arg(long, value_enum)]
         format: Option<OutputFormat>,
     },
+    /// Rank temporal authoring cues from a profile and exact offline packs.
+    ContextPropose {
+        profile: PathBuf,
+        #[arg(long = "pack", required = true)]
+        packs: Vec<PathBuf>,
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        seed: u64,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create one complete temporal review from a candidate-decision map.
+    ContextReview {
+        proposal: PathBuf,
+        decisions: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Reproduce and atomically apply reviewed temporal context.
+    ContextApply {
+        profile: PathBuf,
+        #[arg(long = "pack", required = true)]
+        packs: Vec<PathBuf>,
+        proposal: PathBuf,
+        review: PathBuf,
+        /// Reproduce the complete receipt without writing any file.
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -165,6 +213,11 @@ enum DocumentKind {
     Proposal,
     Review,
     Progress,
+    TemporalPack,
+    TemporalConfig,
+    TemporalProposal,
+    TemporalReview,
+    TemporalReceipt,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -200,6 +253,11 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::Proposal => character_proposal_schema()?,
                 DocumentKind::Review => character_review_schema()?,
                 DocumentKind::Progress => character_progress_schema()?,
+                DocumentKind::TemporalPack => temporal_context_pack_schema()?,
+                DocumentKind::TemporalConfig => temporal_context_config_schema()?,
+                DocumentKind::TemporalProposal => temporal_context_proposal_schema()?,
+                DocumentKind::TemporalReview => temporal_context_review_schema()?,
+                DocumentKind::TemporalReceipt => temporal_context_receipt_schema()?,
             };
             atomic_write(&output, schema.as_bytes())?;
         }
@@ -237,6 +295,21 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::Progress => {
                     parse_progress(&input, &source)?;
+                }
+                DocumentKind::TemporalPack => {
+                    parse_temporal_pack(&input, &source)?;
+                }
+                DocumentKind::TemporalConfig => {
+                    parse_temporal_config(&input, &source)?;
+                }
+                DocumentKind::TemporalProposal => {
+                    parse_temporal_proposal(&input, &source)?;
+                }
+                DocumentKind::TemporalReview => {
+                    parse_temporal_review(&input, &source)?;
+                }
+                DocumentKind::TemporalReceipt => {
+                    parse_temporal_receipt(&input, &source)?;
                 }
             }
             println!("validated {}", input.display());
@@ -427,6 +500,87 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 println!("applied Character proposal {}", destination.display());
             }
         }
+        Command::ContextPropose {
+            profile,
+            packs,
+            config,
+            seed,
+            format,
+            output,
+        } => {
+            let profile_value = parse_profile(&profile, &fs::read_to_string(&profile)?)?;
+            let pack_values = read_temporal_packs(&packs)?;
+            let config_value = parse_temporal_config(&config, &fs::read_to_string(&config)?)?;
+            let proposal =
+                propose_temporal_context(&profile_value, &pack_values, &config_value, seed)?;
+            let serialized = match format {
+                OutputFormat::Json => proposal.to_json()?,
+                OutputFormat::Ron => proposal.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote temporal context proposal {}", output.display());
+        }
+        Command::ContextReview {
+            proposal,
+            decisions,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal_value =
+                parse_temporal_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let decision_values = read_temporal_decisions(&decisions)?;
+            let review = create_temporal_context_review(
+                &proposal_value,
+                reviewer,
+                rationale,
+                decision_values,
+            )?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote temporal context review {}", output.display());
+        }
+        Command::ContextApply {
+            profile,
+            packs,
+            proposal,
+            review,
+            dry_run,
+            format,
+            output,
+        } => {
+            let profile_value = parse_profile(&profile, &fs::read_to_string(&profile)?)?;
+            let pack_values = read_temporal_packs(&packs)?;
+            let proposal_value =
+                parse_temporal_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let review_value = parse_temporal_review(&review, &fs::read_to_string(&review)?)?;
+            let receipt = apply_reviewed_temporal_context(
+                &profile_value,
+                &pack_values,
+                &proposal_value,
+                &review_value,
+            )?;
+            if dry_run {
+                println!(
+                    "validated temporal context apply {}",
+                    temporal_profile_fingerprint(&receipt.output_profile)?
+                );
+            } else {
+                let destination = output
+                    .as_deref()
+                    .ok_or("context apply requires --output unless --dry-run is set")?;
+                let serialized = match format {
+                    OutputFormat::Json => receipt.to_json()?,
+                    OutputFormat::Ron => receipt.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!("applied temporal context {}", destination.display());
+            }
+        }
     }
     Ok(())
 }
@@ -530,6 +684,61 @@ fn parse_progress(
     }
 }
 
+fn parse_temporal_pack(
+    path: &Path,
+    source: &str,
+) -> Result<TemporalContextPack, weave_character::CharacterError> {
+    if is_ron(path) {
+        TemporalContextPack::from_ron(source)
+    } else {
+        TemporalContextPack::from_json(source)
+    }
+}
+
+fn parse_temporal_config(
+    path: &Path,
+    source: &str,
+) -> Result<TemporalContextConfig, weave_character::CharacterError> {
+    if is_ron(path) {
+        TemporalContextConfig::from_ron(source)
+    } else {
+        TemporalContextConfig::from_json(source)
+    }
+}
+
+fn parse_temporal_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<TemporalContextProposal, weave_character::CharacterError> {
+    if is_ron(path) {
+        TemporalContextProposal::from_ron(source)
+    } else {
+        TemporalContextProposal::from_json(source)
+    }
+}
+
+fn parse_temporal_review(
+    path: &Path,
+    source: &str,
+) -> Result<TemporalContextReview, weave_character::CharacterError> {
+    if is_ron(path) {
+        TemporalContextReview::from_ron(source)
+    } else {
+        TemporalContextReview::from_json(source)
+    }
+}
+
+fn parse_temporal_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<TemporalContextReceipt, weave_character::CharacterError> {
+    if is_ron(path) {
+        TemporalContextReceipt::from_ron(source)
+    } else {
+        TemporalContextReceipt::from_json(source)
+    }
+}
+
 fn read_collection(path: &Path) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
     Ok(parse_collection(path, &fs::read_to_string(path)?)?)
 }
@@ -548,6 +757,27 @@ fn read_review(path: &Path) -> Result<CharacterProposalReview, Box<dyn std::erro
 
 fn read_progress(path: &Path) -> Result<CharacterJobProgress, Box<dyn std::error::Error>> {
     Ok(parse_progress(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_temporal_packs(
+    paths: &[PathBuf],
+) -> Result<Vec<TemporalContextPack>, Box<dyn std::error::Error>> {
+    paths
+        .iter()
+        .map(|path| Ok(parse_temporal_pack(path, &fs::read_to_string(path)?)?))
+        .collect()
+}
+
+fn read_temporal_decisions(
+    path: &Path,
+) -> Result<BTreeMap<String, TemporalReviewDecision>, Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid temporal decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid temporal decision JSON".into())
+    }
 }
 
 fn collection_scope(

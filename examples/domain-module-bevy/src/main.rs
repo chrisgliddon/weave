@@ -17,6 +17,9 @@ const COMPOSED_WORLD_STORY: &str =
     include_str!("../../domain-modules/weave-world/composed-setting.story.ron");
 const CHARACTER_STORY: &str =
     include_str!("../../domain-modules/weave-character/ari-vale.story.ron");
+const TEMPORAL_CHARACTER_STORY: &str = include_str!(
+    "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.ron"
+);
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -59,6 +62,22 @@ struct CharacterReading {
     creativity: f64,
     ocean_openness: f64,
     ocean_is_lossy: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct TemporalCueReading {
+    record_id: String,
+    kind: String,
+    decision: String,
+    fact_source_ids: Vec<String>,
+    cue_source_ids: Vec<String>,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct TemporalCharacterReading {
+    canonical_personality_write_back: bool,
+    accepted_record_ids: Vec<String>,
+    cues: Vec<TemporalCueReading>,
 }
 
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
@@ -278,6 +297,96 @@ fn character_reading(story: &StoryIr) -> Result<CharacterReading, io::Error> {
     })
 }
 
+fn temporal_character_reading(story: &StoryIr) -> Result<TemporalCharacterReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let write_back = match module.value(&[
+        "profile",
+        "date_context",
+        "canonical_personality_write_back",
+    ]) {
+        Some(DomainValueIr::Bool(value)) => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "temporal write-back marker is invalid",
+            ));
+        }
+    };
+    let accepted_record_ids = string_list(
+        module.value(&["profile", "date_context", "accepted_record_ids"]),
+        "accepted temporal record list is invalid",
+    )?;
+    let Some(DomainValueIr::List(values)) = module.value(&["profile", "date_context", "cues"])
+    else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "reviewed temporal cue list is invalid",
+        ));
+    };
+    let cues = values
+        .iter()
+        .map(|value| {
+            let DomainValueIr::Object(fields) = value else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "reviewed temporal cue is invalid",
+                ));
+            };
+            let string = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::String(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "reviewed temporal cue string is invalid",
+                )),
+            };
+            let symbol = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "reviewed temporal cue symbol is invalid",
+                )),
+            };
+            Ok(TemporalCueReading {
+                record_id: string("record_id")?,
+                kind: symbol("kind")?,
+                decision: symbol("decision")?,
+                fact_source_ids: string_list(
+                    fields.get("fact_source_ids"),
+                    "temporal fact lineage is invalid",
+                )?,
+                cue_source_ids: string_list(
+                    fields.get("cue_source_ids"),
+                    "temporal cue lineage is invalid",
+                )?,
+            })
+        })
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    Ok(TemporalCharacterReading {
+        canonical_personality_write_back: write_back,
+        accepted_record_ids,
+        cues,
+    })
+}
+
+fn string_list(
+    value: Option<&DomainValueIr>,
+    message: &'static str,
+) -> Result<Vec<String>, io::Error> {
+    let Some(DomainValueIr::List(values)) = value else {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, message));
+    };
+    values
+        .iter()
+        .map(|value| match value {
+            DomainValueIr::String(value) => Ok(value.clone()),
+            _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+        })
+        .collect()
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -325,6 +434,15 @@ fn report_character(reading: Res<CharacterReading>) {
     );
 }
 
+fn report_temporal_character(reading: Res<TemporalCharacterReading>) {
+    println!(
+        "Bevy read {} reviewed temporal cues across {} accepted records; personality write-back={}",
+        reading.cues.len(),
+        reading.accepted_record_ids.len(),
+        reading.canonical_personality_write_back,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -339,12 +457,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     let composed_world = composed_world_reading(&ron::from_str::<StoryIr>(COMPOSED_WORLD_STORY)?)?;
     let character = character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
+    let temporal_character =
+        temporal_character_reading(&ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)?)?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
         .insert_resource(world_readings)
         .insert_resource(composed_world)
         .insert_resource(character)
+        .insert_resource(temporal_character)
         .add_systems(
             Startup,
             (
@@ -352,6 +473,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_world,
                 report_composed_world,
                 report_character,
+                report_temporal_character,
             ),
         );
     app.update();
@@ -452,5 +574,34 @@ mod tests {
                 ocean_is_lossy: true,
             }
         );
+    }
+
+    #[test]
+    fn reads_reviewed_temporal_cues_with_separate_lineage_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)
+            .expect("checked temporal Character RON");
+        let reading = temporal_character_reading(&story).expect("read temporal Character values");
+        assert!(!reading.canonical_personality_write_back);
+        assert_eq!(
+            reading.accepted_record_ids,
+            [
+                "apollo_11_lunar_landing",
+                "calendar_midsummer_period",
+                "world_coastal_fog_cycle",
+            ]
+            .map(str::to_owned)
+        );
+        assert_eq!(reading.cues.len(), 3);
+        assert!(reading.cues.iter().all(|cue| {
+            !cue.fact_source_ids.is_empty()
+                && !cue.cue_source_ids.is_empty()
+                && matches!(cue.decision.as_str(), "accepted" | "edited" | "overridden")
+        }));
+        assert!(reading.cues.iter().any(|cue| {
+            cue.record_id == "apollo_11_lunar_landing"
+                && cue.kind == "value"
+                && cue.fact_source_ids == ["apollo_11_wikidata"]
+                && cue.cue_source_ids == ["weave_historical_cues"]
+        }));
     }
 }

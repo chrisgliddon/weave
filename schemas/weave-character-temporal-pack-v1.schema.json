@@ -1,0 +1,1050 @@
+{
+  "$defs": {
+    "Calendar": {
+      "description": "Closed v1 calendar vocabulary. New calendars require a versioned extension.",
+      "enum": [
+        "proleptic_gregorian"
+      ],
+      "type": "string"
+    },
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContextUncertainty": {
+      "description": "Bounded uncertainty retained in the approved public projection.",
+      "enum": [
+        "exact",
+        "bounded",
+        "disputed"
+      ],
+      "type": "string"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "TemporalAuthoringCue": {
+      "additionalProperties": false,
+      "description": "One original fictional prompt and its declared, non-causal ranking vector.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DateContextCueKind"
+        },
+        "limitations": {
+          "type": "string"
+        },
+        "source_ids": {
+          "description": "Lineage for the fictional prompt and declared vector, separate from the dated fact.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trait_vector": {
+          "additionalProperties": false,
+          "description": "Signed weights in inclusive thousandths (-1000..=1000), never inferred from the fact.",
+          "properties": {
+            "aesthetic_appreciation": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "agreeableness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "anxiety": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "conscientiousness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "creativity": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "dependence": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "diligence": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "emotionality": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "extraversion": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "fairness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "fearfulness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "flexibility": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "forgivingness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "gentleness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "greed_avoidance": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "honesty_humility": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "inquisitiveness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "liveliness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "modesty": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "openness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "organization": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "patience": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "perfectionism": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "prudence": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "sentimentality": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "sincerity": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "sociability": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "social_boldness": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "social_self_esteem": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            "unconventionality": {
+              "format": "int16",
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "content",
+        "trait_vector",
+        "tags",
+        "limitations",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "TemporalContextProvider": {
+      "description": "Exact offline provider identity; a domain module can supply World-compatible projections.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "standalone",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "domain_module",
+              "type": "string"
+            },
+            "module_id": {
+              "type": "string"
+            },
+            "module_version": {
+              "type": "string"
+            },
+            "pack_id": {
+              "type": "string"
+            },
+            "pack_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "module_id",
+            "module_version",
+            "pack_id",
+            "pack_version",
+            "content_sha256"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalContextRecord": {
+      "additionalProperties": false,
+      "description": "One dated fact plus separately authored fictional cues.",
+      "properties": {
+        "cues": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TemporalAuthoringCue"
+          },
+          "description": "Original fictional authoring cues keyed by stable local identifier.",
+          "type": "object"
+        },
+        "evidence_class": {
+          "$ref": "#/$defs/TemporalEvidenceClass"
+        },
+        "extent": {
+          "$ref": "#/$defs/TemporalExtent"
+        },
+        "fact": {
+          "$ref": "#/$defs/DomainValue",
+          "description": "Structured fact payload. Ranking never reads this field."
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TemporalRecordKind"
+        },
+        "place_scope": {
+          "$ref": "#/$defs/TemporalPlaceScope"
+        },
+        "reference_period": {
+          "$ref": "#/$defs/TemporalReferencePeriod"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/TemporalSensitivity"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "time_zone": {
+          "$ref": "#/$defs/TemporalTimeZone"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/TemporalUncertainty"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "evidence_class",
+        "extent",
+        "place_scope",
+        "time_zone",
+        "reference_period",
+        "fact",
+        "tags",
+        "cues",
+        "source_ids",
+        "uncertainty",
+        "sensitivity"
+      ],
+      "type": "object"
+    },
+    "TemporalDate": {
+      "additionalProperties": false,
+      "description": "Proleptic-Gregorian date with no time-of-day conversion.",
+      "properties": {
+        "calendar": {
+          "$ref": "#/$defs/Calendar"
+        },
+        "day": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "month": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "year": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "calendar",
+        "year",
+        "month",
+        "day"
+      ],
+      "type": "object"
+    },
+    "TemporalEvidenceClass": {
+      "description": "Whether the fact payload is measured, calendrical, or explicitly interpretive.",
+      "enum": [
+        "measured_fact",
+        "calendrical_fact",
+        "interpretive_context"
+      ],
+      "type": "string"
+    },
+    "TemporalExtent": {
+      "description": "Temporal coverage of a record. Month/day records are explicitly recurring.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "precision": {
+              "const": "year",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "year"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "month_day",
+              "type": "string"
+            }
+          },
+          "required": [
+            "precision",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "date": {
+              "$ref": "#/$defs/TemporalDate"
+            },
+            "precision": {
+              "const": "date",
+              "type": "string"
+            }
+          },
+          "required": [
+            "precision",
+            "date"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "end_year": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "precision": {
+              "const": "year_range",
+              "type": "string"
+            },
+            "start_year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "start_year",
+            "end_year"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "end": {
+              "$ref": "#/$defs/TemporalDate"
+            },
+            "precision": {
+              "const": "date_range",
+              "type": "string"
+            },
+            "start": {
+              "$ref": "#/$defs/TemporalDate"
+            }
+          },
+          "required": [
+            "precision",
+            "start",
+            "end"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalPlaceScope": {
+      "description": "Geographic applicability. Matching is exact in v1; hierarchy can be supplied as multiple IDs.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "scope": {
+              "const": "global",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "scope": {
+              "const": "place",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope",
+            "id",
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalRecordKind": {
+      "description": "Closed record taxonomy used for filters and coverage reporting.",
+      "enum": [
+        "calendrical_fact",
+        "seasonal_fact",
+        "environmental_fact",
+        "celestial_fact",
+        "commemoration",
+        "historical_event"
+      ],
+      "type": "string"
+    },
+    "TemporalReferencePeriod": {
+      "additionalProperties": false,
+      "description": "Exact period and resolution against which the record was authored or measured.",
+      "properties": {
+        "end": {
+          "$ref": "#/$defs/TemporalDate"
+        },
+        "label": {
+          "type": "string"
+        },
+        "resolution": {
+          "$ref": "#/$defs/TemporalResolution"
+        },
+        "start": {
+          "$ref": "#/$defs/TemporalDate"
+        }
+      },
+      "required": [
+        "label",
+        "start",
+        "end",
+        "resolution"
+      ],
+      "type": "object"
+    },
+    "TemporalResolution": {
+      "enum": [
+        "day",
+        "year",
+        "recurring_day",
+        "period"
+      ],
+      "type": "string"
+    },
+    "TemporalSensitivity": {
+      "additionalProperties": false,
+      "description": "Review sensitivity attached independently from uncertainty.",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/DateContextSensitivity"
+        },
+        "note": {
+          "type": "string"
+        },
+        "requires_explicit_review": {
+          "type": "boolean"
+        },
+        "topics": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "topics",
+        "requires_explicit_review",
+        "note"
+      ],
+      "type": "object"
+    },
+    "TemporalTimeZone": {
+      "description": "Time-zone metadata retained for interpretation; date-only matching never shifts a date.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "utc",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "iana",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "unknown",
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalUncertainty": {
+      "additionalProperties": false,
+      "description": "Bounded fact uncertainty with a mandatory public explanation.",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/DateContextUncertainty"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "level",
+        "reason"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-temporal-pack:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Offline, versioned temporal context records with complete public provenance.",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_url": {
+      "type": "string"
+    },
+    "pack_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "provider": {
+      "$ref": "#/$defs/TemporalContextProvider"
+    },
+    "records": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TemporalContextRecord"
+      },
+      "type": "object"
+    },
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pack_format_version",
+    "id",
+    "version",
+    "title",
+    "license",
+    "license_url",
+    "provider",
+    "records",
+    "provenance"
+  ],
+  "title": "Weave Character Temporal Pack v1",
+  "type": "object",
+  "x-weave-character-temporal-version": 1
+}

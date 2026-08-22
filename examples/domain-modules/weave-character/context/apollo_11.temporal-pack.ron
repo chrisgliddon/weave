@@ -1,0 +1,147 @@
+(
+    pack_format_version: 1,
+    id: "org.weave.context.apollo_11",
+    version: "1.0.0",
+    title: "Apollo 11 structured-date context",
+    license: "CC0-1.0 AND MIT",
+    license_url: "https://spdx.org/licenses/",
+    provider: (
+        kind: "standalone",
+    ),
+    records: {
+        "apollo_11_lunar_landing": (
+            id: "apollo_11_lunar_landing",
+            kind: historical_event,
+            evidence_class: calendrical_fact,
+            extent: (
+                precision: "date",
+                date: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 7,
+                    day: 20,
+                ),
+            ),
+            place_scope: (
+                scope: "global",
+            ),
+            time_zone: (
+                kind: "utc",
+            ),
+            reference_period: (
+                label: "Apollo 11 structured event date",
+                start: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 7,
+                    day: 20,
+                ),
+                end: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 7,
+                    day: 20,
+                ),
+                resolution: day,
+            ),
+            fact: (
+                kind: object,
+                value: {
+                    "date": (
+                        kind: string,
+                        value: "1969-07-20",
+                    ),
+                    "entity": (
+                        kind: symbol,
+                        value: "wikidata_q43653",
+                    ),
+                    "event": (
+                        kind: string,
+                        value: "Apollo 11 lunar landing",
+                    ),
+                    "precision": (
+                        kind: symbol,
+                        value: "day",
+                    ),
+                    "revision": (
+                        kind: string,
+                        value: "2526069885",
+                    ),
+                },
+            ),
+            tags: [
+                "historical",
+                "spaceflight",
+            ],
+            cues: {
+                "shared_horizon": (
+                    id: "shared_horizon",
+                    kind: value,
+                    content: "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+                    trait_vector: {
+                        diligence: 350,
+                        openness: 400,
+                        inquisitiveness: 250,
+                    },
+                    tags: [
+                        "collective_effort",
+                    ],
+                    limitations: "This original fictional prompt is merely discoverable through a date match; Apollo 11 neither causes nor predicts personality and the cue makes no claim about a real person.",
+                    source_ids: [
+                        "weave_historical_cues",
+                    ],
+                ),
+            },
+            source_ids: [
+                "apollo_11_wikidata",
+            ],
+            uncertainty: (
+                level: exact,
+                reason: "The pinned structured entity records the event date at day precision.",
+            ),
+            sensitivity: (
+                level: moderate,
+                topics: [
+                    "history",
+                    "spaceflight",
+                ],
+                requires_explicit_review: true,
+                note: "A real historical event is retained only as sourced context for an independently original fictional prompt.",
+            ),
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "apollo_11_wikidata",
+                kind: public_source,
+                url: "https://www.wikidata.org/wiki/Special:EntityData/Q43653.json?revision=2526069885&flavor=simple",
+                revision: "2526069885 (2026-08-02T06:29:38Z)",
+                sha256: Some("52c78c8a7c1320e970a6aa1c2737c9e0a89e786be957f380f389d02ab84c006b"),
+                license: "CC0-1.0",
+                license_url: "https://www.wikidata.org/wiki/Wikidata:Licensing",
+                attribution: "Wikidata contributors, Apollo 11 (Q43653), revision 2526069885. Attribution retained although CC0 does not require it.",
+                modified: false,
+            ),
+            (
+                id: "weave_historical_cues",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "temporal-context-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original fictional historical-context prompts and declared HEXACO vectors.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "records.apollo_11_lunar_landing.cues": [
+                "weave_historical_cues",
+            ],
+            "records.apollo_11_lunar_landing.fact": [
+                "apollo_11_wikidata",
+            ],
+        },
+    ),
+)

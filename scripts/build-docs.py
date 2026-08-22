@@ -98,7 +98,9 @@ def run(
         if capture:
             sys.stderr.write(result.stdout)
             sys.stderr.write(result.stderr)
-        raise DocsError(f"command failed with status {result.returncode}: {shlex.join(command)}")
+        raise DocsError(
+            f"command failed with status {result.returncode}: {shlex.join(command)}"
+        )
     return result
 
 
@@ -120,7 +122,9 @@ def check_versions() -> None:
 
     book = tomllib.loads((ROOT / "book.toml").read_text(encoding="utf-8"))
     guide = (DOCS / "language_guide.md").read_text(encoding="utf-8")
-    guide_match = re.search(r"^Language specification version: `([^`]+)`\.$", guide, re.MULTILINE)
+    guide_match = re.search(
+        r"^Language specification version: `([^`]+)`\.$", guide, re.MULTILINE
+    )
     versions = {
         "workspace": workspace_version(),
         "language guide": guide_match.group(1) if guide_match else None,
@@ -167,7 +171,9 @@ def check_source_links() -> None:
         if path.name != "SUMMARY.md" and path.name not in chapters
     }
     if unlisted:
-        raise DocsError(f"documentation pages are absent from SUMMARY.md: {sorted(unlisted)}")
+        raise DocsError(
+            f"documentation pages are absent from SUMMARY.md: {sorted(unlisted)}"
+        )
 
     failures: list[str] = []
     for source in sorted(DOCS.rglob("*.md")):
@@ -182,7 +188,9 @@ def check_source_links() -> None:
                 failures.append(f"{source.relative_to(ROOT)} includes {raw_include}")
 
     if failures:
-        raise DocsError("broken source documentation links:\n  " + "\n  ".join(failures))
+        raise DocsError(
+            "broken source documentation links:\n  " + "\n  ".join(failures)
+        )
 
 
 def check_quickstart_source() -> None:
@@ -190,11 +198,15 @@ def check_quickstart_source() -> None:
 
     page = (DOCS / "getting_started.md").read_text(encoding="utf-8")
     examples = [block.strip() for block in WEAVE_FENCE.findall(page)]
-    expected = (ROOT / "examples" / "stories" / "basic.weave").read_text(
-        encoding="utf-8"
-    ).strip()
+    expected = (
+        (ROOT / "examples" / "stories" / "basic.weave")
+        .read_text(encoding="utf-8")
+        .strip()
+    )
     if expected not in examples:
-        raise DocsError("the quickstart Weave block has drifted from examples/stories/basic.weave")
+        raise DocsError(
+            "the quickstart Weave block has drifted from examples/stories/basic.weave"
+        )
 
 
 def cargo_target_directory() -> Path:
@@ -343,7 +355,9 @@ def compile_examples() -> None:
         (ROOT / "examples/domain-modules/weave-world/corpus/stories").glob("*.weave")
     )
     domain_character_sources = {
-        ROOT / "examples/domain-modules/weave-character/ari-vale.weave"
+        ROOT / "examples/domain-modules/weave-character/ari-vale.weave",
+        ROOT
+        / "examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave",
     }
     sources = [
         source
@@ -353,7 +367,9 @@ def compile_examples() -> None:
         and source not in domain_world_corpus
         and source not in domain_character_sources
     ]
-    readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
+    readme_fixture = (
+        ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
+    )
     sources.append(readme_fixture)
     if not sources:
         raise DocsError("no public Weave examples were found")
@@ -386,7 +402,9 @@ def compile_examples() -> None:
         )
         checked_in = ROOT / "examples" / "web-player" / "story.json"
         if web_output.read_bytes() != checked_in.read_bytes():
-            raise DocsError("examples/web-player/story.json is stale; rebuild the web player")
+            raise DocsError(
+                "examples/web-player/story.json is stale; rebuild the web player"
+            )
 
     print(f"verified {len(sources)} Weave source examples", flush=True)
 
@@ -512,7 +530,9 @@ def verify_domain_contract() -> None:
     composition_plan = world_fixture / "composition.weave-world.json"
     composition_receipt_json = world_fixture / "composition.receipt.json"
     composition_receipt_ron = world_fixture / "composition.receipt.ron"
-    composed_world_pack = world_fixture / "packs" / "glasswind_composed.weave-domain.json"
+    composed_world_pack = (
+        world_fixture / "packs" / "glasswind_composed.weave-domain.json"
+    )
     composed_world_source = world_fixture / "composed-setting.weave"
     composed_world_story_ron = world_fixture / "composed-setting.story.ron"
     composed_world_story_json = world_fixture / "composed-setting.story.json"
@@ -542,7 +562,9 @@ def verify_domain_contract() -> None:
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
-    character_collection_ron = character_operations / "collection.character-collection.ron"
+    character_collection_ron = (
+        character_operations / "collection.character-collection.ron"
+    )
     character_request_json = character_operations / "rename.character-request.json"
     character_request_ron = character_operations / "rename.character-request.ron"
     character_proposal_json = character_operations / "rename.character-proposal.json"
@@ -557,11 +579,43 @@ def verify_domain_contract() -> None:
     renamed_character_collection_ron = (
         character_operations / "renamed.character-collection.ron"
     )
+    character_context = character_fixture / "context"
+    temporal_profile_json = character_context / "input.character.json"
+    temporal_profile_ron = character_context / "input.character.ron"
+    temporal_pack_json = (
+        character_context / "apollo_11.temporal-pack.json",
+        character_context / "calendar.temporal-pack.json",
+        character_context / "world.temporal-pack.json",
+    )
+    temporal_pack_ron = (
+        character_context / "apollo_11.temporal-pack.ron",
+        character_context / "calendar.temporal-pack.ron",
+        character_context / "world.temporal-pack.ron",
+    )
+    temporal_config_json = character_context / "ranking.temporal-config.json"
+    temporal_config_ron = character_context / "ranking.temporal-config.ron"
+    temporal_proposal_json = character_context / "proposal.temporal-proposal.json"
+    temporal_proposal_ron = character_context / "proposal.temporal-proposal.ron"
+    temporal_decisions_json = character_context / "decisions.temporal-review.json"
+    temporal_decisions_ron = character_context / "decisions.temporal-review.ron"
+    temporal_review_json = character_context / "review.temporal-review.json"
+    temporal_review_ron = character_context / "review.temporal-review.ron"
+    temporal_receipt_json = character_context / "receipt.temporal-receipt.json"
+    temporal_receipt_ron = character_context / "receipt.temporal-receipt.ron"
+    temporal_enriched_json = character_context / "enriched.character.json"
+    temporal_enriched_ron = character_context / "enriched.character.ron"
+    temporal_runtime = character_context / "runtime"
+    temporal_manifest_json = temporal_runtime / "module.weave-module.json"
+    temporal_manifest_ron = temporal_runtime / "module.weave-module.ron"
+    temporal_domain_pack_json = temporal_runtime / "ari_vale_temporal.weave-domain.json"
+    temporal_domain_pack_ron = temporal_runtime / "ari_vale_temporal.weave-domain.ron"
+    temporal_source = temporal_runtime / "ari-vale-temporal.weave"
+    temporal_story_json = temporal_runtime / "ari-vale-temporal.story.json"
+    temporal_story_ron = temporal_runtime / "ari-vale-temporal.story.ron"
+    temporal_project = temporal_runtime / "weave.modules.json"
     world_packs = (
         world_pack,
-        world_fixture
-        / "packs"
-        / "british_columbia_temperate_forest.weave-domain.json",
+        world_fixture / "packs" / "british_columbia_temperate_forest.weave-domain.json",
         world_fixture / "packs" / "hokkaido_japan.weave-domain.json",
         world_fixture / "packs" / "maldives.weave-domain.json",
     )
@@ -629,6 +683,8 @@ def verify_domain_contract() -> None:
     for manifest, pack in (
         (character_manifest_json, character_pack_json),
         (character_manifest_ron, character_pack_ron),
+        (temporal_manifest_json, temporal_domain_pack_json),
+        (temporal_manifest_ron, temporal_domain_pack_ron),
     ):
         run(
             [
@@ -645,6 +701,14 @@ def verify_domain_contract() -> None:
             str(domain_tool),
             "validate-project",
             str(character_project.relative_to(ROOT)),
+        ],
+        capture=True,
+    )
+    run(
+        [
+            str(domain_tool),
+            "validate-project",
+            str(temporal_project.relative_to(ROOT)),
         ],
         capture=True,
     )
@@ -694,29 +758,76 @@ def verify_domain_contract() -> None:
         generated_project_schema = workspace / "domain-project-v1.schema.json"
         generated_lock_schema = workspace / "domain-lock-v1.schema.json"
         generated_registry_schema = workspace / "domain-registry-index-v1.schema.json"
-        generated_world_index_schema = workspace / "weave-world-corpus-index-v1.schema.json"
-        generated_world_preset_schema = workspace / "weave-world-corpus-preset-v1.schema.json"
-        generated_world_composition_schema = workspace / "weave-world-composition-v1.schema.json"
+        generated_world_index_schema = (
+            workspace / "weave-world-corpus-index-v1.schema.json"
+        )
+        generated_world_preset_schema = (
+            workspace / "weave-world-corpus-preset-v1.schema.json"
+        )
+        generated_world_composition_schema = (
+            workspace / "weave-world-composition-v1.schema.json"
+        )
         generated_world_full_schema = workspace / "weave-world-full-v1.schema.json"
-        generated_world_compact_schema = workspace / "weave-world-compact-v1.schema.json"
-        generated_character_profile_schema = workspace / "weave-character-profile-v1.schema.json"
-        generated_character_template_schema = workspace / "weave-character-template-v1.schema.json"
-        generated_character_overlay_schema = workspace / "weave-character-overlay-v1.schema.json"
-        generated_character_synthesis_schema = workspace / "weave-character-synthesis-v1.schema.json"
-        generated_character_diagnostic_schema = workspace / "weave-character-diagnostic-v1.schema.json"
-        generated_character_collection_schema = workspace / "weave-character-collection-v1.schema.json"
-        generated_character_request_schema = workspace / "weave-character-operation-request-v1.schema.json"
-        generated_character_proposal_schema = workspace / "weave-character-proposal-v1.schema.json"
-        generated_character_review_schema = workspace / "weave-character-review-v1.schema.json"
-        generated_character_progress_schema = workspace / "weave-character-progress-v1.schema.json"
+        generated_world_compact_schema = (
+            workspace / "weave-world-compact-v1.schema.json"
+        )
+        generated_character_profile_schema = (
+            workspace / "weave-character-profile-v1.schema.json"
+        )
+        generated_character_template_schema = (
+            workspace / "weave-character-template-v1.schema.json"
+        )
+        generated_character_overlay_schema = (
+            workspace / "weave-character-overlay-v1.schema.json"
+        )
+        generated_character_synthesis_schema = (
+            workspace / "weave-character-synthesis-v1.schema.json"
+        )
+        generated_character_diagnostic_schema = (
+            workspace / "weave-character-diagnostic-v1.schema.json"
+        )
+        generated_character_collection_schema = (
+            workspace / "weave-character-collection-v1.schema.json"
+        )
+        generated_character_request_schema = (
+            workspace / "weave-character-operation-request-v1.schema.json"
+        )
+        generated_character_proposal_schema = (
+            workspace / "weave-character-proposal-v1.schema.json"
+        )
+        generated_character_review_schema = (
+            workspace / "weave-character-review-v1.schema.json"
+        )
+        generated_character_progress_schema = (
+            workspace / "weave-character-progress-v1.schema.json"
+        )
+        generated_temporal_pack_schema = (
+            workspace / "weave-character-temporal-pack-v1.schema.json"
+        )
+        generated_temporal_config_schema = (
+            workspace / "weave-character-temporal-config-v1.schema.json"
+        )
+        generated_temporal_proposal_schema = (
+            workspace / "weave-character-temporal-proposal-v1.schema.json"
+        )
+        generated_temporal_review_schema = (
+            workspace / "weave-character-temporal-review-v1.schema.json"
+        )
+        generated_temporal_receipt_schema = (
+            workspace / "weave-character-temporal-receipt-v1.schema.json"
+        )
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
         normalized_pack_ron = workspace / "pack.weave-domain.ron"
         normalized_world_manifest_json = workspace / "world-module.weave-module.json"
-        normalized_naming_manifest_json = workspace / "world-naming-module.weave-module.json"
+        normalized_naming_manifest_json = (
+            workspace / "world-naming-module.weave-module.json"
+        )
         normalized_naming_pack_json = workspace / "world-naming-pack.weave-domain.json"
-        normalized_composed_world_pack = workspace / "world-composed-pack.weave-domain.json"
+        normalized_composed_world_pack = (
+            workspace / "world-composed-pack.weave-domain.json"
+        )
         normalized_world_packs = tuple(
             (workspace / f"world-pack-{index}.weave-domain.json", pack)
             for index, pack in enumerate(world_packs)
@@ -734,22 +845,53 @@ def verify_domain_contract() -> None:
         generated_composition_receipt_ron = workspace / "composition.receipt.ron"
         generated_character_synthesis_json = workspace / "synthesis.character.json"
         generated_character_synthesis_ron = workspace / "synthesis.character.ron"
-        generated_character_manifest_json = workspace / "character-module.weave-module.json"
-        generated_character_manifest_ron = workspace / "character-module.weave-module.ron"
+        generated_character_manifest_json = (
+            workspace / "character-module.weave-module.json"
+        )
+        generated_character_manifest_ron = (
+            workspace / "character-module.weave-module.ron"
+        )
         generated_character_pack_json = workspace / "ari_vale.weave-domain.json"
         generated_character_pack_ron = workspace / "ari_vale.weave-domain.ron"
+        generated_temporal_manifest_json = (
+            workspace / "temporal-module.weave-module.json"
+        )
+        generated_temporal_manifest_ron = workspace / "temporal-module.weave-module.ron"
+        generated_temporal_domain_pack_json = (
+            workspace / "ari_vale_temporal.weave-domain.json"
+        )
+        generated_temporal_domain_pack_ron = (
+            workspace / "ari_vale_temporal.weave-domain.ron"
+        )
         compiled_character_json = workspace / "ari-vale.story.json"
         compiled_character_ron = workspace / "ari-vale.story.ron"
         compiled_character_locked_json = workspace / "ari-vale.locked.story.json"
+        compiled_temporal_json = workspace / "ari-vale-temporal.story.json"
+        compiled_temporal_ron = workspace / "ari-vale-temporal.story.ron"
+        compiled_temporal_locked_json = (
+            workspace / "ari-vale-temporal.locked.story.json"
+        )
         generated_character_proposal_json = workspace / "rename.character-proposal.json"
         generated_character_proposal_ron = workspace / "rename.character-proposal.ron"
         generated_character_review_json = workspace / "rename.character-review.json"
         generated_character_review_ron = workspace / "rename.character-review.ron"
         generated_character_progress_json = workspace / "rename.character-progress.json"
-        generated_character_ready_progress_json = workspace / "rename-ready.character-progress.json"
+        generated_character_ready_progress_json = (
+            workspace / "rename-ready.character-progress.json"
+        )
         resumed_character_proposal_json = workspace / "resumed.character-proposal.json"
-        applied_character_collection_json = workspace / "renamed.character-collection.json"
-        applied_character_collection_ron = workspace / "renamed.character-collection.ron"
+        applied_character_collection_json = (
+            workspace / "renamed.character-collection.json"
+        )
+        applied_character_collection_ron = (
+            workspace / "renamed.character-collection.ron"
+        )
+        generated_temporal_proposal_json = workspace / "proposal.temporal-proposal.json"
+        generated_temporal_proposal_ron = workspace / "proposal.temporal-proposal.ron"
+        generated_temporal_review_json = workspace / "review.temporal-review.json"
+        generated_temporal_review_ron = workspace / "review.temporal-review.ron"
+        generated_temporal_receipt_json = workspace / "receipt.temporal-receipt.json"
+        generated_temporal_receipt_ron = workspace / "receipt.temporal-receipt.ron"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -790,6 +932,11 @@ def verify_domain_contract() -> None:
             ("proposal", generated_character_proposal_schema),
             ("review", generated_character_review_schema),
             ("progress", generated_character_progress_schema),
+            ("temporal-pack", generated_temporal_pack_schema),
+            ("temporal-config", generated_temporal_config_schema),
+            ("temporal-proposal", generated_temporal_proposal_schema),
+            ("temporal-review", generated_temporal_review_schema),
+            ("temporal-receipt", generated_temporal_receipt_schema),
         ):
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
@@ -801,7 +948,10 @@ def verify_domain_contract() -> None:
                 ROOT / "schemas" / "domain-module-manifest-v1.schema.json",
             ),
             (generated_pack_schema, ROOT / "schemas" / "domain-pack-v1.schema.json"),
-            (generated_project_schema, ROOT / "schemas" / "domain-project-v1.schema.json"),
+            (
+                generated_project_schema,
+                ROOT / "schemas" / "domain-project-v1.schema.json",
+            ),
             (generated_lock_schema, ROOT / "schemas" / "domain-lock-v1.schema.json"),
             (
                 generated_registry_schema,
@@ -867,6 +1017,26 @@ def verify_domain_contract() -> None:
                 generated_character_progress_schema,
                 ROOT / "schemas" / "weave-character-progress-v1.schema.json",
             ),
+            (
+                generated_temporal_pack_schema,
+                ROOT / "schemas" / "weave-character-temporal-pack-v1.schema.json",
+            ),
+            (
+                generated_temporal_config_schema,
+                ROOT / "schemas" / "weave-character-temporal-config-v1.schema.json",
+            ),
+            (
+                generated_temporal_proposal_schema,
+                ROOT / "schemas" / "weave-character-temporal-proposal-v1.schema.json",
+            ),
+            (
+                generated_temporal_review_schema,
+                ROOT / "schemas" / "weave-character-temporal-review-v1.schema.json",
+            ),
+            (
+                generated_temporal_receipt_schema,
+                ROOT / "schemas" / "weave-character-temporal-receipt-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -890,6 +1060,24 @@ def verify_domain_contract() -> None:
             ("review", character_review_ron),
             ("progress", character_progress_json),
             ("progress", character_progress_ron),
+            ("profile", temporal_profile_json),
+            ("profile", temporal_profile_ron),
+            ("profile", temporal_enriched_json),
+            ("profile", temporal_enriched_ron),
+            ("temporal-pack", temporal_pack_json[0]),
+            ("temporal-pack", temporal_pack_json[1]),
+            ("temporal-pack", temporal_pack_json[2]),
+            ("temporal-pack", temporal_pack_ron[0]),
+            ("temporal-pack", temporal_pack_ron[1]),
+            ("temporal-pack", temporal_pack_ron[2]),
+            ("temporal-config", temporal_config_json),
+            ("temporal-config", temporal_config_ron),
+            ("temporal-proposal", temporal_proposal_json),
+            ("temporal-proposal", temporal_proposal_ron),
+            ("temporal-review", temporal_review_json),
+            ("temporal-review", temporal_review_ron),
+            ("temporal-receipt", temporal_receipt_json),
+            ("temporal-receipt", temporal_receipt_ron),
         ):
             run(
                 [
@@ -919,7 +1107,9 @@ def verify_domain_contract() -> None:
                 capture=True,
             )
             if output.read_bytes() != checked.read_bytes():
-                raise DocsError(f"canonical Character synthesis is stale: {checked.name}")
+                raise DocsError(
+                    f"canonical Character synthesis is stale: {checked.name}"
+                )
 
         for (
             encoding,
@@ -969,7 +1159,9 @@ def verify_domain_contract() -> None:
                 capture=True,
             )
             if generated_proposal.read_bytes() != checked_proposal.read_bytes():
-                raise DocsError(f"canonical Character proposal is stale: {checked_proposal.name}")
+                raise DocsError(
+                    f"canonical Character proposal is stale: {checked_proposal.name}"
+                )
             run(
                 [
                     str(character_tool),
@@ -989,7 +1181,9 @@ def verify_domain_contract() -> None:
                 capture=True,
             )
             if generated_review.read_bytes() != checked_review.read_bytes():
-                raise DocsError(f"canonical Character review is stale: {checked_review.name}")
+                raise DocsError(
+                    f"canonical Character review is stale: {checked_review.name}"
+                )
             run(
                 [
                     str(character_tool),
@@ -1022,7 +1216,10 @@ def verify_domain_contract() -> None:
             ],
             capture=True,
         )
-        if generated_character_progress_json.read_bytes() != character_progress_json.read_bytes():
+        if (
+            generated_character_progress_json.read_bytes()
+            != character_progress_json.read_bytes()
+        ):
             raise DocsError("canonical Character resumable progress is stale")
         run(
             [
@@ -1041,7 +1238,10 @@ def verify_domain_contract() -> None:
             ],
             capture=True,
         )
-        if resumed_character_proposal_json.read_bytes() != character_proposal_json.read_bytes():
+        if (
+            resumed_character_proposal_json.read_bytes()
+            != character_proposal_json.read_bytes()
+        ):
             raise DocsError("resumed Character proposal differs from direct dry-run")
         dry_run_output = workspace / "forbidden-dry-run-output.json"
         run(
@@ -1060,7 +1260,166 @@ def verify_domain_contract() -> None:
         if dry_run_output.exists():
             raise DocsError("Character apply dry-run wrote a collection")
 
-        for encoding, generated_manifest, checked_manifest, generated_pack, checked_pack in (
+        temporal_encodings = (
+            (
+                "json",
+                temporal_profile_json,
+                temporal_pack_json,
+                temporal_config_json,
+                temporal_proposal_json,
+                generated_temporal_proposal_json,
+                temporal_decisions_json,
+                temporal_review_json,
+                generated_temporal_review_json,
+                temporal_receipt_json,
+                generated_temporal_receipt_json,
+            ),
+            (
+                "ron",
+                temporal_profile_ron,
+                temporal_pack_ron,
+                temporal_config_ron,
+                temporal_proposal_ron,
+                generated_temporal_proposal_ron,
+                temporal_decisions_ron,
+                temporal_review_ron,
+                generated_temporal_review_ron,
+                temporal_receipt_ron,
+                generated_temporal_receipt_ron,
+            ),
+        )
+        for (
+            encoding,
+            profile,
+            packs,
+            config,
+            checked_proposal,
+            generated_proposal,
+            decisions,
+            checked_review,
+            generated_review,
+            checked_receipt,
+            generated_receipt,
+        ) in temporal_encodings:
+            pack_arguments = [
+                argument
+                for pack in packs
+                for argument in ("--pack", str(pack.relative_to(ROOT)))
+            ]
+            run(
+                [
+                    str(character_tool),
+                    "context-propose",
+                    str(profile.relative_to(ROOT)),
+                    *pack_arguments,
+                    "--config",
+                    str(config.relative_to(ROOT)),
+                    "--seed",
+                    "19690720",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_proposal),
+                ],
+                capture=True,
+            )
+            if generated_proposal.read_bytes() != checked_proposal.read_bytes():
+                raise DocsError(
+                    f"canonical temporal proposal is stale: {checked_proposal.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "context-review",
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(decisions.relative_to(ROOT)),
+                    "--reviewer",
+                    "org.weave.reviewer.fixture",
+                    "--rationale",
+                    "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_review),
+                ],
+                capture=True,
+            )
+            if generated_review.read_bytes() != checked_review.read_bytes():
+                raise DocsError(
+                    f"canonical temporal review is stale: {checked_review.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "context-apply",
+                    str(profile.relative_to(ROOT)),
+                    *pack_arguments,
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(checked_review.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_receipt),
+                ],
+                capture=True,
+            )
+            if generated_receipt.read_bytes() != checked_receipt.read_bytes():
+                raise DocsError(
+                    f"canonical temporal receipt is stale: {checked_receipt.name}"
+                )
+
+        temporal_dry_run_output = workspace / "forbidden-temporal-dry-run-output.json"
+        temporal_pack_arguments = [
+            argument
+            for pack in temporal_pack_json
+            for argument in ("--pack", str(pack.relative_to(ROOT)))
+        ]
+        run(
+            [
+                str(character_tool),
+                "context-apply",
+                str(temporal_profile_json.relative_to(ROOT)),
+                *temporal_pack_arguments,
+                str(temporal_proposal_json.relative_to(ROOT)),
+                str(temporal_review_json.relative_to(ROOT)),
+                "--dry-run",
+                "--output",
+                str(temporal_dry_run_output),
+            ],
+            capture=True,
+        )
+        if temporal_dry_run_output.exists():
+            raise DocsError("temporal context dry-run wrote a receipt")
+
+        temporal_proposal = json.loads(
+            temporal_proposal_json.read_text(encoding="utf-8")
+        )
+        temporal_receipt = json.loads(temporal_receipt_json.read_text(encoding="utf-8"))
+        temporal_enriched = json.loads(
+            temporal_enriched_json.read_text(encoding="utf-8")
+        )
+        if (
+            temporal_proposal.get("seed") != 19_690_720
+            or len(temporal_proposal.get("packs", [])) != 3
+            or len(temporal_proposal.get("candidates", [])) != 4
+            or {
+                entry.get("disposition")
+                for entry in temporal_proposal.get("coverage", [])
+            }
+            != {"selected", "downgraded", "skipped"}
+            or temporal_receipt.get("output_profile") != temporal_enriched
+        ):
+            raise DocsError(
+                "temporal context fixture omitted coverage, exact inputs, or applied output"
+            )
+
+        for (
+            encoding,
+            generated_manifest,
+            checked_manifest,
+            generated_pack,
+            checked_pack,
+        ) in (
             (
                 "json",
                 generated_character_manifest_json,
@@ -1106,9 +1465,73 @@ def verify_domain_contract() -> None:
                 capture=True,
             )
             if generated_manifest.read_bytes() != checked_manifest.read_bytes():
-                raise DocsError(f"canonical Character manifest is stale: {checked_manifest.name}")
+                raise DocsError(
+                    f"canonical Character manifest is stale: {checked_manifest.name}"
+                )
             if generated_pack.read_bytes() != checked_pack.read_bytes():
-                raise DocsError(f"canonical Character pack is stale: {checked_pack.name}")
+                raise DocsError(
+                    f"canonical Character pack is stale: {checked_pack.name}"
+                )
+
+        for (
+            encoding,
+            generated_manifest,
+            checked_manifest,
+            generated_pack,
+            checked_pack,
+        ) in (
+            (
+                "json",
+                generated_temporal_manifest_json,
+                temporal_manifest_json,
+                generated_temporal_domain_pack_json,
+                temporal_domain_pack_json,
+            ),
+            (
+                "ron",
+                generated_temporal_manifest_ron,
+                temporal_manifest_ron,
+                generated_temporal_domain_pack_ron,
+                temporal_domain_pack_ron,
+            ),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "module-manifest",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_manifest),
+                ],
+                capture=True,
+            )
+            run(
+                [
+                    str(character_tool),
+                    "domain-pack",
+                    str(temporal_enriched_json.relative_to(ROOT)),
+                    "--id",
+                    "ari_vale_temporal",
+                    "--version",
+                    "1.0.0",
+                    "--title",
+                    "Ari Vale Reviewed Temporal Context",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_pack),
+                ],
+                capture=True,
+            )
+            if generated_manifest.read_bytes() != checked_manifest.read_bytes():
+                raise DocsError(
+                    f"canonical temporal Character manifest is stale: {checked_manifest.name}"
+                )
+            if generated_pack.read_bytes() != checked_pack.read_bytes():
+                raise DocsError(
+                    f"canonical temporal Character pack is stale: {checked_pack.name}"
+                )
 
         normalization_jobs = (
             ("manifest", manifest_json, "json", normalized_manifest_json),
@@ -1202,7 +1625,10 @@ def verify_domain_contract() -> None:
         )
         if generated_composed_pack.read_bytes() != composed_world_pack.read_bytes():
             raise DocsError("checked composed World pack is stale")
-        if generated_composition_receipt_json.read_bytes() != composition_receipt_json.read_bytes():
+        if (
+            generated_composition_receipt_json.read_bytes()
+            != composition_receipt_json.read_bytes()
+        ):
             raise DocsError("checked JSON World composition receipt is stale")
         repeat_pack = workspace / "glasswind_composed-repeat.weave-domain.json"
         repeat_command = composition_command.copy()
@@ -1217,7 +1643,10 @@ def verify_domain_contract() -> None:
         )
         if repeat_pack.read_bytes() != composed_world_pack.read_bytes():
             raise DocsError("repeated World composition is not deterministic")
-        if generated_composition_receipt_ron.read_bytes() != composition_receipt_ron.read_bytes():
+        if (
+            generated_composition_receipt_ron.read_bytes()
+            != composition_receipt_ron.read_bytes()
+        ):
             raise DocsError("checked RON World composition receipt is stale")
         receipt = json.loads(composition_receipt_json.read_text(encoding="utf-8"))
         if (
@@ -1226,7 +1655,9 @@ def verify_domain_contract() -> None:
             or len(receipt.get("layers", [])) != 3
             or any(not layer.get("candidates") for layer in receipt.get("layers", []))
         ):
-            raise DocsError("World composition receipt cannot reproduce layer selection")
+            raise DocsError(
+                "World composition receipt cannot reproduce layer selection"
+            )
 
         for encoding, output in (
             ("ron", compiled_tracer_ron),
@@ -1298,9 +1729,16 @@ def verify_domain_contract() -> None:
             ],
             capture=True,
         )
-        if compiled_character_locked_json.read_bytes() != character_story_json.read_bytes():
-            raise DocsError("locked Character project output differs from the checked Story IR")
-        character_story = json.loads(compiled_character_json.read_text(encoding="utf-8"))
+        if (
+            compiled_character_locked_json.read_bytes()
+            != character_story_json.read_bytes()
+        ):
+            raise DocsError(
+                "locked Character project output differs from the checked Story IR"
+            )
+        character_story = json.loads(
+            compiled_character_json.read_text(encoding="utf-8")
+        )
         character_profile = (
             character_story.get("modules", {})
             .get("character", {})
@@ -1336,7 +1774,108 @@ def verify_domain_contract() -> None:
             .get("value")
             is not False
         ):
-            raise DocsError("compiled Character fixture omitted typed evidence or derivation labels")
+            raise DocsError(
+                "compiled Character fixture omitted typed evidence or derivation labels"
+            )
+
+        for encoding, output, checked in (
+            ("ron", compiled_temporal_ron, temporal_story_ron),
+            ("json", compiled_temporal_json, temporal_story_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(temporal_source.relative_to(ROOT)),
+                    "--module-manifest",
+                    str(temporal_manifest_json.relative_to(ROOT)),
+                    "--module-pack",
+                    str(temporal_domain_pack_json.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+            if output.read_bytes() != checked.read_bytes():
+                raise DocsError(
+                    f"compiled temporal Character fixture is stale: {checked.name}"
+                )
+        run(
+            [
+                str(compiler),
+                str(temporal_source.relative_to(ROOT)),
+                "--locked",
+                "--format",
+                "json",
+                "--output",
+                str(compiled_temporal_locked_json),
+            ],
+            capture=True,
+        )
+        if (
+            compiled_temporal_locked_json.read_bytes()
+            != temporal_story_json.read_bytes()
+        ):
+            raise DocsError(
+                "locked temporal Character project output differs from checked Story IR"
+            )
+        temporal_story = json.loads(compiled_temporal_json.read_text(encoding="utf-8"))
+        temporal_module = temporal_story.get("modules", {}).get("character", {})
+        temporal_profile = (
+            temporal_module.get("exports", {})
+            .get("profile", {})
+            .get("value", {})
+            .get("value", {})
+        )
+        temporal_context_value = temporal_profile.get("date_context", {}).get(
+            "value", {}
+        )
+        accepted_record_ids = [
+            item.get("value")
+            for item in temporal_context_value.get("accepted_record_ids", {}).get(
+                "value", []
+            )
+        ]
+        temporal_cues = [
+            item.get("value", {})
+            for item in temporal_context_value.get("cues", {}).get("value", [])
+        ]
+        apollo_cues = [
+            cue
+            for cue in temporal_cues
+            if cue.get("record_id", {}).get("value") == "apollo_11_lunar_landing"
+        ]
+        if (
+            temporal_story.get("version") != 4
+            or temporal_module.get("version") != "1.1.0"
+            or temporal_module.get("pack_id") != "ari_vale_temporal"
+            or accepted_record_ids
+            != [
+                "apollo_11_lunar_landing",
+                "calendar_midsummer_period",
+                "world_coastal_fog_cycle",
+            ]
+            or temporal_context_value.get("canonical_personality_write_back", {}).get(
+                "value"
+            )
+            is not False
+            or len(temporal_cues) != 3
+            or len(apollo_cues) != 1
+            or [
+                item.get("value")
+                for item in apollo_cues[0].get("fact_source_ids", {}).get("value", [])
+            ]
+            != ["apollo_11_wikidata"]
+            or [
+                item.get("value")
+                for item in apollo_cues[0].get("cue_source_ids", {}).get("value", [])
+            ]
+            != ["weave_historical_cues"]
+        ):
+            raise DocsError(
+                "compiled temporal Character fixture merged lineage or enabled write-back"
+            )
 
         run(
             [
@@ -1370,7 +1909,9 @@ def verify_domain_contract() -> None:
             (compiled_world_json, world_fixture / "reference-place.story.json"),
         ):
             if generated.read_bytes() != checked.read_bytes():
-                raise DocsError(f"compiled Weave World fixture is stale: {checked.name}")
+                raise DocsError(
+                    f"compiled Weave World fixture is stale: {checked.name}"
+                )
         world_story = json.loads(compiled_world_json.read_text(encoding="utf-8"))
         world_seed = (
             world_story.get("modules", {})
@@ -1404,7 +1945,9 @@ def verify_domain_contract() -> None:
             or "daylight" not in world_seed
             or "hazards" not in world_seed
         ):
-            raise DocsError("compiled Weave World fixture omitted its environmental seed")
+            raise DocsError(
+                "compiled Weave World fixture omitted its environmental seed"
+            )
 
         for encoding, output in (
             ("ron", compiled_authored_world_ron),
@@ -1430,8 +1973,12 @@ def verify_domain_contract() -> None:
             (compiled_authored_world_json, authored_world_json),
         ):
             if generated.read_bytes() != checked.read_bytes():
-                raise DocsError(f"compiled authored World fixture is stale: {checked.name}")
-        authored_story = json.loads(compiled_authored_world_json.read_text(encoding="utf-8"))
+                raise DocsError(
+                    f"compiled authored World fixture is stale: {checked.name}"
+                )
+        authored_story = json.loads(
+            compiled_authored_world_json.read_text(encoding="utf-8")
+        )
         authored_module = authored_story.get("modules", {}).get("world", {})
         authored_exports = authored_module.get("exports", {})
         authored_places = (
@@ -1461,7 +2008,9 @@ def verify_domain_contract() -> None:
             != "Lantern Road"
             or len(authored_story.get("modules", {})) != 1
         ):
-            raise DocsError("compiled authored World layer omitted rules, places, or lineage")
+            raise DocsError(
+                "compiled authored World layer omitted rules, places, or lineage"
+            )
 
         for encoding, output in (
             ("ron", compiled_composed_world_ron),
@@ -1484,8 +2033,12 @@ def verify_domain_contract() -> None:
             (compiled_composed_world_json, composed_world_story_json),
         ):
             if generated.read_bytes() != checked.read_bytes():
-                raise DocsError(f"compiled composed World fixture is stale: {checked.name}")
-        composed_story = json.loads(compiled_composed_world_json.read_text(encoding="utf-8"))
+                raise DocsError(
+                    f"compiled composed World fixture is stale: {checked.name}"
+                )
+        composed_story = json.loads(
+            compiled_composed_world_json.read_text(encoding="utf-8")
+        )
         composed_module = composed_story.get("modules", {}).get("world", {})
         composed_seed = (
             composed_module.get("exports", {})
@@ -1510,7 +2063,9 @@ def verify_domain_contract() -> None:
             .get("value")
             != "glasswind_composed"
         ):
-            raise DocsError("compiled composed World omitted layer or authored precedence")
+            raise DocsError(
+                "compiled composed World omitted layer or authored precedence"
+            )
 
         full_export = json.loads(full_world_json.read_text(encoding="utf-8"))
         compact_export_text = compact_world_json.read_text(encoding="utf-8")
@@ -1573,7 +2128,9 @@ def verify_domain_contract() -> None:
                 (generated_json, checked_json),
             ):
                 if generated.read_bytes() != checked.read_bytes():
-                    raise DocsError(f"compiled Weave World corpus story is stale: {checked.name}")
+                    raise DocsError(
+                        f"compiled Weave World corpus story is stale: {checked.name}"
+                    )
             story = json.loads(generated_json.read_text(encoding="utf-8"))
             seed = (
                 story.get("modules", {})
@@ -1584,10 +2141,7 @@ def verify_domain_contract() -> None:
                 .get("value", {})
             )
             preset = (
-                seed.get("identity", {})
-                .get("value", {})
-                .get("preset", {})
-                .get("value")
+                seed.get("identity", {}).get("value", {}).get("preset", {}).get("value")
             )
             resolution = (
                 seed.get("context", {})
@@ -1609,10 +2163,17 @@ def verify_domain_contract() -> None:
                 or "daylight" not in seed
                 or "hazards" not in seed
             ):
-                raise DocsError(f"compiled world corpus seed is incomplete: {expected_preset}")
+                raise DocsError(
+                    f"compiled world corpus seed is incomplete: {expected_preset}"
+                )
             observed_world_presets[preset] = resolution
-        if len(observed_world_presets) != 4 or len(set(observed_world_presets.values())) != 4:
-            raise DocsError("world corpus fixtures are not distinct across four geographic scales")
+        if (
+            len(observed_world_presets) != 4
+            or len(set(observed_world_presets.values())) != 4
+        ):
+            raise DocsError(
+                "world corpus fixtures are not distinct across four geographic scales"
+            )
 
         publication = workspace / "publication"
         registry = workspace / "registry"
@@ -1713,7 +2274,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/domain projection, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -1806,6 +2367,11 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-proposal-v1.schema.json",
         "weave-character-review-v1.schema.json",
         "weave-character-progress-v1.schema.json",
+        "weave-character-temporal-pack-v1.schema.json",
+        "weave-character-temporal-config-v1.schema.json",
+        "weave-character-temporal-proposal-v1.schema.json",
+        "weave-character-temporal-review-v1.schema.json",
+        "weave-character-temporal-receipt-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")
@@ -1829,7 +2395,9 @@ class PageParser(html.parser.HTMLParser):
         super().__init__(convert_charrefs=True)
         self.page = HtmlPage()
 
-    def handle_starttag(self, tag: str, attributes: list[tuple[str, str | None]]) -> None:
+    def handle_starttag(
+        self, tag: str, attributes: list[tuple[str, str | None]]
+    ) -> None:
         values = dict(attributes)
         if tag == "html":
             self.page.language = values.get("lang")
@@ -1857,7 +2425,9 @@ def parse_site_pages() -> dict[Path, HtmlPage]:
     pages: dict[Path, HtmlPage] = {}
     for path in sorted(BOOK.rglob("*.html")):
         relative = path.relative_to(BOOK)
-        if (relative.parts and relative.parts[0] == "api") or relative.name == "toc.html":
+        if (
+            relative.parts and relative.parts[0] == "api"
+        ) or relative.name == "toc.html":
             continue
         parser = PageParser()
         parser.feed(path.read_text(encoding="utf-8"))
@@ -1901,21 +2471,29 @@ def check_rendered_site() -> None:
         if not page.title.strip():
             failures.append(f"{relative}: missing document title")
         if page.main_count != 1:
-            failures.append(f"{relative}: expected one main landmark, found {page.main_count}")
+            failures.append(
+                f"{relative}: expected one main landmark, found {page.main_count}"
+            )
         if page.images_without_alt:
-            failures.append(f"{relative}: {page.images_without_alt} image(s) have no alt attribute")
+            failures.append(
+                f"{relative}: {page.images_without_alt} image(s) have no alt attribute"
+            )
 
         for href in page.links:
             if href in {"#main", "#mdbook-content"}:
                 saw_skip_link = True
             if "/docs/docs/" in href:
-                failures.append(f"{relative}: duplicated documentation path in link: {href}")
+                failures.append(
+                    f"{relative}: duplicated documentation path in link: {href}"
+                )
             resolved = local_html_target(path, href)
             if resolved is None:
                 continue
             target, fragment = resolved
             if target.suffix == ".md":
-                failures.append(f"{relative}: rendered link still targets Markdown: {href}")
+                failures.append(
+                    f"{relative}: rendered link still targets Markdown: {href}"
+                )
                 continue
             if not target.exists():
                 failures.append(f"{relative}: missing local target {href}")
@@ -1927,7 +2505,11 @@ def check_rendered_site() -> None:
     if not saw_skip_link:
         failures.append("site has no skip link to the main content")
 
-    search_indexes = [path for path in BOOK.glob("searchindex*") if path.is_file() and path.stat().st_size > 0]
+    search_indexes = [
+        path
+        for path in BOOK.glob("searchindex*")
+        if path.is_file() and path.stat().st_size > 0
+    ]
     if not search_indexes:
         failures.append("site search index is missing or empty")
 
@@ -1952,10 +2534,14 @@ def check_rendered_site() -> None:
         rustdoc_name = package.replace("-", "_")
         entry = BOOK / "api" / rustdoc_name / "index.html"
         if not entry.is_file():
-            failures.append(f"generated API entry point is missing: {entry.relative_to(BOOK)}")
+            failures.append(
+                f"generated API entry point is missing: {entry.relative_to(BOOK)}"
+            )
 
     if failures:
-        raise DocsError("documentation site verification failed:\n  " + "\n  ".join(failures))
+        raise DocsError(
+            "documentation site verification failed:\n  " + "\n  ".join(failures)
+        )
     print(f"verified {len(pages)} rendered documentation pages", flush=True)
 
 

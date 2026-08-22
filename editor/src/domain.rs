@@ -1220,7 +1220,11 @@ mod tests {
         assert_eq!(inspection.alias, "character");
         assert_eq!(inspection.id, "org.weave.character");
         assert_eq!(inspection.pack_id, "ari_vale");
-        assert_eq!(inspection.read_only_paths.len(), 5);
+        assert_eq!(inspection.read_only_paths.len(), 6);
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "date_context"].map(str::to_owned)
+                && declaration.reason.contains("non-causal read-only context")
+        }));
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "ocean"].map(str::to_owned)
                 && declaration.reason.contains("lossy derived")

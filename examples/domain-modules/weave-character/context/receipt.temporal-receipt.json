@@ -1,0 +1,3020 @@
+{
+  "receipt_format_version": 1,
+  "input_profile": {
+    "profile_format_version": 1,
+    "id": "org.weave.character.ari_vale",
+    "canon": {
+      "identity": {
+        "display_name": {
+          "value": "Ari Vale",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "aliases": {
+          "value": [
+            "Ari",
+            "Vale"
+          ],
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "birth_date": {
+        "value": {
+          "precision": "full",
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 7,
+          "day": 20
+        },
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "character_original"
+        ]
+      },
+      "personality": {
+        "honesty_humility": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.72
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sincerity": {
+            "value": {
+              "form": "score",
+              "score": 0.76
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "fairness": {
+            "value": {
+              "form": "score",
+              "score": 0.81
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "greed_avoidance": {
+            "value": {
+              "form": "score",
+              "score": 0.66
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "modesty": {
+            "value": {
+              "form": "score",
+              "score": 0.65
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "emotionality": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.57
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "fearfulness": {
+            "value": {
+              "form": "score",
+              "score": 0.42
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "anxiety": {
+            "value": {
+              "form": "score",
+              "score": 0.58
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "dependence": {
+            "value": {
+              "form": "score",
+              "score": 0.49
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sentimentality": {
+            "value": {
+              "form": "score",
+              "score": 0.79
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "extraversion": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.68
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "social_self_esteem": {
+            "value": {
+              "form": "score",
+              "score": 0.73
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "social_boldness": {
+            "value": {
+              "form": "score",
+              "score": 0.61
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sociability": {
+            "value": {
+              "form": "score",
+              "score": 0.64
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "liveliness": {
+            "value": {
+              "form": "score",
+              "score": 0.74
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "agreeableness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.63
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "forgivingness": {
+            "value": {
+              "form": "score",
+              "score": 0.55
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "gentleness": {
+            "value": {
+              "form": "score",
+              "score": 0.71
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "flexibility": {
+            "value": {
+              "form": "score",
+              "score": 0.59
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "patience": {
+            "value": {
+              "form": "score",
+              "score": 0.67
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "conscientiousness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.78
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "organization": {
+            "value": {
+              "form": "score",
+              "score": 0.75
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "diligence": {
+            "value": {
+              "form": "score",
+              "score": 0.84
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "perfectionism": {
+            "value": {
+              "form": "score",
+              "score": 0.69
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "prudence": {
+            "value": {
+              "form": "score",
+              "score": 0.82
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "locked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "openness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.83
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "aesthetic_appreciation": {
+            "value": {
+              "form": "score",
+              "score": 0.88
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "inquisitiveness": {
+            "value": {
+              "form": "score",
+              "score": 0.81
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "creativity": {
+            "value": {
+              "form": "score",
+              "score": 0.86
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "unconventionality": {
+            "value": {
+              "form": "score",
+              "score": 0.77
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      },
+      "inner_life": {
+        "keeps_promises": {
+          "id": "keeps_promises",
+          "category": "value",
+          "content": {
+            "value": "Promises become paths Ari can follow through uncertainty.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      },
+      "voice": {
+        "measured_warmth": {
+          "id": "measured_warmth",
+          "category": "cadence",
+          "content": {
+            "value": "Short observations followed by one generous question.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      }
+    },
+    "extensions": {
+      "org.weave.character.alignment": {
+        "kind": "alignment_view",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.alignment",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "view_id": "org.weave.alignment.compass",
+            "values": {
+              "kind": "object",
+              "value": {
+                "orientation": {
+                  "kind": "symbol",
+                  "value": "steward"
+                }
+              }
+            },
+            "input_paths": [
+              "canon.personality.agreeableness.factor",
+              "canon.personality.honesty_humility.factor"
+            ]
+          }
+        }
+      },
+      "org.weave.character.behavioral_signatures": {
+        "kind": "behavioral_signatures",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.behavioral_signatures",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "signatures": {
+              "maps_before_moving": {
+                "id": "maps_before_moving",
+                "cue": "Sketches a route before committing the group.",
+                "strength": 0.8
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.expression": {
+        "kind": "expression",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.expression",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "lexicon": {
+              "waymark": {
+                "id": "waymark",
+                "category": "org.weave.expression.navigation",
+                "normalized": "waymark",
+                "strength": 0.8
+              }
+            },
+            "preferences": {
+              "clear_questions": {
+                "id": "clear_questions",
+                "category": "org.weave.preference.communication",
+                "target": "clear questions",
+                "polarity": "prefer",
+                "strength": 0.9
+              }
+            },
+            "behavioral_signature_refs": [
+              "org.weave.signature.maps_before_moving"
+            ],
+            "source_pack_refs": [
+              "org.weave.expression.glasswind"
+            ]
+          }
+        }
+      },
+      "org.weave.character.identity_presentation": {
+        "kind": "identity_presentation",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.identity_presentation",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "identity_refs": [
+              "org.weave.identity.wayfinder"
+            ],
+            "presentation_refs": [
+              "assets/avatars/ari_vale.png",
+              "assets/palettes/cedar_snow.json"
+            ]
+          }
+        }
+      },
+      "org.weave.character.relationships": {
+        "kind": "relationships",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.relationships",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "edges": {
+              "mentor_sable": {
+                "id": "mentor_sable",
+                "source_character_id": "org.weave.character.ari_vale",
+                "target_character_id": "org.weave.character.sable_reed",
+                "kind": "org.weave.relationship.mentor",
+                "confidence": "high"
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.role_projections": {
+        "kind": "role_projections",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.role_projections",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "roles": {
+              "route_steward": {
+                "id": "route_steward",
+                "taxonomy": "org.weave.roles.glasswind",
+                "role": "Route steward",
+                "rationale": "Accepted as a narrative role, not a personality fact.",
+                "input_paths": [
+                  "canon.personality.conscientiousness.factor",
+                  "canon.personality.openness.factor"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.tabletop": {
+        "kind": "tabletop",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.tabletop",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "interpretation": "preserved_inactive",
+            "payload": {
+              "kind": "object",
+              "value": {
+                "ruleset_ref": {
+                  "kind": "string",
+                  "value": "org.weave.rules.synthetic@1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "suggestions": {
+      "night_market_memory": {
+        "id": "night_market_memory",
+        "target_path": "canon.inner_life.night_market_memory",
+        "proposal": {
+          "value": {
+            "kind": "string",
+            "value": "A remembered lantern exchange may create a useful tension."
+          },
+          "state": "suggested",
+          "confidence": "low",
+          "review": "pending",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ],
+          "rationale": "Optional synthetic authoring prompt."
+        }
+      }
+    },
+    "derived": {
+      "ocean": {
+        "algorithm": "weave_hexaco_to_ocean_compatibility",
+        "algorithm_version": 1,
+        "lossy": true,
+        "independent_evidence": false,
+        "openness": {
+          "score": 0.83,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.openness.factor"
+          ]
+        },
+        "conscientiousness": {
+          "score": 0.78,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.conscientiousness.factor"
+          ]
+        },
+        "extraversion": {
+          "score": 0.68,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.extraversion.factor"
+          ]
+        },
+        "agreeableness": {
+          "score": 0.63,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.agreeableness.factor"
+          ]
+        },
+        "neuroticism": {
+          "score": 0.57,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.emotionality.factor"
+          ]
+        },
+        "omitted_factor": "honesty_humility"
+      }
+    },
+    "provenance": {
+      "sources": [
+        {
+          "id": "character_original",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "character-contract-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic Weave Character contract fixture.",
+          "modified": false
+        }
+      ],
+      "transformations": [],
+      "claims": {
+        "profile": [
+          "character_original"
+        ]
+      }
+    }
+  },
+  "packs": [
+    {
+      "pack_format_version": 1,
+      "id": "org.weave.context.apollo_11",
+      "version": "1.0.0",
+      "title": "Apollo 11 structured-date context",
+      "license": "CC0-1.0 AND MIT",
+      "license_url": "https://spdx.org/licenses/",
+      "provider": {
+        "kind": "standalone"
+      },
+      "records": {
+        "apollo_11_lunar_landing": {
+          "id": "apollo_11_lunar_landing",
+          "kind": "historical_event",
+          "evidence_class": "calendrical_fact",
+          "extent": {
+            "precision": "date",
+            "date": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            }
+          },
+          "place_scope": {
+            "scope": "global"
+          },
+          "time_zone": {
+            "kind": "utc"
+          },
+          "reference_period": {
+            "label": "Apollo 11 structured event date",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            },
+            "resolution": "day"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "date": {
+                "kind": "string",
+                "value": "1969-07-20"
+              },
+              "entity": {
+                "kind": "symbol",
+                "value": "wikidata_q43653"
+              },
+              "event": {
+                "kind": "string",
+                "value": "Apollo 11 lunar landing"
+              },
+              "precision": {
+                "kind": "symbol",
+                "value": "day"
+              },
+              "revision": {
+                "kind": "string",
+                "value": "2526069885"
+              }
+            }
+          },
+          "tags": [
+            "historical",
+            "spaceflight"
+          ],
+          "cues": {
+            "shared_horizon": {
+              "id": "shared_horizon",
+              "kind": "value",
+              "content": "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+              "trait_vector": {
+                "diligence": 350,
+                "openness": 400,
+                "inquisitiveness": 250
+              },
+              "tags": [
+                "collective_effort"
+              ],
+              "limitations": "This original fictional prompt is merely discoverable through a date match; Apollo 11 neither causes nor predicts personality and the cue makes no claim about a real person.",
+              "source_ids": [
+                "weave_historical_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "apollo_11_wikidata"
+          ],
+          "uncertainty": {
+            "level": "exact",
+            "reason": "The pinned structured entity records the event date at day precision."
+          },
+          "sensitivity": {
+            "level": "moderate",
+            "topics": [
+              "history",
+              "spaceflight"
+            ],
+            "requires_explicit_review": true,
+            "note": "A real historical event is retained only as sourced context for an independently original fictional prompt."
+          }
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "apollo_11_wikidata",
+            "kind": "public_source",
+            "url": "https://www.wikidata.org/wiki/Special:EntityData/Q43653.json?revision=2526069885&flavor=simple",
+            "revision": "2526069885 (2026-08-02T06:29:38Z)",
+            "sha256": "52c78c8a7c1320e970a6aa1c2737c9e0a89e786be957f380f389d02ab84c006b",
+            "license": "CC0-1.0",
+            "license_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+            "attribution": "Wikidata contributors, Apollo 11 (Q43653), revision 2526069885. Attribution retained although CC0 does not require it.",
+            "modified": false
+          },
+          {
+            "id": "weave_historical_cues",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "temporal-context-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original fictional historical-context prompts and declared HEXACO vectors.",
+            "modified": false
+          }
+        ],
+        "transformations": [],
+        "claims": {
+          "records.apollo_11_lunar_landing.cues": [
+            "weave_historical_cues"
+          ],
+          "records.apollo_11_lunar_landing.fact": [
+            "apollo_11_wikidata"
+          ]
+        }
+      }
+    },
+    {
+      "pack_format_version": 1,
+      "id": "org.weave.context.original_calendar",
+      "version": "1.0.0",
+      "title": "Original synthetic calendar context",
+      "license": "MIT",
+      "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+      "provider": {
+        "kind": "standalone"
+      },
+      "records": {
+        "calendar_disputed_celestial": {
+          "id": "calendar_disputed_celestial",
+          "kind": "celestial_fact",
+          "evidence_class": "calendrical_fact",
+          "extent": {
+            "precision": "date",
+            "date": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            }
+          },
+          "place_scope": {
+            "scope": "global"
+          },
+          "time_zone": {
+            "kind": "utc"
+          },
+          "reference_period": {
+            "label": "Synthetic disputed celestial reference",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 20
+            },
+            "resolution": "day"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "fixture_status": {
+                "kind": "symbol",
+                "value": "synthetic_disputed"
+              }
+            }
+          },
+          "tags": [
+            "celestial",
+            "synthetic"
+          ],
+          "cues": {
+            "uncertain_light": {
+              "id": "uncertain_light",
+              "kind": "tension",
+              "content": "Imagine a fictional disagreement over whether an uncertain light was a warning or an invitation.",
+              "trait_vector": {
+                "anxiety": 450,
+                "openness": 550
+              },
+              "tags": [
+                "fictional_prompt"
+              ],
+              "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+              "source_ids": [
+                "weave_calendar_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "weave_calendar_facts"
+          ],
+          "uncertainty": {
+            "level": "disputed",
+            "reason": "The synthetic fixture deliberately marks this record disputed so ranking must downgrade it."
+          },
+          "sensitivity": {
+            "level": "low",
+            "topics": [],
+            "requires_explicit_review": false,
+            "note": "Neutral original fictional prompt."
+          }
+        },
+        "calendar_midsummer_period": {
+          "id": "calendar_midsummer_period",
+          "kind": "seasonal_fact",
+          "evidence_class": "calendrical_fact",
+          "extent": {
+            "precision": "date_range",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 6,
+              "day": 21
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 9,
+              "day": 22
+            }
+          },
+          "place_scope": {
+            "scope": "global"
+          },
+          "time_zone": {
+            "kind": "utc"
+          },
+          "reference_period": {
+            "label": "Synthetic 1969 northern midsummer interval",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 6,
+              "day": 21
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 9,
+              "day": 22
+            },
+            "resolution": "period"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "season": {
+                "kind": "symbol",
+                "value": "synthetic_northern_midsummer"
+              }
+            }
+          },
+          "tags": [
+            "seasonal",
+            "synthetic"
+          ],
+          "cues": {
+            "long_light_gathering": {
+              "id": "long_light_gathering",
+              "kind": "memory",
+              "content": "Imagine a fictional gathering held while the evening light lingered, with room for both celebration and quiet observation.",
+              "trait_vector": {
+                "sociability": 550,
+                "aesthetic_appreciation": 450
+              },
+              "tags": [
+                "fictional_prompt"
+              ],
+              "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+              "source_ids": [
+                "weave_calendar_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "weave_calendar_facts"
+          ],
+          "uncertainty": {
+            "level": "bounded",
+            "reason": "The original fixture supplies a bounded seasonal interval rather than an instant."
+          },
+          "sensitivity": {
+            "level": "low",
+            "topics": [],
+            "requires_explicit_review": false,
+            "note": "Neutral original fictional prompt."
+          }
+        },
+        "calendar_twentieth_day_observance": {
+          "id": "calendar_twentieth_day_observance",
+          "kind": "commemoration",
+          "evidence_class": "interpretive_context",
+          "extent": {
+            "precision": "month_day",
+            "month": 7,
+            "day": 20
+          },
+          "place_scope": {
+            "scope": "global"
+          },
+          "time_zone": {
+            "kind": "utc"
+          },
+          "reference_period": {
+            "label": "Original recurring fictional observance",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1,
+              "month": 7,
+              "day": 20
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 9999,
+              "month": 7,
+              "day": 20
+            },
+            "resolution": "recurring_day"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "observance": {
+                "kind": "symbol",
+                "value": "fictional_twentieth_day"
+              }
+            }
+          },
+          "tags": [
+            "commemoration",
+            "synthetic"
+          ],
+          "cues": {
+            "returning_table": {
+              "id": "returning_table",
+              "kind": "affinity",
+              "content": "Consider whether the fictional character is drawn to a table that is rebuilt each year for whoever arrives.",
+              "trait_vector": {
+                "sentimentality": 600,
+                "sociability": 400
+              },
+              "tags": [
+                "fictional_prompt"
+              ],
+              "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+              "source_ids": [
+                "weave_calendar_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "weave_calendar_facts"
+          ],
+          "uncertainty": {
+            "level": "exact",
+            "reason": "The recurring month-day is explicit original fixture data."
+          },
+          "sensitivity": {
+            "level": "low",
+            "topics": [],
+            "requires_explicit_review": false,
+            "note": "Neutral original fictional prompt."
+          }
+        },
+        "calendar_unmatched_leap_day": {
+          "id": "calendar_unmatched_leap_day",
+          "kind": "calendrical_fact",
+          "evidence_class": "calendrical_fact",
+          "extent": {
+            "precision": "month_day",
+            "month": 2,
+            "day": 29
+          },
+          "place_scope": {
+            "scope": "global"
+          },
+          "time_zone": {
+            "kind": "utc"
+          },
+          "reference_period": {
+            "label": "Proleptic Gregorian recurring leap day",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 4,
+              "month": 2,
+              "day": 29
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 9996,
+              "month": 2,
+              "day": 29
+            },
+            "resolution": "recurring_day"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "month_day": {
+                "kind": "string",
+                "value": "02-29"
+              }
+            }
+          },
+          "tags": [
+            "calendar",
+            "leap_day"
+          ],
+          "cues": {
+            "rare_cadence": {
+              "id": "rare_cadence",
+              "kind": "voice",
+              "content": "Imagine a fictional speaking cadence that saves its most unusual image for rare occasions.",
+              "trait_vector": {
+                "creativity": 1000
+              },
+              "tags": [
+                "fictional_prompt"
+              ],
+              "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+              "source_ids": [
+                "weave_calendar_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "weave_calendar_facts"
+          ],
+          "uncertainty": {
+            "level": "exact",
+            "reason": "The recurring leap-day rule is explicit in the proleptic Gregorian fixture."
+          },
+          "sensitivity": {
+            "level": "low",
+            "topics": [],
+            "requires_explicit_review": false,
+            "note": "Neutral original fictional prompt."
+          }
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "weave_calendar_cues",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "temporal-context-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original fictional calendar prompts and declared HEXACO vectors.",
+            "modified": false
+          },
+          {
+            "id": "weave_calendar_facts",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "temporal-context-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic calendrical, seasonal, and celestial fixture facts.",
+            "modified": false
+          }
+        ],
+        "transformations": [],
+        "claims": {
+          "records.cues": [
+            "weave_calendar_cues"
+          ],
+          "records.facts": [
+            "weave_calendar_facts"
+          ]
+        }
+      }
+    },
+    {
+      "pack_format_version": 1,
+      "id": "org.weave.context.world_projection",
+      "version": "1.0.0",
+      "title": "World-compatible fictional environment context",
+      "license": "MIT",
+      "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+      "provider": {
+        "kind": "domain_module",
+        "module_id": "org.weave.world",
+        "module_version": "1.1.0",
+        "pack_id": "synthetic_temporal_projection",
+        "pack_version": "1.0.0",
+        "content_sha256": "a621a40d1f5713bae1b9e4f478970e16b3d80f5c5d3d030a51c824fc20c39a92"
+      },
+      "records": {
+        "world_coastal_fog_cycle": {
+          "id": "world_coastal_fog_cycle",
+          "kind": "environmental_fact",
+          "evidence_class": "measured_fact",
+          "extent": {
+            "precision": "date_range",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 1
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 8,
+              "day": 31
+            }
+          },
+          "place_scope": {
+            "scope": "place",
+            "id": "org.weave.place.synthetic_coast",
+            "kind": "org.weave.world.fictional_region"
+          },
+          "time_zone": {
+            "kind": "iana",
+            "id": "America/Los_Angeles"
+          },
+          "reference_period": {
+            "label": "Original fictional coast summer projection",
+            "start": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 7,
+              "day": 1
+            },
+            "end": {
+              "calendar": "proleptic_gregorian",
+              "year": 1969,
+              "month": 8,
+              "day": 31
+            },
+            "resolution": "period"
+          },
+          "fact": {
+            "kind": "object",
+            "value": {
+              "fictional": {
+                "kind": "bool",
+                "value": true
+              },
+              "pattern": {
+                "kind": "symbol",
+                "value": "recurring_coastal_fog"
+              },
+              "world_place": {
+                "kind": "symbol",
+                "value": "org_weave_place_synthetic_coast"
+              }
+            }
+          },
+          "tags": [
+            "environmental",
+            "world_projection"
+          ],
+          "cues": {
+            "returning_fog": {
+              "id": "returning_fog",
+              "kind": "memory",
+              "content": "Imagine a fictional memory in which familiar fog made subtle changes easier to notice.",
+              "trait_vector": {
+                "patience": 300,
+                "perfectionism": 250,
+                "aesthetic_appreciation": 450
+              },
+              "tags": [
+                "fictional_prompt"
+              ],
+              "limitations": "This original fictional cue is a non-causal authoring option; the environment record does not predict personality.",
+              "source_ids": [
+                "weave_world_cues"
+              ]
+            }
+          },
+          "source_ids": [
+            "weave_world_projection"
+          ],
+          "uncertainty": {
+            "level": "bounded",
+            "reason": "The World-compatible fictional projection covers a declared date interval and place scope."
+          },
+          "sensitivity": {
+            "level": "low",
+            "topics": [],
+            "requires_explicit_review": false,
+            "note": "Neutral original fictional environmental prompt."
+          }
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "weave_world_cues",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "temporal-context-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original fictional environmental prompts and declared HEXACO vectors.",
+            "modified": false
+          },
+          {
+            "id": "weave_world_projection",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "temporal-context-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic World-compatible environmental projection fixture.",
+            "modified": false
+          }
+        ],
+        "transformations": [],
+        "claims": {
+          "records.world_coastal_fog_cycle.cues": [
+            "weave_world_cues"
+          ],
+          "records.world_coastal_fog_cycle.fact": [
+            "weave_world_projection"
+          ]
+        }
+      }
+    }
+  ],
+  "proposal": {
+    "proposal_format_version": 1,
+    "profile_id": "org.weave.character.ari_vale",
+    "profile_sha256": "11b6f71674c9991ed37a356e2378b15a03b53fd30751c5a9575ff7d33400a9af",
+    "birth_date": {
+      "precision": "full",
+      "calendar": "proleptic_gregorian",
+      "year": 1969,
+      "month": 7,
+      "day": 20
+    },
+    "packs": [
+      {
+        "id": "org.weave.context.apollo_11",
+        "version": "1.0.0",
+        "sha256": "88f902d2b93fc64b7dfc1b8d8403baa26689f4b38e9e773a6e26bc25501b8c46"
+      },
+      {
+        "id": "org.weave.context.original_calendar",
+        "version": "1.0.0",
+        "sha256": "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa"
+      },
+      {
+        "id": "org.weave.context.world_projection",
+        "version": "1.0.0",
+        "sha256": "4b5aa40238e56419027c1e6e9500389c2dde08b9b3fcf66bf677a05387d0a830"
+      }
+    ],
+    "config": {
+      "config_format_version": 1,
+      "id": "org.weave.context.reference_ranking",
+      "minimum_relevance_micros": 350000,
+      "minimum_trait_coverage_micros": 100000,
+      "maximum_candidates": 16,
+      "allowed_record_kinds": [
+        "calendrical_fact",
+        "seasonal_fact",
+        "environmental_fact",
+        "celestial_fact",
+        "commemoration",
+        "historical_event"
+      ],
+      "allowed_cue_kinds": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "allowed_sensitivities": [
+        "low",
+        "moderate"
+      ],
+      "required_tags": [],
+      "place_scope_ids": [
+        "org.weave.place.synthetic_coast"
+      ],
+      "time_zone": {
+        "kind": "iana",
+        "id": "America/Los_Angeles"
+      },
+      "allow_global_without_place": true,
+      "auto_approve": {
+        "policy": "disabled"
+      },
+      "override_locked_context": false
+    },
+    "config_sha256": "697aeda1299a7e531cdccc56b6d1a493e1e10e63f6a79c11d2eebcfe71786e98",
+    "seed": 19690720,
+    "candidates": [
+      {
+        "id": "cue_afa4e07801cd5172193f83f1",
+        "pack": {
+          "id": "org.weave.context.apollo_11",
+          "version": "1.0.0",
+          "sha256": "88f902d2b93fc64b7dfc1b8d8403baa26689f4b38e9e773a6e26bc25501b8c46"
+        },
+        "record_id": "apollo_11_lunar_landing",
+        "cue_id": "shared_horizon",
+        "kind": "value",
+        "content": "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+        "relevance_micros": 787075,
+        "uncertainty": "exact",
+        "sensitivity": "moderate",
+        "requires_explicit_review": true,
+        "fact_source_ids": [
+          "apollo_11_wikidata"
+        ],
+        "cue_source_ids": [
+          "weave_historical_cues"
+        ],
+        "source_ids": [
+          "apollo_11_wikidata",
+          "weave_historical_cues"
+        ],
+        "trace": {
+          "match_kind": "exact_date",
+          "temporal_factor_micros": 1000000,
+          "place_factor_micros": 950000,
+          "time_zone_factor_micros": 1000000,
+          "uncertainty_factor_micros": 1000000,
+          "trait_coverage_micros": 1000000,
+          "cue_compatibility_micros": 828500,
+          "contributions": [
+            {
+              "trait_id": "diligence",
+              "profile_micros": 840000,
+              "cue_weight_thousandths": 350,
+              "compatibility_micros": 840000,
+              "weighted_contribution_micros": 294000
+            },
+            {
+              "trait_id": "openness",
+              "profile_micros": 830000,
+              "cue_weight_thousandths": 400,
+              "compatibility_micros": 830000,
+              "weighted_contribution_micros": 332000
+            },
+            {
+              "trait_id": "inquisitiveness",
+              "profile_micros": 810000,
+              "cue_weight_thousandths": 250,
+              "compatibility_micros": 810000,
+              "weighted_contribution_micros": 202500
+            }
+          ],
+          "explanation": "Relevance uses only the cue's declared HEXACO vector plus temporal, place, time-zone, and uncertainty factors; the fact payload is never scored."
+        },
+        "tie_break_sha256": "4bd6aee6f2d06e8f8d37be3e7d52a103d4a6750cd3075a492de7d807870ae94a",
+        "auto_approve_eligible": false
+      },
+      {
+        "id": "cue_58d0b61392a896966ba5a94e",
+        "pack": {
+          "id": "org.weave.context.original_calendar",
+          "version": "1.0.0",
+          "sha256": "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa"
+        },
+        "record_id": "calendar_twentieth_day_observance",
+        "cue_id": "returning_table",
+        "kind": "affinity",
+        "content": "Consider whether the fictional character is drawn to a table that is rebuilt each year for whoever arrives.",
+        "relevance_micros": 641488,
+        "uncertainty": "exact",
+        "sensitivity": "low",
+        "requires_explicit_review": false,
+        "fact_source_ids": [
+          "weave_calendar_facts"
+        ],
+        "cue_source_ids": [
+          "weave_calendar_cues"
+        ],
+        "source_ids": [
+          "weave_calendar_cues",
+          "weave_calendar_facts"
+        ],
+        "trace": {
+          "match_kind": "recurring_month_day",
+          "temporal_factor_micros": 925000,
+          "place_factor_micros": 950000,
+          "time_zone_factor_micros": 1000000,
+          "uncertainty_factor_micros": 1000000,
+          "trait_coverage_micros": 1000000,
+          "cue_compatibility_micros": 730000,
+          "contributions": [
+            {
+              "trait_id": "sentimentality",
+              "profile_micros": 790000,
+              "cue_weight_thousandths": 600,
+              "compatibility_micros": 790000,
+              "weighted_contribution_micros": 474000
+            },
+            {
+              "trait_id": "sociability",
+              "profile_micros": 640000,
+              "cue_weight_thousandths": 400,
+              "compatibility_micros": 640000,
+              "weighted_contribution_micros": 256000
+            }
+          ],
+          "explanation": "Relevance uses only the cue's declared HEXACO vector plus temporal, place, time-zone, and uncertainty factors; the fact payload is never scored."
+        },
+        "tie_break_sha256": "526a06d9dc0d9885e99a63c6c1653ed449665837f79883b41abaa802e99e4a6a",
+        "auto_approve_eligible": false
+      },
+      {
+        "id": "cue_54a72f798cf8211963d263ba",
+        "pack": {
+          "id": "org.weave.context.world_projection",
+          "version": "1.0.0",
+          "sha256": "4b5aa40238e56419027c1e6e9500389c2dde08b9b3fcf66bf677a05387d0a830"
+        },
+        "record_id": "world_coastal_fog_cycle",
+        "cue_id": "returning_fog",
+        "kind": "memory",
+        "content": "Imagine a fictional memory in which familiar fog made subtle changes easier to notice.",
+        "relevance_micros": 418416,
+        "uncertainty": "bounded",
+        "sensitivity": "low",
+        "requires_explicit_review": false,
+        "fact_source_ids": [
+          "weave_world_projection"
+        ],
+        "cue_source_ids": [
+          "weave_world_cues"
+        ],
+        "source_ids": [
+          "weave_world_cues",
+          "weave_world_projection"
+        ],
+        "trace": {
+          "match_kind": "containing_period",
+          "temporal_factor_micros": 725000,
+          "place_factor_micros": 1000000,
+          "time_zone_factor_micros": 1000000,
+          "uncertainty_factor_micros": 750000,
+          "trait_coverage_micros": 1000000,
+          "cue_compatibility_micros": 769500,
+          "contributions": [
+            {
+              "trait_id": "patience",
+              "profile_micros": 670000,
+              "cue_weight_thousandths": 300,
+              "compatibility_micros": 670000,
+              "weighted_contribution_micros": 201000
+            },
+            {
+              "trait_id": "perfectionism",
+              "profile_micros": 690000,
+              "cue_weight_thousandths": 250,
+              "compatibility_micros": 690000,
+              "weighted_contribution_micros": 172500
+            },
+            {
+              "trait_id": "aesthetic_appreciation",
+              "profile_micros": 880000,
+              "cue_weight_thousandths": 450,
+              "compatibility_micros": 880000,
+              "weighted_contribution_micros": 396000
+            }
+          ],
+          "explanation": "Relevance uses only the cue's declared HEXACO vector plus temporal, place, time-zone, and uncertainty factors; the fact payload is never scored."
+        },
+        "tie_break_sha256": "5c0f77dccedcbb69bc2404928bbd30953f3349cea38930129cbcb03e2fe71ffb",
+        "auto_approve_eligible": false
+      },
+      {
+        "id": "cue_7eafd04a34c7f45247e358f5",
+        "pack": {
+          "id": "org.weave.context.original_calendar",
+          "version": "1.0.0",
+          "sha256": "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa"
+        },
+        "record_id": "calendar_midsummer_period",
+        "cue_id": "long_light_gathering",
+        "kind": "memory",
+        "content": "Imagine a fictional gathering held while the evening light lingered, with room for both celebration and quiet observation.",
+        "relevance_micros": 386389,
+        "uncertainty": "bounded",
+        "sensitivity": "low",
+        "requires_explicit_review": false,
+        "fact_source_ids": [
+          "weave_calendar_facts"
+        ],
+        "cue_source_ids": [
+          "weave_calendar_cues"
+        ],
+        "source_ids": [
+          "weave_calendar_cues",
+          "weave_calendar_facts"
+        ],
+        "trace": {
+          "match_kind": "containing_period",
+          "temporal_factor_micros": 725000,
+          "place_factor_micros": 950000,
+          "time_zone_factor_micros": 1000000,
+          "uncertainty_factor_micros": 750000,
+          "trait_coverage_micros": 1000000,
+          "cue_compatibility_micros": 748000,
+          "contributions": [
+            {
+              "trait_id": "sociability",
+              "profile_micros": 640000,
+              "cue_weight_thousandths": 550,
+              "compatibility_micros": 640000,
+              "weighted_contribution_micros": 352000
+            },
+            {
+              "trait_id": "aesthetic_appreciation",
+              "profile_micros": 880000,
+              "cue_weight_thousandths": 450,
+              "compatibility_micros": 880000,
+              "weighted_contribution_micros": 396000
+            }
+          ],
+          "explanation": "Relevance uses only the cue's declared HEXACO vector plus temporal, place, time-zone, and uncertainty factors; the fact payload is never scored."
+        },
+        "tie_break_sha256": "3a4eb459e0b2eb7619b3e47341432b34894b9f4d46ad573ad352c58723babbe2",
+        "auto_approve_eligible": false
+      }
+    ],
+    "coverage": [
+      {
+        "candidate_id": "cue_511126de58ad3dd14c032c5f",
+        "pack_id": "org.weave.context.original_calendar",
+        "record_id": "calendar_unmatched_leap_day",
+        "cue_id": "rare_cadence",
+        "disposition": "skipped",
+        "reason": "record temporal precision does not match the known birth-date precision"
+      },
+      {
+        "candidate_id": "cue_54a72f798cf8211963d263ba",
+        "pack_id": "org.weave.context.world_projection",
+        "record_id": "world_coastal_fog_cycle",
+        "cue_id": "returning_fog",
+        "disposition": "selected",
+        "reason": "candidate met every pinned filter and fixed-point threshold"
+      },
+      {
+        "candidate_id": "cue_58d0b61392a896966ba5a94e",
+        "pack_id": "org.weave.context.original_calendar",
+        "record_id": "calendar_twentieth_day_observance",
+        "cue_id": "returning_table",
+        "disposition": "selected",
+        "reason": "candidate met every pinned filter and fixed-point threshold"
+      },
+      {
+        "candidate_id": "cue_60a2b04fb24e039be5de255f",
+        "pack_id": "org.weave.context.original_calendar",
+        "record_id": "calendar_disputed_celestial",
+        "cue_id": "uncertain_light",
+        "disposition": "downgraded",
+        "reason": "fixed-point relevance is below the pinned threshold"
+      },
+      {
+        "candidate_id": "cue_7eafd04a34c7f45247e358f5",
+        "pack_id": "org.weave.context.original_calendar",
+        "record_id": "calendar_midsummer_period",
+        "cue_id": "long_light_gathering",
+        "disposition": "selected",
+        "reason": "candidate met every pinned filter and fixed-point threshold"
+      },
+      {
+        "candidate_id": "cue_afa4e07801cd5172193f83f1",
+        "pack_id": "org.weave.context.apollo_11",
+        "record_id": "apollo_11_lunar_landing",
+        "cue_id": "shared_horizon",
+        "disposition": "selected",
+        "reason": "candidate met every pinned filter and fixed-point threshold"
+      }
+    ]
+  },
+  "review": {
+    "review_format_version": 1,
+    "proposal_sha256": "1ff1a13a36b15a7d9e38ec3fe2e352a536914442d46e68166032bf8359171798",
+    "profile_sha256": "11b6f71674c9991ed37a356e2378b15a03b53fd30751c5a9575ff7d33400a9af",
+    "reviewer": "org.weave.reviewer.fixture",
+    "rationale": "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
+    "decisions": {
+      "cue_54a72f798cf8211963d263ba": {
+        "candidate_id": "cue_54a72f798cf8211963d263ba",
+        "action": {
+          "decision": "override",
+          "content": "Treat the fictional coast's returning fog as a remembered invitation to slow down and notice small changes.",
+          "rationale": "Override the generic World-compatible cue with a project-specific fictional memory; the environmental record remains separate."
+        }
+      },
+      "cue_58d0b61392a896966ba5a94e": {
+        "candidate_id": "cue_58d0b61392a896966ba5a94e",
+        "action": {
+          "decision": "reject",
+          "rationale": "The reviewer chose not to carry this otherwise valid fictional cue into the accepted context view."
+        }
+      },
+      "cue_7eafd04a34c7f45247e358f5": {
+        "candidate_id": "cue_7eafd04a34c7f45247e358f5",
+        "action": {
+          "decision": "edit",
+          "content": "Recall a long-light gathering where the character chose to listen before speaking.",
+          "rationale": "Make the original seasonal prompt specific to this fictional character while retaining its non-causal status."
+        }
+      },
+      "cue_afa4e07801cd5172193f83f1": {
+        "candidate_id": "cue_afa4e07801cd5172193f83f1",
+        "action": {
+          "decision": "accept",
+          "rationale": "Accept the original fictional value prompt after verifying that the historical date is context only and not causal personality evidence."
+        }
+      }
+    }
+  },
+  "proposal_sha256": "1ff1a13a36b15a7d9e38ec3fe2e352a536914442d46e68166032bf8359171798",
+  "review_sha256": "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+  "output_profile_sha256": "c3242ed3313030255828ab26d78aa8a996b6544a150e5d505ebb089d00c7cbab",
+  "output_profile": {
+    "profile_format_version": 1,
+    "id": "org.weave.character.ari_vale",
+    "canon": {
+      "identity": {
+        "display_name": {
+          "value": "Ari Vale",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "aliases": {
+          "value": [
+            "Ari",
+            "Vale"
+          ],
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "birth_date": {
+        "value": {
+          "precision": "full",
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 7,
+          "day": 20
+        },
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "character_original"
+        ]
+      },
+      "personality": {
+        "honesty_humility": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.72
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sincerity": {
+            "value": {
+              "form": "score",
+              "score": 0.76
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "fairness": {
+            "value": {
+              "form": "score",
+              "score": 0.81
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "greed_avoidance": {
+            "value": {
+              "form": "score",
+              "score": 0.66
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "modesty": {
+            "value": {
+              "form": "score",
+              "score": 0.65
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "emotionality": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.57
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "fearfulness": {
+            "value": {
+              "form": "score",
+              "score": 0.42
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "anxiety": {
+            "value": {
+              "form": "score",
+              "score": 0.58
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "dependence": {
+            "value": {
+              "form": "score",
+              "score": 0.49
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sentimentality": {
+            "value": {
+              "form": "score",
+              "score": 0.79
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "extraversion": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.68
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "social_self_esteem": {
+            "value": {
+              "form": "score",
+              "score": 0.73
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "social_boldness": {
+            "value": {
+              "form": "score",
+              "score": 0.61
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "sociability": {
+            "value": {
+              "form": "score",
+              "score": 0.64
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "liveliness": {
+            "value": {
+              "form": "score",
+              "score": 0.74
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "agreeableness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.63
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "forgivingness": {
+            "value": {
+              "form": "score",
+              "score": 0.55
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "gentleness": {
+            "value": {
+              "form": "score",
+              "score": 0.71
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "flexibility": {
+            "value": {
+              "form": "score",
+              "score": 0.59
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "patience": {
+            "value": {
+              "form": "score",
+              "score": 0.67
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "conscientiousness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.78
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "organization": {
+            "value": {
+              "form": "score",
+              "score": 0.75
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "diligence": {
+            "value": {
+              "form": "score",
+              "score": 0.84
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "perfectionism": {
+            "value": {
+              "form": "score",
+              "score": 0.69
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "prudence": {
+            "value": {
+              "form": "score",
+              "score": 0.82
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "locked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "openness": {
+          "factor": {
+            "value": {
+              "form": "score",
+              "score": 0.83
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "aesthetic_appreciation": {
+            "value": {
+              "form": "score",
+              "score": 0.88
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "inquisitiveness": {
+            "value": {
+              "form": "score",
+              "score": 0.81
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "creativity": {
+            "value": {
+              "form": "score",
+              "score": 0.86
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "unconventionality": {
+            "value": {
+              "form": "score",
+              "score": 0.77
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      },
+      "inner_life": {
+        "keeps_promises": {
+          "id": "keeps_promises",
+          "category": "value",
+          "content": {
+            "value": "Promises become paths Ari can follow through uncertainty.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      },
+      "voice": {
+        "measured_warmth": {
+          "id": "measured_warmth",
+          "category": "cadence",
+          "content": {
+            "value": "Short observations followed by one generous question.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        }
+      }
+    },
+    "extensions": {
+      "org.weave.character.alignment": {
+        "kind": "alignment_view",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.alignment",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "view_id": "org.weave.alignment.compass",
+            "values": {
+              "kind": "object",
+              "value": {
+                "orientation": {
+                  "kind": "symbol",
+                  "value": "steward"
+                }
+              }
+            },
+            "input_paths": [
+              "canon.personality.agreeableness.factor",
+              "canon.personality.honesty_humility.factor"
+            ]
+          }
+        }
+      },
+      "org.weave.character.behavioral_signatures": {
+        "kind": "behavioral_signatures",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.behavioral_signatures",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "signatures": {
+              "maps_before_moving": {
+                "id": "maps_before_moving",
+                "cue": "Sketches a route before committing the group.",
+                "strength": 0.8
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.date_context": {
+        "kind": "date_context",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.date_context",
+            "extension_version": 1,
+            "authority": "org.weave.reviewer.fixture",
+            "rationale": "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "apollo_11_wikidata",
+              "temporal_review_bd1734621814b9fe",
+              "weave_calendar_cues",
+              "weave_calendar_facts",
+              "weave_historical_cues",
+              "weave_world_cues",
+              "weave_world_projection"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "context_pack": "org.weave.context.apollo_11",
+            "context_version": "1.0.0",
+            "context_hash": "88f902d2b93fc64b7dfc1b8d8403baa26689f4b38e9e773a6e26bc25501b8c46",
+            "additional_context_packs": [
+              {
+                "id": "org.weave.context.original_calendar",
+                "version": "1.0.0",
+                "sha256": "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa"
+              },
+              {
+                "id": "org.weave.context.world_projection",
+                "version": "1.0.0",
+                "sha256": "4b5aa40238e56419027c1e6e9500389c2dde08b9b3fcf66bf677a05387d0a830"
+              }
+            ],
+            "accepted_record_ids": [
+              "apollo_11_lunar_landing",
+              "calendar_midsummer_period",
+              "world_coastal_fog_cycle"
+            ],
+            "accepted_cues": {
+              "cue_54a72f798cf8211963d263ba": {
+                "id": "cue_54a72f798cf8211963d263ba",
+                "record_id": "world_coastal_fog_cycle",
+                "pack": {
+                  "id": "org.weave.context.world_projection",
+                  "version": "1.0.0",
+                  "sha256": "4b5aa40238e56419027c1e6e9500389c2dde08b9b3fcf66bf677a05387d0a830"
+                },
+                "kind": "memory",
+                "content": "Treat the fictional coast's returning fog as a remembered invitation to slow down and notice small changes.",
+                "relevance": 0.418416,
+                "uncertainty": "bounded",
+                "sensitivity": "low",
+                "decision": "overridden",
+                "fact_source_ids": [
+                  "weave_world_projection"
+                ],
+                "cue_source_ids": [
+                  "weave_world_cues"
+                ],
+                "source_ids": [
+                  "weave_world_cues",
+                  "weave_world_projection"
+                ],
+                "review_sha256": "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef"
+              },
+              "cue_7eafd04a34c7f45247e358f5": {
+                "id": "cue_7eafd04a34c7f45247e358f5",
+                "record_id": "calendar_midsummer_period",
+                "pack": {
+                  "id": "org.weave.context.original_calendar",
+                  "version": "1.0.0",
+                  "sha256": "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa"
+                },
+                "kind": "memory",
+                "content": "Recall a long-light gathering where the character chose to listen before speaking.",
+                "relevance": 0.386389,
+                "uncertainty": "bounded",
+                "sensitivity": "low",
+                "decision": "edited",
+                "fact_source_ids": [
+                  "weave_calendar_facts"
+                ],
+                "cue_source_ids": [
+                  "weave_calendar_cues"
+                ],
+                "source_ids": [
+                  "weave_calendar_cues",
+                  "weave_calendar_facts"
+                ],
+                "review_sha256": "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef"
+              },
+              "cue_afa4e07801cd5172193f83f1": {
+                "id": "cue_afa4e07801cd5172193f83f1",
+                "record_id": "apollo_11_lunar_landing",
+                "pack": {
+                  "id": "org.weave.context.apollo_11",
+                  "version": "1.0.0",
+                  "sha256": "88f902d2b93fc64b7dfc1b8d8403baa26689f4b38e9e773a6e26bc25501b8c46"
+                },
+                "kind": "value",
+                "content": "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+                "relevance": 0.787075,
+                "uncertainty": "exact",
+                "sensitivity": "moderate",
+                "decision": "accepted",
+                "fact_source_ids": [
+                  "apollo_11_wikidata"
+                ],
+                "cue_source_ids": [
+                  "weave_historical_cues"
+                ],
+                "source_ids": [
+                  "apollo_11_wikidata",
+                  "weave_historical_cues"
+                ],
+                "review_sha256": "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef"
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.expression": {
+        "kind": "expression",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.expression",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "lexicon": {
+              "waymark": {
+                "id": "waymark",
+                "category": "org.weave.expression.navigation",
+                "normalized": "waymark",
+                "strength": 0.8
+              }
+            },
+            "preferences": {
+              "clear_questions": {
+                "id": "clear_questions",
+                "category": "org.weave.preference.communication",
+                "target": "clear questions",
+                "polarity": "prefer",
+                "strength": 0.9
+              }
+            },
+            "behavioral_signature_refs": [
+              "org.weave.signature.maps_before_moving"
+            ],
+            "source_pack_refs": [
+              "org.weave.expression.glasswind"
+            ]
+          }
+        }
+      },
+      "org.weave.character.identity_presentation": {
+        "kind": "identity_presentation",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.identity_presentation",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "identity_refs": [
+              "org.weave.identity.wayfinder"
+            ],
+            "presentation_refs": [
+              "assets/avatars/ari_vale.png",
+              "assets/palettes/cedar_snow.json"
+            ]
+          }
+        }
+      },
+      "org.weave.character.relationships": {
+        "kind": "relationships",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.relationships",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "edges": {
+              "mentor_sable": {
+                "id": "mentor_sable",
+                "source_character_id": "org.weave.character.ari_vale",
+                "target_character_id": "org.weave.character.sable_reed",
+                "kind": "org.weave.relationship.mentor",
+                "confidence": "high"
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.role_projections": {
+        "kind": "role_projections",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.role_projections",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "roles": {
+              "route_steward": {
+                "id": "route_steward",
+                "taxonomy": "org.weave.roles.glasswind",
+                "role": "Route steward",
+                "rationale": "Accepted as a narrative role, not a personality fact.",
+                "input_paths": [
+                  "canon.personality.conscientiousness.factor",
+                  "canon.personality.openness.factor"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "org.weave.character.tabletop": {
+        "kind": "tabletop",
+        "record": {
+          "header": {
+            "namespace": "org.weave.character.tabletop",
+            "extension_version": 1,
+            "authority": "org.weave.character.contract",
+            "rationale": "Explicit optional projection authored for the synthetic fixture.",
+            "state": "reviewed",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "canonical_personality_write_back": "forbidden"
+          },
+          "value": {
+            "interpretation": "preserved_inactive",
+            "payload": {
+              "kind": "object",
+              "value": {
+                "ruleset_ref": {
+                  "kind": "string",
+                  "value": "org.weave.rules.synthetic@1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "suggestions": {
+      "date_context_54a72f798cf8211963d263ba": {
+        "id": "date_context_54a72f798cf8211963d263ba",
+        "target_path": "canon.inner_life.cue_54a72f798cf8211963d263ba",
+        "proposal": {
+          "value": {
+            "kind": "string",
+            "value": "Treat the fictional coast's returning fog as a remembered invitation to slow down and notice small changes."
+          },
+          "state": "suggested",
+          "confidence": "moderate",
+          "review": "pending",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "temporal_review_bd1734621814b9fe",
+            "weave_world_cues",
+            "weave_world_projection"
+          ],
+          "rationale": "Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."
+        }
+      },
+      "date_context_7eafd04a34c7f45247e358f5": {
+        "id": "date_context_7eafd04a34c7f45247e358f5",
+        "target_path": "canon.inner_life.cue_7eafd04a34c7f45247e358f5",
+        "proposal": {
+          "value": {
+            "kind": "string",
+            "value": "Recall a long-light gathering where the character chose to listen before speaking."
+          },
+          "state": "suggested",
+          "confidence": "moderate",
+          "review": "pending",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "temporal_review_bd1734621814b9fe",
+            "weave_calendar_cues",
+            "weave_calendar_facts"
+          ],
+          "rationale": "Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."
+        }
+      },
+      "date_context_afa4e07801cd5172193f83f1": {
+        "id": "date_context_afa4e07801cd5172193f83f1",
+        "target_path": "canon.inner_life.cue_afa4e07801cd5172193f83f1",
+        "proposal": {
+          "value": {
+            "kind": "string",
+            "value": "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon."
+          },
+          "state": "suggested",
+          "confidence": "high",
+          "review": "pending",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "apollo_11_wikidata",
+            "temporal_review_bd1734621814b9fe",
+            "weave_historical_cues"
+          ],
+          "rationale": "Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."
+        }
+      },
+      "night_market_memory": {
+        "id": "night_market_memory",
+        "target_path": "canon.inner_life.night_market_memory",
+        "proposal": {
+          "value": {
+            "kind": "string",
+            "value": "A remembered lantern exchange may create a useful tension."
+          },
+          "state": "suggested",
+          "confidence": "low",
+          "review": "pending",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ],
+          "rationale": "Optional synthetic authoring prompt."
+        }
+      }
+    },
+    "derived": {
+      "ocean": {
+        "algorithm": "weave_hexaco_to_ocean_compatibility",
+        "algorithm_version": 1,
+        "lossy": true,
+        "independent_evidence": false,
+        "openness": {
+          "score": 0.83,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.openness.factor"
+          ]
+        },
+        "conscientiousness": {
+          "score": 0.78,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.conscientiousness.factor"
+          ]
+        },
+        "extraversion": {
+          "score": 0.68,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.extraversion.factor"
+          ]
+        },
+        "agreeableness": {
+          "score": 0.63,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.agreeableness.factor"
+          ]
+        },
+        "neuroticism": {
+          "score": 0.57,
+          "confidence": "high",
+          "input_paths": [
+            "canon.personality.emotionality.factor"
+          ]
+        },
+        "omitted_factor": "honesty_humility"
+      }
+    },
+    "provenance": {
+      "sources": [
+        {
+          "id": "apollo_11_wikidata",
+          "kind": "public_source",
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q43653.json?revision=2526069885&flavor=simple",
+          "revision": "2526069885 (2026-08-02T06:29:38Z)",
+          "sha256": "52c78c8a7c1320e970a6aa1c2737c9e0a89e786be957f380f389d02ab84c006b",
+          "license": "CC0-1.0",
+          "license_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+          "attribution": "Wikidata contributors, Apollo 11 (Q43653), revision 2526069885. Attribution retained although CC0 does not require it.",
+          "modified": false
+        },
+        {
+          "id": "character_original",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "character-contract-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic Weave Character contract fixture.",
+          "modified": false
+        },
+        {
+          "id": "weave_calendar_cues",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "temporal-context-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original fictional calendar prompts and declared HEXACO vectors.",
+          "modified": false
+        },
+        {
+          "id": "weave_calendar_facts",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "temporal-context-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic calendrical, seasonal, and celestial fixture facts.",
+          "modified": false
+        },
+        {
+          "id": "weave_historical_cues",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "temporal-context-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original fictional historical-context prompts and declared HEXACO vectors.",
+          "modified": false
+        },
+        {
+          "id": "weave_world_cues",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "temporal-context-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original fictional environmental prompts and declared HEXACO vectors.",
+          "modified": false
+        },
+        {
+          "id": "weave_world_projection",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "temporal-context-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic World-compatible environmental projection fixture.",
+          "modified": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "temporal_review_bd1734621814b9fe",
+          "inputs": [
+            "apollo_11_wikidata",
+            "weave_calendar_cues",
+            "weave_calendar_facts",
+            "weave_historical_cues",
+            "weave_world_cues",
+            "weave_world_projection"
+          ],
+          "description": "Recorded explicit editorial decisions over non-causal fictional temporal authoring cues; no dated fact was treated as personality evidence or written into canon."
+        }
+      ],
+      "claims": {
+        "extensions.org.weave.character.date_context": [
+          "temporal_review_bd1734621814b9fe"
+        ],
+        "profile": [
+          "character_original"
+        ],
+        "records.apollo_11_lunar_landing.cues": [
+          "weave_historical_cues"
+        ],
+        "records.apollo_11_lunar_landing.fact": [
+          "apollo_11_wikidata"
+        ],
+        "records.cues": [
+          "weave_calendar_cues"
+        ],
+        "records.facts": [
+          "weave_calendar_facts"
+        ],
+        "records.world_coastal_fog_cycle.cues": [
+          "weave_world_cues"
+        ],
+        "records.world_coastal_fog_cycle.fact": [
+          "weave_world_projection"
+        ],
+        "suggestions.date_context_54a72f798cf8211963d263ba": [
+          "temporal_review_bd1734621814b9fe"
+        ],
+        "suggestions.date_context_7eafd04a34c7f45247e358f5": [
+          "temporal_review_bd1734621814b9fe"
+        ],
+        "suggestions.date_context_afa4e07801cd5172193f83f1": [
+          "temporal_review_bd1734621814b9fe"
+        ]
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ mod domain;
 mod model;
 mod operations;
 mod synthesis;
+mod temporal;
 mod validation;
 
 use schemars::JsonSchema;
@@ -23,6 +24,7 @@ pub use domain::{
 pub use model::*;
 pub use operations::*;
 pub use synthesis::{synthesize_character, template_fingerprint, validate_synthesis_result};
+pub use temporal::*;
 pub use validation::{
     CharacterError, derive_ocean, recompute_derived, validate_overlay, validate_profile,
     validate_template,

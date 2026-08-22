@@ -1,5 +1,79 @@
 {
   "$defs": {
+    "AcceptedDateContextCue": {
+      "additionalProperties": false,
+      "description": "One reviewed fictional cue exposed to narrative logic without writing into canon.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "cue_source_ids": {
+          "description": "Public or original lineage for the fictional cue and its declared ranking vector.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "decision": {
+          "$ref": "#/$defs/DateContextDecision"
+        },
+        "fact_source_ids": {
+          "description": "Public lineage for the matched dated fact; never used as personality evidence.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DateContextCueKind"
+        },
+        "pack": {
+          "$ref": "#/$defs/DateContextPackRef"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "relevance": {
+          "format": "double",
+          "type": "number"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/DateContextSensitivity"
+        },
+        "source_ids": {
+          "description": "Sorted union of fact and cue lineage retained for compatibility.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/DateContextUncertainty"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "pack",
+        "kind",
+        "content",
+        "relevance",
+        "uncertainty",
+        "sensitivity",
+        "decision",
+        "fact_source_ids",
+        "cue_source_ids",
+        "source_ids",
+        "review_sha256"
+      ],
+      "type": "object"
+    },
     "Agreeableness": {
       "additionalProperties": false,
       "description": "Agreeableness factor and its four canonical facets.",
@@ -1281,9 +1355,23 @@
       "additionalProperties": false,
       "description": "Accepted or proposed date-context references. They are authoring cues, never causal evidence.",
       "properties": {
+        "accepted_cues": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AcceptedDateContextCue"
+          },
+          "description": "Approved public cues keyed by their stable candidate id.",
+          "type": "object"
+        },
         "accepted_record_ids": {
           "items": {
             "type": "string"
+          },
+          "type": "array"
+        },
+        "additional_context_packs": {
+          "description": "Additional exact context packs used by one reviewed enrichment.",
+          "items": {
+            "$ref": "#/$defs/DateContextPackRef"
           },
           "type": "array"
         },
@@ -1304,6 +1392,66 @@
         "accepted_record_ids"
       ],
       "type": "object"
+    },
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextDecision": {
+      "description": "How an approved temporal cue entered the public view.",
+      "enum": [
+        "accepted",
+        "auto_approved",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
+    "DateContextPackRef": {
+      "additionalProperties": false,
+      "description": "Exact temporal-context pack coordinate retained by an accepted public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContextUncertainty": {
+      "description": "Bounded uncertainty retained in the approved public projection.",
+      "enum": [
+        "exact",
+        "bounded",
+        "disputed"
+      ],
+      "type": "string"
     },
     "DerivedTrait": {
       "additionalProperties": false,

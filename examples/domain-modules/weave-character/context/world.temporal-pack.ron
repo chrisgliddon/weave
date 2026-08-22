@@ -1,0 +1,149 @@
+(
+    pack_format_version: 1,
+    id: "org.weave.context.world_projection",
+    version: "1.0.0",
+    title: "World-compatible fictional environment context",
+    license: "MIT",
+    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+    provider: (
+        kind: "domain_module",
+        module_id: "org.weave.world",
+        module_version: "1.1.0",
+        pack_id: "synthetic_temporal_projection",
+        pack_version: "1.0.0",
+        content_sha256: "a621a40d1f5713bae1b9e4f478970e16b3d80f5c5d3d030a51c824fc20c39a92",
+    ),
+    records: {
+        "world_coastal_fog_cycle": (
+            id: "world_coastal_fog_cycle",
+            kind: environmental_fact,
+            evidence_class: measured_fact,
+            extent: (
+                precision: "date_range",
+                start: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 7,
+                    day: 1,
+                ),
+                end: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 8,
+                    day: 31,
+                ),
+            ),
+            place_scope: (
+                scope: "place",
+                id: "org.weave.place.synthetic_coast",
+                kind: "org.weave.world.fictional_region",
+            ),
+            time_zone: (
+                kind: "iana",
+                id: "America/Los_Angeles",
+            ),
+            reference_period: (
+                label: "Original fictional coast summer projection",
+                start: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 7,
+                    day: 1,
+                ),
+                end: (
+                    calendar: proleptic_gregorian,
+                    year: 1969,
+                    month: 8,
+                    day: 31,
+                ),
+                resolution: period,
+            ),
+            fact: (
+                kind: object,
+                value: {
+                    "fictional": (
+                        kind: bool,
+                        value: true,
+                    ),
+                    "pattern": (
+                        kind: symbol,
+                        value: "recurring_coastal_fog",
+                    ),
+                    "world_place": (
+                        kind: symbol,
+                        value: "org_weave_place_synthetic_coast",
+                    ),
+                },
+            ),
+            tags: [
+                "environmental",
+                "world_projection",
+            ],
+            cues: {
+                "returning_fog": (
+                    id: "returning_fog",
+                    kind: memory,
+                    content: "Imagine a fictional memory in which familiar fog made subtle changes easier to notice.",
+                    trait_vector: {
+                        patience: 300,
+                        perfectionism: 250,
+                        aesthetic_appreciation: 450,
+                    },
+                    tags: [
+                        "fictional_prompt",
+                    ],
+                    limitations: "This original fictional cue is a non-causal authoring option; the environment record does not predict personality.",
+                    source_ids: [
+                        "weave_world_cues",
+                    ],
+                ),
+            },
+            source_ids: [
+                "weave_world_projection",
+            ],
+            uncertainty: (
+                level: bounded,
+                reason: "The World-compatible fictional projection covers a declared date interval and place scope.",
+            ),
+            sensitivity: (
+                level: low,
+                topics: [],
+                requires_explicit_review: false,
+                note: "Neutral original fictional environmental prompt.",
+            ),
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "weave_world_cues",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "temporal-context-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original fictional environmental prompts and declared HEXACO vectors.",
+                modified: false,
+            ),
+            (
+                id: "weave_world_projection",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "temporal-context-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic World-compatible environmental projection fixture.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "records.world_coastal_fog_cycle.cues": [
+                "weave_world_cues",
+            ],
+            "records.world_coastal_fog_cycle.fact": [
+                "weave_world_projection",
+            ],
+        },
+    ),
+)

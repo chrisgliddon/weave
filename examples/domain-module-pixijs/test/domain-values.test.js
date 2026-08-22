@@ -3,7 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
-import { characterPresentation } from "../src/character-presentation.js";
+import {
+  characterPresentation,
+  temporalCharacterPresentation,
+} from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
@@ -19,6 +22,10 @@ const composedWorldUrl = new URL(
 );
 const characterUrl = new URL(
   "../../domain-modules/weave-character/ari-vale.story.json",
+  import.meta.url,
+);
+const temporalCharacterUrl = new URL(
+  "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json",
   import.meta.url,
 );
 
@@ -108,6 +115,39 @@ test("reads the complete portable Character profile", async () => {
     oceanIsLossy: true,
     oceanIsIndependentEvidence: false,
   });
+});
+
+test("reads reviewed temporal cues with separate fact and fictional-cue lineage", async () => {
+  const story = JSON.parse(await readFile(temporalCharacterUrl, "utf8"));
+  const context = temporalCharacterPresentation(story);
+  assert.equal(context.canonicalPersonalityWriteBack, false);
+  assert.deepEqual(context.acceptedRecordIds, [
+    "apollo_11_lunar_landing",
+    "calendar_midsummer_period",
+    "world_coastal_fog_cycle",
+  ]);
+  assert.equal(context.cues.length, 3);
+  assert.ok(
+    context.cues.every(
+      (cue) => cue.factSourceIds.length > 0 && cue.cueSourceIds.length > 0,
+    ),
+  );
+  assert.deepEqual(
+    context.cues.find((cue) => cue.recordId === "apollo_11_lunar_landing"),
+    {
+      id: "cue_afa4e07801cd5172193f83f1",
+      recordId: "apollo_11_lunar_landing",
+      kind: "value",
+      content:
+        "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+      decision: "accepted",
+      factSourceIds: ["apollo_11_wikidata"],
+      cueSourceIds: ["weave_historical_cues"],
+      relevance: 0.787075,
+      uncertainty: "exact",
+      sensitivity: "moderate",
+    },
+  );
 });
 
 test("rejects invalid tagged values without echoing them", () => {

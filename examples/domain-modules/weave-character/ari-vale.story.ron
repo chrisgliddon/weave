@@ -115,7 +115,7 @@ StoryIr(
     modules: {
         "character": DomainModuleIr(
             id: "org.weave.character",
-            version: "1.0.0",
+            version: "1.1.0",
             pack_id: "ari_vale",
             pack_version: "1.0.0",
             exports: {
@@ -124,6 +124,50 @@ StoryIr(
                     value: DomainValueIr(
                         kind: object,
                         value: {
+                            "date_context": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "accepted_record_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "early_rains",
+                                            ),
+                                        ],
+                                    ),
+                                    "canonical_personality_write_back": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "cues": DomainValueIr(
+                                        kind: list,
+                                        value: [],
+                                    ),
+                                    "packs": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.synthetic_calendar",
+                                                    ),
+                                                    "sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                                    ),
+                                                    "version": DomainValueIr(
+                                                        kind: string,
+                                                        value: "1.0.0",
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
                             "hexaco": DomainValueIr(
                                 kind: object,
                                 value: {

@@ -485,7 +485,10 @@ fn sha256(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
-fn merge_provenance(base: &Provenance, overlay: &Provenance) -> Result<Provenance, CharacterError> {
+pub(crate) fn merge_provenance(
+    base: &Provenance,
+    overlay: &Provenance,
+) -> Result<Provenance, CharacterError> {
     let mut sources = BTreeMap::new();
     for source in base.sources.iter().chain(&overlay.sources) {
         if let Some(existing) = sources.insert(source.id.clone(), source.clone())

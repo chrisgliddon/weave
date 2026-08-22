@@ -4,6 +4,8 @@ Weave Character v1 is a portable, data-only contract for fictional character can
 
 The Rust authority is `weave-character`. Download the generated [profile schema](downloads/weave-character-profile-v1.schema.json), [template schema](downloads/weave-character-template-v1.schema.json), [overlay schema](downloads/weave-character-overlay-v1.schema.json), [synthesis schema](downloads/weave-character-synthesis-v1.schema.json), [diagnostic schema](downloads/weave-character-diagnostic-v1.schema.json), [collection schema](downloads/weave-character-collection-v1.schema.json), [operation-request schema](downloads/weave-character-operation-request-v1.schema.json), [proposal schema](downloads/weave-character-proposal-v1.schema.json), [review schema](downloads/weave-character-review-v1.schema.json), and [progress schema](downloads/weave-character-progress-v1.schema.json).
 
+The reviewed date-context workflow has separate generated schemas for its [offline pack](downloads/weave-character-temporal-pack-v1.schema.json), [ranking configuration](downloads/weave-character-temporal-config-v1.schema.json), [immutable proposal](downloads/weave-character-temporal-proposal-v1.schema.json), [complete review](downloads/weave-character-temporal-review-v1.schema.json), and [reproducible receipt](downloads/weave-character-temporal-receipt-v1.schema.json).
+
 ## Trust and data boundaries
 
 A `CharacterProfile` has four deliberately separate layers:
@@ -32,6 +34,26 @@ Birth dates are date-only values with one explicit `precision`:
 | `full` | Calendar, year, month, and day | The exact proleptic-Gregorian leap-year rule is validated |
 
 V1 supports `proleptic_gregorian` and years 1 through 9999. A date has no implied time, time zone, place, age at an unspecified reference instant, seasonal fact, or historical meaning. Other calendars and temporal facts require versioned extensions.
+
+## Reviewed temporal context enrichment
+
+Temporal enrichment turns an explicit birth-date precision into reviewable fictional authoring cues; it never treats a date, place, historical event, calendar fact, or environmental observation as a cause or measurement of personality. Propose and dry-run do not mutate the profile. Apply writes only a reviewed `org.weave.character.date_context` extension and pending suggestions, retains `canonical_personality_write_back: forbidden`, and fails atomically on stale inputs, incomplete reviews, locked context without a configured override, or any attempted canonical write-back.
+
+Each `TemporalContextPack` is an immutable offline artifact with an id, semantic version, license, provider, SHA-256-addressable provenance, and bounded records. A record keeps the structured fact and its source ids separate from original fictional cues and their source ids. A cue declares its own signed HEXACO vector in thousandths; ranking reads that vector and the already-authored profile evidence, but never reads the fact payload. A `domain_module` provider can expose a pinned Weave World projection without making World mandatory or changing that separation.
+
+Known precision is honored exactly:
+
+| Character date | Eligible record extents | Match trace |
+|---|---|---|
+| `year` | Equal year/date, or a year/date range containing that year | `same_year` or `containing_period` |
+| `month_day` | Equal recurring month/day only | `recurring_month_day` |
+| `full` | Equal date, equal recurring month/day, equal year, or a range containing the date/year | `exact_date`, `recurring_month_day`, `same_year`, or `containing_period` |
+
+Date-only matching never shifts a date through a time zone. Place applicability is exact in v1, while time-zone differences and uncertainty reduce relevance through documented fixed factors. Ranking then uses integer millionths, a declared trait-coverage threshold, deterministic SHA-256 seed tie-breaking, and a hard candidate limit. Every scanned cue receives a sorted coverage entry marked `selected`, `downgraded`, or `skipped`; every selected candidate retains the complete per-trait contribution trace and a plain-language explanation.
+
+The review boundary is complete and explicit. Every candidate must be accepted, rejected, edited, withheld, overridden, or narrowly auto-approved under the proposal's pinned low-sensitivity policy. Sensitive acceptance requires rationale. A review fingerprints the exact profile and proposal. Apply independently reproduces the proposal from the embedded profile, exact pack versions and hashes, configuration, and seed; reproduces the review; and returns a receipt containing both inputs and the atomically derived output. Reusing that proposal after a committed editor apply is stale by construction.
+
+The public corpus exercises exact selection, threshold downgrade, and filter skip. Its real-world example pins the [Wikidata Apollo 11 entity](https://www.wikidata.org/wiki/Q43653) through [revision 2526069885 of the structured entity JSON](https://www.wikidata.org/wiki/Special:EntityData/Q43653.json?revision=2526069885&flavor=simple), modified `2026-08-02T06:29:38Z`, with SHA-256 `52c78c8a7c1320e970a6aa1c2737c9e0a89e786be957f380f389d02ab84c006b`. Wikidata's [CC0 terms](https://www.wikidata.org/wiki/Wikidata:Licensing) cover the dated fact. The accompanying cue and vector are original MIT-licensed Weave material under a different source id, so consumers can audit fact lineage and fictional-cue lineage independently.
 
 ## Canonical HEXACO fields
 
@@ -169,18 +191,19 @@ The runtime projection retains:
 - the stable character id, attributed display name, and aliases;
 - all six factor summaries and all 24 facets with input form, normalized projection score, confidence, state, review, lock, freshness, rationale, and lineage;
 - the exact OCEAN algorithm, input paths, scores, confidence, `lossy: true`, `independent_evidence: false`, and omitted Honesty-Humility marker; and
+- optional reviewed date context with exact pack coordinates, accepted record ids, accepted/edited/overridden/auto-approved cues, relevance and uncertainty, the review hash, separate fact/cue source ids, and `canonical_personality_write_back: false`; and
 - sorted profile source and transformation identifiers.
 
 `projection_score` is the exact normalized score for a `score` input and only the documented compatibility anchor for a retained band input. It never replaces the original profile measurement. Missing factor or facet evidence remains an absent optional path.
 
-The manifest declares `profile.hexaco`, `profile.ocean`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality evidence in the profile artifact, run the validator/projector, and receive a pack whose OCEAN view was recomputed before compilation. A story or editor may still author permitted presentation-facing fields such as the attributed display-name value; that override remains separate in Story IR and cannot change the stable character id.
+The manifest declares `profile.hexaco`, `profile.ocean`, `profile.date_context`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality evidence in the profile artifact, run the validator/projector, and receive a pack whose OCEAN view was recomputed before compilation. A story or editor may still author permitted presentation-facing fields such as the attributed display-name value; that override remains separate in Story IR and cannot change the stable character id.
 
-[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) activates the checked pack through concise source, reads typed factor/facet and OCEAN paths, and compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). Adjacent `weave.modules.json` and `weave.lock` make the build deterministic and offline. The editor uses the same catalog and rolls a rejected read-only edit back atomically. The finite Bevy consumer loads the RON profile into an ECS resource, while the PixiJS consumer decodes the JSON profile and verifies all six summaries, Creativity, and the derived/lossy OCEAN marker without an editor dependency.
+[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) activates the checked pack through concise source, reads typed factor/facet and OCEAN paths, and compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). The separate [reviewed temporal story](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave) exercises the optional projection without changing the base pack. Adjacent `weave.modules.json` and `weave.lock` files make both builds deterministic and offline. The editor exposes the same candidates, coverage, score traces, review, dry-run, atomic apply, stale detection, and refresh operations. The finite Bevy consumer loads the RON temporal projection into an ECS resource, while the PixiJS consumer decodes the JSON projection and verifies the Apollo 11 fact/cue lineage split and forbidden write-back without an editor dependency.
 
 ```weave
 module character {
     id: "org.weave.character"
-    version: "=1.0.0"
+    version: "=1.1.0"
     pack: "ari_vale@=1.0.0"
 }
 
@@ -190,7 +213,7 @@ VAR ocean_openness = character.profile.ocean.openness.score
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The collection fixtures add Sable Reed, a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. Invalid fixtures cover unsupported versions, conflicting overlays, stale input/review/progress, a malformed proposal, a bad relationship, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The collection fixtures add Sable Reed, a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, conflicting overlays, stale input/review/progress/temporal lineage, incomplete temporal review, a malformed proposal, a bad relationship, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
@@ -200,6 +223,31 @@ cargo run -p weave-character -- schema profile \
 
 cargo run -p weave-character -- validate profile \
   examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- context-propose \
+  examples/domain-modules/weave-character/context/input.character.json \
+  --pack examples/domain-modules/weave-character/context/apollo_11.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/calendar.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/world.temporal-pack.json \
+  --config examples/domain-modules/weave-character/context/ranking.temporal-config.json \
+  --seed 19690720 \
+  --output target/proposal.temporal-proposal.json
+
+cargo run -p weave-character -- context-review \
+  target/proposal.temporal-proposal.json \
+  examples/domain-modules/weave-character/context/decisions.temporal-review.json \
+  --reviewer org.weave.reviewer.fixture \
+  --rationale "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon." \
+  --output target/review.temporal-review.json
+
+cargo run -p weave-character -- context-apply \
+  examples/domain-modules/weave-character/context/input.character.json \
+  --pack examples/domain-modules/weave-character/context/apollo_11.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/calendar.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/world.temporal-pack.json \
+  target/proposal.temporal-proposal.json \
+  target/review.temporal-review.json \
+  --dry-run
 
 cargo run -p weave-character -- collection-list \
   examples/domain-modules/weave-character/operations/collection.character-collection.json
@@ -245,6 +293,12 @@ cargo run -p weave-compiler -- \
   --locked \
   --format json \
   --output target/ari-vale.story.json
+
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave \
+  --locked \
+  --format json \
+  --output target/ari-vale-temporal.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, synthesis, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally recompiles the locked Story IR and tests both engine consumers.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, synthesis, temporal workflow, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally reproduces temporal proposal/review/receipt bytes, checks dry-run isolation, recompiles both locked Story IRs, and tests both engine consumers.

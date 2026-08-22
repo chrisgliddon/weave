@@ -1,0 +1,705 @@
+{
+  "$defs": {
+    "BirthDate": {
+      "description": "Date-only birth data with no fabricated components.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Known year; month and day remain unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "precision": {
+              "const": "year",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Known recurring month and day; year remains unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "month_day",
+              "type": "string"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Complete date.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "full",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Calendar": {
+      "description": "Closed v1 calendar vocabulary. New calendars require a versioned extension.",
+      "enum": [
+        "proleptic_gregorian"
+      ],
+      "type": "string"
+    },
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextPackRef": {
+      "additionalProperties": false,
+      "description": "Exact temporal-context pack coordinate retained by an accepted public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContextUncertainty": {
+      "description": "Bounded uncertainty retained in the approved public projection.",
+      "enum": [
+        "exact",
+        "bounded",
+        "disputed"
+      ],
+      "type": "string"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "TemporalAutoApprovePolicy": {
+      "description": "Explicit, narrow auto-review policy. Only low-sensitivity cues can qualify.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "policy": {
+              "const": "disabled",
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue_kinds": {
+              "items": {
+                "$ref": "#/$defs/DateContextCueKind"
+              },
+              "type": "array"
+            },
+            "minimum_relevance_micros": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "policy": {
+              "const": "low_sensitivity",
+              "type": "string"
+            },
+            "policy_id": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "policy",
+            "policy_id",
+            "minimum_relevance_micros",
+            "cue_kinds",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TemporalContextCandidate": {
+      "additionalProperties": false,
+      "description": "One ranked fictional cue.",
+      "properties": {
+        "auto_approve_eligible": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "string"
+        },
+        "cue_id": {
+          "type": "string"
+        },
+        "cue_source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "fact_source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DateContextCueKind"
+        },
+        "pack": {
+          "$ref": "#/$defs/DateContextPackRef"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "relevance_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "requires_explicit_review": {
+          "type": "boolean"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/DateContextSensitivity"
+        },
+        "source_ids": {
+          "description": "Sorted union retained for downstream lineage and compatibility.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tie_break_sha256": {
+          "type": "string"
+        },
+        "trace": {
+          "$ref": "#/$defs/TemporalRankingTrace"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/DateContextUncertainty"
+        }
+      },
+      "required": [
+        "id",
+        "pack",
+        "record_id",
+        "cue_id",
+        "kind",
+        "content",
+        "relevance_micros",
+        "uncertainty",
+        "sensitivity",
+        "requires_explicit_review",
+        "fact_source_ids",
+        "cue_source_ids",
+        "source_ids",
+        "trace",
+        "tie_break_sha256",
+        "auto_approve_eligible"
+      ],
+      "type": "object"
+    },
+    "TemporalContextConfig": {
+      "additionalProperties": false,
+      "description": "Deterministic ranking and policy configuration.",
+      "properties": {
+        "allow_global_without_place": {
+          "type": "boolean"
+        },
+        "allowed_cue_kinds": {
+          "items": {
+            "$ref": "#/$defs/DateContextCueKind"
+          },
+          "type": "array"
+        },
+        "allowed_record_kinds": {
+          "items": {
+            "$ref": "#/$defs/TemporalRecordKind"
+          },
+          "type": "array"
+        },
+        "allowed_sensitivities": {
+          "items": {
+            "$ref": "#/$defs/DateContextSensitivity"
+          },
+          "type": "array"
+        },
+        "auto_approve": {
+          "$ref": "#/$defs/TemporalAutoApprovePolicy"
+        },
+        "config_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "maximum_candidates": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minimum_relevance_micros": {
+          "description": "Inclusive relevance threshold in millionths.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minimum_trait_coverage_micros": {
+          "description": "Inclusive trait-vector coverage threshold in millionths.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "override_locked_context": {
+          "type": "boolean"
+        },
+        "override_rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "place_scope_ids": {
+          "description": "Exact place IDs considered applicable, sorted and pinned by the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "time_zone": {
+          "$ref": "#/$defs/TemporalTimeZone"
+        }
+      },
+      "required": [
+        "config_format_version",
+        "id",
+        "minimum_relevance_micros",
+        "minimum_trait_coverage_micros",
+        "maximum_candidates",
+        "allowed_record_kinds",
+        "allowed_cue_kinds",
+        "allowed_sensitivities",
+        "required_tags",
+        "place_scope_ids",
+        "time_zone",
+        "allow_global_without_place",
+        "auto_approve",
+        "override_locked_context"
+      ],
+      "type": "object"
+    },
+    "TemporalCoverageDisposition": {
+      "description": "Why one cue was selected, skipped, or downgraded.",
+      "enum": [
+        "selected",
+        "skipped",
+        "downgraded"
+      ],
+      "type": "string"
+    },
+    "TemporalCoverageEntry": {
+      "additionalProperties": false,
+      "description": "Stable coverage report entry for every cue considered from every selected pack.",
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "cue_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/$defs/TemporalCoverageDisposition"
+        },
+        "pack_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "pack_id",
+        "record_id",
+        "cue_id",
+        "disposition",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "TemporalMatchKind": {
+      "description": "Exact temporal precision used to match a candidate.",
+      "enum": [
+        "exact_date",
+        "recurring_month_day",
+        "same_year",
+        "containing_period"
+      ],
+      "type": "string"
+    },
+    "TemporalRankingContribution": {
+      "additionalProperties": false,
+      "description": "One fixed-point trait contribution in an explainable score.",
+      "properties": {
+        "compatibility_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "cue_weight_thousandths": {
+          "format": "int16",
+          "maximum": 32767,
+          "minimum": -32768,
+          "type": "integer"
+        },
+        "profile_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        },
+        "weighted_contribution_micros": {
+          "format": "int64",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "trait_id",
+        "profile_micros",
+        "cue_weight_thousandths",
+        "compatibility_micros",
+        "weighted_contribution_micros"
+      ],
+      "type": "object"
+    },
+    "TemporalRankingTrace": {
+      "additionalProperties": false,
+      "description": "Complete score trace; no fact payload contributes to these numbers.",
+      "properties": {
+        "contributions": {
+          "items": {
+            "$ref": "#/$defs/TemporalRankingContribution"
+          },
+          "type": "array"
+        },
+        "cue_compatibility_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "match_kind": {
+          "$ref": "#/$defs/TemporalMatchKind"
+        },
+        "place_factor_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "temporal_factor_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "time_zone_factor_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trait_coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "uncertainty_factor_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "match_kind",
+        "temporal_factor_micros",
+        "place_factor_micros",
+        "time_zone_factor_micros",
+        "uncertainty_factor_micros",
+        "trait_coverage_micros",
+        "cue_compatibility_micros",
+        "contributions",
+        "explanation"
+      ],
+      "type": "object"
+    },
+    "TemporalRecordKind": {
+      "description": "Closed record taxonomy used for filters and coverage reporting.",
+      "enum": [
+        "calendrical_fact",
+        "seasonal_fact",
+        "environmental_fact",
+        "celestial_fact",
+        "commemoration",
+        "historical_event"
+      ],
+      "type": "string"
+    },
+    "TemporalTimeZone": {
+      "description": "Time-zone metadata retained for interpretation; date-only matching never shifts a date.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "utc",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "iana",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "unknown",
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-temporal-proposal:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Immutable proposal pinning every ranking input.",
+  "properties": {
+    "birth_date": {
+      "$ref": "#/$defs/BirthDate"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/TemporalContextCandidate"
+      },
+      "type": "array"
+    },
+    "config": {
+      "$ref": "#/$defs/TemporalContextConfig"
+    },
+    "config_sha256": {
+      "type": "string"
+    },
+    "coverage": {
+      "items": {
+        "$ref": "#/$defs/TemporalCoverageEntry"
+      },
+      "type": "array"
+    },
+    "packs": {
+      "items": {
+        "$ref": "#/$defs/DateContextPackRef"
+      },
+      "type": "array"
+    },
+    "profile_id": {
+      "type": "string"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "proposal_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "proposal_format_version",
+    "profile_id",
+    "profile_sha256",
+    "birth_date",
+    "packs",
+    "config",
+    "config_sha256",
+    "seed",
+    "candidates",
+    "coverage"
+  ],
+  "title": "Weave Character Temporal Proposal v1",
+  "type": "object",
+  "x-weave-character-temporal-version": 1
+}

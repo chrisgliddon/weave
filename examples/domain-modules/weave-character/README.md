@@ -15,8 +15,9 @@ The canonical pairs are:
 - `operations/collection.character-collection.{json,ron}`: a two-profile collection with stable cross-references;
 - `operations/rename.character-{request,progress,proposal,review}.{json,ron}`: one pinned, resumable, whole-proposal rename workflow; and
 - `operations/renamed.character-collection.{json,ron}`: the exact atomically applicable result.
+- `context/`: three offline temporal packs, deterministic ranking configuration, complete proposal/review/receipt pairs, enriched output, and a separately locked runtime projection with fact/cue lineage split.
 
-The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template/review/progress lineage, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
+The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template/review/progress/temporal lineage, an incomplete temporal review, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
 
 Rebuild or check every fixture and schema from the repository root:
 
@@ -30,6 +31,15 @@ Validate or reproduce individual artifacts:
 ```bash
 cargo run -p weave-character -- validate profile \
   examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- context-propose \
+  examples/domain-modules/weave-character/context/input.character.json \
+  --pack examples/domain-modules/weave-character/context/apollo_11.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/calendar.temporal-pack.json \
+  --pack examples/domain-modules/weave-character/context/world.temporal-pack.json \
+  --config examples/domain-modules/weave-character/context/ranking.temporal-config.json \
+  --seed 19690720 \
+  --output target/proposal.temporal-proposal.json
 
 cargo run -p weave-character -- collection-propose \
   examples/domain-modules/weave-character/operations/collection.character-collection.json \
@@ -61,4 +71,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale.story.json
 ```
 
-See the [Character contract guide](../../../docs/character_module.md) for authority, missing-data, OCEAN, extension, synthesis, compatibility, privacy, and diagnostic rules.
+See the [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing-data, OCEAN, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.

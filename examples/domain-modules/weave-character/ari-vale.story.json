@@ -115,7 +115,7 @@
   "modules": {
     "character": {
       "id": "org.weave.character",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "pack_id": "ari_vale",
       "pack_version": "1.0.0",
       "exports": {
@@ -124,6 +124,50 @@
           "value": {
             "kind": "object",
             "value": {
+              "date_context": {
+                "kind": "object",
+                "value": {
+                  "accepted_record_ids": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "early_rains"
+                      }
+                    ]
+                  },
+                  "canonical_personality_write_back": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "cues": {
+                    "kind": "list",
+                    "value": []
+                  },
+                  "packs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "id": {
+                            "kind": "string",
+                            "value": "org.weave.context.synthetic_calendar"
+                          },
+                          "sha256": {
+                            "kind": "string",
+                            "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          },
+                          "version": {
+                            "kind": "string",
+                            "value": "1.0.0"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
               "hexaco": {
                 "kind": "object",
                 "value": {

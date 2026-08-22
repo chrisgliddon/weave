@@ -12,18 +12,29 @@ use weave_character::{
     CharacterIdentity, CharacterOperation, CharacterOperationAction, CharacterOperationRequest,
     CharacterOverlay, CharacterProfile, CharacterReviewDecision, CharacterScope,
     CharacterSuggestion, CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness,
-    DateContext, Emotionality, ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion,
-    Freshness, HexacoProfile, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
+    DateContext, DateContextCueKind, DateContextSensitivity, DateContextUncertainty, Emotionality,
+    ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion, Freshness, HexacoProfile,
+    HexacoTrait, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
     NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
     Openness, PreferencePolarity, RelationshipEdge, RelationshipEdges, ReviewState, RoleProjection,
-    RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceCategory,
-    VoiceDirection, apply_reviewed_character_proposal, character_collection_schema,
-    character_diagnostic_schema, character_domain_pack, character_module_manifest,
-    character_operation_request_schema, character_overlay_schema, character_profile_schema,
-    character_progress_schema, character_proposal_schema, character_review_schema,
-    character_synthesis_schema, character_template_schema, collection_fingerprint,
-    propose_character_operation, recompute_derived, resume_character_operation,
-    review_character_proposal, synthesize_character, template_fingerprint,
+    RoleProjections, TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION, TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+    TemporalAuthoringCue, TemporalAutoApprovePolicy, TemporalContextConfig, TemporalContextPack,
+    TemporalContextProposal, TemporalContextProvider, TemporalContextReceipt,
+    TemporalContextRecord, TemporalContextReview, TemporalDate, TemporalEvidenceClass,
+    TemporalExtent, TemporalPlaceScope, TemporalRecordKind, TemporalReferencePeriod,
+    TemporalResolution, TemporalReviewAction, TemporalReviewDecision, TemporalSensitivity,
+    TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState, VersionedExtension,
+    VoiceCategory, VoiceDirection, apply_reviewed_character_proposal,
+    apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
+    character_domain_pack, character_module_manifest, character_operation_request_schema,
+    character_overlay_schema, character_profile_schema, character_progress_schema,
+    character_proposal_schema, character_review_schema, character_synthesis_schema,
+    character_template_schema, collection_fingerprint, create_temporal_context_review,
+    propose_character_operation, propose_temporal_context, recompute_derived,
+    resume_character_operation, review_character_proposal, synthesize_character,
+    template_fingerprint, temporal_context_config_schema, temporal_context_pack_schema,
+    temporal_context_proposal_schema, temporal_context_receipt_schema,
+    temporal_context_review_schema, temporal_provider_content_fingerprint,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, to_pretty_json};
 
@@ -84,6 +95,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let renamed_collection =
         apply_reviewed_character_proposal(&collection, &rename_proposal, &rename_review)?;
+    let temporal = temporal_fixture(&profile)?;
+    let temporal_domain_pack = character_domain_pack(
+        &temporal.receipt.output_profile,
+        "ari_vale_temporal",
+        "1.0.0",
+        "Ari Vale Reviewed Temporal Context",
+    )?;
 
     write_pair(&fixture, "profile.character", &profile, write)?;
     write_pair(&fixture, "template.character", &template, write)?;
@@ -129,6 +147,72 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &operations,
         "renamed.character-collection",
         &renamed_collection,
+        write,
+    )?;
+
+    let context = fixture.join("context");
+    let runtime = context.join("runtime");
+    write_pair(&runtime, "module.weave-module", &module_manifest, write)?;
+    write_pair(
+        &runtime,
+        "ari_vale_temporal.weave-domain",
+        &temporal_domain_pack,
+        write,
+    )?;
+    write_pair(&context, "input.character", &temporal.input_profile, write)?;
+    for pack in &temporal.packs {
+        let stem = match pack.id.as_str() {
+            "org.weave.context.apollo_11" => "apollo_11.temporal-pack",
+            "org.weave.context.original_calendar" => "calendar.temporal-pack",
+            "org.weave.context.world_projection" => "world.temporal-pack",
+            _ => return Err("unexpected temporal fixture pack".into()),
+        };
+        write_pair(&context, stem, pack, write)?;
+    }
+    write_pair(&context, "ranking.temporal-config", &temporal.config, write)?;
+    write_pair(
+        &context,
+        "proposal.temporal-proposal",
+        &temporal.proposal,
+        write,
+    )?;
+    write_pair(
+        &context,
+        "decisions.temporal-review",
+        &temporal.review.decisions,
+        write,
+    )?;
+    write_pair(&context, "review.temporal-review", &temporal.review, write)?;
+    write_pair(
+        &context,
+        "receipt.temporal-receipt",
+        &temporal.receipt,
+        write,
+    )?;
+    write_pair(
+        &context,
+        "enriched.character",
+        &temporal.receipt.output_profile,
+        write,
+    )?;
+
+    let mut stale_proposal = serde_json::to_value(&temporal.proposal)?;
+    stale_proposal["profile_sha256"] = serde_json::Value::String("0".repeat(64));
+    write_raw_json(
+        &fixture.join("invalid/stale-temporal-proposal.json"),
+        &stale_proposal,
+        write,
+    )?;
+    let mut incomplete_review = serde_json::to_value(&temporal.review)?;
+    if let Some(decisions) = incomplete_review["decisions"].as_object_mut() {
+        let first = decisions.keys().next().cloned();
+        if let Some(first) = first {
+            decisions.remove(&first);
+        }
+    }
+    write_raw_json(
+        &fixture.join("invalid/incomplete-temporal-review.json"),
+        &incomplete_review,
         write,
     )?;
 
@@ -279,10 +363,612 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "weave-character-progress-v1.schema.json",
             character_progress_schema()?,
         ),
+        (
+            "weave-character-temporal-pack-v1.schema.json",
+            temporal_context_pack_schema()?,
+        ),
+        (
+            "weave-character-temporal-config-v1.schema.json",
+            temporal_context_config_schema()?,
+        ),
+        (
+            "weave-character-temporal-proposal-v1.schema.json",
+            temporal_context_proposal_schema()?,
+        ),
+        (
+            "weave-character-temporal-review-v1.schema.json",
+            temporal_context_review_schema()?,
+        ),
+        (
+            "weave-character-temporal-receipt-v1.schema.json",
+            temporal_context_receipt_schema()?,
+        ),
     ] {
         write_or_check(&schemas.join(name), contents.as_bytes(), write)?;
     }
     Ok(())
+}
+
+struct TemporalFixture {
+    input_profile: CharacterProfile,
+    packs: Vec<TemporalContextPack>,
+    config: TemporalContextConfig,
+    proposal: TemporalContextProposal,
+    review: TemporalContextReview,
+    receipt: TemporalContextReceipt,
+}
+
+fn temporal_fixture(
+    base: &CharacterProfile,
+) -> Result<TemporalFixture, Box<dyn std::error::Error>> {
+    let mut input_profile = base.clone();
+    input_profile
+        .canon
+        .birth_date
+        .as_mut()
+        .ok_or("complete fixture requires a birth date")?
+        .value = BirthDate::Full {
+        calendar: Calendar::ProlepticGregorian,
+        year: 1969,
+        month: 7,
+        day: 20,
+    };
+    input_profile
+        .extensions
+        .remove("org.weave.character.date_context");
+
+    let packs = vec![
+        apollo_11_context_pack(),
+        original_calendar_context_pack(),
+        world_projection_context_pack(),
+    ];
+    let config = TemporalContextConfig {
+        config_format_version: TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION,
+        id: "org.weave.context.reference_ranking".to_owned(),
+        minimum_relevance_micros: 350_000,
+        minimum_trait_coverage_micros: 100_000,
+        maximum_candidates: 16,
+        allowed_record_kinds: vec![
+            TemporalRecordKind::CalendricalFact,
+            TemporalRecordKind::SeasonalFact,
+            TemporalRecordKind::EnvironmentalFact,
+            TemporalRecordKind::CelestialFact,
+            TemporalRecordKind::Commemoration,
+            TemporalRecordKind::HistoricalEvent,
+        ],
+        allowed_cue_kinds: vec![
+            DateContextCueKind::Affinity,
+            DateContextCueKind::Tension,
+            DateContextCueKind::Value,
+            DateContextCueKind::Memory,
+            DateContextCueKind::Voice,
+        ],
+        allowed_sensitivities: vec![
+            DateContextSensitivity::Low,
+            DateContextSensitivity::Moderate,
+        ],
+        required_tags: Vec::new(),
+        place_scope_ids: vec!["org.weave.place.synthetic_coast".to_owned()],
+        time_zone: TemporalTimeZone::Iana {
+            id: "America/Los_Angeles".to_owned(),
+        },
+        allow_global_without_place: true,
+        auto_approve: TemporalAutoApprovePolicy::Disabled,
+        override_locked_context: false,
+        override_rationale: None,
+    };
+    let proposal = propose_temporal_context(&input_profile, &packs, &config, 19_690_720)?;
+    let decisions = proposal
+        .candidates
+        .iter()
+        .map(|candidate| {
+            let action = match candidate.record_id.as_str() {
+                "apollo_11_lunar_landing" => TemporalReviewAction::Accept {
+                    rationale: Some(
+                        "Accept the original fictional value prompt after verifying that the historical date is context only and not causal personality evidence.".to_owned(),
+                    ),
+                },
+                "calendar_midsummer_period" => TemporalReviewAction::Edit {
+                    content: "Recall a long-light gathering where the character chose to listen before speaking.".to_owned(),
+                    rationale: "Make the original seasonal prompt specific to this fictional character while retaining its non-causal status.".to_owned(),
+                },
+                "world_coastal_fog_cycle" => TemporalReviewAction::Override {
+                    content: "Treat the fictional coast's returning fog as a remembered invitation to slow down and notice small changes.".to_owned(),
+                    rationale: "Override the generic World-compatible cue with a project-specific fictional memory; the environmental record remains separate.".to_owned(),
+                },
+                _ => TemporalReviewAction::Reject {
+                    rationale: "The reviewer chose not to carry this otherwise valid fictional cue into the accepted context view.".to_owned(),
+                },
+            };
+            (
+                candidate.id.clone(),
+                TemporalReviewDecision {
+                    candidate_id: candidate.id.clone(),
+                    action,
+                },
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let review = create_temporal_context_review(
+        &proposal,
+        "org.weave.reviewer.fixture",
+        "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
+        decisions,
+    )?;
+    let receipt = apply_reviewed_temporal_context(&input_profile, &packs, &proposal, &review)?;
+    Ok(TemporalFixture {
+        input_profile,
+        packs,
+        config,
+        proposal,
+        review,
+        receipt,
+    })
+}
+
+fn apollo_11_context_pack() -> TemporalContextPack {
+    let public_source = ProvenanceSource {
+        id: "apollo_11_wikidata".to_owned(),
+        kind: ProvenanceKind::PublicSource,
+        url: "https://www.wikidata.org/wiki/Special:EntityData/Q43653.json?revision=2526069885&flavor=simple".to_owned(),
+        revision: "2526069885 (2026-08-02T06:29:38Z)".to_owned(),
+        sha256: Some(
+            "52c78c8a7c1320e970a6aa1c2737c9e0a89e786be957f380f389d02ab84c006b"
+                .to_owned(),
+        ),
+        license: "CC0-1.0".to_owned(),
+        license_url: "https://www.wikidata.org/wiki/Wikidata:Licensing".to_owned(),
+        attribution: "Wikidata contributors, Apollo 11 (Q43653), revision 2526069885. Attribution retained although CC0 does not require it.".to_owned(),
+        modified: false,
+    };
+    let cue_source = original_context_source(
+        "weave_historical_cues",
+        "Original fictional historical-context prompts and declared HEXACO vectors.",
+    );
+    TemporalContextPack {
+        pack_format_version: TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+        id: "org.weave.context.apollo_11".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Apollo 11 structured-date context".to_owned(),
+        license: "CC0-1.0 AND MIT".to_owned(),
+        license_url: "https://spdx.org/licenses/".to_owned(),
+        provider: TemporalContextProvider::Standalone,
+        records: BTreeMap::from([(
+            "apollo_11_lunar_landing".to_owned(),
+            TemporalContextRecord {
+                id: "apollo_11_lunar_landing".to_owned(),
+                kind: TemporalRecordKind::HistoricalEvent,
+                evidence_class: TemporalEvidenceClass::CalendricalFact,
+                extent: TemporalExtent::Date {
+                    date: temporal_date(1969, 7, 20),
+                },
+                place_scope: TemporalPlaceScope::Global,
+                time_zone: TemporalTimeZone::Utc,
+                reference_period: exact_reference_period(
+                    "Apollo 11 structured event date",
+                    1969,
+                    7,
+                    20,
+                ),
+                fact: DomainValue::Object(BTreeMap::from([
+                    (
+                        "date".to_owned(),
+                        DomainValue::String("1969-07-20".to_owned()),
+                    ),
+                    (
+                        "entity".to_owned(),
+                        DomainValue::Symbol("wikidata_q43653".to_owned()),
+                    ),
+                    (
+                        "event".to_owned(),
+                        DomainValue::String("Apollo 11 lunar landing".to_owned()),
+                    ),
+                    (
+                        "precision".to_owned(),
+                        DomainValue::Symbol("day".to_owned()),
+                    ),
+                    (
+                        "revision".to_owned(),
+                        DomainValue::String("2526069885".to_owned()),
+                    ),
+                ])),
+                tags: vec!["historical".to_owned(), "spaceflight".to_owned()],
+                cues: BTreeMap::from([(
+                    "shared_horizon".to_owned(),
+                    TemporalAuthoringCue {
+                        id: "shared_horizon".to_owned(),
+                        kind: DateContextCueKind::Value,
+                        content: "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.".to_owned(),
+                        trait_vector: BTreeMap::from([
+                            (HexacoTrait::Diligence, 350),
+                            (HexacoTrait::Inquisitiveness, 250),
+                            (HexacoTrait::Openness, 400),
+                        ]),
+                        tags: vec!["collective_effort".to_owned()],
+                        limitations: "This original fictional prompt is merely discoverable through a date match; Apollo 11 neither causes nor predicts personality and the cue makes no claim about a real person.".to_owned(),
+                        source_ids: vec!["weave_historical_cues".to_owned()],
+                    },
+                )]),
+                source_ids: vec!["apollo_11_wikidata".to_owned()],
+                uncertainty: TemporalUncertainty {
+                    level: DateContextUncertainty::Exact,
+                    reason: "The pinned structured entity records the event date at day precision."
+                        .to_owned(),
+                },
+                sensitivity: TemporalSensitivity {
+                    level: DateContextSensitivity::Moderate,
+                    topics: vec!["history".to_owned(), "spaceflight".to_owned()],
+                    requires_explicit_review: true,
+                    note: "A real historical event is retained only as sourced context for an independently original fictional prompt.".to_owned(),
+                },
+            },
+        )]),
+        provenance: Provenance {
+            sources: vec![public_source, cue_source],
+            transformations: Vec::new(),
+            claims: BTreeMap::from([
+                (
+                    "records.apollo_11_lunar_landing.cues".to_owned(),
+                    vec!["weave_historical_cues".to_owned()],
+                ),
+                (
+                    "records.apollo_11_lunar_landing.fact".to_owned(),
+                    vec!["apollo_11_wikidata".to_owned()],
+                ),
+            ]),
+        },
+    }
+}
+
+fn original_calendar_context_pack() -> TemporalContextPack {
+    let fact_source = original_context_source(
+        "weave_calendar_facts",
+        "Original synthetic calendrical, seasonal, and celestial fixture facts.",
+    );
+    let cue_source = original_context_source(
+        "weave_calendar_cues",
+        "Original fictional calendar prompts and declared HEXACO vectors.",
+    );
+    let cues = |id: &str,
+                kind: DateContextCueKind,
+                content: &str,
+                vector: BTreeMap<HexacoTrait, i16>| {
+        BTreeMap::from([(
+            id.to_owned(),
+            TemporalAuthoringCue {
+                id: id.to_owned(),
+                kind,
+                content: content.to_owned(),
+                trait_vector: vector,
+                tags: vec!["fictional_prompt".to_owned()],
+                limitations: "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.".to_owned(),
+                source_ids: vec!["weave_calendar_cues".to_owned()],
+            },
+        )])
+    };
+    let standard = |level, reason: &str| TemporalUncertainty {
+        level,
+        reason: reason.to_owned(),
+    };
+    let low = TemporalSensitivity {
+        level: DateContextSensitivity::Low,
+        topics: Vec::new(),
+        requires_explicit_review: false,
+        note: "Neutral original fictional prompt.".to_owned(),
+    };
+    let records = BTreeMap::from([
+        (
+            "calendar_disputed_celestial".to_owned(),
+            TemporalContextRecord {
+                id: "calendar_disputed_celestial".to_owned(),
+                kind: TemporalRecordKind::CelestialFact,
+                evidence_class: TemporalEvidenceClass::CalendricalFact,
+                extent: TemporalExtent::Date {
+                    date: temporal_date(1969, 7, 20),
+                },
+                place_scope: TemporalPlaceScope::Global,
+                time_zone: TemporalTimeZone::Utc,
+                reference_period: exact_reference_period(
+                    "Synthetic disputed celestial reference",
+                    1969,
+                    7,
+                    20,
+                ),
+                fact: DomainValue::Object(BTreeMap::from([(
+                    "fixture_status".to_owned(),
+                    DomainValue::Symbol("synthetic_disputed".to_owned()),
+                )])),
+                tags: vec!["celestial".to_owned(), "synthetic".to_owned()],
+                cues: cues(
+                    "uncertain_light",
+                    DateContextCueKind::Tension,
+                    "Imagine a fictional disagreement over whether an uncertain light was a warning or an invitation.",
+                    BTreeMap::from([(HexacoTrait::Anxiety, 450), (HexacoTrait::Openness, 550)]),
+                ),
+                source_ids: vec!["weave_calendar_facts".to_owned()],
+                uncertainty: standard(
+                    DateContextUncertainty::Disputed,
+                    "The synthetic fixture deliberately marks this record disputed so ranking must downgrade it.",
+                ),
+                sensitivity: low.clone(),
+            },
+        ),
+        (
+            "calendar_midsummer_period".to_owned(),
+            TemporalContextRecord {
+                id: "calendar_midsummer_period".to_owned(),
+                kind: TemporalRecordKind::SeasonalFact,
+                evidence_class: TemporalEvidenceClass::CalendricalFact,
+                extent: TemporalExtent::DateRange {
+                    start: temporal_date(1969, 6, 21),
+                    end: temporal_date(1969, 9, 22),
+                },
+                place_scope: TemporalPlaceScope::Global,
+                time_zone: TemporalTimeZone::Utc,
+                reference_period: TemporalReferencePeriod {
+                    label: "Synthetic 1969 northern midsummer interval".to_owned(),
+                    start: temporal_date(1969, 6, 21),
+                    end: temporal_date(1969, 9, 22),
+                    resolution: TemporalResolution::Period,
+                },
+                fact: DomainValue::Object(BTreeMap::from([(
+                    "season".to_owned(),
+                    DomainValue::Symbol("synthetic_northern_midsummer".to_owned()),
+                )])),
+                tags: vec!["seasonal".to_owned(), "synthetic".to_owned()],
+                cues: cues(
+                    "long_light_gathering",
+                    DateContextCueKind::Memory,
+                    "Imagine a fictional gathering held while the evening light lingered, with room for both celebration and quiet observation.",
+                    BTreeMap::from([
+                        (HexacoTrait::AestheticAppreciation, 450),
+                        (HexacoTrait::Sociability, 550),
+                    ]),
+                ),
+                source_ids: vec!["weave_calendar_facts".to_owned()],
+                uncertainty: standard(
+                    DateContextUncertainty::Bounded,
+                    "The original fixture supplies a bounded seasonal interval rather than an instant.",
+                ),
+                sensitivity: low.clone(),
+            },
+        ),
+        (
+            "calendar_twentieth_day_observance".to_owned(),
+            TemporalContextRecord {
+                id: "calendar_twentieth_day_observance".to_owned(),
+                kind: TemporalRecordKind::Commemoration,
+                evidence_class: TemporalEvidenceClass::InterpretiveContext,
+                extent: TemporalExtent::MonthDay { month: 7, day: 20 },
+                place_scope: TemporalPlaceScope::Global,
+                time_zone: TemporalTimeZone::Utc,
+                reference_period: TemporalReferencePeriod {
+                    label: "Original recurring fictional observance".to_owned(),
+                    start: temporal_date(1, 7, 20),
+                    end: temporal_date(9_999, 7, 20),
+                    resolution: TemporalResolution::RecurringDay,
+                },
+                fact: DomainValue::Object(BTreeMap::from([(
+                    "observance".to_owned(),
+                    DomainValue::Symbol("fictional_twentieth_day".to_owned()),
+                )])),
+                tags: vec!["commemoration".to_owned(), "synthetic".to_owned()],
+                cues: cues(
+                    "returning_table",
+                    DateContextCueKind::Affinity,
+                    "Consider whether the fictional character is drawn to a table that is rebuilt each year for whoever arrives.",
+                    BTreeMap::from([
+                        (HexacoTrait::Sentimentality, 600),
+                        (HexacoTrait::Sociability, 400),
+                    ]),
+                ),
+                source_ids: vec!["weave_calendar_facts".to_owned()],
+                uncertainty: standard(
+                    DateContextUncertainty::Exact,
+                    "The recurring month-day is explicit original fixture data.",
+                ),
+                sensitivity: low.clone(),
+            },
+        ),
+        (
+            "calendar_unmatched_leap_day".to_owned(),
+            TemporalContextRecord {
+                id: "calendar_unmatched_leap_day".to_owned(),
+                kind: TemporalRecordKind::CalendricalFact,
+                evidence_class: TemporalEvidenceClass::CalendricalFact,
+                extent: TemporalExtent::MonthDay { month: 2, day: 29 },
+                place_scope: TemporalPlaceScope::Global,
+                time_zone: TemporalTimeZone::Utc,
+                reference_period: TemporalReferencePeriod {
+                    label: "Proleptic Gregorian recurring leap day".to_owned(),
+                    start: temporal_date(4, 2, 29),
+                    end: temporal_date(9_996, 2, 29),
+                    resolution: TemporalResolution::RecurringDay,
+                },
+                fact: DomainValue::Object(BTreeMap::from([(
+                    "month_day".to_owned(),
+                    DomainValue::String("02-29".to_owned()),
+                )])),
+                tags: vec!["calendar".to_owned(), "leap_day".to_owned()],
+                cues: cues(
+                    "rare_cadence",
+                    DateContextCueKind::Voice,
+                    "Imagine a fictional speaking cadence that saves its most unusual image for rare occasions.",
+                    BTreeMap::from([(HexacoTrait::Creativity, 1_000)]),
+                ),
+                source_ids: vec!["weave_calendar_facts".to_owned()],
+                uncertainty: standard(
+                    DateContextUncertainty::Exact,
+                    "The recurring leap-day rule is explicit in the proleptic Gregorian fixture.",
+                ),
+                sensitivity: low,
+            },
+        ),
+    ]);
+    TemporalContextPack {
+        pack_format_version: TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+        id: "org.weave.context.original_calendar".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Original synthetic calendar context".to_owned(),
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        provider: TemporalContextProvider::Standalone,
+        records,
+        provenance: Provenance {
+            sources: vec![cue_source, fact_source],
+            transformations: Vec::new(),
+            claims: BTreeMap::from([
+                (
+                    "records.cues".to_owned(),
+                    vec!["weave_calendar_cues".to_owned()],
+                ),
+                (
+                    "records.facts".to_owned(),
+                    vec!["weave_calendar_facts".to_owned()],
+                ),
+            ]),
+        },
+    }
+}
+
+fn world_projection_context_pack() -> TemporalContextPack {
+    let cue_source = original_context_source(
+        "weave_world_cues",
+        "Original fictional environmental prompts and declared HEXACO vectors.",
+    );
+    let projection_source = original_context_source(
+        "weave_world_projection",
+        "Original synthetic World-compatible environmental projection fixture.",
+    );
+    let records = BTreeMap::from([(
+            "world_coastal_fog_cycle".to_owned(),
+            TemporalContextRecord {
+                id: "world_coastal_fog_cycle".to_owned(),
+                kind: TemporalRecordKind::EnvironmentalFact,
+                evidence_class: TemporalEvidenceClass::MeasuredFact,
+                extent: TemporalExtent::DateRange {
+                    start: temporal_date(1969, 7, 1),
+                    end: temporal_date(1969, 8, 31),
+                },
+                place_scope: TemporalPlaceScope::Place {
+                    id: "org.weave.place.synthetic_coast".to_owned(),
+                    kind: "org.weave.world.fictional_region".to_owned(),
+                },
+                time_zone: TemporalTimeZone::Iana {
+                    id: "America/Los_Angeles".to_owned(),
+                },
+                reference_period: TemporalReferencePeriod {
+                    label: "Original fictional coast summer projection".to_owned(),
+                    start: temporal_date(1969, 7, 1),
+                    end: temporal_date(1969, 8, 31),
+                    resolution: TemporalResolution::Period,
+                },
+                fact: DomainValue::Object(BTreeMap::from([
+                    ("fictional".to_owned(), DomainValue::Bool(true)),
+                    (
+                        "pattern".to_owned(),
+                        DomainValue::Symbol("recurring_coastal_fog".to_owned()),
+                    ),
+                    (
+                        "world_place".to_owned(),
+                        DomainValue::Symbol("org_weave_place_synthetic_coast".to_owned()),
+                    ),
+                ])),
+                tags: vec!["environmental".to_owned(), "world_projection".to_owned()],
+                cues: BTreeMap::from([(
+                    "returning_fog".to_owned(),
+                    TemporalAuthoringCue {
+                        id: "returning_fog".to_owned(),
+                        kind: DateContextCueKind::Memory,
+                        content: "Imagine a fictional memory in which familiar fog made subtle changes easier to notice.".to_owned(),
+                        trait_vector: BTreeMap::from([
+                            (HexacoTrait::AestheticAppreciation, 450),
+                            (HexacoTrait::Patience, 300),
+                            (HexacoTrait::Perfectionism, 250),
+                        ]),
+                        tags: vec!["fictional_prompt".to_owned()],
+                        limitations: "This original fictional cue is a non-causal authoring option; the environment record does not predict personality.".to_owned(),
+                        source_ids: vec!["weave_world_cues".to_owned()],
+                    },
+                )]),
+                source_ids: vec!["weave_world_projection".to_owned()],
+                uncertainty: TemporalUncertainty {
+                    level: DateContextUncertainty::Bounded,
+                    reason: "The World-compatible fictional projection covers a declared date interval and place scope.".to_owned(),
+                },
+                sensitivity: TemporalSensitivity {
+                    level: DateContextSensitivity::Low,
+                    topics: Vec::new(),
+                    requires_explicit_review: false,
+                    note: "Neutral original fictional environmental prompt.".to_owned(),
+                },
+            },
+        )]);
+    let content_sha256 = temporal_provider_content_fingerprint(&records)
+        .expect("the synthetic World projection is serializable");
+    TemporalContextPack {
+        pack_format_version: TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+        id: "org.weave.context.world_projection".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "World-compatible fictional environment context".to_owned(),
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        provider: TemporalContextProvider::DomainModule {
+            module_id: "org.weave.world".to_owned(),
+            module_version: "1.1.0".to_owned(),
+            pack_id: "synthetic_temporal_projection".to_owned(),
+            pack_version: "1.0.0".to_owned(),
+            content_sha256,
+        },
+        records,
+        provenance: Provenance {
+            sources: vec![cue_source, projection_source],
+            transformations: Vec::new(),
+            claims: BTreeMap::from([
+                (
+                    "records.world_coastal_fog_cycle.cues".to_owned(),
+                    vec!["weave_world_cues".to_owned()],
+                ),
+                (
+                    "records.world_coastal_fog_cycle.fact".to_owned(),
+                    vec!["weave_world_projection".to_owned()],
+                ),
+            ]),
+        },
+    }
+}
+
+fn original_context_source(id: &str, attribution: &str) -> ProvenanceSource {
+    ProvenanceSource {
+        id: id.to_owned(),
+        kind: ProvenanceKind::Original,
+        url: "https://github.com/chrisgliddon/weave".to_owned(),
+        revision: "temporal-context-v1".to_owned(),
+        sha256: None,
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        attribution: attribution.to_owned(),
+        modified: false,
+    }
+}
+
+fn temporal_date(year: i32, month: u8, day: u8) -> TemporalDate {
+    TemporalDate {
+        calendar: Calendar::ProlepticGregorian,
+        year,
+        month,
+        day,
+    }
+}
+
+fn exact_reference_period(label: &str, year: i32, month: u8, day: u8) -> TemporalReferencePeriod {
+    let date = temporal_date(year, month, day);
+    TemporalReferencePeriod {
+        label: label.to_owned(),
+        start: date,
+        end: date,
+        resolution: TemporalResolution::Day,
+    }
 }
 
 fn character_collection(
@@ -510,7 +1196,9 @@ fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
                     context_pack: "org.weave.context.synthetic_calendar".to_owned(),
                     context_version: "1.0.0".to_owned(),
                     context_hash: "a".repeat(64),
+                    additional_context_packs: Vec::new(),
                     accepted_record_ids: vec!["early_rains".to_owned()],
+                    accepted_cues: BTreeMap::new(),
                 },
             }),
         ),

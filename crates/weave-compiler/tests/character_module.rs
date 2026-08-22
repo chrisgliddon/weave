@@ -12,6 +12,21 @@ const CHECKED_RON: &str =
     include_str!("../../../examples/domain-modules/weave-character/ari-vale.story.ron");
 const CHECKED_JSON: &str =
     include_str!("../../../examples/domain-modules/weave-character/ari-vale.story.json");
+const TEMPORAL_SOURCE: &str = include_str!(
+    "../../../examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave"
+);
+const TEMPORAL_MANIFEST: &str = include_str!(
+    "../../../examples/domain-modules/weave-character/context/runtime/module.weave-module.json"
+);
+const TEMPORAL_PACK: &str = include_str!(
+    "../../../examples/domain-modules/weave-character/context/runtime/ari_vale_temporal.weave-domain.json"
+);
+const TEMPORAL_RON: &str = include_str!(
+    "../../../examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.story.ron"
+);
+const TEMPORAL_JSON: &str = include_str!(
+    "../../../examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json"
+);
 
 fn catalog() -> DomainCatalog {
     DomainCatalog::from_artifacts(
@@ -25,6 +40,14 @@ fn options() -> CompileOptions {
     CompileOptions {
         source_name: Some("examples/domain-modules/weave-character/ari-vale.weave".to_owned()),
     }
+}
+
+fn temporal_catalog() -> DomainCatalog {
+    DomainCatalog::from_artifacts(
+        [ModuleManifest::from_json(TEMPORAL_MANIFEST).expect("temporal Character manifest")],
+        [DomainPack::from_json(TEMPORAL_PACK).expect("temporal Character pack")],
+    )
+    .expect("temporal Character catalog")
 }
 
 #[test]
@@ -111,4 +134,55 @@ fn character_schema_paths_are_static_and_derived_evidence_is_read_only() {
     let error = compile_with_modules(&canonical_writeback, &options(), &catalog())
         .expect_err("canonical evidence bypass must fail");
     assert_eq!(error.diagnostics[0].code.0, "D140");
+}
+
+#[test]
+fn reviewed_temporal_context_compiles_with_separate_lineage_and_no_writeback() {
+    let options = CompileOptions {
+        source_name: Some(
+            "examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave"
+                .to_owned(),
+        ),
+    };
+    let compilation = compile_with_modules(TEMPORAL_SOURCE, &options, &temporal_catalog())
+        .expect("temporal Character compiles");
+    assert_eq!(to_json(&compilation.story).unwrap(), TEMPORAL_JSON);
+    assert_eq!(to_ron(&compilation.story).unwrap(), TEMPORAL_RON);
+    let character = &compilation.story.modules["character"];
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "date_context",
+            "canonical_personality_write_back"
+        ]),
+        Some(&DomainValueIr::Bool(false))
+    );
+    let Some(DomainValueIr::List(cues)) = character.value(&["profile", "date_context", "cues"])
+    else {
+        panic!("reviewed date-context cues are absent");
+    };
+    assert_eq!(cues.len(), 3);
+    for cue in cues {
+        let DomainValueIr::Object(fields) = cue else {
+            panic!("date-context cue is not an object");
+        };
+        assert!(matches!(
+            fields.get("fact_source_ids"),
+            Some(DomainValueIr::List(values)) if !values.is_empty()
+        ));
+        assert!(matches!(
+            fields.get("cue_source_ids"),
+            Some(DomainValueIr::List(values)) if !values.is_empty()
+        ));
+    }
+
+    let forbidden = TEMPORAL_SOURCE.replace(
+        "    pack: \"ari_vale_temporal@=1.0.0\"\n}",
+        "    pack: \"ari_vale_temporal@=1.0.0\"\n    override profile.date_context.canonical_personality_write_back: true\n}",
+    );
+    let error = compile_with_modules(&forbidden, &options, &temporal_catalog())
+        .expect_err("temporal context writeback must fail");
+    assert!(error.diagnostics.iter().any(|diagnostic| {
+        diagnostic.code.0 == "D140" && diagnostic.message.contains("read-only path")
+    }));
 }

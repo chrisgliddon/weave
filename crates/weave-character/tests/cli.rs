@@ -35,6 +35,23 @@ const RENAMED_JSON_PATH: &str =
     "examples/domain-modules/weave-character/operations/renamed.character-collection.json";
 const RENAMED_RON_PATH: &str =
     "examples/domain-modules/weave-character/operations/renamed.character-collection.ron";
+const CONTEXT_INPUT: &str = "examples/domain-modules/weave-character/context/input.character.json";
+const CONTEXT_APOLLO_PACK: &str =
+    "examples/domain-modules/weave-character/context/apollo_11.temporal-pack.json";
+const CONTEXT_CALENDAR_PACK: &str =
+    "examples/domain-modules/weave-character/context/calendar.temporal-pack.json";
+const CONTEXT_WORLD_PACK: &str =
+    "examples/domain-modules/weave-character/context/world.temporal-pack.json";
+const CONTEXT_CONFIG: &str =
+    "examples/domain-modules/weave-character/context/ranking.temporal-config.json";
+const CONTEXT_PROPOSAL: &str =
+    "examples/domain-modules/weave-character/context/proposal.temporal-proposal.json";
+const CONTEXT_DECISIONS: &str =
+    "examples/domain-modules/weave-character/context/decisions.temporal-review.json";
+const CONTEXT_REVIEW: &str =
+    "examples/domain-modules/weave-character/context/review.temporal-review.json";
+const CONTEXT_RECEIPT: &str =
+    "examples/domain-modules/weave-character/context/receipt.temporal-receipt.json";
 
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-character"))
@@ -148,6 +165,31 @@ fn validates_and_writes_every_collection_contract_schema_exactly() {
             "progress",
             PROGRESS_JSON_PATH,
             "schemas/weave-character-progress-v1.schema.json",
+        ),
+        (
+            "temporal-pack",
+            CONTEXT_APOLLO_PACK,
+            "schemas/weave-character-temporal-pack-v1.schema.json",
+        ),
+        (
+            "temporal-config",
+            CONTEXT_CONFIG,
+            "schemas/weave-character-temporal-config-v1.schema.json",
+        ),
+        (
+            "temporal-proposal",
+            CONTEXT_PROPOSAL,
+            "schemas/weave-character-temporal-proposal-v1.schema.json",
+        ),
+        (
+            "temporal-review",
+            CONTEXT_REVIEW,
+            "schemas/weave-character-temporal-review-v1.schema.json",
+        ),
+        (
+            "temporal-receipt",
+            CONTEXT_RECEIPT,
+            "schemas/weave-character-temporal-receipt-v1.schema.json",
         ),
     ] {
         let validation = run(&["validate", kind, input]);
@@ -410,4 +452,132 @@ fn stale_or_malformed_collection_inputs_never_create_partial_outputs() {
         assert!(!output_path.exists());
         assert!(!String::from_utf8_lossy(&output.stderr).contains("Ari Vale"));
     }
+}
+
+#[test]
+fn temporal_propose_review_and_apply_match_shared_fixture_bytes() {
+    let temporary = tempdir().expect("temporary output directory");
+    let proposal = temporary.path().join("proposal.json");
+    let proposed = run(&[
+        "context-propose",
+        CONTEXT_INPUT,
+        "--pack",
+        CONTEXT_WORLD_PACK,
+        "--pack",
+        CONTEXT_CALENDAR_PACK,
+        "--pack",
+        CONTEXT_APOLLO_PACK,
+        "--config",
+        CONTEXT_CONFIG,
+        "--seed",
+        "19690720",
+        "--output",
+        proposal.to_str().unwrap(),
+    ]);
+    assert!(
+        proposed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&proposed.stderr)
+    );
+    assert_eq!(
+        fs::read(&proposal).unwrap(),
+        fs::read(repository_root().join(CONTEXT_PROPOSAL)).unwrap()
+    );
+
+    let expected_review: serde_json::Value =
+        serde_json::from_slice(&fs::read(repository_root().join(CONTEXT_REVIEW)).unwrap()).unwrap();
+    let reviewer = expected_review["reviewer"].as_str().unwrap();
+    let rationale = expected_review["rationale"].as_str().unwrap();
+    let review = temporary.path().join("review.json");
+    let reviewed = run(&[
+        "context-review",
+        proposal.to_str().unwrap(),
+        CONTEXT_DECISIONS,
+        "--reviewer",
+        reviewer,
+        "--rationale",
+        rationale,
+        "--output",
+        review.to_str().unwrap(),
+    ]);
+    assert!(
+        reviewed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&reviewed.stderr)
+    );
+    assert_eq!(
+        fs::read(&review).unwrap(),
+        fs::read(repository_root().join(CONTEXT_REVIEW)).unwrap()
+    );
+
+    let receipt = temporary.path().join("receipt.json");
+    let applied = run(&[
+        "context-apply",
+        CONTEXT_INPUT,
+        "--pack",
+        CONTEXT_APOLLO_PACK,
+        "--pack",
+        CONTEXT_CALENDAR_PACK,
+        "--pack",
+        CONTEXT_WORLD_PACK,
+        proposal.to_str().unwrap(),
+        review.to_str().unwrap(),
+        "--output",
+        receipt.to_str().unwrap(),
+    ]);
+    assert!(
+        applied.status.success(),
+        "{}",
+        String::from_utf8_lossy(&applied.stderr)
+    );
+    assert_eq!(
+        fs::read(receipt).unwrap(),
+        fs::read(repository_root().join(CONTEXT_RECEIPT)).unwrap()
+    );
+}
+
+#[test]
+fn temporal_dry_run_and_stale_inputs_never_write_partial_receipts() {
+    let temporary = tempdir().expect("temporary output directory");
+    let forbidden = temporary.path().join("dry-run-receipt.json");
+    let dry_run = run(&[
+        "context-apply",
+        CONTEXT_INPUT,
+        "--pack",
+        CONTEXT_APOLLO_PACK,
+        "--pack",
+        CONTEXT_CALENDAR_PACK,
+        "--pack",
+        CONTEXT_WORLD_PACK,
+        CONTEXT_PROPOSAL,
+        CONTEXT_REVIEW,
+        "--dry-run",
+        "--output",
+        forbidden.to_str().unwrap(),
+    ]);
+    assert!(
+        dry_run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&dry_run.stderr)
+    );
+    assert!(!forbidden.exists());
+
+    let stale_output = temporary.path().join("stale-receipt.json");
+    let stale = run(&[
+        "context-apply",
+        CONTEXT_INPUT,
+        "--pack",
+        CONTEXT_APOLLO_PACK,
+        "--pack",
+        CONTEXT_CALENDAR_PACK,
+        "--pack",
+        CONTEXT_WORLD_PACK,
+        "examples/domain-modules/weave-character/invalid/stale-temporal-proposal.json",
+        CONTEXT_REVIEW,
+        "--output",
+        stale_output.to_str().unwrap(),
+    ]);
+    assert!(!stale.status.success());
+    assert!(!stale_output.exists());
+    assert!(!String::from_utf8_lossy(&stale.stderr).contains("Ari Vale"));
 }

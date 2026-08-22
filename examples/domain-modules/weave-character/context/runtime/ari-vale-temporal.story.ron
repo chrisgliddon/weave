@@ -1,0 +1,1986 @@
+StoryIr(
+    version: 4,
+    source_name: Some("examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 111,
+                end: 178,
+                line: 7,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "character_name",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "identity",
+                            "display_name",
+                            "value",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 178,
+                end: 279,
+                line: 8,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "temporal_personality_writeback",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "date_context",
+                            "canonical_personality_write_back",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "character": DomainModuleIr(
+            id: "org.weave.character",
+            version: "1.1.0",
+            pack_id: "ari_vale_temporal",
+            pack_version: "1.0.0",
+            exports: {
+                "profile": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "date_context": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "accepted_record_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "apollo_11_lunar_landing",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "calendar_midsummer_period",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "world_coastal_fog_cycle",
+                                            ),
+                                        ],
+                                    ),
+                                    "canonical_personality_write_back": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "cues": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "content": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Treat the fictional coast\'s returning fog as a remembered invitation to slow down and notice small changes.",
+                                                    ),
+                                                    "cue_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_world_cues",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "overridden",
+                                                    ),
+                                                    "fact_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_world_projection",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "cue_54a72f798cf8211963d263ba",
+                                                    ),
+                                                    "kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "memory",
+                                                    ),
+                                                    "pack_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.world_projection",
+                                                    ),
+                                                    "record_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "world_coastal_fog_cycle",
+                                                    ),
+                                                    "relevance": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.418416,
+                                                    ),
+                                                    "review_sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                                                    ),
+                                                    "sensitivity": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "low",
+                                                    ),
+                                                    "uncertainty": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "bounded",
+                                                    ),
+                                                },
+                                            ),
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "content": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Recall a long-light gathering where the character chose to listen before speaking.",
+                                                    ),
+                                                    "cue_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_calendar_cues",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "edited",
+                                                    ),
+                                                    "fact_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_calendar_facts",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "cue_7eafd04a34c7f45247e358f5",
+                                                    ),
+                                                    "kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "memory",
+                                                    ),
+                                                    "pack_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.original_calendar",
+                                                    ),
+                                                    "record_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "calendar_midsummer_period",
+                                                    ),
+                                                    "relevance": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.386389,
+                                                    ),
+                                                    "review_sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                                                    ),
+                                                    "sensitivity": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "low",
+                                                    ),
+                                                    "uncertainty": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "bounded",
+                                                    ),
+                                                },
+                                            ),
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "content": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Consider whether this fictional character values difficult work whose meaning becomes visible only when many people share one horizon.",
+                                                    ),
+                                                    "cue_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_historical_cues",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "accepted",
+                                                    ),
+                                                    "fact_source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "apollo_11_wikidata",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "cue_afa4e07801cd5172193f83f1",
+                                                    ),
+                                                    "kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "value",
+                                                    ),
+                                                    "pack_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.apollo_11",
+                                                    ),
+                                                    "record_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "apollo_11_lunar_landing",
+                                                    ),
+                                                    "relevance": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.787075,
+                                                    ),
+                                                    "review_sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                                                    ),
+                                                    "sensitivity": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "moderate",
+                                                    ),
+                                                    "uncertainty": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "exact",
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    "packs": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.apollo_11",
+                                                    ),
+                                                    "sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "88f902d2b93fc64b7dfc1b8d8403baa26689f4b38e9e773a6e26bc25501b8c46",
+                                                    ),
+                                                    "version": DomainValueIr(
+                                                        kind: string,
+                                                        value: "1.0.0",
+                                                    ),
+                                                },
+                                            ),
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.original_calendar",
+                                                    ),
+                                                    "sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "386e47f22499a197bab9f4473644a0c28c2f450bf588ef5dbe58fc265d7e66fa",
+                                                    ),
+                                                    "version": DomainValueIr(
+                                                        kind: string,
+                                                        value: "1.0.0",
+                                                    ),
+                                                },
+                                            ),
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.context.world_projection",
+                                                    ),
+                                                    "sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "4b5aa40238e56419027c1e6e9500389c2dde08b9b3fcf66bf677a05387d0a830",
+                                                    ),
+                                                    "version": DomainValueIr(
+                                                        kind: string,
+                                                        value: "1.0.0",
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "hexaco": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "agreeableness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "flexibility": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.59,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "forgivingness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.55,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "gentleness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.71,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "patience": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.67,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.63,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "conscientiousness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "diligence": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.84,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "organization": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.75,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "perfectionism": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.69,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "prudence": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "locked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.82,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.78,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "emotionality": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "anxiety": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.58,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "dependence": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.49,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "fearfulness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.42,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "sentimentality": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.79,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.57,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "extraversion": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "liveliness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.74,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "sociability": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.64,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "social_boldness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.61,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "social_self_esteem": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.73,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.68,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "honesty_humility": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "fairness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.81,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "greed_avoidance": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.66,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "modesty": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.65,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "sincerity": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.76,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.72,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "openness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "aesthetic_appreciation": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.88,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "creativity": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.86,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "inquisitiveness": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.81,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "summary": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.83,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                            "unconventionality": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "form": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "score",
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "projection_score": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.77,
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "identity": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "aliases": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "Ari",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "Vale",
+                                            ),
+                                        ],
+                                    ),
+                                    "display_name": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "freshness": DomainValueIr(
+                                                kind: symbol,
+                                                value: "current",
+                                            ),
+                                            "lineage": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "character_original",
+                                                    ),
+                                                ],
+                                            ),
+                                            "lock": DomainValueIr(
+                                                kind: symbol,
+                                                value: "unlocked",
+                                            ),
+                                            "review": DomainValueIr(
+                                                kind: symbol,
+                                                value: "not_required",
+                                            ),
+                                            "state": DomainValueIr(
+                                                kind: symbol,
+                                                value: "authored",
+                                            ),
+                                            "value": DomainValueIr(
+                                                kind: string,
+                                                value: "Ari Vale",
+                                            ),
+                                        },
+                                    ),
+                                    "id": DomainValueIr(
+                                        kind: string,
+                                        value: "org.weave.character.ari_vale",
+                                    ),
+                                },
+                            ),
+                            "ocean": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "agreeableness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "input_paths": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "canon.personality.agreeableness.factor",
+                                                    ),
+                                                ],
+                                            ),
+                                            "score": DomainValueIr(
+                                                kind: number,
+                                                value: 0.63,
+                                            ),
+                                        },
+                                    ),
+                                    "algorithm": DomainValueIr(
+                                        kind: string,
+                                        value: "weave_hexaco_to_ocean_compatibility",
+                                    ),
+                                    "algorithm_version": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "conscientiousness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "input_paths": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "canon.personality.conscientiousness.factor",
+                                                    ),
+                                                ],
+                                            ),
+                                            "score": DomainValueIr(
+                                                kind: number,
+                                                value: 0.78,
+                                            ),
+                                        },
+                                    ),
+                                    "extraversion": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "input_paths": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "canon.personality.extraversion.factor",
+                                                    ),
+                                                ],
+                                            ),
+                                            "score": DomainValueIr(
+                                                kind: number,
+                                                value: 0.68,
+                                            ),
+                                        },
+                                    ),
+                                    "independent_evidence": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "lossy": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                    "neuroticism": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "input_paths": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "canon.personality.emotionality.factor",
+                                                    ),
+                                                ],
+                                            ),
+                                            "score": DomainValueIr(
+                                                kind: number,
+                                                value: 0.57,
+                                            ),
+                                        },
+                                    ),
+                                    "omitted_factor": DomainValueIr(
+                                        kind: symbol,
+                                        value: "honesty_humility",
+                                    ),
+                                    "openness": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "confidence": DomainValueIr(
+                                                kind: symbol,
+                                                value: "high",
+                                            ),
+                                            "input_paths": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: string,
+                                                        value: "canon.personality.openness.factor",
+                                                    ),
+                                                ],
+                                            ),
+                                            "score": DomainValueIr(
+                                                kind: number,
+                                                value: 0.83,
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "profile_format_version": DomainValueIr(
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            "provenance": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "sources": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "apollo_11_wikidata",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "character_original",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_calendar_cues",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_calendar_facts",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_historical_cues",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_world_cues",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_world_projection",
+                                            ),
+                                        ],
+                                    ),
+                                    "transformations": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "temporal_review_bd1734621814b9fe",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 294,
+                        end: 535,
+                        line: 11,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: path,
+                                        value: [
+                                            "temporal_personality_writeback",
+                                        ],
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 331,
+                                                end: 427,
+                                                line: 12,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "This branch is unreachable because reviewed temporal context cannot become personality evidence.",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 440,
+                                        end: 533,
+                                        line: 14,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "character_name",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: " carries reviewed fictional temporal cues with separate fact and cue lineage.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 536,
+                        end: 542,
+                        line: 16,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

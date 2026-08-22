@@ -5,13 +5,57 @@
   "title": "Ari Vale Synthetic Character",
   "module": {
     "id": "org.weave.character",
-    "version": "=1.0.0"
+    "version": "=1.1.0"
   },
   "dependencies": [],
   "values": {
     "profile": {
       "kind": "object",
       "value": {
+        "date_context": {
+          "kind": "object",
+          "value": {
+            "accepted_record_ids": {
+              "kind": "list",
+              "value": [
+                {
+                  "kind": "string",
+                  "value": "early_rains"
+                }
+              ]
+            },
+            "canonical_personality_write_back": {
+              "kind": "bool",
+              "value": false
+            },
+            "cues": {
+              "kind": "list",
+              "value": []
+            },
+            "packs": {
+              "kind": "list",
+              "value": [
+                {
+                  "kind": "object",
+                  "value": {
+                    "id": {
+                      "kind": "string",
+                      "value": "org.weave.context.synthetic_calendar"
+                    },
+                    "sha256": {
+                      "kind": "string",
+                      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                    },
+                    "version": {
+                      "kind": "string",
+                      "value": "1.0.0"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
         "hexaco": {
           "kind": "object",
           "value": {
@@ -1542,16 +1586,16 @@
     ],
     "transformations": [
       {
-        "id": "weave_character_domain_projection_v1",
+        "id": "weave_character_domain_projection_v2",
         "inputs": [
           "character_original"
         ],
-        "description": "Validated, deterministic projection of Character Profile identity, HEXACO evidence, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract."
+        "description": "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract."
       }
     ],
     "claims": {
       "values.profile": [
-        "weave_character_domain_projection_v1"
+        "weave_character_domain_projection_v2"
       ]
     }
   }

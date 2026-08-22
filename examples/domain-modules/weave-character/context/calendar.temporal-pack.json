@@ -1,0 +1,363 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.context.original_calendar",
+  "version": "1.0.0",
+  "title": "Original synthetic calendar context",
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "provider": {
+    "kind": "standalone"
+  },
+  "records": {
+    "calendar_disputed_celestial": {
+      "id": "calendar_disputed_celestial",
+      "kind": "celestial_fact",
+      "evidence_class": "calendrical_fact",
+      "extent": {
+        "precision": "date",
+        "date": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 7,
+          "day": 20
+        }
+      },
+      "place_scope": {
+        "scope": "global"
+      },
+      "time_zone": {
+        "kind": "utc"
+      },
+      "reference_period": {
+        "label": "Synthetic disputed celestial reference",
+        "start": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 7,
+          "day": 20
+        },
+        "end": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 7,
+          "day": 20
+        },
+        "resolution": "day"
+      },
+      "fact": {
+        "kind": "object",
+        "value": {
+          "fixture_status": {
+            "kind": "symbol",
+            "value": "synthetic_disputed"
+          }
+        }
+      },
+      "tags": [
+        "celestial",
+        "synthetic"
+      ],
+      "cues": {
+        "uncertain_light": {
+          "id": "uncertain_light",
+          "kind": "tension",
+          "content": "Imagine a fictional disagreement over whether an uncertain light was a warning or an invitation.",
+          "trait_vector": {
+            "anxiety": 450,
+            "openness": 550
+          },
+          "tags": [
+            "fictional_prompt"
+          ],
+          "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+          "source_ids": [
+            "weave_calendar_cues"
+          ]
+        }
+      },
+      "source_ids": [
+        "weave_calendar_facts"
+      ],
+      "uncertainty": {
+        "level": "disputed",
+        "reason": "The synthetic fixture deliberately marks this record disputed so ranking must downgrade it."
+      },
+      "sensitivity": {
+        "level": "low",
+        "topics": [],
+        "requires_explicit_review": false,
+        "note": "Neutral original fictional prompt."
+      }
+    },
+    "calendar_midsummer_period": {
+      "id": "calendar_midsummer_period",
+      "kind": "seasonal_fact",
+      "evidence_class": "calendrical_fact",
+      "extent": {
+        "precision": "date_range",
+        "start": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 6,
+          "day": 21
+        },
+        "end": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 9,
+          "day": 22
+        }
+      },
+      "place_scope": {
+        "scope": "global"
+      },
+      "time_zone": {
+        "kind": "utc"
+      },
+      "reference_period": {
+        "label": "Synthetic 1969 northern midsummer interval",
+        "start": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 6,
+          "day": 21
+        },
+        "end": {
+          "calendar": "proleptic_gregorian",
+          "year": 1969,
+          "month": 9,
+          "day": 22
+        },
+        "resolution": "period"
+      },
+      "fact": {
+        "kind": "object",
+        "value": {
+          "season": {
+            "kind": "symbol",
+            "value": "synthetic_northern_midsummer"
+          }
+        }
+      },
+      "tags": [
+        "seasonal",
+        "synthetic"
+      ],
+      "cues": {
+        "long_light_gathering": {
+          "id": "long_light_gathering",
+          "kind": "memory",
+          "content": "Imagine a fictional gathering held while the evening light lingered, with room for both celebration and quiet observation.",
+          "trait_vector": {
+            "sociability": 550,
+            "aesthetic_appreciation": 450
+          },
+          "tags": [
+            "fictional_prompt"
+          ],
+          "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+          "source_ids": [
+            "weave_calendar_cues"
+          ]
+        }
+      },
+      "source_ids": [
+        "weave_calendar_facts"
+      ],
+      "uncertainty": {
+        "level": "bounded",
+        "reason": "The original fixture supplies a bounded seasonal interval rather than an instant."
+      },
+      "sensitivity": {
+        "level": "low",
+        "topics": [],
+        "requires_explicit_review": false,
+        "note": "Neutral original fictional prompt."
+      }
+    },
+    "calendar_twentieth_day_observance": {
+      "id": "calendar_twentieth_day_observance",
+      "kind": "commemoration",
+      "evidence_class": "interpretive_context",
+      "extent": {
+        "precision": "month_day",
+        "month": 7,
+        "day": 20
+      },
+      "place_scope": {
+        "scope": "global"
+      },
+      "time_zone": {
+        "kind": "utc"
+      },
+      "reference_period": {
+        "label": "Original recurring fictional observance",
+        "start": {
+          "calendar": "proleptic_gregorian",
+          "year": 1,
+          "month": 7,
+          "day": 20
+        },
+        "end": {
+          "calendar": "proleptic_gregorian",
+          "year": 9999,
+          "month": 7,
+          "day": 20
+        },
+        "resolution": "recurring_day"
+      },
+      "fact": {
+        "kind": "object",
+        "value": {
+          "observance": {
+            "kind": "symbol",
+            "value": "fictional_twentieth_day"
+          }
+        }
+      },
+      "tags": [
+        "commemoration",
+        "synthetic"
+      ],
+      "cues": {
+        "returning_table": {
+          "id": "returning_table",
+          "kind": "affinity",
+          "content": "Consider whether the fictional character is drawn to a table that is rebuilt each year for whoever arrives.",
+          "trait_vector": {
+            "sentimentality": 600,
+            "sociability": 400
+          },
+          "tags": [
+            "fictional_prompt"
+          ],
+          "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+          "source_ids": [
+            "weave_calendar_cues"
+          ]
+        }
+      },
+      "source_ids": [
+        "weave_calendar_facts"
+      ],
+      "uncertainty": {
+        "level": "exact",
+        "reason": "The recurring month-day is explicit original fixture data."
+      },
+      "sensitivity": {
+        "level": "low",
+        "topics": [],
+        "requires_explicit_review": false,
+        "note": "Neutral original fictional prompt."
+      }
+    },
+    "calendar_unmatched_leap_day": {
+      "id": "calendar_unmatched_leap_day",
+      "kind": "calendrical_fact",
+      "evidence_class": "calendrical_fact",
+      "extent": {
+        "precision": "month_day",
+        "month": 2,
+        "day": 29
+      },
+      "place_scope": {
+        "scope": "global"
+      },
+      "time_zone": {
+        "kind": "utc"
+      },
+      "reference_period": {
+        "label": "Proleptic Gregorian recurring leap day",
+        "start": {
+          "calendar": "proleptic_gregorian",
+          "year": 4,
+          "month": 2,
+          "day": 29
+        },
+        "end": {
+          "calendar": "proleptic_gregorian",
+          "year": 9996,
+          "month": 2,
+          "day": 29
+        },
+        "resolution": "recurring_day"
+      },
+      "fact": {
+        "kind": "object",
+        "value": {
+          "month_day": {
+            "kind": "string",
+            "value": "02-29"
+          }
+        }
+      },
+      "tags": [
+        "calendar",
+        "leap_day"
+      ],
+      "cues": {
+        "rare_cadence": {
+          "id": "rare_cadence",
+          "kind": "voice",
+          "content": "Imagine a fictional speaking cadence that saves its most unusual image for rare occasions.",
+          "trait_vector": {
+            "creativity": 1000
+          },
+          "tags": [
+            "fictional_prompt"
+          ],
+          "limitations": "Original fictional authoring cue only; the matched calendar context does not cause or predict personality.",
+          "source_ids": [
+            "weave_calendar_cues"
+          ]
+        }
+      },
+      "source_ids": [
+        "weave_calendar_facts"
+      ],
+      "uncertainty": {
+        "level": "exact",
+        "reason": "The recurring leap-day rule is explicit in the proleptic Gregorian fixture."
+      },
+      "sensitivity": {
+        "level": "low",
+        "topics": [],
+        "requires_explicit_review": false,
+        "note": "Neutral original fictional prompt."
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_calendar_cues",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "temporal-context-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original fictional calendar prompts and declared HEXACO vectors.",
+        "modified": false
+      },
+      {
+        "id": "weave_calendar_facts",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "temporal-context-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic calendrical, seasonal, and celestial fixture facts.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "records.cues": [
+        "weave_calendar_cues"
+      ],
+      "records.facts": [
+        "weave_calendar_facts"
+      ]
+    }
+  }
+}
