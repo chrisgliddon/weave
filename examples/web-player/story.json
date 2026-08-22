@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "source_name": "examples/web-player/story.weave",
   "entry": "start",
   "globals": [
@@ -84,6 +84,7 @@
       "reversals": false
     }
   },
+  "modules": {},
   "knots": {
     "start": {
       "content": [

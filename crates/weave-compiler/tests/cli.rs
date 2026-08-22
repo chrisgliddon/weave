@@ -22,7 +22,7 @@ fn compiles_default_ron_and_explicit_json() {
         .expect("run compiler");
     assert!(status.success());
     let ron = fs::read_to_string(source.with_extension("ron")).expect("read RON");
-    assert!(ron.contains("version: 2"));
+    assert!(ron.contains("version: 3"));
     assert!(ron.contains("Hello."));
 
     let json_path = directory.path().join("custom.json");
@@ -34,7 +34,7 @@ fn compiles_default_ron_and_explicit_json() {
         .expect("run compiler");
     assert!(status.success());
     let json = fs::read_to_string(json_path).expect("read JSON");
-    assert!(json.contains("\"version\": 2"));
+    assert!(json.contains("\"version\": 3"));
 }
 
 #[test]
@@ -46,8 +46,42 @@ fn emits_the_published_json_schema() {
     assert!(output.status.success());
     let schema: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("schema output is JSON");
-    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:2");
-    assert_eq!(schema["properties"]["version"]["const"], 2);
+    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:3");
+    assert_eq!(schema["properties"]["version"]["const"], 3);
+}
+
+#[test]
+fn compiles_an_explicit_domain_module_activation() {
+    let directory = tempdir().expect("temporary directory");
+    let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/domain-modules/contract/tracer.weave");
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/domain-modules/contract/module.weave-module.json");
+    let pack = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/domain-modules/contract/pack.weave-domain.json");
+    let destination = directory.path().join("tracer.json");
+    let output = Command::new(binary())
+        .args(["--format", "json", "--output"])
+        .arg(&destination)
+        .args(["--module-manifest"])
+        .arg(&manifest)
+        .args(["--module-pack"])
+        .arg(&pack)
+        .arg(&source)
+        .output()
+        .expect("run compiler");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let compiled: serde_json::Value =
+        serde_json::from_slice(&fs::read(destination).expect("compiled story"))
+            .expect("compiled JSON");
+    assert_eq!(
+        compiled["modules"]["constellation"]["exports"]["phase"]["value"]["value"],
+        "twilight"
+    );
 }
 
 #[test]

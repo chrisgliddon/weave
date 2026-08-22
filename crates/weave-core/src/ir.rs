@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 2;
+pub const IR_VERSION: u32 = 3;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -25,6 +25,8 @@ pub struct StoryIr {
     pub grammars: BTreeMap<String, GrammarIr>,
     /// Sorted executable pattern definitions.
     pub patterns: BTreeMap<String, PatternSystemIr>,
+    /// Active, validated domain modules keyed by story-local alias.
+    pub modules: BTreeMap<String, DomainModuleIr>,
     /// Sorted knot definitions.
     pub knots: BTreeMap<String, KnotIr>,
 }
@@ -40,9 +42,85 @@ impl StoryIr {
             globals: Vec::new(),
             grammars: BTreeMap::new(),
             patterns: BTreeMap::new(),
+            modules: BTreeMap::new(),
             knots: BTreeMap::new(),
         }
     }
+}
+
+/// One exact, validated domain-module activation embedded for runtime hosts.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct DomainModuleIr {
+    /// Globally stable module identity.
+    pub id: String,
+    /// Exact selected module semantic version.
+    pub version: String,
+    /// Exact selected pack identity.
+    pub pack_id: String,
+    /// Exact selected pack semantic version.
+    pub pack_version: String,
+    /// Validated exported values in deterministic name order.
+    pub exports: BTreeMap<String, DomainExportIr>,
+}
+
+impl DomainModuleIr {
+    /// Read one nested export path without depending on a runtime or editor.
+    #[must_use]
+    pub fn value(&self, path: &[&str]) -> Option<&DomainValueIr> {
+        let (export, fields) = path.split_first()?;
+        let mut value = &self.exports.get(*export)?.value;
+        for field in fields {
+            let DomainValueIr::Object(values) = value else {
+                return None;
+            };
+            value = values.get(*field)?;
+        }
+        Some(value)
+    }
+}
+
+/// One module export plus its runtime ownership boundary.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct DomainExportIr {
+    /// Whether the value remains immutable pack data or initializes module-owned state.
+    pub source: DomainExportSourceIr,
+    /// Validated initial value.
+    pub value: DomainValueIr,
+}
+
+/// Ownership of one compiled domain export.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum DomainExportSourceIr {
+    /// Immutable value embedded from a selected pack.
+    Pack,
+    /// Initial value copied into isolated, versioned runtime state.
+    State,
+}
+
+/// Unambiguous portable domain value embedded in story IR.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    rename_all = "snake_case",
+    tag = "kind",
+    content = "value",
+    deny_unknown_fields
+)]
+pub enum DomainValueIr {
+    /// Explicit null.
+    Null,
+    /// Boolean.
+    Bool(bool),
+    /// Finite number.
+    Number(f64),
+    /// UTF-8 string.
+    String(String),
+    /// Meaning-bearing symbol.
+    Symbol(String),
+    /// Ordered values.
+    List(Vec<DomainValueIr>),
+    /// Deterministically ordered fields.
+    Object(BTreeMap<String, DomainValueIr>),
 }
 
 /// Compiled generative grammar.

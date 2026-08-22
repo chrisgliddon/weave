@@ -1,0 +1,15 @@
+module constellation {
+    id: "org.weave.synthetic_constellation"
+    version: "=1.0.0"
+    pack: "glasswing_sky@=1.0.0"
+}
+
+VAR observed_phase = constellation.phase
+
+=== start ===
+{observed_phase == twilight:
+    The {constellation.observation.label} glows at {constellation.observation.intensity} intensity.
+- else:
+    The synthetic sky is quiet.
+}
+-> END

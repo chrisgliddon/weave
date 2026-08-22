@@ -171,7 +171,7 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
-Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed exports, canonical RON/JSON packs, semantic-version negotiation, deterministic dependency ordering, and machine-readable provenance. The `weave-module` tool generates both checked schemas and validates the original synthetic contract fixture without loading third-party code.
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed exports, canonical RON/JSON packs, semantic-version negotiation, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates explicitly supplied artifacts; the compiler type-checks their paths and embeds selected values in IR 3. The original synthetic tracer is consumed unchanged by finite [Bevy](examples/domain-module-bevy) and [PixiJS](examples/domain-module-pixijs) examples without loading third-party code or depending on the editor.
 
 ---
 
@@ -211,7 +211,7 @@ Editors normally launch the process themselves. See the [language server guide](
 
 ### Syntax highlighting
 
-[`tree-sitter-weave`](tree-sitter-weave) provides an incremental parser plus highlight, local-variable, and symbol-tag queries for `.weave` files. It recognizes the complete language surface, including nested narrative blocks, grammar references, pattern declarations, and incomplete editing states:
+[`tree-sitter-weave`](tree-sitter-weave) provides an incremental parser plus highlight, local-variable, and symbol-tag queries for `.weave` files. It recognizes the complete language surface, including domain-module activations, nested narrative blocks, grammar references, pattern declarations, and incomplete editing states:
 
 ```bash
 cd tree-sitter-weave
@@ -231,13 +231,13 @@ cargo install mdbook --version 0.5.4 --locked
 python3 scripts/build-docs.py
 ```
 
-The build compiles every example story, runs the finite standalone and Bevy examples, checks the browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
+The build compiles every example story, verifies the domain tracer's RON and JSON, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks the browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
 
 ### RON Output (excerpt)
 
 ```ron
 StoryIr(
-    version: 2,
+    version: 3,
     grammars: {
         // Lowered templates omitted.
     },
@@ -251,7 +251,10 @@ StoryIr(
             draw_method: PatternDrawMethodIr(kind: "uniform"),
             allow_duplicates: false,
             reversals: true,
-        )
+        ),
+    },
+    modules: {
+        // Exact selected module and pack versions plus validated exports.
     },
     // Lowered knots omitted.
 )
@@ -292,7 +295,9 @@ weave/
 │   ├── stories/             # Basic grammar and branching source files
 │   ├── standalone-runtime/  # Compiler + runtime example
 │   ├── bevy-dialogue/       # Interactive Bevy dialogue game + smoke test
-│   ├── domain-modules/      # Canonical JSON/RON contract fixtures
+│   ├── domain-modules/      # Contract fixtures and compiled synthetic tracer
+│   ├── domain-module-bevy/  # Portable tracer RON consumed as a Bevy resource
+│   ├── domain-module-pixijs/ # Portable tracer JSON rendered with PixiJS
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples
@@ -497,7 +502,7 @@ weavec story.weave --watch            # recompile on file change
 - [ ] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
 - [ ] Weave Character: personality, date context, relationships, expression, and guided authoring
 - [ ] Selectable tabletop ruleset adapters with isolated, versioned state
-- [ ] Portable RON and JSON domain packs with Bevy and PixiJS examples
+- [x] Portable RON and JSON domain packs with Bevy and PixiJS examples
 
 ---
 

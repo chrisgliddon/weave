@@ -19,10 +19,12 @@ clap.workspace = true
 notify.workspace = true
 ron.workspace = true
 schemars.workspace = true
+semver.workspace = true
 serde_json.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
 weave-core = { path = "../weave-core" }
+weave-domain = { path = "../weave-domain" }
 weave-patterns = { path = "../weave-patterns" }
 
 [lints]

@@ -40,7 +40,7 @@ Discovery is never ambient. A compiler or editor searches only explicitly config
 
 ## Source installation and activation
 
-Installation makes an artifact available to the project; activation makes one selected module visible to a story. Contract v1 reserves this text-first activation form:
+Installation makes an artifact available to the project; activation makes one selected module visible to a story. Contract v1 uses this text-first activation form:
 
 ```weave
 module constellation {
@@ -61,6 +61,30 @@ The observed sign is {constellation.observation.label}.
 ```
 
 An alias occupies a distinct top-level namespace but still cannot collide with a story variable, grammar, pattern, knot, or another active alias. Transitive dependencies are addressed internally by full module identity and do not become source-visible unless the story activates them explicitly.
+
+`weavec` accepts only artifacts named explicitly on the command line at this boundary:
+
+```bash
+cargo run -p weave-compiler -- \
+  examples/domain-modules/contract/tracer.weave \
+  --module-manifest examples/domain-modules/contract/module.weave-module.json \
+  --module-pack examples/domain-modules/contract/pack.weave-domain.json \
+  --format json \
+  --output target/tracer.story.json
+```
+
+The compiler resolves the source requirements against that in-memory catalog, validates the selected pack, type-checks module paths, and embeds only the selected immutable values and state seeds in Story IR. It does not discover files, contact a registry, or execute package code.
+
+## End-to-end synthetic tracer
+
+[`tracer.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.weave) is the minimal contract proof. It activates the fictional `Synthetic Constellation` module, initializes an ordinary story variable from its `phase` export, branches on the semantic symbol, and interpolates nested observation data. Repeated compilation produces byte-identical [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.story.ron) and [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/contract/tracer.story.json).
+
+The compiled artifacts are consumed without editor dependencies by:
+
+- a finite [Bevy 0.18 example](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy), which loads the RON values into an ECS resource; and
+- a [PixiJS v8 example](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs), which validates IR version `3`, decodes the tagged JSON values, and renders them.
+
+The editor's `DomainSession` and `TextBuffer` accept the same explicit `DomainCatalog`. Their module inspection model exposes the validated descriptions, schemas, types, sources, and values used by compilation, so text formatting and editor-backed compilation produce the same module IR.
 
 ## Identity, namespaces, and types
 
@@ -141,4 +165,4 @@ cargo run -p weave-domain --bin weave-module -- normalize manifest \
   --format ron --output module.weave-module.ron
 ```
 
-The documentation build regenerates both schemas, normalizes JSON to RON and RON to JSON, compares all four canonical artifacts byte for byte, and runs the Rust compatibility tests.
+The documentation build regenerates both schemas, normalizes JSON to RON and RON to JSON, recompiles the tracer in both formats, compares every canonical artifact byte for byte, runs the finite Bevy consumer, and tests and bundles the PixiJS consumer.

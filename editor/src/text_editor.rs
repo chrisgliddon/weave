@@ -3,8 +3,9 @@
 use std::ops::Range;
 
 use unicode_segmentation::UnicodeSegmentation;
-use weave_compiler::{CompileOptions, compile};
+use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::Diagnostic;
+use weave_domain::DomainCatalog;
 
 /// Syntax category used by the native text renderer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -47,6 +48,7 @@ pub struct TextBuffer {
     anchor: Option<usize>,
     tokens: Vec<SyntaxToken>,
     diagnostics: Vec<Diagnostic>,
+    domain_catalog: DomainCatalog,
     undo: Vec<TextEdit>,
     redo: Vec<TextEdit>,
     revision: u64,
@@ -57,6 +59,12 @@ impl TextBuffer {
     /// Create and analyze a source buffer.
     #[must_use]
     pub fn new(source: impl Into<String>) -> Self {
+        Self::with_domain_catalog(source, DomainCatalog::new())
+    }
+
+    /// Create and analyze a source buffer with an explicit domain artifact catalog.
+    #[must_use]
+    pub fn with_domain_catalog(source: impl Into<String>, domain_catalog: DomainCatalog) -> Self {
         let source = source.into();
         let cursor = source.len();
         let mut buffer = Self {
@@ -65,6 +73,7 @@ impl TextBuffer {
             cursor,
             anchor: None,
             diagnostics: Vec::new(),
+            domain_catalog,
             undo: Vec::new(),
             redo: Vec::new(),
             revision: 0,
@@ -72,6 +81,12 @@ impl TextBuffer {
         };
         buffer.refresh_diagnostics();
         buffer
+    }
+
+    /// Replace the catalog used for inline compiler diagnostics.
+    pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog) {
+        self.domain_catalog = domain_catalog;
+        self.refresh_diagnostics();
     }
 
     #[must_use]
@@ -392,7 +407,11 @@ impl TextBuffer {
     }
 
     fn refresh_diagnostics(&mut self) {
-        self.diagnostics = match compile(&self.source, &CompileOptions::default()) {
+        self.diagnostics = match compile_with_modules(
+            &self.source,
+            &CompileOptions::default(),
+            &self.domain_catalog,
+        ) {
             Ok(compiled) => compiled.diagnostics,
             Err(error) => error.diagnostics,
         };
@@ -547,7 +566,11 @@ fn highlight_line(line: &str, base: usize, tokens: &mut Vec<SyntaxToken>) {
 fn is_keyword(word: &str) -> bool {
     matches!(
         word,
-        "grammar"
+        "module"
+            | "id"
+            | "version"
+            | "pack"
+            | "grammar"
             | "pattern"
             | "spread"
             | "builtin"

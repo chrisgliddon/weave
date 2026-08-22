@@ -149,6 +149,7 @@ pub fn analyze(source: &str) -> Analysis {
 
     for item in &document.items {
         match &item.node {
+            Item::Module(_) => {}
             Item::Knot(knot) => {
                 let selection = identifier_span(source, item.span, &knot.node.name);
                 analysis.symbols.push(Symbol {

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "source_name": "crates/weave-compiler/tests/fixtures/golden.weave",
   "entry": "start",
   "globals": [
@@ -44,6 +44,7 @@
     }
   },
   "patterns": {},
+  "modules": {},
   "knots": {
     "ending": {
       "content": [

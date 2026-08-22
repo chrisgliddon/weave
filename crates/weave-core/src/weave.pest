@@ -1,5 +1,5 @@
 document = { SOI ~ top_item* ~ EOI }
-top_item = _{ blank_line | comment_line | grammar_decl | pattern_decl | global_decl | knot }
+top_item = _{ blank_line | comment_line | module_decl | grammar_decl | pattern_decl | global_decl | knot }
 
 ws = _{ " " | "\t" }
 newline = _{ "\r\n" | "\n" }
@@ -10,6 +10,21 @@ line_text = @{ (!newline ~ ANY)* }
 
 blank_line = { ws* ~ newline }
 comment_line = { ws* ~ "//" ~ comment_text ~ newline? }
+
+module_decl = {
+    ws* ~ "module" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    module_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+module_entry = _{ blank_line | comment_line | module_id_decl | module_version_decl | module_pack_decl }
+module_id_decl = {
+    ws* ~ "id" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+module_version_decl = {
+    ws* ~ "version" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+module_pack_decl = {
+    ws* ~ "pack" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
 
 grammar_decl = {
     ws* ~ "grammar" ~ ws+ ~ identifier ~ ws* ~ "{" ~

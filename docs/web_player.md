@@ -27,3 +27,13 @@ player.restoreState(saved);
 Equal story JSON, seed, and choices produce equal grammar and pattern draws. Seeds cross the JavaScript boundary as unsigned 32-bit integers and expand into the runtime's deterministic 64-bit seed.
 
 The complete [browser example guide](https://github.com/chrisgliddon/weave/blob/main/examples/web-player/README.md) documents platform requirements, state ownership, the Playwright interaction test, and current release size.
+
+## PixiJS domain-module consumer
+
+The separate [PixiJS v8 example](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) imports the canonical IR-3 tracer JSON, validates its version and tagged values, and renders selected module exports without WASM or editor dependencies:
+
+```bash
+npm --prefix examples/domain-module-pixijs ci
+npm --prefix examples/domain-module-pixijs test
+npm --prefix examples/domain-module-pixijs run build
+```

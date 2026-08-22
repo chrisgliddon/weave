@@ -3,6 +3,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
+use weave_domain::{ModuleManifest, TypeExpression};
+
 use crate::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
     PatternDrawMethod, PatternEntry, Span, Spanned, Statement, UnaryOperator, VariableKind,
@@ -62,6 +64,30 @@ pub struct PatternSignature {
     pub spreads: BTreeSet<String>,
 }
 
+/// Closed type surface supplied by one validated active domain module.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct DomainModuleSignature {
+    /// Manifest-local named types.
+    pub types: BTreeMap<String, TypeExpression>,
+    /// Export types keyed by source-visible export name.
+    pub exports: BTreeMap<String, TypeExpression>,
+}
+
+impl DomainModuleSignature {
+    /// Build a static signature from a validated module manifest.
+    #[must_use]
+    pub fn from_manifest(manifest: &ModuleManifest) -> Self {
+        Self {
+            types: manifest.types.clone(),
+            exports: manifest
+                .exports
+                .iter()
+                .map(|(name, export)| (name.clone(), export.value_type.clone()))
+                .collect(),
+        }
+    }
+}
+
 impl PatternSignature {
     /// Construct an external signature from its spread names.
     #[must_use]
@@ -108,6 +134,8 @@ struct Checker {
     variables: BTreeMap<String, VariableInfo>,
     grammars: BTreeMap<String, GrammarInfo>,
     patterns: BTreeMap<String, PatternInfo>,
+    module_signatures: BTreeMap<String, DomainModuleSignature>,
+    module_aliases: BTreeMap<String, Span>,
     knots: BTreeSet<String>,
 }
 
@@ -118,11 +146,20 @@ impl Checker {
             variables: BTreeMap::new(),
             grammars: BTreeMap::new(),
             patterns: BTreeMap::new(),
+            module_signatures: BTreeMap::new(),
+            module_aliases: BTreeMap::new(),
             knots: BTreeSet::new(),
         }
     }
 
     fn with_patterns(patterns: &BTreeMap<String, PatternSignature>) -> Self {
+        Self::with_extensions(patterns, &BTreeMap::new())
+    }
+
+    fn with_extensions(
+        patterns: &BTreeMap<String, PatternSignature>,
+        modules: &BTreeMap<String, DomainModuleSignature>,
+    ) -> Self {
         let mut checker = Self::new();
         checker.patterns = patterns
             .iter()
@@ -140,6 +177,7 @@ impl Checker {
                 )
             })
             .collect();
+        checker.module_signatures.clone_from(modules);
         checker
     }
 
@@ -163,6 +201,16 @@ impl Checker {
         let mut knot_count = 0;
         for item in &document.items {
             match &item.node {
+                Item::Module(module) => {
+                    let alias = &module.node.alias;
+                    if self
+                        .module_aliases
+                        .insert(alias.clone(), module.span)
+                        .is_some()
+                    {
+                        self.duplicate("D110", "domain module alias", alias, module.span);
+                    }
+                }
                 Item::Grammar(grammar) => {
                     let name = &grammar.node.name;
                     if self.grammars.contains_key(name) {
@@ -525,6 +573,22 @@ impl Checker {
                 Item::Global(_) | Item::Comment(_) | Item::Blank => {}
             }
         }
+        for (alias, span) in &self.module_aliases {
+            if self.grammars.contains_key(alias)
+                || self.patterns.contains_key(alias)
+                || self.variables.contains_key(alias)
+                || self.knots.contains(alias)
+            {
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        "D111",
+                        format!("domain module alias `{alias}` collides with another declaration"),
+                    )
+                    .with_span(*span)
+                    .with_help("choose a unique story-local module alias"),
+                );
+            }
+        }
         if knot_count == 0 {
             self.diagnostics.push(
                 Diagnostic::error("W2012", "a Weave document must contain at least one knot")
@@ -566,6 +630,20 @@ impl Checker {
     }
 
     fn register_variable(&mut self, declaration: &Declaration, span: Span) {
+        if self.module_aliases.contains_key(&declaration.name) {
+            self.diagnostics.push(
+                Diagnostic::error(
+                    "D111",
+                    format!(
+                        "variable `{}` collides with a domain module alias",
+                        declaration.name
+                    ),
+                )
+                .with_span(span)
+                .with_help("rename the variable or the story-local module alias"),
+            );
+            return;
+        }
         if let Some(previous) = self.variables.get(&declaration.name) {
             if previous.kind != declaration.kind {
                 self.diagnostics.push(
@@ -1006,10 +1084,19 @@ impl Checker {
             return Type::Any;
         };
         if path.len() == 1 {
+            if self.module_aliases.contains_key(root) {
+                return Type::Object;
+            }
             return self
                 .variables
                 .get(root)
                 .map_or(Type::Symbol, |info| info.value_type.clone());
+        }
+        if self.module_aliases.contains_key(root) {
+            let Some(signature) = self.module_signatures.get(root).cloned() else {
+                return Type::Any;
+            };
+            return self.infer_domain_path(root, &path[1..], &signature, span);
         }
         if let Some(info) = self.variables.get(root) {
             if matches!(info.value_type, Type::Object | Type::Any) {
@@ -1039,6 +1126,53 @@ impl Checker {
             Diagnostic::error("W2028", format!("unknown path root `{root}`")).with_span(span),
         );
         Type::Any
+    }
+
+    fn infer_domain_path(
+        &mut self,
+        alias: &str,
+        path: &[String],
+        signature: &DomainModuleSignature,
+        span: Span,
+    ) -> Type {
+        let Some((export, fields)) = path.split_first() else {
+            return Type::Object;
+        };
+        let Some(mut value_type) = signature.exports.get(export) else {
+            self.diagnostics.push(
+                Diagnostic::error(
+                    "D141",
+                    format!("domain module `{alias}` does not export `{export}`"),
+                )
+                .with_span(span),
+            );
+            return Type::Any;
+        };
+        for field in fields {
+            value_type = resolve_named_domain_type(value_type, &signature.types);
+            let TypeExpression::Object { fields } = value_type else {
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        "D142",
+                        format!("cannot access field `{field}` on this domain value"),
+                    )
+                    .with_span(span),
+                );
+                return Type::Any;
+            };
+            let Some(next) = fields.get(field) else {
+                self.diagnostics.push(
+                    Diagnostic::error("D143", format!("unknown domain field `{field}`"))
+                        .with_span(span),
+                );
+                return Type::Any;
+            };
+            value_type = &next.value_type;
+        }
+        core_type(
+            resolve_named_domain_type(value_type, &signature.types),
+            &signature.types,
+        )
     }
 
     fn infer_call(&mut self, path: &[String], arguments: &[Spanned<Expr>], span: Span) -> Type {
@@ -1226,6 +1360,47 @@ pub fn type_check_with_patterns(
     patterns: &BTreeMap<String, PatternSignature>,
 ) -> TypeCheckResult {
     Checker::with_patterns(patterns).check(document)
+}
+
+/// Check a document with validated pattern packages and active domain-module signatures.
+#[must_use]
+pub fn type_check_with_extensions(
+    document: &Document,
+    patterns: &BTreeMap<String, PatternSignature>,
+    modules: &BTreeMap<String, DomainModuleSignature>,
+) -> TypeCheckResult {
+    Checker::with_extensions(patterns, modules).check(document)
+}
+
+fn resolve_named_domain_type<'a>(
+    mut value_type: &'a TypeExpression,
+    types: &'a BTreeMap<String, TypeExpression>,
+) -> &'a TypeExpression {
+    let mut remaining = types.len().saturating_add(1);
+    while let TypeExpression::Named { name } = value_type {
+        if remaining == 0 {
+            break;
+        }
+        let Some(resolved) = types.get(name) else {
+            break;
+        };
+        value_type = resolved;
+        remaining -= 1;
+    }
+    value_type
+}
+
+fn core_type(value_type: &TypeExpression, types: &BTreeMap<String, TypeExpression>) -> Type {
+    match resolve_named_domain_type(value_type, types) {
+        TypeExpression::Null => Type::Null,
+        TypeExpression::Bool => Type::Bool,
+        TypeExpression::Number { .. } => Type::Number,
+        TypeExpression::String { .. } => Type::String,
+        TypeExpression::Symbol { .. } => Type::Symbol,
+        TypeExpression::List { items, .. } => Type::List(Box::new(core_type(items, types))),
+        TypeExpression::Object { .. } => Type::Object,
+        TypeExpression::Named { .. } => Type::Any,
+    }
 }
 
 fn literal_type(literal: &Literal) -> Type {

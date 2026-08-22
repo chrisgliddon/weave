@@ -10,9 +10,9 @@ use pest_derive::Parser;
 use crate::Diagnostic;
 use crate::ast::{
     BinaryOperator, Choice, Conditional, ConditionalBranch, Declaration, Document, Expr,
-    GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, PatternCollection,
-    PatternDecl, PatternDrawMethod, PatternElement, PatternEntry, Span, Spanned, SpreadDecl,
-    Statement, UnaryOperator, VariableKind,
+    GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, ModuleDecl,
+    ModuleEntry, PatternCollection, PatternDecl, PatternDrawMethod, PatternElement, PatternEntry,
+    Span, Spanned, SpreadDecl, Statement, UnaryOperator, VariableKind,
 };
 
 #[derive(Parser)]
@@ -37,6 +37,7 @@ pub fn parse_document(source: &str) -> Result<Document, Vec<Diagnostic>> {
                 Item::Comment(comment_from(pair.clone())),
                 span_for(&pair),
             )),
+            Rule::module_decl => build_module(pair),
             Rule::grammar_decl => build_grammar(pair),
             Rule::pattern_decl => build_pattern(pair),
             Rule::global_decl => build_global(pair),
@@ -56,6 +57,67 @@ pub fn parse_document(source: &str) -> Result<Document, Vec<Diagnostic>> {
 
     if diagnostics.is_empty() {
         Ok(document)
+    } else {
+        Err(diagnostics)
+    }
+}
+
+fn build_module(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
+    let outer_span = span_for(&pair);
+    let mut alias = None;
+    let mut entries = Vec::new();
+    let mut diagnostics = Vec::new();
+
+    for inner in pair.into_inner() {
+        match inner.as_rule() {
+            Rule::identifier if alias.is_none() => alias = Some(inner.as_str().to_owned()),
+            Rule::blank_line => entries.push(Spanned::new(ModuleEntry::Blank, span_for(&inner))),
+            Rule::comment_line => {
+                let span = span_for(&inner);
+                entries.push(Spanned::new(
+                    ModuleEntry::Comment(comment_from(inner)),
+                    span,
+                ));
+            }
+            Rule::module_id_decl | Rule::module_version_decl | Rule::module_pack_decl => {
+                let rule = inner.as_rule();
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::string_literal)
+                else {
+                    diagnostics.push(internal_parser_error("module field has no string value"));
+                    continue;
+                };
+                match decode_string(value.as_str(), span_for(&value)) {
+                    Ok(value) => {
+                        let entry = match rule {
+                            Rule::module_id_decl => ModuleEntry::Id(value),
+                            Rule::module_version_decl => ModuleEntry::Version(value),
+                            Rule::module_pack_decl => ModuleEntry::Pack(value),
+                            _ => {
+                                diagnostics.push(internal_parser_error(
+                                    "module declaration contains an unexpected field",
+                                ));
+                                continue;
+                            }
+                        };
+                        entries.push(Spanned::new(entry, span));
+                    }
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let Some(alias) = alias else {
+        diagnostics.push(internal_parser_error("module activation has no alias"));
+        return Err(diagnostics);
+    };
+    if diagnostics.is_empty() {
+        let module = Spanned::new(ModuleDecl { alias, entries }, outer_span);
+        Ok(Spanned::new(Item::Module(module), outer_span))
     } else {
         Err(diagnostics)
     }

@@ -13,6 +13,7 @@ pest_derive.workspace = true
 schemars.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+weave-domain = { path = "../weave-domain" }
 
 [dev-dependencies]
 proptest.workspace = true

@@ -24,6 +24,13 @@ jobs:
       - name: Show the pinned Rust toolchain
         run: rustup show active-toolchain
 
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/domain-module-pixijs/package-lock.json
+
       - name: Install mdBook 0.5.4
         run: cargo install mdbook --version 0.5.4 --locked
 

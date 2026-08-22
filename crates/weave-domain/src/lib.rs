@@ -4,6 +4,7 @@
 //! It does not parse Weave source, execute stories, load native code, or depend on an editor or
 //! game engine.
 
+mod catalog;
 mod model;
 mod validation;
 
@@ -14,6 +15,7 @@ use semver::Version;
 use serde::Serialize;
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 
+pub use catalog::{DomainCatalog, ResolvedDomainModule};
 pub use model::{
     CapabilityDeclaration, DOMAIN_CONTRACT_VERSION, DOMAIN_PACK_FORMAT_VERSION, DomainPack,
     DomainValue, ExportDeclaration, ExportSource, FieldDeclaration, ModuleAuthor, ModuleDependency,
@@ -28,6 +30,36 @@ const PACK_SCHEMA_ID: &str = "urn:weave:schema:domain-pack:1";
 /// Redaction-safe domain contract failure.
 #[derive(Debug, thiserror::Error)]
 pub enum DomainError {
+    /// An artifact semantic version is malformed. Its raw value is deliberately not echoed.
+    #[error("invalid domain artifact version at `{path}`")]
+    InvalidArtifactVersion {
+        /// Stable artifact field path.
+        path: &'static str,
+    },
+    /// A source activation semantic-version requirement is malformed.
+    #[error("invalid domain activation requirement at `{path}`")]
+    InvalidActivationRequirement {
+        /// Stable activation field path.
+        path: &'static str,
+    },
+    /// The selected module identity is absent from the explicit catalog.
+    #[error("selected domain module is not installed")]
+    ModuleNotInstalled,
+    /// No installed release satisfies the source module requirement.
+    #[error("no installed domain module version satisfies the activation")]
+    ModuleVersionNotInstalled,
+    /// The selected pack identity is absent from the explicit catalog.
+    #[error("selected domain pack is not installed")]
+    PackNotInstalled,
+    /// No installed pack release satisfies the source pack requirement.
+    #[error("no installed domain pack version satisfies the activation")]
+    PackVersionNotInstalled,
+    /// A catalog contains the same module identity and version twice.
+    #[error("duplicate domain module artifact")]
+    DuplicateManifestArtifact,
+    /// A catalog contains the same module, pack, and version coordinate twice.
+    #[error("duplicate domain pack artifact")]
+    DuplicatePackArtifact,
     /// Module contract version is unsupported.
     #[error("unsupported domain contract version {found}; expected {expected}")]
     UnsupportedContract {

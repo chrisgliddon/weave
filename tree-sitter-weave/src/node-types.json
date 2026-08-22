@@ -845,6 +845,88 @@
     }
   },
   {
+    "type": "module_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "module_id_setting",
+          "named": true
+        },
+        {
+          "type": "module_pack_setting",
+          "named": true
+        },
+        {
+          "type": "module_version_setting",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "module_id_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "module_pack_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "module_version_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "narrative_statement",
     "named": true,
     "fields": {},
@@ -1080,6 +1162,10 @@
         },
         {
           "type": "list_declaration",
+          "named": true
+        },
+        {
+          "type": "module_declaration",
           "named": true
         },
         {
@@ -1459,6 +1545,10 @@
     "named": false
   },
   {
+    "type": "id",
+    "named": false
+  },
+  {
     "type": "identifier",
     "named": true
   },
@@ -1468,6 +1558,10 @@
   },
   {
     "type": "in",
+    "named": false
+  },
+  {
+    "type": "module",
     "named": false
   },
   {
@@ -1488,6 +1582,10 @@
   },
   {
     "type": "or",
+    "named": false
+  },
+  {
+    "type": "pack",
     "named": false
   },
   {
@@ -1520,6 +1618,10 @@
   },
   {
     "type": "uniform",
+    "named": false
+  },
+  {
+    "type": "version",
     "named": false
   },
   {

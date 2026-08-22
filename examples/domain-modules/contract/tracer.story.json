@@ -1,0 +1,189 @@
+{
+  "version": 3,
+  "source_name": "examples/domain-modules/contract/tracer.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 125,
+        "end": 166,
+        "line": 7,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "observed_phase",
+          "value": {
+            "kind": "path",
+            "value": [
+              "constellation",
+              "phase"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "constellation": {
+      "id": "org.weave.synthetic_constellation",
+      "version": "1.0.0",
+      "pack_id": "glasswing_sky",
+      "pack_version": "1.0.0",
+      "exports": {
+        "observation": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "intensity": {
+                "kind": "number",
+                "value": 0.625
+              },
+              "label": {
+                "kind": "string",
+                "value": "Glasswing constellation"
+              }
+            }
+          }
+        },
+        "phase": {
+          "source": "pack",
+          "value": {
+            "kind": "symbol",
+            "value": "twilight"
+          }
+        }
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 181,
+            "end": 351,
+            "line": 10,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "binary",
+                    "value": {
+                      "left": {
+                        "kind": "path",
+                        "value": [
+                          "observed_phase"
+                        ]
+                      },
+                      "operator": "equal",
+                      "right": {
+                        "kind": "path",
+                        "value": [
+                          "twilight"
+                        ]
+                      }
+                    }
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 214,
+                        "end": 309,
+                        "line": 11,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "constellation",
+                                  "observation",
+                                  "label"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " glows at "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "constellation",
+                                  "observation",
+                                  "intensity"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " intensity."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 322,
+                    "end": 349,
+                    "line": 13,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "The synthetic sky is quiet."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 352,
+            "end": 358,
+            "line": 15,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

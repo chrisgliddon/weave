@@ -2,6 +2,12 @@
 Grammar and pattern declarations
 ==================
 
+module constellation {
+    id: "org.weave.synthetic_constellation"
+    version: "=1.0.0"
+    pack: "glasswing_sky@=1.0.0"
+}
+
 grammar omens {
     opening: ["A #closing#", "The {weather} changes"]
     closing: "door"
@@ -21,6 +27,17 @@ pattern weather_omens {
 ---
 
 (source_file
+  (module_declaration
+    (identifier)
+    (module_id_setting
+      (string
+        (string_content)))
+    (module_version_setting
+      (string
+        (string_content)))
+    (module_pack_setting
+      (string
+        (string_content))))
   (grammar_declaration
     (identifier)
     (grammar_rule

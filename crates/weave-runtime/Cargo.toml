@@ -19,6 +19,7 @@ weave-patterns = { path = "../weave-patterns" }
 [dev-dependencies]
 serde_json.workspace = true
 weave-compiler = { path = "../weave-compiler" }
+weave-domain = { path = "../weave-domain" }
 
 [lints]
 workspace = true

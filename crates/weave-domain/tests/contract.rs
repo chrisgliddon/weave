@@ -1,6 +1,6 @@
 use semver::Version;
 use weave_domain::{
-    DOMAIN_CONTRACT_VERSION, DomainError, DomainPack, DomainValue, ModuleDependency,
+    DOMAIN_CONTRACT_VERSION, DomainCatalog, DomainError, DomainPack, DomainValue, ModuleDependency,
     ModuleManifest, ProvenanceKind, domain_pack_schema, module_manifest_schema,
     resolve_module_order, validate_manifest, validate_pack,
 };
@@ -81,6 +81,60 @@ fn version_negotiation_fails_closed() {
         validate_pack(&incompatible_pack, &manifest(), &current_weave()),
         Err(DomainError::IncompatibleModule { .. })
     ));
+}
+
+#[test]
+fn explicit_catalog_selects_exact_artifacts_without_ambient_discovery() {
+    let catalog = DomainCatalog::from_artifacts([manifest()], [pack()]).expect("catalog");
+    let resolved = catalog
+        .resolve(
+            "org.weave.synthetic_constellation",
+            "^1.0",
+            "glasswing_sky",
+            "=1.0.0",
+            &current_weave(),
+        )
+        .expect("resolve compatible activation");
+    assert_eq!(resolved.manifest.version, "1.0.0");
+    assert_eq!(resolved.pack.version, "1.0.0");
+    assert_eq!(catalog.manifests().count(), 1);
+    assert_eq!(catalog.packs().count(), 1);
+
+    assert!(matches!(
+        catalog.resolve(
+            "org.weave.synthetic_constellation",
+            "^2",
+            "glasswing_sky",
+            "=1.0.0",
+            &current_weave(),
+        ),
+        Err(DomainError::ModuleVersionNotInstalled)
+    ));
+}
+
+#[test]
+fn duplicate_catalog_inserts_do_not_replace_the_original_artifact() {
+    let original_manifest = manifest();
+    let original_pack = pack();
+    let mut replacement_manifest = original_manifest.clone();
+    replacement_manifest.title = "Replacement title".into();
+    let mut replacement_pack = original_pack.clone();
+    replacement_pack.title = "Replacement pack".into();
+
+    let mut catalog =
+        DomainCatalog::from_artifacts([original_manifest.clone()], [original_pack.clone()])
+            .expect("initial catalog");
+    assert!(matches!(
+        catalog.insert_manifest(replacement_manifest),
+        Err(DomainError::DuplicateManifestArtifact)
+    ));
+    assert!(matches!(
+        catalog.insert_pack(replacement_pack),
+        Err(DomainError::DuplicatePackArtifact)
+    ));
+
+    assert_eq!(catalog.manifests().next(), Some(&original_manifest));
+    assert_eq!(catalog.packs().next(), Some(&original_pack));
 }
 
 #[test]

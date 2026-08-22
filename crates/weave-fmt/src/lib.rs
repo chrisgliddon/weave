@@ -5,7 +5,7 @@ use std::fmt::Write;
 use weave_core::Diagnostic;
 use weave_core::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
+    ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
 };
 
 /// Current canonical formatting contract.
@@ -48,6 +48,33 @@ impl Formatter {
     fn document(&mut self, document: &Document) {
         for item in &document.items {
             match &item.node {
+                Item::Module(module) => {
+                    self.line(0, &format!("module {} {{", module.node.alias));
+                    let mut seen_content = false;
+                    for entry in &module.node.entries {
+                        match &entry.node {
+                            ModuleEntry::Id(value) => {
+                                seen_content = true;
+                                self.line(1, &format!("id: {}", quote(value)));
+                            }
+                            ModuleEntry::Version(value) => {
+                                seen_content = true;
+                                self.line(1, &format!("version: {}", quote(value)));
+                            }
+                            ModuleEntry::Pack(value) => {
+                                seen_content = true;
+                                self.line(1, &format!("pack: {}", quote(value)));
+                            }
+                            ModuleEntry::Comment(comment) => {
+                                seen_content = true;
+                                self.comment(1, comment);
+                            }
+                            ModuleEntry::Blank if seen_content => self.blank(),
+                            ModuleEntry::Blank => {}
+                        }
+                    }
+                    self.line(0, "}");
+                }
                 Item::Grammar(grammar) => {
                     self.line(0, &format!("grammar {} {{", grammar.node.name));
                     let mut seen_content = false;
@@ -390,6 +417,11 @@ mod tests {
     use super::*;
 
     const MESSY: &str = r#"// file
+module constellation{
+id:"org.weave.synthetic_constellation"
+version:"=1.0.0"
+pack:"glasswing_sky@=1.0.0"
+}
 grammar words{
 value:["one","two"]
 }
@@ -428,6 +460,11 @@ aside
 "#;
 
     const GOLDEN: &str = r#"// file
+module constellation {
+    id: "org.weave.synthetic_constellation"
+    version: "=1.0.0"
+    pack: "glasswing_sky@=1.0.0"
+}
 grammar words {
     value: ["one", "two"]
 }
@@ -474,6 +511,7 @@ aside
         assert!(once.contains("    <- aside"));
         assert!(once.contains("VAR score = 1 + 2 * 3"));
         assert!(once.contains("spread single { positions: [card] }"));
+        assert!(once.contains("module constellation"));
         assert!(once.contains("// body"));
     }
 

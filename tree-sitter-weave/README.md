@@ -1,6 +1,6 @@
 # tree-sitter-weave
 
-`tree-sitter-weave` is the incremental parser and syntax-query package for the [Weave narrative scripting language](../README.md). It covers declarations, knots, nested choices and conditionals, template interpolation, grammar references, pattern systems, expressions, and error-tolerant editing states.
+`tree-sitter-weave` is the incremental parser and syntax-query package for the [Weave narrative scripting language](../README.md). It covers domain-module activations, declarations, knots, nested choices and conditionals, template interpolation, grammar references, pattern systems, expressions, and error-tolerant editing states.
 
 ## Build and test
 

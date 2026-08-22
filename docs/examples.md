@@ -1,6 +1,6 @@
 # Runnable examples
 
-Every `.weave` source below is compiled by the documentation gate. The finite standalone and Bevy programs are also executed to completion, and the browser story's generated JSON must match its source byte for byte.
+Every `.weave` source below is compiled by the documentation gate. The finite Rust programs are executed to completion, the PixiJS consumer is tested and bundled, and checked JSON/RON artifacts must match their source byte for byte.
 
 | Example | What it proves | Run from the repository root |
 |---|---|---|
@@ -8,8 +8,11 @@ Every `.weave` source below is compiled by the documentation gate. The finite st
 | Branching source | Conditions, choices, variables, and diverts | `cargo run -p weave-compiler -- examples/stories/branching.weave --output target/branching.ron` |
 | Pattern source | Structured pattern draws and semantic branches | `cargo run -p weave-compiler -- examples/stories/patterns.weave --output target/patterns.ron` |
 | Community package | Validation, publication, installation, version resolution, and runtime embedding | `cargo run -p weave-patterns --bin weave-pattern -- validate patterns/community/ember-omens/package.weave-pattern.json` |
+| Domain-module tracer | Explicit activation, typed paths, deterministic RON/JSON lowering, and runtime branching | `cargo run -p weave-compiler -- examples/domain-modules/contract/tracer.weave --module-manifest examples/domain-modules/contract/module.weave-module.json --module-pack examples/domain-modules/contract/pack.weave-domain.json --output target/tracer.story.ron` |
 | Standalone Rust | Compiler-to-runtime flow without an engine | `cargo run -p weave-example-standalone` |
 | Bevy dialogue game | Interactive dialogue, choices, observable state, hot reload, and pattern-event UI | `cargo run -p weave-example-bevy-dialogue` |
+| Bevy domain consumer | Portable module RON loaded into a Bevy resource without editor dependencies | `cargo run -p weave-example-domain-module-bevy` |
+| PixiJS domain consumer | Portable module JSON decoded, tested, and rendered with PixiJS v8 | `npm --prefix examples/domain-module-pixijs test` |
 | Browser player | JSON, WASM, deterministic restart, and save/restore | `./scripts/build-web-player.sh` |
 | Visual editor | Native GPUI project workflow | `cargo run -p weave_editor` |
 
@@ -31,3 +34,5 @@ cargo run -p weave-example-bevy-dialogue -- --smoke-test
 ```
 
 The [community package guide](community_patterns.md) provides the complete commands for publishing and installing Ember Omens, then compiling its package-backed example story.
+
+The [domain-module guide](domain_modules.md) explains the shared manifest, activation, editor inspection, compiled IR, and consumer boundaries exercised by the synthetic tracer.

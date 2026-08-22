@@ -1,5 +1,5 @@
 StoryIr(
-    version: 2,
+    version: 3,
     source_name: Some("crates/weave-compiler/tests/fixtures/golden.weave"),
     entry: "start",
     globals: [
@@ -44,6 +44,7 @@ StoryIr(
         ),
     },
     patterns: {},
+    modules: {},
     knots: {
         "ending": KnotIr(
             content: [

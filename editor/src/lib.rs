@@ -15,7 +15,10 @@ pub mod text_view;
 pub mod theme;
 
 pub use app::{LaunchMode, StartupError, launch};
-pub use domain::{DomainError, DomainSession, builtin_pattern_definitions};
+pub use domain::{
+    DomainError, DomainSession, ModuleExportInspection, ModuleInspection,
+    builtin_pattern_definitions,
+};
 pub use graph::{
     GraphConnectionError, GraphDocument, GraphEdge, GraphEdgeKind, GraphNode, GraphNodeKind,
     GraphPoint, GraphRect, GraphViewport, INTERACTIVE_FRAME_BUDGET_MS, NavigationDirection,

@@ -25,6 +25,12 @@ Text edits update the graph only after they parse successfully. While source is 
 
 Semantic graph edits write canonical formatted source. Layout-only graph movement is stored separately and does not rewrite `.weave` content. Undo and redo treat a synchronized semantic change as one operation instead of replaying a feedback loop between views.
 
+## Domain-module inspection boundary
+
+The editor's public `DomainSession` and `TextBuffer` APIs accept an explicit `DomainCatalog`. A valid source `module` declaration is compiled against that catalog with the same compiler path as `weavec`; module inspections expose export descriptions, schemas, types, sources, and selected values. Formatting or switching between editor-backed text views does not change the compiled module IR.
+
+Artifact installation and project-root discovery remain separate from this source-and-inspection boundary. A host must configure the catalog explicitly; the editor does not search the machine or network for a module named in source.
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:

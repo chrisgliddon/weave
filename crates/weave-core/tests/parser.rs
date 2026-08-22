@@ -25,6 +25,25 @@ fn accepts_unicode_comments_crlf_and_tabs() {
 }
 
 #[test]
+fn parses_domain_module_activation_and_typed_paths_as_shared_source_syntax() {
+    let source = include_str!("../../../examples/domain-modules/contract/tracer.weave");
+    let document = parse_document(source).expect("tracer source parses");
+    assert_eq!(document.modules().count(), 1);
+    assert_eq!(
+        document.modules().next().expect("module").node.alias,
+        "constellation"
+    );
+    let result = type_check(&document);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.severity != Severity::Error),
+        "generic source tooling should accept module paths before artifact resolution: {result:#?}"
+    );
+}
+
+#[test]
 fn malformed_input_has_a_source_location() {
     let diagnostics = parse_document("=== start ===\n{true:\n    missing close\n")
         .expect_err("unterminated conditional must fail");

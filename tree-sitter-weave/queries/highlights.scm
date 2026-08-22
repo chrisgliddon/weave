@@ -8,6 +8,10 @@
 (null) @constant.builtin
 
 [
+  "module"
+  "id"
+  "version"
+  "pack"
   "grammar"
   "pattern"
   "spread"
@@ -38,6 +42,7 @@
 "END" @constant.builtin
 
 (knot_header name: (identifier) @function)
+(module_declaration name: (identifier) @module)
 (grammar_declaration name: (identifier) @module)
 (grammar_rule name: (identifier) @property)
 (pattern_declaration name: (identifier) @type)

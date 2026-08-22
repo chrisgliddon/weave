@@ -11,6 +11,7 @@ members = [
     "crates/weave-lsp",
     "editor",
     "examples/bevy-dialogue",
+    "examples/domain-module-bevy",
     "examples/standalone-runtime",
     "tree-sitter-weave",
 ]

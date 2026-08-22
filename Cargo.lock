@@ -8694,10 +8694,12 @@ dependencies = [
  "notify",
  "ron",
  "schemars",
+ "semver",
  "serde_json",
  "tempfile",
  "thiserror 2.0.20",
  "weave-core",
+ "weave-domain",
  "weave-patterns",
 ]
 
@@ -8711,6 +8713,7 @@ dependencies = [
  "schemars",
  "serde",
  "thiserror 2.0.20",
+ "weave-domain",
 ]
 
 [[package]]
@@ -8734,6 +8737,15 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "weave-bevy",
+]
+
+[[package]]
+name = "weave-example-domain-module-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "ron",
+ "weave-core",
 ]
 
 [[package]]
@@ -8797,6 +8809,7 @@ dependencies = [
  "thiserror 2.0.20",
  "weave-compiler",
  "weave-core",
+ "weave-domain",
  "weave-patterns",
 ]
 
@@ -8831,6 +8844,7 @@ dependencies = [
  "unicode-segmentation",
  "weave-compiler",
  "weave-core",
+ "weave-domain",
  "weave-fmt",
  "weave-patterns",
  "weave-runtime",

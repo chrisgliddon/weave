@@ -7,8 +7,9 @@ use std::sync::mpsc;
 
 use clap::{Parser, ValueEnum};
 use notify::{Event, RecursiveMode, Watcher};
-use weave_compiler::{CompileOptions, compile_with_patterns, json_schema, to_json, to_ron};
+use weave_compiler::{CompileOptions, compile_with_extensions, json_schema, to_json, to_ron};
 use weave_core::{Diagnostic, Severity};
+use weave_domain::{DomainCatalog, DomainPack, ModuleManifest};
 use weave_patterns::{PackageRegistry, PackageRequirement};
 
 #[derive(Debug, Parser)]
@@ -54,6 +55,18 @@ struct Cli {
     /// Explicit local registry containing packages selected with `--pattern`.
     #[arg(long, value_name = "DIRECTORY", requires = "patterns")]
     pattern_registry: Option<PathBuf>,
+
+    /// Explicit domain-module manifest artifact. Repeat to make more releases available.
+    #[arg(
+        long = "module-manifest",
+        value_name = "FILE",
+        conflicts_with = "schema"
+    )]
+    module_manifests: Vec<PathBuf>,
+
+    /// Explicit domain data-pack artifact. Repeat to make more releases available.
+    #[arg(long = "module-pack", value_name = "FILE", conflicts_with = "schema")]
+    module_packs: Vec<PathBuf>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -102,13 +115,21 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
             return 2;
         }
     };
-    let compiled = match compile_with_patterns(&source, &options, &external_patterns) {
-        Ok(compiled) => compiled,
+    let domain_catalog = match domain_catalog(cli) {
+        Ok(catalog) => catalog,
         Err(error) => {
-            print_diagnostics(input, &source, &error.diagnostics);
-            return 1;
+            eprintln!("weavec: {error}");
+            return 2;
         }
     };
+    let compiled =
+        match compile_with_extensions(&source, &options, &external_patterns, &domain_catalog) {
+            Ok(compiled) => compiled,
+            Err(error) => {
+                print_diagnostics(input, &source, &error.diagnostics);
+                return 1;
+            }
+        };
     print_diagnostics(input, &source, &compiled.diagnostics);
 
     let output = match cli.format {
@@ -139,6 +160,38 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
         eprintln!("compiled {} -> {}", input.display(), destination.display());
     }
     0
+}
+
+fn domain_catalog(cli: &Cli) -> Result<DomainCatalog, String> {
+    let mut catalog = DomainCatalog::new();
+    for path in &cli.module_manifests {
+        let source = fs::read_to_string(path).map_err(|error| {
+            format!("could not read domain manifest {}: {error}", path.display())
+        })?;
+        let manifest = if path.extension().is_some_and(|extension| extension == "ron") {
+            ModuleManifest::from_ron(&source)
+        } else {
+            ModuleManifest::from_json(&source)
+        }
+        .map_err(|error| format!("could not load domain manifest {}: {error}", path.display()))?;
+        catalog
+            .insert_manifest(manifest)
+            .map_err(|error| format!("could not catalog domain manifest: {error}"))?;
+    }
+    for path in &cli.module_packs {
+        let source = fs::read_to_string(path)
+            .map_err(|error| format!("could not read domain pack {}: {error}", path.display()))?;
+        let pack = if path.extension().is_some_and(|extension| extension == "ron") {
+            DomainPack::from_ron(&source)
+        } else {
+            DomainPack::from_json(&source)
+        }
+        .map_err(|error| format!("could not load domain pack {}: {error}", path.display()))?;
+        catalog
+            .insert_pack(pack)
+            .map_err(|error| format!("could not catalog domain pack: {error}"))?;
+    }
+    Ok(catalog)
 }
 
 fn external_patterns(

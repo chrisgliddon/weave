@@ -7,28 +7,29 @@ This document defines package ownership and dependency boundaries for the Rust w
 | Package | Responsibility | May depend on |
 |---|---|---|
 | `weave-domain` | Host-independent domain-module manifests, types, values, packs, compatibility, deterministic resolution, and provenance | General-purpose serialization, schema, semantic-version, and URL crates only |
-| `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | General-purpose parsing and serialization crates only |
+| `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | `weave-domain` plus general-purpose parsing and serialization crates |
 | `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
 | `weave-patterns` | Serializable pattern extension boundary, data-only community package registry, and built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core`; never compiler, runtime, or host APIs |
-| `weave-compiler` | Checked AST-to-IR lowering, external package embedding, RON/JSON serialization, and the `weavec` CLI | `weave-core`, `weave-patterns`; never `weave-runtime` or Bevy |
+| `weave-compiler` | Checked AST-to-IR lowering, external package and domain-module embedding, RON/JSON serialization, and the `weavec` CLI | `weave-core`, `weave-patterns`, and `weave-domain`; never `weave-runtime` or Bevy |
 | `weave-fmt` | Canonical `.weave` source rendering | `weave-core` |
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
 | `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
 | `weave-lsp` | Editor-independent diagnostics, navigation, completion, rename, hover, and formatting over LSP stdio | `weave-core` and `weave-fmt`; never Bevy, GPUI, or editor APIs |
 | `tree-sitter-weave` | Incremental concrete-syntax parser plus highlight, local-variable, and symbol-tag queries for downstream editors | Generated C parser with language bindings; no dependency on the Weave runtime or editor |
-| `weave_editor` | Standalone GPUI editor delivered in Phase 3 | Public APIs of the crates above |
+| `weave_editor` | Standalone GPUI editor and explicit domain-module inspection session | Public APIs of the crates above |
 
 The dependency direction is:
 
 ```text
 weave-domain
+└── weave-core
+    ├── weave-patterns
+    └── weave-fmt
 
-weave-core
-├── weave-patterns
-└── weave-fmt
+weave-core + weave-domain + weave-patterns
+└── weave-compiler
 
 weave-core + weave-patterns
-├── weave-compiler
 └── weave-runtime
 
 weave-core + weave-patterns + weave-runtime
@@ -44,7 +45,7 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
 
-`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. During Phase 5, `weave-core` consumes its portable value types, while compiler, runtime, editor, Bevy, and browser boundaries depend inward on the same contract rather than defining host-specific module models. The complete contract, activation, compatibility, and provenance rules are in the [domain-module guide](domain_modules.md).
+`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. `weave-core` consumes its portable value types; the compiler resolves an explicit `DomainCatalog` and lowers selected values into IR 3; runtime, editor, Bevy, and browser boundaries consume that shared representation rather than defining host-specific module models. The complete contract, activation, compatibility, provenance, and tracer rules are in the [domain-module guide](domain_modules.md).
 
 `tree-sitter-weave` is intentionally independent of `weave-core`: editors can parse unfinished source without linking the compiler. Its grammar and queries must track the normative language guide, and its npm package, Rust crate, grammar metadata, and language-specification version are released together.
 

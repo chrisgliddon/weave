@@ -62,3 +62,13 @@ The window displays delivered dialogue, dynamic choices, observable variables, `
 ```sh
 cargo run -p weave-example-bevy-dialogue -- --smoke-test
 ```
+
+## Portable domain-module data
+
+Compiled module values are ordinary `StoryIr` data; a Bevy host does not need the editor or an artifact registry at runtime. The finite domain example deserializes the canonical tracer RON, reads its typed exports through `DomainModuleIr::value`, inserts them as a Bevy `Resource`, reports them from `Startup`, and exits after one update:
+
+```sh
+cargo run -p weave-example-domain-module-bevy
+```
+
+Use this boundary when a build pipeline resolves and compiles domain artifacts ahead of the game. The [domain-module guide](domain_modules.md) documents source activation and compatibility validation.

@@ -11,7 +11,7 @@ This is the normative language specification for Weave source files. Examples in
 - Newlines: LF and CRLF are accepted. The formatter writes LF.
 - Identifiers and keywords are case-sensitive.
 - Source order is significant for narrative content and choice presentation. Map serialization is deterministic and sorted by key.
-- Grammar, pattern, and global declarations must appear before the first knot. Once a knot begins, only knots may follow.
+- Module, grammar, pattern, and global declarations must appear before the first knot. Once a knot begins, only knots may follow.
 - A file must contain at least one knot. The first knot is the default entry point.
 
 Line comments begin with `//` outside string literals and continue to the end of the line. Comments and blank lines do not execute. The formatter preserves comments and semantic source order.
@@ -144,7 +144,33 @@ Tarot elements expose `name`, `arcana`, `suit`, `rank`, `meaning`, `element`, an
 
 Pattern results have static type `Any` because authored fields are open-ended. At runtime they are deterministic objects driven by the same seeded entropy stream as grammar expansion. Immutable definitions live in compiled story data; draw counts and last-draw identities live in separately serialized story state.
 
-## 6. Values and types
+## 6. Domain module activations
+
+A module declaration gives one explicitly supplied domain artifact a story-local alias:
+
+```weave
+module constellation {
+    id: "org.weave.synthetic_constellation"
+    version: "=1.0.0"
+    pack: "glasswing_sky@=1.0.0"
+}
+```
+
+`id` is the stable module identity, `version` is a semantic-version requirement, and `pack` combines a pack identifier with its own requirement. Each field appears exactly once. Compilation succeeds only when the host supplies one compatible, validated manifest and pack; source activation never triggers ambient discovery or network access.
+
+The alias is the first segment of a typed value path:
+
+```weave
+VAR current_phase = constellation.phase
+
+=== start ===
+The sign is {constellation.observation.label}.
+-> END
+```
+
+Aliases cannot collide with modules, variables, grammars, patterns, or knots. Export and nested object fields are checked against the selected manifest. Pack exports are immutable compiled values. State exports receive isolated runtime state keyed by the stable module identity and exact module version.
+
+## 7. Values and types
 
 Weave has these runtime types:
 
@@ -159,9 +185,9 @@ Weave has these runtime types:
 | `Object` | Pattern draw results | String-keyed structured data |
 | `Any` | Pattern draw result | Statically unknown, dynamically checked |
 
-A bare one-segment identifier resolves to a declared variable when one exists; otherwise it is a symbol literal. A dotted value path must begin with a declared variable. Pattern names are only valid in the recognized draw calls, and their result must be stored before fields are read. This rule preserves concise comparisons such as `quest == active` while still diagnosing misspelled object paths.
+A bare one-segment identifier resolves to a declared variable when one exists; otherwise it is a symbol literal. A dotted value path must begin with a declared variable or active module alias. Pattern names are only valid in the recognized draw calls, and their result must be stored before fields are read. This rule preserves concise comparisons such as `quest == active` while still diagnosing misspelled object paths.
 
-## 7. Variables, lists, flags, and state machines
+## 8. Variables, lists, flags, and state machines
 
 Declarations use explicit kinds:
 
@@ -191,7 +217,7 @@ REMOVE inventory, "map"
 
 Redeclaring a name with an incompatible kind or type is a static error. A declaration in one knot is visible to all knots for static analysis and at runtime after it has executed. Reading a declaration before execution is a structured runtime error unless it was global.
 
-## 8. Knots and flow
+## 9. Knots and flow
 
 A knot header is three equals signs, an identifier, and three equals signs:
 
@@ -219,7 +245,7 @@ The caller resumes here.
 
 When a threaded knot reaches the end of its content without diverting, its frame returns to the caller. A divert inside the thread still replaces the entire flow stack. Direct or indirect thread recursion deeper than 256 frames is a runtime error.
 
-## 9. Narrative text and interpolation
+## 10. Narrative text and interpolation
 
 Any non-empty knot line that is not a structural statement is narrative text and produces one line event. Quote characters in narrative lines are ordinary visible characters.
 
@@ -238,7 +264,7 @@ Expansion order is:
 
 To emit literal `{`, `}`, or `#`, escape it with a backslash. Unbalanced or empty interpolation markers are compile errors.
 
-## 10. Choices
+## 11. Choices
 
 `*` introduces a once-only choice. `+` introduces a sticky choice that is offered on every visit:
 
@@ -268,7 +294,7 @@ Nested choices use additional indentation:
     * [Leave] -> leaving
 ```
 
-## 11. Conditions
+## 12. Conditions
 
 Conditional narrative uses braces and ordered branches:
 
@@ -284,7 +310,7 @@ Conditional narrative uses braces and ordered branches:
 
 The first condition that evaluates to `true` executes. The `else` branch is optional and must be last. Branch bodies use the same statements and indentation rules as knot bodies. Conditions must have static type `Bool` or `Any`; a non-Boolean dynamic result is a runtime error.
 
-## 12. Expressions
+## 13. Expressions
 
 Operators, from highest to lowest precedence, are:
 
@@ -306,11 +332,13 @@ Binary operators evaluate left to right within one precedence level. `and` and `
 - Division or remainder by zero is a runtime error.
 - A function call is only valid for a declared `pattern.draw()` or `pattern.spread.name.draw()` path. Pattern draws accept no arguments.
 
-## 13. Static analysis
+## 14. Static analysis
 
 The checker performs at least these validations before IR is produced:
 
-- Duplicate grammar, rule, pattern, spread, knot, or variable names.
+- Duplicate module aliases, grammars, rules, patterns, spreads, knots, or variable names.
+- Missing or incompatible module and pack releases, invalid activation requirements, and alias collisions.
+- Unknown module exports or nested object fields and invalid uses of typed module values.
 - Missing grammar rules and missing divert/thread targets.
 - Declaration initializer and assignment type compatibility.
 - Boolean conditions.
@@ -321,11 +349,12 @@ The checker performs at least these validations before IR is produced:
 
 All diagnostics have a stable code, severity, message, and source span. Errors prevent output. Warnings do not. Tools must not panic on malformed UTF-8 input bytes, malformed syntax, unknown IR versions, or invalid runtime data.
 
-## 14. Serialized IR
+## 15. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 2 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 3 includes:
 
 - Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
+- Sorted active module metadata with exact module and pack versions plus validated tagged exports.
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.
@@ -335,7 +364,7 @@ RON is the normative output. JSON uses the same model for interoperability and f
 
 The runtime rejects an unsupported `version` before executing any instruction.
 
-## 15. Complete Phase 2 example
+## 16. Complete Phase 2 example
 
 ```weave
 grammar names {
@@ -388,7 +417,7 @@ Its meaning is {cards_on_table.present.meaning}.
 -> END
 ```
 
-## 16. Invalid examples
+## 17. Invalid examples
 
 Unknown divert target:
 

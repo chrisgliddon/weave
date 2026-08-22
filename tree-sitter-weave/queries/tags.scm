@@ -1,4 +1,5 @@
 (knot_header name: (identifier) @name) @definition.function
+(module_declaration name: (identifier) @name) @definition.module
 (grammar_declaration name: (identifier) @name) @definition.module
 (grammar_rule name: (identifier) @name) @definition.field
 (pattern_declaration name: (identifier) @name) @definition.type

@@ -4,26 +4,34 @@ use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
 
+use semver::Version;
+use weave_domain::{
+    DomainCatalog, DomainError, DomainValue, ExportSource, ResolvedDomainModule,
+    resolve_module_order,
+};
+
 use weave_core::ast::{
     BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
+    ModuleDecl, ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator,
+    VariableKind,
 };
 use weave_core::ir::{
     BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
-    DeclarationIr, Expression, GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr,
-    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr,
-    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainValueIr, Expression,
+    GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr, PatternCollectionIr,
+    PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr, Template,
+    TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_core::{
-    Diagnostic, PatternSignature, Severity, TemplatePart, has_errors, parse_document,
-    parse_template, type_check_with_patterns,
+    Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplatePart, has_errors,
+    parse_document, parse_template, type_check_with_extensions,
 };
 
 /// Compiler version corresponding to the current IR.
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
 /// Stable identifier published in the machine-readable JSON Schema.
-pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:2";
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:3";
 
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -39,6 +47,8 @@ pub struct CompiledStory {
     pub story: StoryIr,
     /// Compiler warnings. Successful compilation never contains errors here.
     pub diagnostics: Vec<Diagnostic>,
+    /// Exact validated artifacts selected for editor and build inspection.
+    pub domain_modules: BTreeMap<String, ResolvedDomainModule>,
 }
 
 /// One or more source diagnostics that prevented compilation.
@@ -75,7 +85,7 @@ pub enum SerializeError {
 
 /// Parse, statically check, and lower source into runtime IR.
 pub fn compile(source: &str, options: &CompileOptions) -> Result<CompiledStory, CompileError> {
-    compile_with_patterns(source, options, &BTreeMap::new())
+    compile_with_extensions(source, options, &BTreeMap::new(), &DomainCatalog::new())
 }
 
 /// Compile source with validated, data-only external pattern definitions in scope.
@@ -86,6 +96,25 @@ pub fn compile_with_patterns(
     source: &str,
     options: &CompileOptions,
     external_patterns: &BTreeMap<String, PatternSystemIr>,
+) -> Result<CompiledStory, CompileError> {
+    compile_with_extensions(source, options, external_patterns, &DomainCatalog::new())
+}
+
+/// Compile source with an explicit catalog of declarative domain artifacts.
+pub fn compile_with_modules(
+    source: &str,
+    options: &CompileOptions,
+    domain_catalog: &DomainCatalog,
+) -> Result<CompiledStory, CompileError> {
+    compile_with_extensions(source, options, &BTreeMap::new(), domain_catalog)
+}
+
+/// Compile source with all validated external data surfaces in scope.
+pub fn compile_with_extensions(
+    source: &str,
+    options: &CompileOptions,
+    external_patterns: &BTreeMap<String, PatternSystemIr>,
+    domain_catalog: &DomainCatalog,
 ) -> Result<CompiledStory, CompileError> {
     let mut external_diagnostics = Vec::new();
     for (name, pattern) in external_patterns {
@@ -103,7 +132,7 @@ pub fn compile_with_patterns(
     }
 
     let document = parse_document(source).map_err(|diagnostics| CompileError { diagnostics })?;
-    let signatures = external_patterns
+    let pattern_signatures = external_patterns
         .iter()
         .map(|(name, pattern)| {
             let mut spreads = pattern.spreads.keys().cloned().collect::<Vec<_>>();
@@ -115,7 +144,17 @@ pub fn compile_with_patterns(
             (name.clone(), PatternSignature::new(spreads))
         })
         .collect::<BTreeMap<_, _>>();
-    let checked = type_check_with_patterns(&document, &signatures);
+    let domain_modules = resolve_domain_activations(&document, domain_catalog)?;
+    let module_signatures = domain_modules
+        .iter()
+        .map(|(alias, resolved)| {
+            (
+                alias.clone(),
+                DomainModuleSignature::from_manifest(&resolved.manifest),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let checked = type_check_with_extensions(&document, &pattern_signatures, &module_signatures);
     if has_errors(&checked.diagnostics) {
         return Err(CompileError {
             diagnostics: checked.diagnostics,
@@ -137,7 +176,232 @@ pub fn compile_with_patterns(
         .collect::<Vec<_>>();
     diagnostics.append(&mut lowerer.diagnostics);
     story.patterns.extend(external_patterns.clone());
-    Ok(CompiledStory { story, diagnostics })
+    story.modules = domain_modules
+        .iter()
+        .map(|(alias, resolved)| (alias.clone(), lower_domain_module(resolved)))
+        .collect();
+    Ok(CompiledStory {
+        story,
+        diagnostics,
+        domain_modules,
+    })
+}
+
+fn resolve_domain_activations(
+    document: &Document,
+    catalog: &DomainCatalog,
+) -> Result<BTreeMap<String, ResolvedDomainModule>, CompileError> {
+    let current_weave = Version::parse(env!("CARGO_PKG_VERSION")).map_err(|_| CompileError {
+        diagnostics: vec![Diagnostic::error(
+            "D109",
+            "the compiler has an invalid embedded compatibility version",
+        )],
+    })?;
+    let mut resolved = BTreeMap::new();
+    let mut diagnostics = Vec::new();
+
+    for module in document.modules() {
+        let Some((module_id, module_requirement, pack_id, pack_requirement)) =
+            activation_fields(module, &mut diagnostics)
+        else {
+            continue;
+        };
+        match catalog.resolve(
+            module_id,
+            module_requirement,
+            pack_id,
+            pack_requirement,
+            &current_weave,
+        ) {
+            Ok(activation) => {
+                if resolved
+                    .insert(module.node.alias.clone(), activation)
+                    .is_some()
+                {
+                    diagnostics.push(
+                        Diagnostic::error(
+                            "D110",
+                            format!(
+                                "domain module alias `{}` is activated more than once",
+                                module.node.alias
+                            ),
+                        )
+                        .with_span(module.span),
+                    );
+                }
+            }
+            Err(error) => diagnostics.push(domain_diagnostic(&error, module.span)),
+        }
+    }
+
+    if diagnostics.is_empty() && !resolved.is_empty() {
+        let manifests = resolved
+            .values()
+            .map(|module| module.manifest.clone())
+            .collect::<Vec<_>>();
+        if let Err(error) = resolve_module_order(&manifests, &current_weave) {
+            let span = document.modules().next().map(|module| module.span);
+            let mut diagnostic = Diagnostic::error(domain_error_code(&error), error.to_string());
+            if let Some(span) = span {
+                diagnostic = diagnostic.with_span(span);
+            }
+            diagnostics.push(diagnostic);
+        }
+    }
+
+    if diagnostics.is_empty() {
+        Ok(resolved)
+    } else {
+        Err(CompileError { diagnostics })
+    }
+}
+
+fn activation_fields<'a>(
+    module: &'a Spanned<ModuleDecl>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<(&'a str, &'a str, &'a str, &'a str)> {
+    let mut id = None;
+    let mut version = None;
+    let mut pack = None;
+    for entry in &module.node.entries {
+        let (slot, field): (&mut Option<&str>, &str) = match &entry.node {
+            ModuleEntry::Id(value) => (&mut id, value),
+            ModuleEntry::Version(value) => (&mut version, value),
+            ModuleEntry::Pack(value) => (&mut pack, value),
+            ModuleEntry::Comment(_) | ModuleEntry::Blank => continue,
+        };
+        if slot.replace(field).is_some() {
+            diagnostics.push(
+                Diagnostic::error("D112", "domain activation repeats a required field")
+                    .with_span(entry.span)
+                    .with_help("declare `id`, `version`, and `pack` exactly once"),
+            );
+        }
+    }
+    if id.is_none() || version.is_none() || pack.is_none() {
+        diagnostics.push(
+            Diagnostic::error(
+                "D113",
+                "domain activation requires `id`, `version`, and `pack` fields",
+            )
+            .with_span(module.span),
+        );
+        return None;
+    }
+    let (Some(id), Some(version), Some(pack)) = (id, version, pack) else {
+        return None;
+    };
+    let Some((pack_id, pack_requirement)) = pack.rsplit_once('@') else {
+        diagnostics.push(
+            Diagnostic::error(
+                "D152",
+                "domain pack selector must use `pack_id@version_requirement`",
+            )
+            .with_span(module.span),
+        );
+        return None;
+    };
+    if pack_id.is_empty() || pack_requirement.is_empty() {
+        diagnostics.push(
+            Diagnostic::error("D152", "domain pack selector has an empty component")
+                .with_span(module.span),
+        );
+        return None;
+    }
+    Some((id, version, pack_id, pack_requirement))
+}
+
+fn domain_diagnostic(error: &DomainError, span: weave_core::Span) -> Diagnostic {
+    Diagnostic::error(domain_error_code(error), error.to_string())
+        .with_span(span)
+        .with_help("check the activation and explicit domain artifacts supplied to this build")
+}
+
+fn domain_error_code(error: &DomainError) -> &'static str {
+    match error {
+        DomainError::UnsupportedContract { .. } => "D100",
+        DomainError::UnsupportedPackFormat { .. } => "D101",
+        DomainError::UnsupportedCapability { .. } => "D102",
+        DomainError::ModuleVersionNotInstalled | DomainError::IncompatibleWeave { .. } => "D103",
+        DomainError::PackVersionNotInstalled | DomainError::IncompatibleModule { .. } => "D104",
+        DomainError::DuplicateManifestArtifact
+        | DomainError::DuplicatePackArtifact
+        | DomainError::DuplicateModule { .. }
+        | DomainError::NamespaceCollision { .. } => "D110",
+        DomainError::MissingDependency { .. }
+        | DomainError::IncompatibleDependency { .. }
+        | DomainError::DependencyCycle => "D120",
+        DomainError::InvalidField { path, .. } if is_provenance_path(path) => "D130",
+        DomainError::UnknownExport { .. }
+        | DomainError::MissingExport { .. }
+        | DomainError::UnknownType { .. }
+        | DomainError::RecursiveType { .. }
+        | DomainError::TypeMismatch { .. }
+        | DomainError::InvalidField { .. } => "D140",
+        DomainError::ModuleNotInstalled => "D150",
+        DomainError::PackNotInstalled => "D151",
+        DomainError::InvalidArtifactVersion { .. }
+        | DomainError::InvalidActivationRequirement { .. }
+        | DomainError::InvalidJson { .. }
+        | DomainError::InvalidRon
+        | DomainError::Serialize => "D152",
+    }
+}
+
+fn is_provenance_path(path: &str) -> bool {
+    path == "authors"
+        || path.starts_with("authors[")
+        || path == "license"
+        || path == "license_url"
+        || path == "provenance"
+        || path.starts_with("provenance.")
+}
+
+fn lower_domain_module(resolved: &ResolvedDomainModule) -> DomainModuleIr {
+    let exports = resolved
+        .pack
+        .values
+        .iter()
+        .filter_map(|(name, value)| {
+            let declaration = resolved.manifest.exports.get(name)?;
+            Some((
+                name.clone(),
+                DomainExportIr {
+                    source: match declaration.source {
+                        ExportSource::Pack => DomainExportSourceIr::Pack,
+                        ExportSource::State => DomainExportSourceIr::State,
+                    },
+                    value: lower_domain_value(value),
+                },
+            ))
+        })
+        .collect();
+    DomainModuleIr {
+        id: resolved.manifest.id.clone(),
+        version: resolved.manifest.version.clone(),
+        pack_id: resolved.pack.id.clone(),
+        pack_version: resolved.pack.version.clone(),
+        exports,
+    }
+}
+
+fn lower_domain_value(value: &DomainValue) -> DomainValueIr {
+    match value {
+        DomainValue::Null => DomainValueIr::Null,
+        DomainValue::Bool(value) => DomainValueIr::Bool(*value),
+        DomainValue::Number(value) => DomainValueIr::Number(*value),
+        DomainValue::String(value) => DomainValueIr::String(value.clone()),
+        DomainValue::Symbol(value) => DomainValueIr::Symbol(value.clone()),
+        DomainValue::List(values) => {
+            DomainValueIr::List(values.iter().map(lower_domain_value).collect())
+        }
+        DomainValue::Object(fields) => DomainValueIr::Object(
+            fields
+                .iter()
+                .map(|(name, value)| (name.clone(), lower_domain_value(value)))
+                .collect(),
+        ),
+    }
 }
 
 /// Serialize an IR story as canonical, human-readable RON.
@@ -172,7 +436,7 @@ pub fn json_schema() -> Result<String, SerializeError> {
         );
         root.insert(
             "title".to_owned(),
-            serde_json::Value::String("Weave Story IR v2".to_owned()),
+            serde_json::Value::String("Weave Story IR v3".to_owned()),
         );
         root.insert(
             "x-weave-ir-version".to_owned(),
@@ -262,6 +526,7 @@ impl Lowerer {
 
         for item in &document.items {
             match &item.node {
+                Item::Module(_) => {}
                 Item::Grammar(grammar) => {
                     self.current_grammar = Some(grammar.node.name.clone());
                     let mut rules = BTreeMap::new();

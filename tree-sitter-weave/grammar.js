@@ -35,6 +35,7 @@ export default grammar({
     source_file: $ => repeat(choice($._top_level_item, $._newline)),
 
     _top_level_item: $ => choice(
+      $.module_declaration,
       $.grammar_declaration,
       $.pattern_declaration,
       $.variable_declaration,
@@ -43,6 +44,26 @@ export default grammar({
       $.state_declaration,
       $.knot,
     ),
+
+    module_declaration: $ => seq(
+      "module",
+      field("name", $.identifier),
+      "{",
+      repeat(choice($._module_entry, $._newline)),
+      "}",
+    ),
+
+    _module_entry: $ => choice(
+      $.module_id_setting,
+      $.module_version_setting,
+      $.module_pack_setting,
+    ),
+
+    module_id_setting: $ => seq("id", ":", field("value", $.string)),
+
+    module_version_setting: $ => seq("version", ":", field("value", $.string)),
+
+    module_pack_setting: $ => seq("pack", ":", field("value", $.string)),
 
     grammar_declaration: $ => seq(
       "grammar",

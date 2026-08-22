@@ -1,0 +1,16 @@
+[package]
+name = "weave-example-domain-module-bevy"
+description = "Minimal Bevy 0.18 consumer of a compiled Weave domain-module export"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+bevy.workspace = true
+ron.workspace = true
+weave-core = { path = "../../crates/weave-core" }
+
+[lints]
+workspace = true

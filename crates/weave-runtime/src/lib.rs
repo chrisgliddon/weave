@@ -11,9 +11,9 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use weave_core::Span;
 use weave_core::ir::{
-    BinaryOperatorIr, ChoiceIr, ConditionalIr, DeclarationIr, Expression, IR_VERSION, Instruction,
-    InstructionKind, ListOperationIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr,
-    ValueLiteral, VariableKindIr,
+    BinaryOperatorIr, ChoiceIr, ConditionalIr, DeclarationIr, DomainExportSourceIr, DomainModuleIr,
+    DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind, ListOperationIr, StoryIr,
+    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_patterns::{
     DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
@@ -93,11 +93,21 @@ pub struct VariableState {
     pub allowed_states: Vec<String>,
 }
 
+/// Serializable mutable state owned by one exact domain-module release.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DomainModuleState {
+    /// Exact module semantic version that owns these values.
+    pub version: String,
+    /// Mutable exports in deterministic name order.
+    pub values: BTreeMap<String, Value>,
+}
+
 /// Serializable mutable state, kept separate from immutable [`StoryIr`] data.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StoryState {
     variables: BTreeMap<String, VariableState>,
     patterns: BTreeMap<String, PatternState>,
+    modules: BTreeMap<String, DomainModuleState>,
     selected_once: BTreeSet<String>,
     frames: Vec<ExecutionFrame>,
     pending_choices: Vec<PendingChoice>,
@@ -117,6 +127,12 @@ impl StoryState {
     #[must_use]
     pub const fn patterns(&self) -> &BTreeMap<String, PatternState> {
         &self.patterns
+    }
+
+    /// Isolated mutable domain-module state keyed by stable module identity.
+    #[must_use]
+    pub const fn modules(&self) -> &BTreeMap<String, DomainModuleState> {
+        &self.modules
     }
 
     /// Original deterministic random seed.
@@ -303,6 +319,7 @@ impl Story {
         validate_story(&data)?;
         let patterns = build_patterns(&data)?;
         let entry = data.entry.clone();
+        let modules = initial_domain_state(&data);
         let mut story = Self {
             data: Arc::new(data),
             state: StoryState {
@@ -311,6 +328,7 @@ impl Story {
                     .map(|name| (name.clone(), PatternState::default()))
                     .collect(),
                 variables: BTreeMap::new(),
+                modules,
                 selected_once: BTreeSet::new(),
                 frames: vec![ExecutionFrame {
                     block: BlockRef::knot(entry),
@@ -334,6 +352,7 @@ impl Story {
         validate_story(&data)?;
         let patterns = build_patterns(&data)?;
         reconcile_pattern_state(&patterns, &mut state.patterns);
+        reconcile_domain_state(&data, &mut state.modules);
         let story = Self {
             data: Arc::new(data),
             patterns,
@@ -362,6 +381,16 @@ impl Story {
     #[must_use]
     pub fn data(&self) -> &StoryIr {
         &self.data
+    }
+
+    /// Read one active module export by alias and nested field path.
+    ///
+    /// An empty path returns an object containing every export. State-backed exports come from
+    /// the isolated save state; pack-backed exports remain immutable IR data.
+    #[must_use]
+    pub fn module_value(&self, alias: &str, path: &[&str]) -> Option<Value> {
+        let module = self.data.modules.get(alias)?;
+        self.module_value_from(module, path)
     }
 
     /// Saveable mutable execution state.
@@ -597,6 +626,45 @@ impl Story {
                 return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
                     "saved pattern state for `{name}` references stale elements"
                 ))));
+            }
+        }
+        if self.state.modules.len() != self.data.modules.len() {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "saved domain state does not match the compiled story".to_owned(),
+            )));
+        }
+        for module in self.data.modules.values() {
+            let Some(state) = self.state.modules.get(&module.id) else {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved domain state is missing an active module".to_owned(),
+                )));
+            };
+            if state.version != module.version {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved domain state belongs to a different module version".to_owned(),
+                )));
+            }
+            let expected = module
+                .exports
+                .iter()
+                .filter(|(_, export)| export.source == DomainExportSourceIr::State)
+                .collect::<BTreeMap<_, _>>();
+            if state.values.len() != expected.len() {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "saved domain state has stale exports".to_owned(),
+                )));
+            }
+            for (name, export) in expected {
+                let Some(value) = state.values.get(name) else {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                        "saved domain state is missing an export".to_owned(),
+                    )));
+                };
+                if !same_value_type(value, &domain_value(&export.value)) {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                        "saved domain export has an incompatible value type".to_owned(),
+                    )));
+                }
             }
         }
         Ok(())
@@ -941,6 +1009,12 @@ impl Story {
             )));
         };
         let Some(variable) = self.state.variables.get(root) else {
+            if let Some(module) = self.data.modules.get(root) {
+                let fields = path[1..].iter().map(String::as_str).collect::<Vec<_>>();
+                return self.module_value_from(module, &fields).ok_or_else(|| {
+                    RuntimeError::new(RuntimeErrorKind::UnknownPath(path.join(".")))
+                });
+            }
             if path.len() == 1 {
                 return Ok(Value::Symbol(root.clone()));
             }
@@ -963,6 +1037,50 @@ impl Story {
             value = next;
         }
         Ok(value.clone())
+    }
+
+    fn module_value_from(&self, module: &DomainModuleIr, path: &[&str]) -> Option<Value> {
+        if path.is_empty() {
+            let values = module
+                .exports
+                .iter()
+                .map(|(name, export)| {
+                    self.module_export_value(module, name, export.source)
+                        .map(|value| (name.clone(), value))
+                })
+                .collect::<Option<BTreeMap<_, _>>>()?;
+            return Some(Value::Object(values));
+        }
+        let (export_name, fields) = path.split_first()?;
+        let export = module.exports.get(*export_name)?;
+        let mut value = self.module_export_value(module, export_name, export.source)?;
+        for field in fields {
+            let Value::Object(values) = value else {
+                return None;
+            };
+            value = values.get(*field)?.clone();
+        }
+        Some(value)
+    }
+
+    fn module_export_value(
+        &self,
+        module: &DomainModuleIr,
+        name: &str,
+        source: DomainExportSourceIr,
+    ) -> Option<Value> {
+        match source {
+            DomainExportSourceIr::Pack => module
+                .exports
+                .get(name)
+                .map(|export| domain_value(&export.value)),
+            DomainExportSourceIr::State => self
+                .state
+                .modules
+                .get(&module.id)
+                .and_then(|state| state.values.get(name))
+                .cloned(),
+        }
     }
 
     fn render_template(
@@ -1100,6 +1218,66 @@ fn build_patterns(
         .collect()
 }
 
+fn initial_domain_state(data: &StoryIr) -> BTreeMap<String, DomainModuleState> {
+    data.modules
+        .values()
+        .map(|module| {
+            (
+                module.id.clone(),
+                DomainModuleState {
+                    version: module.version.clone(),
+                    values: initial_module_values(module),
+                },
+            )
+        })
+        .collect()
+}
+
+fn initial_module_values(module: &DomainModuleIr) -> BTreeMap<String, Value> {
+    module
+        .exports
+        .iter()
+        .filter(|(_, export)| export.source == DomainExportSourceIr::State)
+        .map(|(name, export)| (name.clone(), domain_value(&export.value)))
+        .collect()
+}
+
+fn reconcile_domain_state(data: &StoryIr, states: &mut BTreeMap<String, DomainModuleState>) {
+    let active = data
+        .modules
+        .values()
+        .map(|module| module.id.as_str())
+        .collect::<BTreeSet<_>>();
+    states.retain(|id, _| active.contains(id.as_str()));
+    for module in data.modules.values() {
+        let initial = initial_module_values(module);
+        let state_is_current = states
+            .get(&module.id)
+            .is_some_and(|state| state.version == module.version);
+        if !state_is_current {
+            states.insert(
+                module.id.clone(),
+                DomainModuleState {
+                    version: module.version.clone(),
+                    values: initial,
+                },
+            );
+            continue;
+        }
+        let Some(state) = states.get_mut(&module.id) else {
+            continue;
+        };
+        state.values.retain(|name, value| {
+            initial
+                .get(name)
+                .is_some_and(|expected| same_value_type(value, expected))
+        });
+        for (name, value) in initial {
+            state.values.entry(name).or_insert(value);
+        }
+    }
+}
+
 fn reconcile_pattern_state(
     patterns: &BTreeMap<String, Arc<dyn PatternSystem>>,
     states: &mut BTreeMap<String, PatternState>,
@@ -1192,7 +1370,62 @@ fn validate_story(data: &StoryIr) -> Result<(), RuntimeError> {
             data.entry.clone(),
         )));
     }
+    let mut module_ids = BTreeSet::new();
+    for (alias, module) in &data.modules {
+        if alias.is_empty()
+            || module.id.is_empty()
+            || module.version.is_empty()
+            || module.pack_id.is_empty()
+            || module.pack_version.is_empty()
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "compiled domain module metadata is incomplete".to_owned(),
+            )));
+        }
+        if !module_ids.insert(&module.id) {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "compiled story activates one domain module more than once".to_owned(),
+            )));
+        }
+        if module
+            .exports
+            .values()
+            .any(|export| !valid_domain_value(&export.value))
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "compiled domain module contains an invalid value".to_owned(),
+            )));
+        }
+    }
     Ok(())
+}
+
+const MAX_DOMAIN_VALUE_DEPTH: usize = 32;
+const MAX_DOMAIN_VALUE_NODES: usize = 262_144;
+
+fn valid_domain_value(value: &DomainValueIr) -> bool {
+    let mut nodes = 0;
+    valid_domain_value_at(value, 0, &mut nodes)
+}
+
+fn valid_domain_value_at(value: &DomainValueIr, depth: usize, nodes: &mut usize) -> bool {
+    *nodes += 1;
+    if depth > MAX_DOMAIN_VALUE_DEPTH || *nodes > MAX_DOMAIN_VALUE_NODES {
+        return false;
+    }
+    match value {
+        DomainValueIr::Number(value) => value.is_finite(),
+        DomainValueIr::List(values) => values
+            .iter()
+            .all(|value| valid_domain_value_at(value, depth + 1, nodes)),
+        DomainValueIr::Object(fields) => fields
+            .values()
+            .all(|value| valid_domain_value_at(value, depth + 1, nodes)),
+        DomainValueIr::Null
+        | DomainValueIr::Bool(_)
+        | DomainValueIr::String(_)
+        | DomainValueIr::Symbol(_) => true,
+    }
 }
 
 fn validate_declared_value(declaration: &DeclarationIr, value: &Value) -> Result<(), RuntimeError> {
@@ -1378,6 +1611,23 @@ fn literal_value(literal: &ValueLiteral) -> Value {
     }
 }
 
+fn domain_value(value: &DomainValueIr) -> Value {
+    match value {
+        DomainValueIr::Null => Value::Null,
+        DomainValueIr::Bool(value) => Value::Bool(*value),
+        DomainValueIr::Number(value) => Value::Number(*value),
+        DomainValueIr::String(value) => Value::String(value.clone()),
+        DomainValueIr::Symbol(value) => Value::Symbol(value.clone()),
+        DomainValueIr::List(values) => Value::List(values.iter().map(domain_value).collect()),
+        DomainValueIr::Object(fields) => Value::Object(
+            fields
+                .iter()
+                .map(|(name, value)| (name.clone(), domain_value(value)))
+                .collect(),
+        ),
+    }
+}
+
 fn same_value_type(left: &Value, right: &Value) -> bool {
     matches!(
         (left, right),
@@ -1419,6 +1669,7 @@ fn with_span(mut error: RuntimeError, span: Span) -> RuntimeError {
 #[cfg(test)]
 mod tests {
     use weave_compiler::{CompileOptions, compile};
+    use weave_domain::{DomainCatalog, DomainPack, ModuleManifest};
 
     use super::*;
 
@@ -1427,6 +1678,67 @@ mod tests {
     fn compile_story(source: &str, seed: u64) -> Story {
         let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
         Story::with_seed(compiled.story, seed).expect("story should start")
+    }
+
+    #[test]
+    fn module_exports_seed_globals_drive_narrative_and_remain_host_visible() {
+        let source = include_str!("../../../examples/domain-modules/contract/tracer.weave");
+        let manifest = ModuleManifest::from_json(include_str!(
+            "../../../examples/domain-modules/contract/module.weave-module.json"
+        ))
+        .expect("canonical manifest");
+        let pack = DomainPack::from_json(include_str!(
+            "../../../examples/domain-modules/contract/pack.weave-domain.json"
+        ))
+        .expect("canonical pack");
+        let catalog = DomainCatalog::from_artifacts([manifest], [pack]).expect("catalog");
+        let compiled =
+            weave_compiler::compile_with_modules(source, &CompileOptions::default(), &catalog)
+                .expect("compile tracer");
+        let mut story = Story::new(compiled.story).expect("start tracer");
+
+        assert_eq!(
+            story.module_value("constellation", &["phase"]),
+            Some(Value::Symbol("twilight".to_owned()))
+        );
+        assert_eq!(
+            story.state().variables()["observed_phase"].value,
+            Value::Symbol("twilight".to_owned())
+        );
+        assert_eq!(
+            story.continue_line().expect("advance tracer"),
+            Some("The Glasswing constellation glows at 0.625 intensity.".to_owned())
+        );
+    }
+
+    #[test]
+    fn rejects_domain_values_beyond_the_contract_depth_limit() {
+        let mut value = DomainValueIr::Null;
+        for _ in 0..=MAX_DOMAIN_VALUE_DEPTH {
+            value = DomainValueIr::List(vec![value]);
+        }
+        let mut compiled = compile("=== start ===\n-> END\n", &CompileOptions::default())
+            .expect("minimal story compiles")
+            .story;
+        compiled.modules.insert(
+            "synthetic".to_owned(),
+            DomainModuleIr {
+                id: "org.weave.synthetic".to_owned(),
+                version: "1.0.0".to_owned(),
+                pack_id: "depth_probe".to_owned(),
+                pack_version: "1.0.0".to_owned(),
+                exports: BTreeMap::from([(
+                    "probe".to_owned(),
+                    weave_core::ir::DomainExportIr {
+                        source: DomainExportSourceIr::Pack,
+                        value,
+                    },
+                )]),
+            },
+        );
+
+        let error = Story::new(compiled).expect_err("over-deep module value must fail");
+        assert!(matches!(error.kind, RuntimeErrorKind::InvalidStory(_)));
     }
 
     #[test]

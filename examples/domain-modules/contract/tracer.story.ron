@@ -1,0 +1,189 @@
+StoryIr(
+    version: 3,
+    source_name: Some("examples/domain-modules/contract/tracer.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 125,
+                end: 166,
+                line: 7,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "observed_phase",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "constellation",
+                            "phase",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "constellation": DomainModuleIr(
+            id: "org.weave.synthetic_constellation",
+            version: "1.0.0",
+            pack_id: "glasswing_sky",
+            pack_version: "1.0.0",
+            exports: {
+                "observation": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "intensity": DomainValueIr(
+                                kind: number,
+                                value: 0.625,
+                            ),
+                            "label": DomainValueIr(
+                                kind: string,
+                                value: "Glasswing constellation",
+                            ),
+                        },
+                    ),
+                ),
+                "phase": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: symbol,
+                        value: "twilight",
+                    ),
+                ),
+            },
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 181,
+                        end: 351,
+                        line: 10,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: binary,
+                                        value: binary(
+                                            left: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "observed_phase",
+                                                ],
+                                            ),
+                                            operator: equal,
+                                            right: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "twilight",
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 214,
+                                                end: 309,
+                                                line: 11,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "The ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "constellation",
+                                                                    "observation",
+                                                                    "label",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " glows at ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "constellation",
+                                                                    "observation",
+                                                                    "intensity",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " intensity.",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 322,
+                                        end: 349,
+                                        line: 13,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "The synthetic sky is quiet.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 352,
+                        end: 358,
+                        line: 15,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

@@ -1,8 +1,13 @@
-//! Bridge to canonical compiler, runtime, and pattern data.
+//! Bridge to canonical compiler, runtime, module, and pattern data.
 
-use weave_compiler::{CompileOptions, compile};
+use std::collections::BTreeMap;
+
+use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Document, parse_document};
+use weave_domain::{
+    DomainCatalog, DomainValue, ExportSource, ResolvedDomainModule, TypeExpression,
+};
 use weave_patterns::{
     PatternDefinition, elder_futhark_definition, i_ching_definition, tarot_definition,
 };
@@ -22,6 +27,38 @@ pub enum DomainError {
     Runtime(#[from] weave_runtime::RuntimeError),
 }
 
+/// Editor-facing schema and selected value for one module export.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModuleExportInspection {
+    /// Source-visible export name.
+    pub name: String,
+    /// Closed portable value type.
+    pub value_type: TypeExpression,
+    /// Runtime ownership boundary.
+    pub source: ExportSource,
+    /// Author-facing purpose from the manifest.
+    pub description: String,
+    /// Selected initial value, absent only for an optional export omitted by the pack.
+    pub value: Option<DomainValue>,
+}
+
+/// Editor-facing view of one exact source activation.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModuleInspection {
+    /// Story-local source alias.
+    pub alias: String,
+    /// Stable module identity.
+    pub id: String,
+    /// Exact module release.
+    pub version: String,
+    /// Exact selected pack identity.
+    pub pack_id: String,
+    /// Exact selected pack release.
+    pub pack_version: String,
+    /// Sorted schema and value records.
+    pub exports: Vec<ModuleExportInspection>,
+}
+
 /// Canonical source, compiled IR, diagnostics, and preview runtime for one editor session.
 #[derive(Debug)]
 pub struct DomainSession {
@@ -31,6 +68,8 @@ pub struct DomainSession {
     diagnostics: Vec<Diagnostic>,
     document: Option<Document>,
     last_valid_story: Option<StoryIr>,
+    domain_catalog: DomainCatalog,
+    active_modules: BTreeMap<String, ResolvedDomainModule>,
     runtime: Option<Story>,
 }
 
@@ -45,8 +84,24 @@ impl DomainSession {
             diagnostics: Vec::new(),
             document: None,
             last_valid_story: None,
+            domain_catalog: DomainCatalog::new(),
+            active_modules: BTreeMap::new(),
             runtime: None,
         }
+    }
+
+    /// Create a session with an explicit set of available domain artifacts.
+    #[must_use]
+    pub fn with_domain_catalog(seed: u64, domain_catalog: DomainCatalog) -> Self {
+        Self {
+            domain_catalog,
+            ..Self::new(seed)
+        }
+    }
+
+    /// Replace the explicit artifact catalog used by subsequent compiles.
+    pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog) {
+        self.domain_catalog = domain_catalog;
     }
 
     /// Compile source through `weave-compiler` and initialize `weave-runtime` on success.
@@ -61,11 +116,12 @@ impl DomainSession {
         self.source = source.into();
         self.source_name = source_name;
         let parsed = parse_document(&self.source);
-        let compiled = match compile(
+        let compiled = match compile_with_modules(
             &self.source,
             &CompileOptions {
                 source_name: self.source_name.clone(),
             },
+            &self.domain_catalog,
         ) {
             Ok(compiled) => compiled,
             Err(error) => {
@@ -79,6 +135,7 @@ impl DomainSession {
         let runtime = Story::with_seed(compiled.story.clone(), self.seed)?;
         self.diagnostics = compiled.diagnostics;
         self.document = parsed.ok();
+        self.active_modules = compiled.domain_modules;
         self.last_valid_story = Some(compiled.story);
         self.runtime = Some(runtime);
         Ok(())
@@ -108,6 +165,39 @@ impl DomainSession {
         self.last_valid_story.as_ref()
     }
 
+    /// Exact validated module artifacts selected by the last successful compile.
+    #[must_use]
+    pub const fn active_modules(&self) -> &BTreeMap<String, ResolvedDomainModule> {
+        &self.active_modules
+    }
+
+    /// Schema-and-value records suitable for an editor module inspector.
+    #[must_use]
+    pub fn module_inspections(&self) -> Vec<ModuleInspection> {
+        self.active_modules
+            .iter()
+            .map(|(alias, resolved)| ModuleInspection {
+                alias: alias.clone(),
+                id: resolved.manifest.id.clone(),
+                version: resolved.manifest.version.clone(),
+                pack_id: resolved.pack.id.clone(),
+                pack_version: resolved.pack.version.clone(),
+                exports: resolved
+                    .manifest
+                    .exports
+                    .iter()
+                    .map(|(name, declaration)| ModuleExportInspection {
+                        name: name.clone(),
+                        value_type: declaration.value_type.clone(),
+                        source: declaration.source,
+                        description: declaration.description.clone(),
+                        value: resolved.pack.values.get(name).cloned(),
+                    })
+                    .collect(),
+            })
+            .collect()
+    }
+
     /// Preview runtime created from the most recent valid source.
     #[must_use]
     pub const fn runtime(&self) -> Option<&Story> {
@@ -134,8 +224,21 @@ pub fn builtin_pattern_definitions() -> Vec<PatternDefinition> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::text_editor::TextBuffer;
 
     const VALID_SOURCE: &str = "=== start ===\nHello.\n-> END\n";
+
+    fn tracer_catalog() -> DomainCatalog {
+        let manifest = weave_domain::ModuleManifest::from_json(include_str!(
+            "../../examples/domain-modules/contract/module.weave-module.json"
+        ))
+        .expect("canonical manifest");
+        let pack = weave_domain::DomainPack::from_json(include_str!(
+            "../../examples/domain-modules/contract/pack.weave-domain.json"
+        ))
+        .expect("canonical pack");
+        DomainCatalog::from_artifacts([manifest], [pack]).expect("catalog")
+    }
 
     #[test]
     fn compiler_runtime_and_pattern_models_are_shared_directly() {
@@ -173,5 +276,47 @@ mod tests {
             valid_entry
         );
         assert!(session.runtime().is_some());
+    }
+
+    #[test]
+    fn editor_and_text_buffer_share_module_schema_values_and_compiler_semantics() {
+        let source = include_str!("../../examples/domain-modules/contract/tracer.weave");
+        let catalog = tracer_catalog();
+        let mut session = DomainSession::with_domain_catalog(7, catalog.clone());
+        session
+            .compile_source(source, Some("tracer.weave".to_owned()))
+            .expect("editor compiles tracer");
+        let inspections = session.module_inspections();
+        let inspection = &inspections[0];
+        assert_eq!(inspection.alias, "constellation");
+        assert_eq!(inspection.id, "org.weave.synthetic_constellation");
+        let phase = inspection
+            .exports
+            .iter()
+            .find(|export| export.name == "phase")
+            .expect("phase schema is offered");
+        assert_eq!(
+            phase.value,
+            Some(DomainValue::Symbol("twilight".to_owned()))
+        );
+
+        let mut buffer = TextBuffer::with_domain_catalog(source, catalog);
+        assert!(buffer.diagnostics().is_empty());
+        buffer.format().expect("module source formats");
+        assert!(buffer.source().contains("module constellation"));
+        assert!(buffer.diagnostics().is_empty());
+        assert_eq!(
+            session.last_valid_story().expect("compiled story").modules,
+            weave_compiler::compile_with_modules(
+                buffer.source(),
+                &CompileOptions {
+                    source_name: Some("tracer.weave".to_owned()),
+                },
+                &tracer_catalog(),
+            )
+            .expect("formatted text compiles")
+            .story
+            .modules
+        );
     }
 }

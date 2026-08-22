@@ -77,14 +77,17 @@ def run(
     """Run one checked command from the repository root."""
 
     print(f"+ {shlex.join(command)}", flush=True)
-    result = subprocess.run(
-        command,
-        cwd=ROOT,
-        env=environment,
-        check=False,
-        text=True,
-        capture_output=capture,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            text=True,
+            capture_output=capture,
+        )
+    except OSError as error:
+        raise DocsError(f"could not run {command[0]}: {error.strerror}") from None
     if result.returncode != 0:
         if capture:
             sys.stderr.write(result.stdout)
@@ -257,7 +260,12 @@ def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
     compiler = compiler_binary()
-    sources = sorted((ROOT / "examples").rglob("*.weave"))
+    domain_tracer = ROOT / "examples/domain-modules/contract/tracer.weave"
+    sources = [
+        source
+        for source in sorted((ROOT / "examples").rglob("*.weave"))
+        if source != domain_tracer
+    ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
     sources.append(readme_fixture)
     if not sources:
@@ -394,14 +402,16 @@ def verify_community_package() -> None:
 
 
 def verify_domain_contract() -> None:
-    """Verify schemas, validation, and canonical JSON/RON domain fixtures."""
+    """Verify schemas, artifacts, and the compiled domain-module tracer."""
 
     domain_tool = domain_tool_binary()
+    compiler = compiler_binary()
     fixture = ROOT / "examples" / "domain-modules" / "contract"
     manifest_json = fixture / "module.weave-module.json"
     manifest_ron = fixture / "module.weave-module.ron"
     pack_json = fixture / "pack.weave-domain.json"
     pack_ron = fixture / "pack.weave-domain.ron"
+    tracer = fixture / "tracer.weave"
 
     run(
         [
@@ -432,6 +442,8 @@ def verify_domain_contract() -> None:
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
         normalized_pack_ron = workspace / "pack.weave-domain.ron"
+        compiled_tracer_ron = workspace / "tracer.story.ron"
+        compiled_tracer_json = workspace / "tracer.story.json"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -480,15 +492,52 @@ def verify_domain_contract() -> None:
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"canonical domain fixture is stale: {checked.name}")
 
-    print("verified domain module schemas and canonical JSON/RON fixtures", flush=True)
+        for encoding, output in (
+            ("ron", compiled_tracer_ron),
+            ("json", compiled_tracer_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(tracer.relative_to(ROOT)),
+                    "--module-manifest",
+                    str(manifest_json.relative_to(ROOT)),
+                    "--module-pack",
+                    str(pack_json.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+        for generated, checked in (
+            (compiled_tracer_ron, fixture / "tracer.story.ron"),
+            (compiled_tracer_json, fixture / "tracer.story.json"),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"compiled domain tracer is stale: {checked.name}")
+
+        compiled = json.loads(compiled_tracer_json.read_text(encoding="utf-8"))
+        module = compiled.get("modules", {}).get("constellation", {})
+        if (
+            compiled.get("version") != 3
+            or module.get("id") != "org.weave.synthetic_constellation"
+            or module.get("exports", {}).get("phase", {}).get("value", {}).get("value")
+            != "twilight"
+        ):
+            raise DocsError("compiled domain tracer omitted its selected module data")
+
+    print("verified domain module schemas, artifacts, and compiled tracer", flush=True)
 
 
 def run_finite_examples() -> None:
-    """Exercise the two non-interactive example programs advertised by the site."""
+    """Exercise the non-interactive Rust example programs advertised by the site."""
 
     examples = (
         ("weave-example-standalone", []),
         ("weave-example-bevy-dialogue", ["--", "--smoke-test"]),
+        ("weave-example-domain-module-bevy", []),
     )
     for package, arguments in examples:
         run(
@@ -496,6 +545,16 @@ def run_finite_examples() -> None:
             capture=True,
             environment=cargo_environment(),
         )
+
+
+def verify_pixijs_domain_consumer() -> None:
+    """Install, test, and bundle the portable PixiJS module consumer."""
+
+    example = "examples/domain-module-pixijs"
+    run(["npm", "--prefix", example, "ci"], capture=True)
+    run(["npm", "--prefix", example, "test"], capture=True)
+    run(["npm", "--prefix", example, "run", "build"], capture=True)
+    print("verified the PixiJS domain-module consumer", flush=True)
 
 
 def build_rustdoc() -> Path:
@@ -537,6 +596,7 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
     downloads.mkdir(parents=True, exist_ok=True)
     for schema in (
         "weave-story-ir-v2.schema.json",
+        "weave-story-ir-v3.schema.json",
         "community-pattern-package-v1.schema.json",
         "domain-module-manifest-v1.schema.json",
         "domain-pack-v1.schema.json",
@@ -702,6 +762,7 @@ def main() -> None:
     verify_community_package()
     verify_domain_contract()
     run_finite_examples()
+    verify_pixijs_domain_consumer()
     rustdoc = build_rustdoc()
     build_site(rustdoc, mdbook)
     check_rendered_site()

@@ -1,6 +1,6 @@
 # Tree-sitter integration
 
-`tree-sitter-weave` is the incremental concrete-syntax parser for `.weave` files. It ships a generated C parser, external indentation scanner, conventional highlight captures, local-variable queries, symbol tags, and C, Rust, Node, Go, Python, and Swift bindings.
+`tree-sitter-weave` is the incremental concrete-syntax parser for `.weave` files. It ships a generated C parser, external indentation scanner, conventional highlight captures, local-variable queries, symbol tags, and C, Rust, Node, Go, Python, and Swift bindings. Domain-module aliases and their `id`, `version`, and `pack` fields are part of the checked grammar and syntax queries.
 
 ## Verify the grammar
 

@@ -76,6 +76,14 @@ pub struct Document {
 }
 
 impl Document {
+    /// Iterate over all domain-module activations in source order.
+    pub fn modules(&self) -> impl Iterator<Item = &Spanned<ModuleDecl>> {
+        self.items.iter().filter_map(|item| match &item.node {
+            Item::Module(module) => Some(module),
+            _ => None,
+        })
+    }
+
     /// Iterate over all knots in source order.
     pub fn knots(&self) -> impl Iterator<Item = &Spanned<Knot>> {
         self.items.iter().filter_map(|item| match &item.node {
@@ -104,6 +112,8 @@ impl Document {
 /// Top-level source item.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Item {
+    /// Story-local activation of one installed domain module and data pack.
+    Module(Spanned<ModuleDecl>),
     /// Scoped generative grammar.
     Grammar(Spanned<GrammarDecl>),
     /// Meaning-bearing pattern definition.
@@ -113,6 +123,30 @@ pub enum Item {
     /// Named narrative block.
     Knot(Spanned<Knot>),
     /// Source comment without its `//` marker.
+    Comment(String),
+    /// Blank source line.
+    Blank,
+}
+
+/// Story-local domain-module activation.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ModuleDecl {
+    /// Alias used as the first segment of source value paths.
+    pub alias: String,
+    /// Activation fields and trivia in source order.
+    pub entries: Vec<Spanned<ModuleEntry>>,
+}
+
+/// One field or trivia item in a domain-module activation.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum ModuleEntry {
+    /// Globally stable module identity.
+    Id(String),
+    /// Accepted module semantic-version requirement.
+    Version(String),
+    /// Pack selector in `pack_id@version_requirement` form.
+    Pack(String),
+    /// Source comment without its marker.
     Comment(String),
     /// Blank source line.
     Blank,

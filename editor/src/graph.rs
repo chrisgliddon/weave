@@ -770,6 +770,7 @@ impl GraphBuilder {
     fn add_top_level_nodes(&mut self, document: &Document) {
         for item in &document.items {
             match &item.node {
+                Item::Module(_) => {}
                 Item::Grammar(grammar) => {
                     let preview = grammar
                         .node
