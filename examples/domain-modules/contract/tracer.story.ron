@@ -1,5 +1,5 @@
 StoryIr(
-    version: 3,
+    version: 4,
     source_name: Some("examples/domain-modules/contract/tracer.weave"),
     entry: "start",
     globals: [

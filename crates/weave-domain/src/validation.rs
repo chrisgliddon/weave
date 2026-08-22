@@ -5,8 +5,9 @@ use url::Url;
 
 use crate::DomainError;
 use crate::model::{
-    CapabilityDeclaration, DOMAIN_CONTRACT_VERSION, DOMAIN_PACK_FORMAT_VERSION, DomainPack,
-    DomainValue, ExportDeclaration, ModuleManifest, Provenance, ProvenanceKind, TypeExpression,
+    CapabilityDeclaration, DOMAIN_CONTRACT_VERSION, DOMAIN_PACK_FORMAT_VERSION, DomainOverride,
+    DomainPack, DomainValue, EntityCollectionDeclaration, ExportDeclaration, FieldDeclaration,
+    ModuleManifest, Provenance, ProvenanceKind, TypeExpression,
 };
 
 const MAX_TEXT_LENGTH: usize = 65_536;
@@ -71,6 +72,7 @@ pub fn validate_manifest(
     validate_capabilities(&manifest.capabilities)?;
     validate_dependencies(manifest)?;
     validate_types_and_exports(&manifest.types, &manifest.exports)?;
+    validate_authoring(manifest)?;
     validate_provenance("provenance", &manifest.provenance)?;
     Ok(())
 }
@@ -124,13 +126,36 @@ pub fn validate_pack(
         }
     }
 
+    validate_effective_values(manifest, &pack.values)?;
+    validate_provenance("provenance", &pack.provenance)?;
     for name in pack.values.keys() {
+        let claim = format!("values.{name}");
+        if !pack.provenance.claims.contains_key(&claim) {
+            return Err(invalid(
+                format!("provenance.claims.{claim}"),
+                "every exported value requires a provenance claim",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Validate one effective export set after source-authored replacements are applied.
+///
+/// Unlike [`validate_pack`], this deliberately does not require pack provenance claims for
+/// source-authored values. The compiler carries those replacements separately from the immutable
+/// selected pack so a host can distinguish public defaults from fictional decisions.
+pub fn validate_effective_values(
+    manifest: &ModuleManifest,
+    values: &BTreeMap<String, DomainValue>,
+) -> Result<(), DomainError> {
+    for name in values.keys() {
         if !manifest.exports.contains_key(name) {
             return Err(DomainError::UnknownExport { name: name.clone() });
         }
     }
     for (name, export) in &manifest.exports {
-        match pack.values.get(name) {
+        match values.get(name) {
             Some(value) => {
                 let mut nodes = 0;
                 validate_value(
@@ -148,17 +173,165 @@ pub fn validate_pack(
             None => {}
         }
     }
-    validate_provenance("provenance", &pack.provenance)?;
-    for name in pack.values.keys() {
-        let claim = format!("values.{name}");
-        if !pack.provenance.claims.contains_key(&claim) {
+    validate_entity_collections(manifest, values)
+}
+
+/// Apply compile-time constant replacements to immutable pack defaults.
+///
+/// Replacement order is canonicalized by path and duplicate paths fail closed. Intermediate
+/// object and map containers may be created, but the complete effective value set must satisfy the
+/// manifest and its declarative entity constraints before it is returned.
+pub fn apply_authored_overrides(
+    manifest: &ModuleManifest,
+    base_values: &BTreeMap<String, DomainValue>,
+    overrides: &[DomainOverride],
+) -> Result<BTreeMap<String, DomainValue>, DomainError> {
+    if overrides.len() > 16_384 {
+        return Err(invalid(
+            "overrides",
+            "too many source-authored replacements",
+        ));
+    }
+    let mut ordered = overrides.iter().collect::<Vec<_>>();
+    ordered.sort_by(|left, right| left.path.cmp(&right.path));
+    let mut previous: Option<&[String]> = None;
+    let mut values = base_values.clone();
+    for authored in ordered {
+        if authored.path.is_empty() {
+            return Err(invalid("overrides", "replacement path must not be empty"));
+        }
+        if previous.is_some_and(|path| path == authored.path) {
+            return Err(invalid("overrides", "duplicate replacement path"));
+        }
+        previous = Some(&authored.path);
+        for (index, segment) in authored.path.iter().enumerate() {
+            validate_namespace(&format!("overrides.path[{index}]"), segment)?;
+        }
+        apply_override(manifest, &mut values, authored)?;
+    }
+    validate_effective_values(manifest, &values)?;
+    Ok(values)
+}
+
+fn apply_override(
+    manifest: &ModuleManifest,
+    values: &mut BTreeMap<String, DomainValue>,
+    authored: &DomainOverride,
+) -> Result<(), DomainError> {
+    let Some((export_name, fields)) = authored.path.split_first() else {
+        return Err(invalid("overrides", "replacement path must not be empty"));
+    };
+    let export = manifest
+        .exports
+        .get(export_name)
+        .ok_or_else(|| DomainError::UnknownExport {
+            name: export_name.clone(),
+        })?;
+    let display_path = format!("values.{}", authored.path.join("."));
+    if fields.is_empty() {
+        validate_one_value(
+            &display_path,
+            &authored.value,
+            &export.value_type,
+            &manifest.types,
+        )?;
+        values.insert(export_name.clone(), authored.value.clone());
+        return Ok(());
+    }
+    let root = match values.entry(export_name.clone()) {
+        std::collections::btree_map::Entry::Occupied(entry) => entry.into_mut(),
+        std::collections::btree_map::Entry::Vacant(entry) => entry.insert(empty_container(
+            &export.value_type,
+            &manifest.types,
+            &format!("values.{export_name}"),
+        )?),
+    };
+    set_nested_value(
+        root,
+        &export.value_type,
+        fields,
+        &authored.value,
+        &manifest.types,
+        &format!("values.{export_name}"),
+    )
+}
+
+fn set_nested_value(
+    current: &mut DomainValue,
+    value_type: &TypeExpression,
+    path: &[String],
+    replacement: &DomainValue,
+    types: &BTreeMap<String, TypeExpression>,
+    display_path: &str,
+) -> Result<(), DomainError> {
+    let Some((segment, remaining)) = path.split_first() else {
+        return Err(invalid(display_path, "replacement path must not be empty"));
+    };
+    let resolved = resolve_named_type(value_type, types)?;
+    let child_type = match resolved {
+        TypeExpression::Object { fields } => fields
+            .get(segment)
+            .map(|field| &field.value_type)
+            .ok_or_else(|| invalid(format!("{display_path}.{segment}"), "unknown object field"))?,
+        TypeExpression::Map { values, .. } => {
+            validate_namespace(&format!("{display_path}.{segment}"), segment)?;
+            values
+        }
+        _ => {
             return Err(invalid(
-                format!("provenance.claims.{claim}"),
-                "every exported value requires a provenance claim",
+                display_path,
+                "replacement path cannot descend into a scalar or list",
             ));
         }
+    };
+    let DomainValue::Object(entries) = current else {
+        return Err(invalid(
+            display_path,
+            "replacement path encountered a non-object value",
+        ));
+    };
+    let child_path = format!("{display_path}.{segment}");
+    if remaining.is_empty() {
+        validate_one_value(&child_path, replacement, child_type, types)?;
+        entries.insert(segment.clone(), replacement.clone());
+        return Ok(());
     }
-    Ok(())
+    let empty = empty_container(child_type, types, &child_path)?;
+    let child = entries.entry(segment.clone()).or_insert(empty);
+    set_nested_value(
+        child,
+        child_type,
+        remaining,
+        replacement,
+        types,
+        &child_path,
+    )
+}
+
+fn empty_container(
+    value_type: &TypeExpression,
+    types: &BTreeMap<String, TypeExpression>,
+    path: &str,
+) -> Result<DomainValue, DomainError> {
+    match resolve_named_type(value_type, types)? {
+        TypeExpression::Map { .. } | TypeExpression::Object { .. } => {
+            Ok(DomainValue::Object(BTreeMap::new()))
+        }
+        _ => Err(invalid(
+            path,
+            "replacement path cannot create a scalar or list container",
+        )),
+    }
+}
+
+fn validate_one_value(
+    path: &str,
+    value: &DomainValue,
+    value_type: &TypeExpression,
+    types: &BTreeMap<String, TypeExpression>,
+) -> Result<(), DomainError> {
+    let mut nodes = 0;
+    validate_value(path, value, value_type, types, 0, &mut nodes)
 }
 
 /// Validate and deterministically order one active module set.
@@ -308,6 +481,178 @@ fn validate_types_and_exports(
     Ok(())
 }
 
+fn validate_authoring(manifest: &ModuleManifest) -> Result<(), DomainError> {
+    if manifest.authoring.entity_collections.len() > 256 {
+        return Err(invalid(
+            "authoring.entity_collections",
+            "too many entity collections",
+        ));
+    }
+    let mut previous = None;
+    for (index, collection) in manifest.authoring.entity_collections.iter().enumerate() {
+        let path = format!("authoring.entity_collections[{index}]");
+        validate_namespace(&format!("{path}.export"), &collection.export)?;
+        if previous.is_some_and(|prior: &str| prior >= collection.export.as_str()) {
+            return Err(invalid(
+                "authoring.entity_collections",
+                "entity collections must be unique and sorted by export",
+            ));
+        }
+        previous = Some(&collection.export);
+        for (field_path, field) in [
+            ("id_field", &collection.id_field),
+            ("label_field", &collection.label_field),
+            ("order_field", &collection.order_field),
+            ("parent_field", &collection.parent_field),
+            ("relation_field", &collection.relation_field),
+        ] {
+            validate_namespace(&format!("{path}.{field_path}"), field)?;
+        }
+        validate_sorted_identifiers(
+            &format!("{path}.inheritance_fields"),
+            &collection.inheritance_fields,
+        )?;
+        let mut structural_fields = BTreeSet::new();
+        for field in [
+            &collection.id_field,
+            &collection.label_field,
+            &collection.order_field,
+            &collection.parent_field,
+            &collection.relation_field,
+        ]
+        .into_iter()
+        .chain(collection.inheritance_fields.iter())
+        {
+            if !structural_fields.insert(field) {
+                return Err(invalid(
+                    path.clone(),
+                    "entity authoring fields must be distinct",
+                ));
+            }
+        }
+        let export =
+            manifest
+                .exports
+                .get(&collection.export)
+                .ok_or_else(|| DomainError::UnknownExport {
+                    name: collection.export.clone(),
+                })?;
+        let TypeExpression::Map { values, .. } =
+            resolve_named_type(&export.value_type, &manifest.types)?
+        else {
+            return Err(invalid(
+                format!("{path}.export"),
+                "entity collection export must be a map",
+            ));
+        };
+        let TypeExpression::Object { fields } = resolve_named_type(values, &manifest.types)? else {
+            return Err(invalid(
+                format!("{path}.export"),
+                "entity collection values must be objects",
+            ));
+        };
+        require_string_field(&path, fields, &collection.id_field, &manifest.types)?;
+        require_string_field(&path, fields, &collection.label_field, &manifest.types)?;
+        require_integer_field(&path, fields, &collection.order_field, &manifest.types)?;
+        require_string_field(&path, fields, &collection.parent_field, &manifest.types)?;
+        require_string_list_field(&path, fields, &collection.relation_field, &manifest.types)?;
+        for field in &collection.inheritance_fields {
+            require_string_field(&path, fields, field, &manifest.types)?;
+        }
+    }
+    Ok(())
+}
+
+fn require_field<'a>(
+    path: &str,
+    fields: &'a BTreeMap<String, FieldDeclaration>,
+    name: &str,
+) -> Result<&'a FieldDeclaration, DomainError> {
+    fields
+        .get(name)
+        .ok_or_else(|| invalid(format!("{path}.{name}"), "authoring field is not declared"))
+}
+
+fn require_string_field(
+    path: &str,
+    fields: &BTreeMap<String, FieldDeclaration>,
+    name: &str,
+    types: &BTreeMap<String, TypeExpression>,
+) -> Result<(), DomainError> {
+    let field = require_field(path, fields, name)?;
+    if !matches!(
+        resolve_named_type(&field.value_type, types)?,
+        TypeExpression::String { .. }
+    ) {
+        return Err(invalid(
+            format!("{path}.{name}"),
+            "authoring field must be a string",
+        ));
+    }
+    Ok(())
+}
+
+fn require_integer_field(
+    path: &str,
+    fields: &BTreeMap<String, FieldDeclaration>,
+    name: &str,
+    types: &BTreeMap<String, TypeExpression>,
+) -> Result<(), DomainError> {
+    let field = require_field(path, fields, name)?;
+    if !matches!(
+        resolve_named_type(&field.value_type, types)?,
+        TypeExpression::Number { integer: true, .. }
+    ) {
+        return Err(invalid(
+            format!("{path}.{name}"),
+            "authoring order field must be an integer",
+        ));
+    }
+    Ok(())
+}
+
+fn require_string_list_field(
+    path: &str,
+    fields: &BTreeMap<String, FieldDeclaration>,
+    name: &str,
+    types: &BTreeMap<String, TypeExpression>,
+) -> Result<(), DomainError> {
+    let field = require_field(path, fields, name)?;
+    let TypeExpression::List { items, .. } = resolve_named_type(&field.value_type, types)? else {
+        return Err(invalid(
+            format!("{path}.{name}"),
+            "authoring relation field must be a list",
+        ));
+    };
+    if !matches!(
+        resolve_named_type(items, types)?,
+        TypeExpression::String { .. }
+    ) {
+        return Err(invalid(
+            format!("{path}.{name}"),
+            "authoring relation entries must be strings",
+        ));
+    }
+    Ok(())
+}
+
+fn resolve_named_type<'a>(
+    mut value_type: &'a TypeExpression,
+    types: &'a BTreeMap<String, TypeExpression>,
+) -> Result<&'a TypeExpression, DomainError> {
+    let mut remaining = types.len().saturating_add(1);
+    while let TypeExpression::Named { name } = value_type {
+        if remaining == 0 {
+            return Err(DomainError::RecursiveType { name: name.clone() });
+        }
+        value_type = types
+            .get(name)
+            .ok_or_else(|| DomainError::UnknownType { name: name.clone() })?;
+        remaining -= 1;
+    }
+    Ok(value_type)
+}
+
 fn validate_type_expression(
     path: &str,
     value_type: &TypeExpression,
@@ -351,6 +696,16 @@ fn validate_type_expression(
                 return Err(invalid(path, "invalid list length bounds"));
             }
             validate_type_expression(&format!("{path}.items"), items, types)?;
+        }
+        TypeExpression::Map {
+            values,
+            min_entries,
+            max_entries,
+        } => {
+            if min_entries > max_entries || *max_entries > MAX_LIST_ITEMS {
+                return Err(invalid(path, "invalid map entry bounds"));
+            }
+            validate_type_expression(&format!("{path}.values"), values, types)?;
         }
         TypeExpression::Object { fields } => {
             if fields.len() > 4_096 {
@@ -407,6 +762,7 @@ fn walk_named<'a>(
     match value_type {
         TypeExpression::Named { name } => validate_named_cycles(name, types, active),
         TypeExpression::List { items, .. } => walk_named(items, types, active),
+        TypeExpression::Map { values, .. } => walk_named(values, types, active),
         TypeExpression::Object { fields } => {
             for field in fields.values() {
                 walk_named(&field.value_type, types, active)?;
@@ -483,6 +839,27 @@ fn validate_value(
             }
             Ok(())
         }
+        (
+            DomainValue::Object(entries),
+            TypeExpression::Map {
+                values,
+                min_entries,
+                max_entries,
+            },
+        ) if (*min_entries..=*max_entries).contains(&entries.len()) => {
+            for (name, value) in entries {
+                validate_namespace(&format!("{path}.{name}"), name)?;
+                validate_value(
+                    &format!("{path}.{name}"),
+                    value,
+                    values,
+                    types,
+                    depth + 1,
+                    nodes,
+                )?;
+            }
+            Ok(())
+        }
         (DomainValue::Object(values), TypeExpression::Object { fields }) => {
             for name in values.keys() {
                 if !fields.contains_key(name) {
@@ -525,6 +902,210 @@ fn validate_value(
             found: value_label(value),
         }),
     }
+}
+
+fn validate_entity_collections(
+    manifest: &ModuleManifest,
+    values: &BTreeMap<String, DomainValue>,
+) -> Result<(), DomainError> {
+    for collection in &manifest.authoring.entity_collections {
+        let Some(value) = values.get(&collection.export) else {
+            continue;
+        };
+        let DomainValue::Object(entities) = value else {
+            return Err(invalid(
+                format!("values.{}", collection.export),
+                "entity collection must be an object map",
+            ));
+        };
+        for (id, entity) in entities {
+            let path = format!("values.{}.{id}", collection.export);
+            let fields = object_fields(&path, entity)?;
+            if string_field(&path, fields, &collection.id_field)? != id {
+                return Err(invalid(
+                    format!("{path}.{}", collection.id_field),
+                    "stable entity id must equal its map key",
+                ));
+            }
+            let parent = string_field(&path, fields, &collection.parent_field)?;
+            validate_entity_reference(&path, id, parent, entities, &collection.parent_field)?;
+            for field in &collection.inheritance_fields {
+                let reference = string_field(&path, fields, field)?;
+                validate_entity_reference(&path, id, reference, entities, field)?;
+            }
+            let related = string_list_field(&path, fields, &collection.relation_field)?;
+            let mut seen = BTreeSet::new();
+            for relation in related {
+                if relation == id {
+                    return Err(invalid(
+                        format!("{path}.{}", collection.relation_field),
+                        "entity cannot relate to itself",
+                    ));
+                }
+                if !seen.insert(relation) {
+                    return Err(invalid(
+                        format!("{path}.{}", collection.relation_field),
+                        "entity relations must be unique",
+                    ));
+                }
+                if !entities.contains_key(relation) {
+                    return Err(invalid(
+                        format!("{path}.{}", collection.relation_field),
+                        "entity relation references an unknown stable id",
+                    ));
+                }
+            }
+        }
+        validate_reference_chain(entities, collection, &collection.parent_field)?;
+        for field in &collection.inheritance_fields {
+            validate_reference_chain(entities, collection, field)?;
+        }
+        validate_symmetric_relations(entities, collection)?;
+    }
+    Ok(())
+}
+
+fn object_fields<'a>(
+    path: &str,
+    value: &'a DomainValue,
+) -> Result<&'a BTreeMap<String, DomainValue>, DomainError> {
+    match value {
+        DomainValue::Object(fields) => Ok(fields),
+        _ => Err(invalid(path, "entity must be an object")),
+    }
+}
+
+fn string_field<'a>(
+    path: &str,
+    fields: &'a BTreeMap<String, DomainValue>,
+    field: &str,
+) -> Result<&'a str, DomainError> {
+    match fields.get(field) {
+        Some(DomainValue::String(value)) => Ok(value),
+        _ => Err(invalid(
+            format!("{path}.{field}"),
+            "entity field must be a string",
+        )),
+    }
+}
+
+fn string_list_field<'a>(
+    path: &str,
+    fields: &'a BTreeMap<String, DomainValue>,
+    field: &str,
+) -> Result<Vec<&'a str>, DomainError> {
+    let Some(DomainValue::List(values)) = fields.get(field) else {
+        return Err(invalid(
+            format!("{path}.{field}"),
+            "entity field must be a list",
+        ));
+    };
+    values
+        .iter()
+        .map(|value| match value {
+            DomainValue::String(value) => Ok(value.as_str()),
+            _ => Err(invalid(
+                format!("{path}.{field}"),
+                "entity relation entries must be strings",
+            )),
+        })
+        .collect()
+}
+
+fn validate_entity_reference(
+    path: &str,
+    id: &str,
+    reference: &str,
+    entities: &BTreeMap<String, DomainValue>,
+    field: &str,
+) -> Result<(), DomainError> {
+    if reference.is_empty() {
+        return Ok(());
+    }
+    if reference == id {
+        return Err(invalid(
+            format!("{path}.{field}"),
+            "entity cannot reference itself",
+        ));
+    }
+    if !entities.contains_key(reference) {
+        return Err(invalid(
+            format!("{path}.{field}"),
+            "entity references an unknown stable id",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_reference_chain(
+    entities: &BTreeMap<String, DomainValue>,
+    collection: &EntityCollectionDeclaration,
+    field: &str,
+) -> Result<(), DomainError> {
+    let mut complete = BTreeSet::new();
+    for start in entities.keys() {
+        if complete.contains(start) {
+            continue;
+        }
+        let mut chain = Vec::new();
+        let mut positions = BTreeMap::new();
+        let mut current = start.as_str();
+        loop {
+            if current.is_empty() || complete.contains(current) {
+                break;
+            }
+            if positions.insert(current, chain.len()).is_some() {
+                return Err(invalid(
+                    format!("values.{}.{start}.{field}", collection.export),
+                    "entity reference chain contains a cycle",
+                ));
+            }
+            chain.push(current);
+            let entity = entities.get(current).ok_or_else(|| {
+                invalid(
+                    format!("values.{}.{start}.{field}", collection.export),
+                    "entity references an unknown stable id",
+                )
+            })?;
+            let fields = object_fields(&format!("values.{}.{current}", collection.export), entity)?;
+            current = string_field(
+                &format!("values.{}.{current}", collection.export),
+                fields,
+                field,
+            )?;
+        }
+        complete.extend(chain.into_iter().map(str::to_owned));
+    }
+    Ok(())
+}
+
+fn validate_symmetric_relations(
+    entities: &BTreeMap<String, DomainValue>,
+    collection: &EntityCollectionDeclaration,
+) -> Result<(), DomainError> {
+    for (id, entity) in entities {
+        let path = format!("values.{}.{id}", collection.export);
+        let fields = object_fields(&path, entity)?;
+        for related in string_list_field(&path, fields, &collection.relation_field)? {
+            let related_path = format!("values.{}.{related}", collection.export);
+            let related_entity = entities.get(related).ok_or_else(|| {
+                invalid(
+                    format!("{path}.{}", collection.relation_field),
+                    "entity relation references an unknown stable id",
+                )
+            })?;
+            let related_fields = object_fields(&related_path, related_entity)?;
+            if !string_list_field(&related_path, related_fields, &collection.relation_field)?
+                .contains(&id.as_str())
+            {
+                return Err(invalid(
+                    format!("{path}.{}", collection.relation_field),
+                    "entity relations must be symmetric",
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn validate_provenance(path: &str, provenance: &Provenance) -> Result<(), DomainError> {
@@ -876,6 +1457,7 @@ fn type_label(value_type: &TypeExpression) -> &'static str {
         TypeExpression::String { .. } => "string",
         TypeExpression::Symbol { .. } => "symbol",
         TypeExpression::List { .. } => "list",
+        TypeExpression::Map { .. } => "map",
         TypeExpression::Object { .. } => "object",
         TypeExpression::Named { .. } => "named type",
     }

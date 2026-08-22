@@ -8830,6 +8830,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-world"
+version = "0.1.0"
+dependencies = [
+ "thiserror 2.0.20",
+ "weave-compiler",
+ "weave-domain",
+]
+
+[[package]]
 name = "weave-world-corpus"
 version = "0.1.0"
 dependencies = [
@@ -8864,6 +8873,7 @@ dependencies = [
  "weave-fmt",
  "weave-patterns",
  "weave-runtime",
+ "weave-world",
 ]
 
 [[package]]

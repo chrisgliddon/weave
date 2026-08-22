@@ -6,8 +6,8 @@ use std::fmt;
 
 use semver::Version;
 use weave_domain::{
-    DomainCatalog, DomainError, DomainValue, ExportSource, ResolvedDomainGraph,
-    ResolvedDomainModule,
+    DomainCatalog, DomainError, DomainOverride, DomainValue, ExportSource, ResolvedDomainGraph,
+    ResolvedDomainModule, apply_authored_overrides,
 };
 
 use weave_core::ast::{
@@ -17,10 +17,10 @@ use weave_core::ast::{
 };
 use weave_core::ir::{
     BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
-    DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainValueIr, Expression,
-    GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr, PatternCollectionIr,
-    PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr, Template,
-    TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainOverrideIr,
+    DomainValueIr, Expression, GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr,
+    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr,
+    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_core::{
     Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplatePart, has_errors,
@@ -31,7 +31,7 @@ use weave_core::{
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
 /// Stable identifier published in the machine-readable JSON Schema.
-pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:3";
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:4";
 
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -216,7 +216,28 @@ fn resolve_domain_activations(
             pack_requirement,
             &current_weave,
         ) {
-            Ok(activation) => {
+            Ok(mut activation) => {
+                let overrides = match lower_domain_overrides(module) {
+                    Ok(overrides) => overrides,
+                    Err(mut errors) => {
+                        diagnostics.append(&mut errors);
+                        continue;
+                    }
+                };
+                match apply_authored_overrides(
+                    &activation.manifest,
+                    &activation.pack.values,
+                    &overrides,
+                ) {
+                    Ok(values) => {
+                        activation.effective_values = values;
+                        activation.authored_overrides = overrides;
+                    }
+                    Err(error) => {
+                        diagnostics.push(domain_diagnostic(&error, module.span));
+                        continue;
+                    }
+                }
                 if resolved
                     .insert(module.node.alias.clone(), activation)
                     .is_some()
@@ -267,7 +288,9 @@ fn activation_fields<'a>(
             ModuleEntry::Id(value) => (&mut id, value),
             ModuleEntry::Version(value) => (&mut version, value),
             ModuleEntry::Pack(value) => (&mut pack, value),
-            ModuleEntry::Comment(_) | ModuleEntry::Blank => continue,
+            ModuleEntry::Override { .. } | ModuleEntry::Comment(_) | ModuleEntry::Blank => {
+                continue;
+            }
         };
         if slot.replace(field).is_some() {
             diagnostics.push(
@@ -308,6 +331,86 @@ fn activation_fields<'a>(
         return None;
     }
     Some((id, version, pack_id, pack_requirement))
+}
+
+fn lower_domain_overrides(
+    module: &Spanned<ModuleDecl>,
+) -> Result<Vec<DomainOverride>, Vec<Diagnostic>> {
+    let mut overrides = Vec::new();
+    let mut seen = BTreeMap::new();
+    let mut diagnostics = Vec::new();
+    for entry in &module.node.entries {
+        let ModuleEntry::Override { path, value } = &entry.node else {
+            continue;
+        };
+        if seen.insert(path.clone(), entry.span).is_some() {
+            diagnostics.push(
+                Diagnostic::error(
+                    "D145",
+                    format!(
+                        "domain override `{}` is declared more than once",
+                        path.join(".")
+                    ),
+                )
+                .with_span(entry.span)
+                .with_help("keep one replacement for each module export path"),
+            );
+            continue;
+        }
+        match constant_domain_value(&value.node) {
+            Some(value) => overrides.push(DomainOverride {
+                path: path.clone(),
+                value,
+            }),
+            None => diagnostics.push(
+                Diagnostic::error(
+                    "D144",
+                    "domain overrides require compile-time constant values",
+                )
+                .with_span(value.span)
+                .with_help("use a string, number, boolean, null, symbol, or list of constants"),
+            ),
+        }
+    }
+    overrides.sort_by(|left, right| left.path.cmp(&right.path));
+    if diagnostics.is_empty() {
+        Ok(overrides)
+    } else {
+        Err(diagnostics)
+    }
+}
+
+fn constant_domain_value(expression: &Expr) -> Option<DomainValue> {
+    match expression {
+        Expr::Literal(Literal::Null) => Some(DomainValue::Null),
+        Expr::Literal(Literal::Bool(value)) => Some(DomainValue::Bool(*value)),
+        Expr::Literal(Literal::Number(value)) if value.is_finite() => {
+            Some(DomainValue::Number(*value))
+        }
+        Expr::Literal(Literal::String(value)) => Some(DomainValue::String(value.clone())),
+        Expr::Literal(Literal::Symbol(value)) => Some(DomainValue::Symbol(value.clone())),
+        Expr::Path(path) if path.len() == 1 => Some(DomainValue::Symbol(path[0].clone())),
+        Expr::List(values) => values
+            .iter()
+            .map(|value| constant_domain_value(&value.node))
+            .collect::<Option<Vec<_>>>()
+            .map(DomainValue::List),
+        Expr::Unary {
+            operator: UnaryOperator::Negate,
+            operand,
+        } => match constant_domain_value(&operand.node) {
+            Some(DomainValue::Number(value)) if (-value).is_finite() => {
+                Some(DomainValue::Number(-value))
+            }
+            _ => None,
+        },
+        Expr::Unary { .. }
+        | Expr::Binary { .. }
+        | Expr::GrammarRef { .. }
+        | Expr::Call { .. }
+        | Expr::Path(_)
+        | Expr::Literal(_) => None,
+    }
 }
 
 fn domain_diagnostic(error: &DomainError, span: weave_core::Span) -> Diagnostic {
@@ -382,8 +485,7 @@ fn is_provenance_path(path: &str) -> bool {
 
 fn lower_domain_module(resolved: &ResolvedDomainModule) -> DomainModuleIr {
     let exports = resolved
-        .pack
-        .values
+        .effective_values
         .iter()
         .filter_map(|(name, value)| {
             let declaration = resolved.manifest.exports.get(name)?;
@@ -405,6 +507,14 @@ fn lower_domain_module(resolved: &ResolvedDomainModule) -> DomainModuleIr {
         pack_id: resolved.pack.id.clone(),
         pack_version: resolved.pack.version.clone(),
         exports,
+        authored_overrides: resolved
+            .authored_overrides
+            .iter()
+            .map(|authored| DomainOverrideIr {
+                path: authored.path.clone(),
+                value: lower_domain_value(&authored.value),
+            })
+            .collect(),
     }
 }
 
@@ -459,7 +569,7 @@ pub fn json_schema() -> Result<String, SerializeError> {
         );
         root.insert(
             "title".to_owned(),
-            serde_json::Value::String("Weave Story IR v3".to_owned()),
+            serde_json::Value::String("Weave Story IR v4".to_owned()),
         );
         root.insert(
             "x-weave-ir-version".to_owned(),

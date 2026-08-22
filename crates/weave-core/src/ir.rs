@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 3;
+pub const IR_VERSION: u32 = 4;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -61,6 +61,9 @@ pub struct DomainModuleIr {
     pub pack_version: String,
     /// Validated exported values in deterministic name order.
     pub exports: BTreeMap<String, DomainExportIr>,
+    /// Canonically ordered fictional replacements, separate from immutable pack defaults.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub authored_overrides: Vec<DomainOverrideIr>,
 }
 
 impl DomainModuleIr {
@@ -77,6 +80,15 @@ impl DomainModuleIr {
         }
         Some(value)
     }
+}
+
+/// One source-authored domain replacement retained for provenance-aware consumers.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct DomainOverrideIr {
+    /// Export path beginning with the export name.
+    pub path: Vec<String>,
+    /// Compile-time constant fictional value.
+    pub value: DomainValueIr,
 }
 
 /// One module export plus its runtime ownership boundary.

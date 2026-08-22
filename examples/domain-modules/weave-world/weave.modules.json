@@ -2,9 +2,11 @@
   "schema_version": 1,
   "registries": [],
   "manifests": [
-    "module.weave-module.json"
+    "module.weave-module.json",
+    "naming/module.weave-module.json"
   ],
   "packs": [
+    "naming/glasswind.weave-domain.json",
     "pack.weave-domain.json",
     "packs/british_columbia_temperate_forest.weave-domain.json",
     "packs/hokkaido_japan.weave-domain.json",

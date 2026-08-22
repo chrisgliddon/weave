@@ -1,0 +1,18 @@
+[package]
+name = "weave-world"
+description = "Host-independent resolution of authored Weave World places and inheritance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+weave-domain = { path = "../weave-domain" }
+
+[dev-dependencies]
+weave-compiler = { path = "../weave-compiler" }
+
+[lints]
+workspace = true

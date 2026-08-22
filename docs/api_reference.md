@@ -9,6 +9,7 @@ The documentation build regenerates rustdoc for every public integration crate a
 | `weave-runtime` | `Story`, `StoryEvent`, `StoryState`, `ChoiceView`, and `RuntimeError` | [Open rustdoc](api/weave_runtime/index.html) |
 | `weave-patterns` | `PatternSystem`, built-ins, `CommunityPackage`, `PackageRegistry`, package validation/publication, and `system_from_ir` | [Open rustdoc](api/weave_patterns/index.html) |
 | `weave-domain` | `ModuleManifest`, `DomainPack`, `DomainCatalog`, `DomainRegistry`, `DomainProjectConfig`, `DomainLock`, schema generation, validation, discovery, and deterministic resolution | [Open rustdoc](api/weave_domain/index.html) |
+| `weave-world` | `resolve_world`, `ResolvedWorld`, `ResolvedWorldPlace`, and recursive `WorldValueOrigin` lineage | [Open rustdoc](api/weave_world/index.html) |
 | `weave-world-corpus` | `PresetSource`, `CorpusIndex`, `build_pack`, `process_corpus`, and corpus schema generation | [Open rustdoc](api/weave_world_corpus/index.html) |
 | `weave-fmt` | `format_source` and `format_document` | [Open rustdoc](api/weave_fmt/index.html) |
 | `weave-bevy` | `WeavePlugin`, `WeaveStory`, observer events, and `WeaveCommandsExt` | [Open rustdoc](api/weave_bevy/index.html) |
@@ -18,6 +19,6 @@ The documentation build regenerates rustdoc for every public integration crate a
 
 ## Dependency rule
 
-Use `weave-domain` for portable module contracts, `weave-world-corpus` for offline environmental preset normalization, `weave-core` for source analysis, `weave-compiler` for checked lowering, and `weave-runtime` for execution. Pattern specialization stays behind `weave-patterns::PatternSystem`. Host integrations depend inward on those packages; contract and core code never depend on Bevy, GPUI, browser APIs, or editor protocols.
+Use `weave-domain` for portable module contracts, `weave-world-corpus` for offline environmental preset normalization, `weave-world` for host-independent authored-place inheritance, `weave-core` for source analysis, `weave-compiler` for checked lowering, and `weave-runtime` for execution. Pattern specialization stays behind `weave-patterns::PatternSystem`. Host integrations depend inward on those packages; contract and core code never depend on Bevy, GPUI, browser APIs, or editor protocols.
 
 The [architecture guide](architecture.md) defines the complete allowed dependency direction. Serialized hosts should also read the [JSON compatibility contract](json_format.md).

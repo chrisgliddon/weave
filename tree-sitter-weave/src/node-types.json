@@ -868,6 +868,10 @@
           "named": true
         },
         {
+          "type": "module_override_setting",
+          "named": true
+        },
+        {
           "type": "module_pack_setting",
           "named": true
         },
@@ -888,6 +892,32 @@
         "types": [
           {
             "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "module_override_setting",
+    "named": true,
+    "fields": {
+      "path": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "path_expression",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "expression",
             "named": true
           }
         ]
@@ -1582,6 +1612,10 @@
   },
   {
     "type": "or",
+    "named": false
+  },
+  {
+    "type": "override",
     "named": false
   },
   {

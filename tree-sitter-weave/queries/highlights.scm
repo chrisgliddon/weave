@@ -12,6 +12,7 @@
   "id"
   "version"
   "pack"
+  "override"
   "grammar"
   "pattern"
   "spread"

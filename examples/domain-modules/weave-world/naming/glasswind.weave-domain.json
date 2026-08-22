@@ -1,0 +1,54 @@
+{
+  "pack_format_version": 1,
+  "id": "glasswind_original_names",
+  "version": "1.0.0",
+  "title": "Glasswind Original Fictional Names",
+  "module": {
+    "id": "org.weave.world.naming",
+    "version": "=1.0.0"
+  },
+  "dependencies": [],
+  "values": {
+    "suggestions": {
+      "kind": "object",
+      "value": {
+        "harbor": {
+          "kind": "string",
+          "value": "Emberwake Harbor"
+        },
+        "region": {
+          "kind": "string",
+          "value": "Glasswind Reach"
+        },
+        "route": {
+          "kind": "string",
+          "value": "Lantern Road"
+        },
+        "site": {
+          "kind": "string",
+          "value": "Saltglass Point"
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_fictional_names",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world/naming",
+        "revision": "fictional-names-v1",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+        "attribution": "Original fictional names authored by Weave Contributors; no geographic or cultural inference was used.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "values.suggestions": [
+        "weave_fictional_names"
+      ]
+    }
+  }
+}

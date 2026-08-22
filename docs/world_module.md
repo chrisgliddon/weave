@@ -1,6 +1,6 @@
 # Weave World reference seeds
 
-Weave World is an optional data-only domain module. Four checked presets turn exact reference-place selectors into closed `WorldSeed` values that the compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read through the shared domain-module contract.
+Weave World is an optional data-only domain module. Four checked presets turn exact reference-place selectors into closed `WorldSeed` values, while a source-authored layer adds typed rules and stable fictional places without changing the selected pack. The compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read both layers through the shared domain-module contract.
 
 The checked fixture is [`examples/domain-modules/weave-world`](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world). It is an environmental seed for fictional authoring, not a cultural profile. The exported identity explicitly records `culture_included: false`; the preset does not infer people, language, naming, or behavior from geography.
 
@@ -11,8 +11,8 @@ The pack coordinate is the concise, versioned shorthand:
 ```weave
 module world {
     id: "org.weave.world"
-    version: "=1.0.0"
-    pack: "aotearoa_new_zealand@=1.0.0"
+    version: "=1.1.0"
+    pack: "aotearoa_new_zealand@=1.1.0"
 }
 
 VAR reference_name = world.seed.identity.display_name
@@ -33,10 +33,10 @@ The corpus deliberately covers different environments and geographic scales:
 
 | Preset coordinate | Scope | Climate cue | Primary biome |
 |---|---|---|---|
-| `aotearoa_new_zealand@=1.0.0` | Country, selected-station envelope | Temperate oceanic | Temperate broadleaf and mixed forest |
-| `hokkaido_japan@=1.0.0` | Region, representative grid point | Humid continental | Temperate broadleaf and mixed forest |
-| `maldives@=1.0.0` | Country, representative grid point | Tropical oceanic | Tropical and subtropical moist broadleaf forest |
-| `british_columbia_temperate_forest@=1.0.0` | Ecosystem, representative grid point | Temperate oceanic | Temperate conifer forest |
+| `aotearoa_new_zealand@=1.1.0` | Country, selected-station envelope | Temperate oceanic | Temperate broadleaf and mixed forest |
+| `hokkaido_japan@=1.1.0` | Region, representative grid point | Humid continental | Temperate broadleaf and mixed forest |
+| `maldives@=1.1.0` | Country, representative grid point | Tropical oceanic | Tropical and subtropical moist broadleaf forest |
+| `british_columbia_temperate_forest@=1.1.0` | Ecosystem, representative grid point | Temperate oceanic | Temperate conifer forest |
 
 Each preset has its own runnable `.weave` source and checked RON/JSON pair. A story activates one pack at a time because mutable domain state is isolated by module identity.
 
@@ -55,6 +55,52 @@ Each preset has its own runnable `.weave` source and checked RON/JSON pair. A st
 - evidence-backed weather cues plus deterministic environmental hazard tendencies.
 
 Every reference pack is deliberately approximate. A selected-station envelope or source-native grid point is not a local forecast, and broad symbols are authoring cues rather than exhaustive geographic claims. Hazard entries are tendencies derived by a closed threshold policy, never event forecasts, probabilities, or risk scores. Later fictional places and overrides should remain separate authored layers rather than silently changing a pinned source seed.
+
+## Author rules and stable places
+
+[`authored-setting.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.weave) is the complete fictional layer. It uses the generic module replacement syntax; the compiler contains no branch for the `org.weave.world` identity:
+
+```weave
+module world {
+    id: "org.weave.world"
+    version: "=1.1.0"
+    pack: "aotearoa_new_zealand@=1.1.0"
+
+    override rules.booleans.beacons_answer_storms: true
+    override rules.numbers.safe_crossing_temperature_c: 6
+
+    override places.glasswind_reach.id: "glasswind_reach"
+    override places.glasswind_reach.name: "Glasswind Reach"
+    override places.glasswind_reach.kind: region
+    override places.glasswind_reach.order: 0
+    override places.glasswind_reach.parent_id: ""
+    override places.glasswind_reach.related_place_ids: []
+    override places.glasswind_reach.environment_source: ""
+    override places.glasswind_reach.climate_source: ""
+
+    override places.emberwake_harbor.id: "emberwake_harbor"
+    override places.emberwake_harbor.name: "Emberwake Harbor"
+    override places.emberwake_harbor.kind: settlement
+    override places.emberwake_harbor.order: 0
+    override places.emberwake_harbor.parent_id: "glasswind_reach"
+    override places.emberwake_harbor.related_place_ids: []
+    override places.emberwake_harbor.environment_source: "glasswind_reach"
+    override places.emberwake_harbor.climate_source: "glasswind_reach"
+    override places.emberwake_harbor.environment_override.coastal: true
+}
+```
+
+`rules` is an extensible object split into Boolean, number, string, and symbolic-string maps, so a narrative reads a statically typed path such as `world.rules.booleans.beacons_answer_storms`. `places` is a bounded map keyed by stable lowercase ids. Changing `name` is a rename; it does not change the id used by `parent_id`, `related_place_ids`, environment/climate inheritance, narrative paths, or consumers. `order` controls deterministic presentation independently of JSON object order.
+
+Every place explicitly chooses `environment_source` and `climate_source`: the empty string means the immutable reference seed, while another stable place id inherits that place's effective values. Optional `environment_override`, `climate_override`, and type-separated `attributes` objects record local fictional decisions. Validation rejects mismatched map/id pairs, unknown or self references, duplicate/asymmetric relationships, and cycles in hierarchy or either inheritance graph.
+
+The editor's generic entity workflow reads `authoring.entity_collections` from the manifest. Create, rename, reorder, nest, relate, select inheritance, and reset-override actions rewrite canonical source and recompile atomically. `ModuleInspection` shows the effective hierarchy and marks pack values as inherited or generated and source replacements as authored. The host-independent `weave-world` crate additionally resolves each local climate/environment field and retains its recursive lineage—for example generated from `seed.primary_biome`, inherited through `glasswind_reach`, or authored at `places.emberwake_harbor.environment_override.coastal`.
+
+Compiled IR embeds effective `rules` and `places` for ordinary consumers and keeps the sorted fictional leaves in `authored_overrides`. The selected pack bytes and their public provenance remain unchanged. Checked RON and JSON are [`authored-setting.story.ron`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.story.ron) and [`authored-setting.story.json`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.story.json).
+
+## Optional names stay separate
+
+Environmental shorthand never proposes names. The default authored story activates only `org.weave.world`, retains `culture_included: false`, and uses names explicitly written by its author. A separately packaged optional `org.weave.world.naming` module demonstrates the extension boundary with four original fictional suggestions under `naming/`. Its manifest and pack are independently licensed `CC0-1.0`, say that no geographic or cultural inference was used, and are not activated by default. Projects with reviewed naming data can activate such a module explicitly; a geographic preset can never pull it in implicitly.
 
 ## Provenance and normalization
 
@@ -129,6 +175,8 @@ cargo run -p weave-compiler -- \
   --locked --format json --output target/reference-place.story.json
 ```
 
-Both files decode to the same `StoryIr` and embed the selected values, so hosts need neither the editor nor the source datasets. The finite [Bevy consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy) reads the RON into resources; the [PixiJS v8 consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) decodes the JSON with the same portable value reader.
+Compile the authored layer the same way, replacing the input and output names with `authored-setting`.
 
-The three additional checked story pairs live under `examples/domain-modules/weave-world/corpus/stories`. Keep cultural or linguistic material in a separately sourced, explicitly reviewed module; environmental reference shorthand must never synthesize it.
+Both forms decode to the same `StoryIr` and embed the selected seed plus any effective authored rules and places, so hosts need neither the editor nor the source datasets. The finite [Bevy consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy) reads the RON into resources; the [PixiJS v8 consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) decodes the JSON with the same portable value reader. Both tests assert the exact rule, stable hierarchy references, names, and authored replacement count.
+
+The three additional reference story pairs live under `examples/domain-modules/weave-world/corpus/stories`; the authored setting pair lives beside the reference story. Keep cultural or linguistic material in a separately sourced, explicitly reviewed module; environmental reference shorthand must never synthesize it.

@@ -1,0 +1,1205 @@
+StoryIr(
+    version: 4,
+    source_name: Some("examples/domain-modules/weave-world/authored-setting.weave"),
+    entry: "start",
+    globals: [],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "world": DomainModuleIr(
+            id: "org.weave.world",
+            version: "1.1.0",
+            pack_id: "aotearoa_new_zealand",
+            pack_version: "1.1.0",
+            exports: {
+                "places": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "emberwake_harbor": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "attributes": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "booleans": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "has_beacon": DomainValueIr(
+                                                        kind: bool,
+                                                        value: true,
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "climate_source": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "environment_override": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "coastal": DomainValueIr(
+                                                kind: bool,
+                                                value: true,
+                                            ),
+                                        },
+                                    ),
+                                    "environment_source": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "id": DomainValueIr(
+                                        kind: string,
+                                        value: "emberwake_harbor",
+                                    ),
+                                    "kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "settlement",
+                                    ),
+                                    "name": DomainValueIr(
+                                        kind: string,
+                                        value: "Emberwake Harbor",
+                                    ),
+                                    "order": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "parent_id": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "related_place_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "lantern_road",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "glasswind_reach": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "attributes": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "symbols": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "canon": DomainValueIr(
+                                                        kind: string,
+                                                        value: "authored",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "climate_source": DomainValueIr(
+                                        kind: string,
+                                        value: "",
+                                    ),
+                                    "environment_source": DomainValueIr(
+                                        kind: string,
+                                        value: "",
+                                    ),
+                                    "id": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "region",
+                                    ),
+                                    "name": DomainValueIr(
+                                        kind: string,
+                                        value: "Glasswind Reach",
+                                    ),
+                                    "order": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "parent_id": DomainValueIr(
+                                        kind: string,
+                                        value: "",
+                                    ),
+                                    "related_place_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [],
+                                    ),
+                                },
+                            ),
+                            "lantern_road": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "attributes": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "numbers": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "waystones": DomainValueIr(
+                                                        kind: number,
+                                                        value: 12.0,
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "climate_source": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "environment_source": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "id": DomainValueIr(
+                                        kind: string,
+                                        value: "lantern_road",
+                                    ),
+                                    "kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "route",
+                                    ),
+                                    "name": DomainValueIr(
+                                        kind: string,
+                                        value: "Lantern Road",
+                                    ),
+                                    "order": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "parent_id": DomainValueIr(
+                                        kind: string,
+                                        value: "glasswind_reach",
+                                    ),
+                                    "related_place_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "emberwake_harbor",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "saltglass_point": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "climate_override": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "annual_mean_temperature_c": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "maximum": DomainValueIr(
+                                                        kind: number,
+                                                        value: 14.0,
+                                                    ),
+                                                    "minimum": DomainValueIr(
+                                                        kind: number,
+                                                        value: 9.0,
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "climate_source": DomainValueIr(
+                                        kind: string,
+                                        value: "emberwake_harbor",
+                                    ),
+                                    "environment_source": DomainValueIr(
+                                        kind: string,
+                                        value: "emberwake_harbor",
+                                    ),
+                                    "id": DomainValueIr(
+                                        kind: string,
+                                        value: "saltglass_point",
+                                    ),
+                                    "kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "site",
+                                    ),
+                                    "name": DomainValueIr(
+                                        kind: string,
+                                        value: "Saltglass Point",
+                                    ),
+                                    "order": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "parent_id": DomainValueIr(
+                                        kind: string,
+                                        value: "emberwake_harbor",
+                                    ),
+                                    "related_place_ids": DomainValueIr(
+                                        kind: list,
+                                        value: [],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                ),
+                "rules": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "booleans": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "beacons_answer_storms": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                },
+                            ),
+                            "numbers": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "safe_crossing_temperature_c": DomainValueIr(
+                                        kind: number,
+                                        value: 6.0,
+                                    ),
+                                },
+                            ),
+                            "strings": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "calendar_note": DomainValueIr(
+                                        kind: string,
+                                        value: "Long dusk begins when the western beacons dim.",
+                                    ),
+                                },
+                            ),
+                            "symbols": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "travel_mode": DomainValueIr(
+                                        kind: string,
+                                        value: "tidebound",
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                ),
+                "seed": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "attribution": DomainValueIr(
+                                kind: string,
+                                value: "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+                            ),
+                            "biomes": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "montane_grassland_and_shrubland",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_broadleaf_and_mixed_forest",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_grassland_savanna_and_shrubland",
+                                    ),
+                                ],
+                            ),
+                            "climate": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "annual_mean_temperature_c": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "maximum": DomainValueIr(
+                                                kind: number,
+                                                value: 16.0,
+                                            ),
+                                            "minimum": DomainValueIr(
+                                                kind: number,
+                                                value: 8.8,
+                                            ),
+                                        },
+                                    ),
+                                    "annual_precipitation_mm": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "maximum": DomainValueIr(
+                                                kind: number,
+                                                value: 6545.1,
+                                            ),
+                                            "minimum": DomainValueIr(
+                                                kind: number,
+                                                value: 365.1,
+                                            ),
+                                        },
+                                    ),
+                                    "band": DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_oceanic",
+                                    ),
+                                    "confidence": DomainValueIr(
+                                        kind: symbol,
+                                        value: "representative_not_exhaustive",
+                                    ),
+                                    "reference_period": DomainValueIr(
+                                        kind: string,
+                                        value: "1991-2020",
+                                    ),
+                                    "source_resolution": DomainValueIr(
+                                        kind: string,
+                                        value: "Country-scale selected-station normals; coverage varies by published table.",
+                                    ),
+                                    "spatial_resolution": DomainValueIr(
+                                        kind: symbol,
+                                        value: "country_scale_selected_stations",
+                                    ),
+                                    "uncertainty": DomainValueIr(
+                                        kind: string,
+                                        value: "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate.",
+                                    ),
+                                    "units": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "precipitation": DomainValueIr(
+                                                kind: symbol,
+                                                value: "millimetres_per_year",
+                                            ),
+                                            "temperature": DomainValueIr(
+                                                kind: symbol,
+                                                value: "degrees_celsius",
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "context": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "approximation": DomainValueIr(
+                                        kind: symbol,
+                                        value: "selected_station_envelope",
+                                    ),
+                                    "geographic_resolution": DomainValueIr(
+                                        kind: symbol,
+                                        value: "country_scale_selected_stations",
+                                    ),
+                                    "uncertainty": DomainValueIr(
+                                        kind: string,
+                                        value: "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate.",
+                                    ),
+                                },
+                            ),
+                            "daylight": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "longest_daylight_hours": DomainValueIr(
+                                        kind: number,
+                                        value: 15.0,
+                                    ),
+                                    "method": DomainValueIr(
+                                        kind: symbol,
+                                        value: "astronomical_solstice_estimate",
+                                    ),
+                                    "representative_latitude_degrees": DomainValueIr(
+                                        kind: number,
+                                        value: -41.0,
+                                    ),
+                                    "shortest_daylight_hours": DomainValueIr(
+                                        kind: number,
+                                        value: 9.0,
+                                    ),
+                                    "unit": DomainValueIr(
+                                        kind: symbol,
+                                        value: "hours_per_day",
+                                    ),
+                                },
+                            ),
+                            "hazards": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "confidence": DomainValueIr(
+                                        kind: symbol,
+                                        value: "representative_not_exhaustive",
+                                    ),
+                                    "method": DomainValueIr(
+                                        kind: symbol,
+                                        value: "deterministic_environmental_thresholds_v1",
+                                    ),
+                                    "tendencies": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "heavy_precipitation",
+                                            ),
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "slope_instability",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "identity": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "culture_included": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "display_name": DomainValueIr(
+                                        kind: string,
+                                        value: "Aotearoa New Zealand",
+                                    ),
+                                    "preset": DomainValueIr(
+                                        kind: string,
+                                        value: "aotearoa_new_zealand",
+                                    ),
+                                    "reference_code": DomainValueIr(
+                                        kind: string,
+                                        value: "NZL",
+                                    ),
+                                    "reference_kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "country",
+                                    ),
+                                },
+                            ),
+                            "primary_biome": DomainValueIr(
+                                kind: symbol,
+                                value: "temperate_broadleaf_and_mixed_forest",
+                            ),
+                            "seasonality": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "coolest_month": DomainValueIr(
+                                        kind: symbol,
+                                        value: "july",
+                                    ),
+                                    "hemisphere": DomainValueIr(
+                                        kind: symbol,
+                                        value: "southern",
+                                    ),
+                                    "warmest_months": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "january",
+                                            ),
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "february",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "terrain": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "coastal",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "island",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "mountain",
+                                    ),
+                                ],
+                            ),
+                            "water": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "coastal": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                    "island_system": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                    "setting": DomainValueIr(
+                                        kind: symbol,
+                                        value: "oceanic_islands",
+                                    ),
+                                },
+                            ),
+                            "weather_tendencies": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "alpine_cooling",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "regional_rainfall_contrast",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "seasonal_temperature_cycle",
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ),
+            },
+            authored_overrides: [
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "attributes",
+                        "booleans",
+                        "has_beacon",
+                    ],
+                    value: DomainValueIr(
+                        kind: bool,
+                        value: true,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "climate_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "environment_override",
+                        "coastal",
+                    ],
+                    value: DomainValueIr(
+                        kind: bool,
+                        value: true,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "environment_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "emberwake_harbor",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "kind",
+                    ],
+                    value: DomainValueIr(
+                        kind: symbol,
+                        value: "settlement",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "name",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "Emberwake Harbor",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "order",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 0.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "parent_id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "emberwake_harbor",
+                        "related_place_ids",
+                    ],
+                    value: DomainValueIr(
+                        kind: list,
+                        value: [
+                            DomainValueIr(
+                                kind: string,
+                                value: "lantern_road",
+                            ),
+                        ],
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "attributes",
+                        "symbols",
+                        "canon",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "authored",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "climate_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "environment_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "kind",
+                    ],
+                    value: DomainValueIr(
+                        kind: symbol,
+                        value: "region",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "name",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "Glasswind Reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "order",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 0.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "parent_id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "glasswind_reach",
+                        "related_place_ids",
+                    ],
+                    value: DomainValueIr(
+                        kind: list,
+                        value: [],
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "attributes",
+                        "numbers",
+                        "waystones",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 12.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "climate_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "environment_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "lantern_road",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "kind",
+                    ],
+                    value: DomainValueIr(
+                        kind: symbol,
+                        value: "route",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "name",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "Lantern Road",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "order",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 1.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "parent_id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "glasswind_reach",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "lantern_road",
+                        "related_place_ids",
+                    ],
+                    value: DomainValueIr(
+                        kind: list,
+                        value: [
+                            DomainValueIr(
+                                kind: string,
+                                value: "emberwake_harbor",
+                            ),
+                        ],
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "climate_override",
+                        "annual_mean_temperature_c",
+                        "maximum",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 14.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "climate_override",
+                        "annual_mean_temperature_c",
+                        "minimum",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 9.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "climate_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "emberwake_harbor",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "environment_source",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "emberwake_harbor",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "saltglass_point",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "kind",
+                    ],
+                    value: DomainValueIr(
+                        kind: symbol,
+                        value: "site",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "name",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "Saltglass Point",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "order",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 0.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "parent_id",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "emberwake_harbor",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "places",
+                        "saltglass_point",
+                        "related_place_ids",
+                    ],
+                    value: DomainValueIr(
+                        kind: list,
+                        value: [],
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "rules",
+                        "booleans",
+                        "beacons_answer_storms",
+                    ],
+                    value: DomainValueIr(
+                        kind: bool,
+                        value: true,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "rules",
+                        "numbers",
+                        "safe_crossing_temperature_c",
+                    ],
+                    value: DomainValueIr(
+                        kind: number,
+                        value: 6.0,
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "rules",
+                        "strings",
+                        "calendar_note",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "Long dusk begins when the western beacons dim.",
+                    ),
+                ),
+                DomainOverrideIr(
+                    path: [
+                        "rules",
+                        "symbols",
+                        "travel_mode",
+                    ],
+                    value: DomainValueIr(
+                        kind: string,
+                        value: "tidebound",
+                    ),
+                ),
+            ],
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 2889,
+                        end: 3060,
+                        line: 57,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "rules",
+                                            "booleans",
+                                            "beacons_answer_storms",
+                                        ],
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 2938,
+                                                end: 3010,
+                                                line: 58,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "The beacons answer the storm above ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "world",
+                                                                    "places",
+                                                                    "emberwake_harbor",
+                                                                    "name",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ".",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 3023,
+                                        end: 3058,
+                                        line: 60,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "The harbor keeps an ordinary watch.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 3061,
+                        end: 3142,
+                        line: 62,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: text,
+                        value: Template(
+                            parts: [
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: "The ",
+                                ),
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "places",
+                                            "lantern_road",
+                                            "name",
+                                        ],
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: " crosses ",
+                                ),
+                                TemplatePartIr(
+                                    kind: expression,
+                                    value: Expression(
+                                        kind: path,
+                                        value: [
+                                            "world",
+                                            "places",
+                                            "glasswind_reach",
+                                            "name",
+                                        ],
+                                    ),
+                                ),
+                                TemplatePartIr(
+                                    kind: text,
+                                    value: ".",
+                                ),
+                            ],
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 3143,
+                        end: 3149,
+                        line: 63,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

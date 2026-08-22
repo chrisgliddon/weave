@@ -8,8 +8,8 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 |---|---:|---|
 | Language specification | `0.1.0` | [`language_guide.md`](language_guide.md) |
 | Rust workspace packages | `0.1.0` | Root `Cargo.toml` |
-| Serialized story IR | `3` | `weave_core::ir::IR_VERSION` |
-| JSON Schema | IR `3` | [`json_format.md`](json_format.md) |
+| Serialized story IR | `4` | `weave_core::ir::IR_VERSION` |
+| JSON Schema | IR `4` | [`json_format.md`](json_format.md) |
 | Saved browser state | `1` | `weave_web::WEB_STATE_VERSION` |
 | Pattern model | `1` | `weave_patterns::PATTERN_MODEL_VERSION` |
 | Community pattern package | `1` | [`community_patterns.md`](community_patterns.md) |

@@ -2,10 +2,10 @@
   "contract_version": 1,
   "pack_format_version": 1,
   "id": "org.weave.world",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "namespace": "world",
   "title": "Weave World",
-  "summary": "Typed environmental reference seeds for fictional world authoring.",
+  "summary": "Typed environmental reference seeds and stable authored layers for fictional world building.",
   "authors": [
     {
       "name": "Weave Contributors",
@@ -64,6 +64,35 @@
         "temperate_oceanic",
         "tropical_oceanic"
       ]
+    },
+    "ClimateOverride": {
+      "kind": "object",
+      "fields": {
+        "annual_mean_temperature_c": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": false,
+          "description": "Optional fictional annual mean temperature range in degrees Celsius."
+        },
+        "annual_precipitation_mm": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": false,
+          "description": "Optional fictional annual precipitation range in millimetres per year."
+        },
+        "band": {
+          "type": {
+            "kind": "named",
+            "name": "ClimateBand"
+          },
+          "required": false,
+          "description": "Optional fictional broad climate band."
+        }
+      }
     },
     "ClimateSummary": {
       "kind": "object",
@@ -239,6 +268,67 @@
         "hours_per_day"
       ]
     },
+    "EnvironmentOverride": {
+      "kind": "object",
+      "fields": {
+        "coastal": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": false,
+          "description": "Optional fictional coastal setting decision."
+        },
+        "island_system": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": false,
+          "description": "Optional fictional island-system setting decision."
+        },
+        "primary_biome": {
+          "type": {
+            "kind": "named",
+            "name": "Biome"
+          },
+          "required": false,
+          "description": "Optional fictional local biome override."
+        },
+        "terrain": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "Terrain"
+            },
+            "min_items": 0,
+            "max_items": 8
+          },
+          "required": false,
+          "description": "Optional fictional local terrain override."
+        },
+        "water_setting": {
+          "type": {
+            "kind": "named",
+            "name": "WaterSetting"
+          },
+          "required": false,
+          "description": "Optional fictional local water-setting override."
+        },
+        "weather_tendencies": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "WeatherTendency"
+            },
+            "min_items": 0,
+            "max_items": 8
+          },
+          "required": false,
+          "description": "Optional fictional local weather-tendency override."
+        }
+      }
+    },
     "FactContext": {
       "kind": "object",
       "fields": {
@@ -369,6 +459,17 @@
         }
       }
     },
+    "PlaceKind": {
+      "kind": "symbol",
+      "values": [
+        "region",
+        "route",
+        "settlement",
+        "site",
+        "territory",
+        "world"
+      ]
+    },
     "PrecipitationUnit": {
       "kind": "symbol",
       "values": [
@@ -450,6 +551,66 @@
         "plain",
         "volcanic"
       ]
+    },
+    "TypedAttributes": {
+      "kind": "object",
+      "fields": {
+        "booleans": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "bool"
+            },
+            "min_entries": 0,
+            "max_entries": 64
+          },
+          "required": false,
+          "description": "Extensible boolean attributes keyed by stable authored names."
+        },
+        "numbers": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "number",
+              "integer": false,
+              "minimum": -1000000000.0,
+              "maximum": 1000000000.0
+            },
+            "min_entries": 0,
+            "max_entries": 64
+          },
+          "required": false,
+          "description": "Extensible finite numeric attributes keyed by stable authored names."
+        },
+        "strings": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "string",
+              "min_length": 0,
+              "max_length": 512
+            },
+            "min_entries": 0,
+            "max_entries": 64
+          },
+          "required": false,
+          "description": "Extensible free-text attributes keyed by stable authored names."
+        },
+        "symbols": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 64
+            },
+            "min_entries": 0,
+            "max_entries": 64
+          },
+          "required": false,
+          "description": "Extensible symbolic attributes stored as explicit stable tokens."
+        }
+      }
     },
     "WaterContext": {
       "kind": "object",
@@ -548,6 +709,112 @@
           },
           "required": true,
           "description": "Geographic scope represented by the seed."
+        }
+      }
+    },
+    "WorldPlace": {
+      "kind": "object",
+      "fields": {
+        "attributes": {
+          "type": {
+            "kind": "named",
+            "name": "TypedAttributes"
+          },
+          "required": false,
+          "description": "Optional extensible attributes separated by portable value type."
+        },
+        "climate_override": {
+          "type": {
+            "kind": "named",
+            "name": "ClimateOverride"
+          },
+          "required": false,
+          "description": "Optional authored local climate decisions."
+        },
+        "climate_source": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 64
+          },
+          "required": true,
+          "description": "Place id to inherit climate from; empty inherits the reference seed."
+        },
+        "environment_override": {
+          "type": {
+            "kind": "named",
+            "name": "EnvironmentOverride"
+          },
+          "required": false,
+          "description": "Optional authored local environment decisions."
+        },
+        "environment_source": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 64
+          },
+          "required": true,
+          "description": "Place id to inherit environment from; empty inherits the reference seed."
+        },
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 64
+          },
+          "required": true,
+          "description": "Stable authored place identifier equal to its map key."
+        },
+        "kind": {
+          "type": {
+            "kind": "named",
+            "name": "PlaceKind"
+          },
+          "required": true,
+          "description": "Broad structural role of this fictional place."
+        },
+        "name": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Author-supplied fictional display name; changing it preserves the id."
+        },
+        "order": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 100000.0
+          },
+          "required": true,
+          "description": "Deterministic sibling ordering independent of map serialization order."
+        },
+        "parent_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 64
+          },
+          "required": true,
+          "description": "Parent place id; empty identifies a hierarchy root."
+        },
+        "related_place_ids": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 64
+            },
+            "min_items": 0,
+            "max_items": 32
+          },
+          "required": true,
+          "description": "Unique symmetric references to related stable place ids."
         }
       }
     },
@@ -670,6 +937,29 @@
     }
   },
   "exports": {
+    "places": {
+      "type": {
+        "kind": "map",
+        "values": {
+          "kind": "named",
+          "name": "WorldPlace"
+        },
+        "min_entries": 0,
+        "max_entries": 1024
+      },
+      "required": false,
+      "source": "pack",
+      "description": "Stable fictional places authored over the selected environmental reference seed."
+    },
+    "rules": {
+      "type": {
+        "kind": "named",
+        "name": "TypedAttributes"
+      },
+      "required": false,
+      "source": "pack",
+      "description": "Typed, namespaced fictional world rules available to narrative and host consumers."
+    },
     "seed": {
       "type": {
         "kind": "named",
@@ -680,13 +970,29 @@
       "description": "The deterministic environmental world seed selected by the active reference-place pack."
     }
   },
+  "authoring": {
+    "entity_collections": [
+      {
+        "export": "places",
+        "id_field": "id",
+        "label_field": "name",
+        "order_field": "order",
+        "parent_field": "parent_id",
+        "relation_field": "related_place_ids",
+        "inheritance_fields": [
+          "climate_source",
+          "environment_source"
+        ]
+      }
+    ]
+  },
   "provenance": {
     "sources": [
       {
         "id": "weave_world_module",
         "kind": "original",
         "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
-        "revision": "world-contract-v1",
+        "revision": "world-contract-v1.1",
         "license": "MIT",
         "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
         "attribution": "Original Weave World schema authored by Weave Contributors.",
@@ -695,7 +1001,19 @@
     ],
     "transformations": [],
     "claims": {
+      "authoring.entity_collections": [
+        "weave_world_module"
+      ],
+      "exports.places": [
+        "weave_world_module"
+      ],
+      "exports.rules": [
+        "weave_world_module"
+      ],
       "exports.seed": [
+        "weave_world_module"
+      ],
+      "types.WorldPlace": [
         "weave_world_module"
       ],
       "types.WorldSeed": [

@@ -1,5 +1,5 @@
 StoryIr(
-    version: 3,
+    version: 4,
     source_name: Some("examples/domain-modules/weave-world/reference-place.weave"),
     entry: "start",
     globals: [
@@ -59,9 +59,9 @@ StoryIr(
     modules: {
         "world": DomainModuleIr(
             id: "org.weave.world",
-            version: "1.0.0",
+            version: "1.1.0",
             pack_id: "aotearoa_new_zealand",
-            pack_version: "1.0.0",
+            pack_version: "1.1.0",
             exports: {
                 "seed": DomainExportIr(
                     source: pack,

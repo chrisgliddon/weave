@@ -8,6 +8,7 @@ members = [
     "crates/weave-patterns",
     "crates/weave-runtime",
     "crates/weave-web",
+    "crates/weave-world",
     "crates/weave-world-corpus",
     "crates/weave-lsp",
     "editor",

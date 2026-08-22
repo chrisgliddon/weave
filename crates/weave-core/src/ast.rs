@@ -146,6 +146,13 @@ pub enum ModuleEntry {
     Version(String),
     /// Pack selector in `pack_id@version_requirement` form.
     Pack(String),
+    /// Compile-time constant replacement at one typed module export path.
+    Override {
+        /// Export path beginning with the export name.
+        path: Vec<String>,
+        /// Source-authored replacement value.
+        value: Spanned<Expr>,
+    },
     /// Source comment without its marker.
     Comment(String),
     /// Blank source line.

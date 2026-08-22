@@ -4,6 +4,7 @@ import britishColumbiaStory from "../../domain-modules/weave-world/corpus/storie
 import hokkaidoStory from "../../domain-modules/weave-world/corpus/stories/hokkaido-japan.story.json";
 import maldivesStory from "../../domain-modules/weave-world/corpus/stories/maldives.story.json";
 import newZealandStory from "../../domain-modules/weave-world/reference-place.story.json";
+import authoredWorldStory from "../../domain-modules/weave-world/authored-setting.story.json";
 
 import { readModuleExport } from "./domain-values.js";
 
@@ -22,6 +23,17 @@ try {
       return `${name} · ${climate} · ${biome}`;
     },
   );
+  const harbor = readModuleExport(authoredWorldStory, "world", [
+    "places",
+    "emberwake_harbor",
+    "name",
+  ]);
+  const road = readModuleExport(authoredWorldStory, "world", ["places", "lantern_road", "name"]);
+  const beaconRule = readModuleExport(authoredWorldStory, "world", [
+    "rules",
+    "booleans",
+    "beacons_answer_storms",
+  ]);
 
   const app = new Application();
   await app.init({
@@ -35,7 +47,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${harbor} → ${road} · beacons ${beaconRule ? "answer" : "sleep"}\n\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: "#f2ecff",
@@ -49,7 +61,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read the same tracer and four compiled Weave World JSON exports as the Bevy example.";
+    "PixiJS read the same tracer, four reference seeds, and authored World layer as the Bevy example.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

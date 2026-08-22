@@ -79,6 +79,31 @@ fn build_module(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> 
                     span,
                 ));
             }
+            Rule::module_override_decl => {
+                let span = span_for(&inner);
+                let mut parts = inner.into_inner();
+                let Some(path_pair) = parts.next() else {
+                    diagnostics.push(internal_parser_error("module override has no export path"));
+                    continue;
+                };
+                let path = path_pair
+                    .into_inner()
+                    .filter(|item| item.as_rule() == Rule::identifier)
+                    .map(|item| item.as_str().to_owned())
+                    .collect::<Vec<_>>();
+                let Some(value_pair) = parts.next() else {
+                    diagnostics.push(internal_parser_error(
+                        "module override has no replacement value",
+                    ));
+                    continue;
+                };
+                match build_expression(value_pair, 0, 1, 1) {
+                    Ok(value) => {
+                        entries.push(Spanned::new(ModuleEntry::Override { path, value }, span))
+                    }
+                    Err(error) => diagnostics.push(error),
+                }
+            }
             Rule::module_id_decl | Rule::module_version_decl | Rule::module_pack_decl => {
                 let rule = inner.as_rule();
                 let span = span_for(&inner);

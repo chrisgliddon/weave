@@ -57,6 +57,7 @@ export default grammar({
       $.module_id_setting,
       $.module_version_setting,
       $.module_pack_setting,
+      $.module_override_setting,
     ),
 
     module_id_setting: $ => seq("id", ":", field("value", $.string)),
@@ -64,6 +65,13 @@ export default grammar({
     module_version_setting: $ => seq("version", ":", field("value", $.string)),
 
     module_pack_setting: $ => seq("pack", ":", field("value", $.string)),
+
+    module_override_setting: $ => seq(
+      "override",
+      field("path", $.path_expression),
+      ":",
+      field("value", $.expression),
+    ),
 
     grammar_declaration: $ => seq(
       "grammar",

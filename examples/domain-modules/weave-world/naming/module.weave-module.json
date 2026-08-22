@@ -1,0 +1,63 @@
+{
+  "contract_version": 1,
+  "pack_format_version": 1,
+  "id": "org.weave.world.naming",
+  "version": "1.0.0",
+  "namespace": "world_names",
+  "title": "Weave World Fictional Naming",
+  "summary": "Optional original fictional name suggestions kept separate from environmental reference presets.",
+  "authors": [
+    {
+      "name": "Weave Contributors",
+      "url": "https://github.com/chrisgliddon/weave"
+    }
+  ],
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "capabilities": [
+    {
+      "id": "data",
+      "version": 1
+    }
+  ],
+  "dependencies": [],
+  "types": {},
+  "exports": {
+    "suggestions": {
+      "type": {
+        "kind": "map",
+        "values": {
+          "kind": "string",
+          "min_length": 1,
+          "max_length": 128
+        },
+        "min_entries": 1,
+        "max_entries": 64
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Original fictional names keyed by neutral authoring role; never inferred from geography or culture."
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_fictional_names",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world/naming",
+        "revision": "fictional-names-v1",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+        "attribution": "Original fictional names authored by Weave Contributors; no geographic or cultural inference was used.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "exports.suggestions": [
+        "weave_fictional_names"
+      ]
+    }
+  }
+}

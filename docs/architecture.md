@@ -7,6 +7,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 | Package | Responsibility | May depend on |
 |---|---|---|
 | `weave-domain` | Host-independent domain-module contracts, immutable registry packaging, bounded project discovery, exact locks, deterministic resolution, and provenance | General-purpose serialization, hashing, schema, semantic-version, and URL crates only |
+| `weave-world` | Host-independent resolution of stable fictional places, typed rules, environment/climate inheritance, and recursive value lineage | `weave-domain` only; never parser, compiler, runtime, editor, network, or engine APIs |
 | `weave-world-corpus` | Versioned offline normalization of reviewed climate and environmental source records into canonical Weave World packs | `weave-domain` plus general-purpose CLI, schema, semantic-version, and serialization crates; never parser, compiler, runtime, or network clients |
 | `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | `weave-domain` plus general-purpose parsing and serialization crates |
 | `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
@@ -23,6 +24,7 @@ The dependency direction is:
 
 ```text
 weave-domain
+├── weave-world
 ├── weave-world-corpus
 └── weave-core
     ├── weave-patterns
@@ -47,9 +49,9 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
 
-`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. It owns immutable registry layout, checksum verification, project-relative discovery, dependency closure, and exact locks as well as portable values. `weave-core` consumes those value types; the compiler resolves a bounded `DomainCatalog` and lowers selected values into IR 3; runtime, editor, Bevy, and browser boundaries consume that shared representation rather than defining host-specific module models. The complete contract, packaging, activation, compatibility, provenance, and tracer rules are in the [domain-module guide](domain_modules.md).
+`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. It owns immutable registry layout, checksum verification, project-relative discovery, dependency closure, and exact locks as well as portable values. `weave-core` consumes those value types; the compiler resolves a bounded `DomainCatalog` and lowers selected effective values plus authored provenance into IR 4; runtime, editor, Bevy, and browser boundaries consume that shared representation rather than defining host-specific module models. The complete contract, packaging, activation, compatibility, provenance, and tracer rules are in the [domain-module guide](domain_modules.md).
 
-`weave-world-corpus` is a domain-specific authoring tool above that contract. It reads only versioned local records, applies closed unit, approximation, daylight, and hazard policies, and asks `weave-domain` to validate its generated packs. It does not acquire data, parse `.weave`, execute stories, or add World concepts to the shared compiler/runtime boundary.
+`weave-world-corpus` is a domain-specific authoring tool above that contract. It reads only versioned local records, applies closed unit, approximation, daylight, and hazard policies, and asks `weave-domain` to validate its generated packs. It does not acquire data, parse `.weave`, execute stories, or add World concepts to the shared compiler/runtime boundary. `weave-world` is the complementary read-only resolver: given one already validated activation, it resolves fictional place environment/climate inheritance and reports generated, inherited, and authored lineage without source parsing or host dependencies.
 
 `tree-sitter-weave` is intentionally independent of `weave-core`: editors can parse unfinished source without linking the compiler. Its grammar and queries must track the normative language guide, and its npm package, Rust crate, grammar metadata, and language-specification version are released together.
 

@@ -1,0 +1,1392 @@
+{
+  "$defs": {
+    "BinaryOperatorIr": {
+      "description": "Runtime binary operator.",
+      "oneOf": [
+        {
+          "const": "add",
+          "description": "Addition or string concatenation.",
+          "type": "string"
+        },
+        {
+          "const": "subtract",
+          "description": "Subtraction.",
+          "type": "string"
+        },
+        {
+          "const": "multiply",
+          "description": "Multiplication.",
+          "type": "string"
+        },
+        {
+          "const": "divide",
+          "description": "Division.",
+          "type": "string"
+        },
+        {
+          "const": "remainder",
+          "description": "Remainder.",
+          "type": "string"
+        },
+        {
+          "const": "equal",
+          "description": "Equality.",
+          "type": "string"
+        },
+        {
+          "const": "not_equal",
+          "description": "Inequality.",
+          "type": "string"
+        },
+        {
+          "const": "less",
+          "description": "Less than.",
+          "type": "string"
+        },
+        {
+          "const": "less_equal",
+          "description": "Less than or equal.",
+          "type": "string"
+        },
+        {
+          "const": "greater",
+          "description": "Greater than.",
+          "type": "string"
+        },
+        {
+          "const": "greater_equal",
+          "description": "Greater than or equal.",
+          "type": "string"
+        },
+        {
+          "const": "in",
+          "description": "Membership.",
+          "type": "string"
+        },
+        {
+          "const": "and",
+          "description": "Short-circuit conjunction.",
+          "type": "string"
+        },
+        {
+          "const": "or",
+          "description": "Short-circuit disjunction.",
+          "type": "string"
+        }
+      ]
+    },
+    "BuiltinPatternIr": {
+      "description": "Built-in pattern data set and algorithm.",
+      "oneOf": [
+        {
+          "const": "tarot",
+          "description": "Complete 78-card tarot system.",
+          "type": "string"
+        },
+        {
+          "const": "i_ching",
+          "description": "Complete 64-hexagram I-Ching system.",
+          "type": "string"
+        },
+        {
+          "const": "elder_futhark",
+          "description": "Complete 24-rune Elder Futhark system.",
+          "type": "string"
+        }
+      ]
+    },
+    "ChoiceIr": {
+      "description": "Compiled choice branch.",
+      "properties": {
+        "body": {
+          "description": "Instructions executed after selection.",
+          "items": {
+            "$ref": "#/$defs/Instruction"
+          },
+          "type": "array"
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional eligibility condition."
+        },
+        "divert": {
+          "description": "Optional target executed after the body.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Deterministic identifier used for once-choice state.",
+          "type": "string"
+        },
+        "once": {
+          "description": "Whether the choice disappears after selection.",
+          "type": "boolean"
+        },
+        "text": {
+          "$ref": "#/$defs/Template",
+          "description": "Rendered author-facing label."
+        }
+      },
+      "required": [
+        "id",
+        "once",
+        "text",
+        "body"
+      ],
+      "type": "object"
+    },
+    "ConditionalBranchIr": {
+      "description": "One compiled conditional branch.",
+      "properties": {
+        "body": {
+          "description": "Instructions executed when true.",
+          "items": {
+            "$ref": "#/$defs/Instruction"
+          },
+          "type": "array"
+        },
+        "condition": {
+          "$ref": "#/$defs/Expression",
+          "description": "Boolean condition."
+        }
+      },
+      "required": [
+        "condition",
+        "body"
+      ],
+      "type": "object"
+    },
+    "ConditionalIr": {
+      "description": "Ordered conditional branches.",
+      "properties": {
+        "branches": {
+          "description": "Conditional branches in source order.",
+          "items": {
+            "$ref": "#/$defs/ConditionalBranchIr"
+          },
+          "type": "array"
+        },
+        "fallback": {
+          "description": "Optional final fallback.",
+          "items": {
+            "$ref": "#/$defs/Instruction"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "branches"
+      ],
+      "type": "object"
+    },
+    "DeclarationIr": {
+      "description": "Compiled declaration.",
+      "properties": {
+        "allowed_states": {
+          "description": "Allowed symbols for state machines.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/VariableKindIr",
+          "description": "Explicit declaration kind."
+        },
+        "name": {
+          "description": "Story-scoped name.",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Expression",
+          "description": "Initial value."
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "value",
+        "allowed_states"
+      ],
+      "type": "object"
+    },
+    "DomainExportIr": {
+      "description": "One module export plus its runtime ownership boundary.",
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/DomainExportSourceIr",
+          "description": "Whether the value remains immutable pack data or initializes module-owned state."
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValueIr",
+          "description": "Validated initial value."
+        }
+      },
+      "required": [
+        "source",
+        "value"
+      ],
+      "type": "object"
+    },
+    "DomainExportSourceIr": {
+      "description": "Ownership of one compiled domain export.",
+      "oneOf": [
+        {
+          "const": "pack",
+          "description": "Immutable value embedded from a selected pack.",
+          "type": "string"
+        },
+        {
+          "const": "state",
+          "description": "Initial value copied into isolated, versioned runtime state.",
+          "type": "string"
+        }
+      ]
+    },
+    "DomainModuleIr": {
+      "description": "One exact, validated domain-module activation embedded for runtime hosts.",
+      "properties": {
+        "authored_overrides": {
+          "description": "Canonically ordered fictional replacements, separate from immutable pack defaults.",
+          "items": {
+            "$ref": "#/$defs/DomainOverrideIr"
+          },
+          "type": "array"
+        },
+        "exports": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainExportIr"
+          },
+          "description": "Validated exported values in deterministic name order.",
+          "type": "object"
+        },
+        "id": {
+          "description": "Globally stable module identity.",
+          "type": "string"
+        },
+        "pack_id": {
+          "description": "Exact selected pack identity.",
+          "type": "string"
+        },
+        "pack_version": {
+          "description": "Exact selected pack semantic version.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact selected module semantic version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "pack_id",
+        "pack_version",
+        "exports"
+      ],
+      "type": "object"
+    },
+    "DomainOverrideIr": {
+      "description": "One source-authored domain replacement retained for provenance-aware consumers.",
+      "properties": {
+        "path": {
+          "description": "Export path beginning with the export name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValueIr",
+          "description": "Compile-time constant fictional value."
+        }
+      },
+      "required": [
+        "path",
+        "value"
+      ],
+      "type": "object"
+    },
+    "DomainValueIr": {
+      "description": "Unambiguous portable domain value embedded in story IR.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 string.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing symbol.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValueIr"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Deterministically ordered fields.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValueIr"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Expression": {
+      "description": "Runtime expression, deliberately separate from the source AST.",
+      "oneOf": [
+        {
+          "description": "Scalar value.",
+          "properties": {
+            "kind": {
+              "const": "literal",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ValueLiteral"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Ordered list value.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/Expression"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Story variable or field path.",
+          "properties": {
+            "kind": {
+              "const": "path",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Grammar expansion used as an expression.",
+          "properties": {
+            "kind": {
+              "const": "grammar_ref",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "grammar": {
+                  "description": "Explicit grammar name.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rule": {
+                  "description": "Rule name.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "rule"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Reserved compiler-recognized call.",
+          "properties": {
+            "kind": {
+              "const": "call",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "arguments": {
+                  "description": "Arguments.",
+                  "items": {
+                    "$ref": "#/$defs/Expression"
+                  },
+                  "type": "array"
+                },
+                "path": {
+                  "description": "Dotted function path.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "path",
+                "arguments"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Unary operation.",
+          "properties": {
+            "kind": {
+              "const": "unary",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "operand": {
+                  "$ref": "#/$defs/Expression",
+                  "description": "Operand."
+                },
+                "operator": {
+                  "$ref": "#/$defs/UnaryOperatorIr",
+                  "description": "Operator."
+                }
+              },
+              "required": [
+                "operator",
+                "operand"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Binary operation.",
+          "properties": {
+            "kind": {
+              "const": "binary",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "left": {
+                  "$ref": "#/$defs/Expression",
+                  "description": "Left operand."
+                },
+                "operator": {
+                  "$ref": "#/$defs/BinaryOperatorIr",
+                  "description": "Operator."
+                },
+                "right": {
+                  "$ref": "#/$defs/Expression",
+                  "description": "Right operand."
+                }
+              },
+              "required": [
+                "left",
+                "operator",
+                "right"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "GrammarIr": {
+      "description": "Compiled generative grammar.",
+      "properties": {
+        "rules": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/Template"
+            },
+            "type": "array"
+          },
+          "description": "Sorted rules, each with one or more uniform alternatives.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "rules"
+      ],
+      "type": "object"
+    },
+    "Instruction": {
+      "description": "One source-spanned executable instruction.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/InstructionKind",
+          "description": "Runtime operation."
+        },
+        "span": {
+          "$ref": "#/$defs/Span",
+          "description": "Author-facing source location."
+        }
+      },
+      "required": [
+        "span",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "InstructionKind": {
+      "description": "Runtime operation.",
+      "oneOf": [
+        {
+          "description": "Deliver one rendered narrative line.",
+          "properties": {
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Template"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Declare or reset a story value.",
+          "properties": {
+            "kind": {
+              "const": "declare",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/DeclarationIr"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Assign an existing story value.",
+          "properties": {
+            "kind": {
+              "const": "assign",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "name": {
+                  "description": "Target name.",
+                  "type": "string"
+                },
+                "value": {
+                  "$ref": "#/$defs/Expression",
+                  "description": "New value."
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Append or remove one list member.",
+          "properties": {
+            "kind": {
+              "const": "mutate_list",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "name": {
+                  "description": "Target list.",
+                  "type": "string"
+                },
+                "operation": {
+                  "$ref": "#/$defs/ListOperationIr",
+                  "description": "Operation."
+                },
+                "value": {
+                  "$ref": "#/$defs/Expression",
+                  "description": "Member value."
+                }
+              },
+              "required": [
+                "operation",
+                "name",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "One member of an adjacent runtime choice set.",
+          "properties": {
+            "kind": {
+              "const": "choice",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ChoiceIr"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Ordered conditional branch set.",
+          "properties": {
+            "kind": {
+              "const": "conditional",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ConditionalIr"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Replace the execution stack with another knot.",
+          "properties": {
+            "kind": {
+              "const": "divert",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Call another knot and return on natural completion.",
+          "properties": {
+            "kind": {
+              "const": "thread",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "End the story.",
+          "properties": {
+            "kind": {
+              "const": "end",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "KnotIr": {
+      "description": "Compiled narrative knot.",
+      "properties": {
+        "content": {
+          "description": "Source-ordered executable instructions.",
+          "items": {
+            "$ref": "#/$defs/Instruction"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "type": "object"
+    },
+    "ListOperationIr": {
+      "description": "Runtime list mutation.",
+      "oneOf": [
+        {
+          "const": "push",
+          "description": "Append one member.",
+          "type": "string"
+        },
+        {
+          "const": "remove",
+          "description": "Remove the first equal member.",
+          "type": "string"
+        }
+      ]
+    },
+    "PatternCollectionIr": {
+      "description": "Named pattern collection.",
+      "properties": {
+        "elements": {
+          "description": "Source-ordered semantic elements.",
+          "items": {
+            "$ref": "#/$defs/PatternElementIr"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "elements"
+      ],
+      "type": "object"
+    },
+    "PatternDrawMethodIr": {
+      "description": "Compiled default pattern draw algorithm.",
+      "oneOf": [
+        {
+          "description": "Equal-probability element selection.",
+          "properties": {
+            "kind": {
+              "const": "uniform",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Positive numeric field values define relative probability.",
+          "properties": {
+            "field": {
+              "description": "Weight field name.",
+              "type": "string"
+            },
+            "kind": {
+              "const": "weighted_by",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "field"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "I-Ching three-coin generation.",
+          "properties": {
+            "kind": {
+              "const": "three_coin",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "I-Ching yarrow-stalk generation.",
+          "properties": {
+            "kind": {
+              "const": "yarrow_stalks",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "PatternElementIr": {
+      "description": "Structured pattern element.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ValueLiteral"
+          },
+          "description": "Deterministically sorted fields.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "type": "object"
+    },
+    "PatternSystemIr": {
+      "description": "Compiled custom or built-in pattern definition.",
+      "properties": {
+        "allow_duplicates": {
+          "description": "Whether one spread draw may repeat an element.",
+          "type": "boolean"
+        },
+        "builtin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BuiltinPatternIr"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional built-in data and algorithm source."
+        },
+        "collections": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PatternCollectionIr"
+          },
+          "description": "Sorted named collections.",
+          "type": "object"
+        },
+        "draw_method": {
+          "$ref": "#/$defs/PatternDrawMethodIr",
+          "description": "Default draw algorithm."
+        },
+        "reversals": {
+          "description": "Whether reversible elements may be drawn reversed.",
+          "type": "boolean"
+        },
+        "spreads": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SpreadIr"
+          },
+          "description": "Sorted named spreads.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "collections",
+        "spreads",
+        "draw_method",
+        "allow_duplicates",
+        "reversals"
+      ],
+      "type": "object"
+    },
+    "Span": {
+      "description": "Byte and line location in a source file.",
+      "properties": {
+        "column": {
+          "description": "One-based column number.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "end": {
+          "description": "Exclusive byte offset.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "line": {
+          "description": "One-based line number.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "start": {
+          "description": "Inclusive byte offset.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "line",
+        "column"
+      ],
+      "type": "object"
+    },
+    "SpreadIr": {
+      "description": "Named spread definition.",
+      "properties": {
+        "positions": {
+          "description": "Ordered symbolic positions.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "positions"
+      ],
+      "type": "object"
+    },
+    "Template": {
+      "description": "Pre-parsed text template.",
+      "properties": {
+        "parts": {
+          "description": "Source-ordered parts.",
+          "items": {
+            "$ref": "#/$defs/TemplatePartIr"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "parts"
+      ],
+      "type": "object"
+    },
+    "TemplatePartIr": {
+      "description": "One runtime template part.",
+      "oneOf": [
+        {
+          "description": "Literal text.",
+          "properties": {
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Grammar rule expansion.",
+          "properties": {
+            "kind": {
+              "const": "grammar_ref",
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "grammar": {
+                  "description": "Explicit grammar, absent only inside a grammar rule.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rule": {
+                  "description": "Rule name.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "rule"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Runtime expression interpolation.",
+          "properties": {
+            "kind": {
+              "const": "expression",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Expression"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "UnaryOperatorIr": {
+      "description": "Runtime unary operator.",
+      "oneOf": [
+        {
+          "const": "not",
+          "description": "Boolean negation.",
+          "type": "string"
+        },
+        {
+          "const": "negate",
+          "description": "Numeric negation.",
+          "type": "string"
+        }
+      ]
+    },
+    "ValueLiteral": {
+      "description": "Scalar runtime value literal.",
+      "oneOf": [
+        {
+          "description": "Null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "UTF-8 string.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Semantic symbol.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "VariableKindIr": {
+      "description": "Runtime declaration kind.",
+      "oneOf": [
+        {
+          "const": "variable",
+          "description": "General variable.",
+          "type": "string"
+        },
+        {
+          "const": "list",
+          "description": "Ordered list.",
+          "type": "string"
+        },
+        {
+          "const": "flag",
+          "description": "Boolean flag.",
+          "type": "string"
+        },
+        {
+          "const": "state",
+          "description": "Symbol-constrained state machine.",
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:story-ir:4",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Complete immutable compiled story.",
+  "properties": {
+    "entry": {
+      "description": "Default entry knot.",
+      "type": "string"
+    },
+    "globals": {
+      "description": "Startup instructions evaluated before entering the first knot.",
+      "items": {
+        "$ref": "#/$defs/Instruction"
+      },
+      "type": "array"
+    },
+    "grammars": {
+      "additionalProperties": {
+        "$ref": "#/$defs/GrammarIr"
+      },
+      "description": "Sorted grammar definitions.",
+      "type": "object"
+    },
+    "knots": {
+      "additionalProperties": {
+        "$ref": "#/$defs/KnotIr"
+      },
+      "description": "Sorted knot definitions.",
+      "type": "object"
+    },
+    "modules": {
+      "additionalProperties": {
+        "$ref": "#/$defs/DomainModuleIr"
+      },
+      "description": "Active, validated domain modules keyed by story-local alias.",
+      "type": "object"
+    },
+    "patterns": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PatternSystemIr"
+      },
+      "description": "Sorted executable pattern definitions.",
+      "type": "object"
+    },
+    "source_name": {
+      "description": "Optional source path or display name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "const": 4,
+      "description": "Serialized schema version. Must equal [`IR_VERSION`].",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "entry",
+    "globals",
+    "grammars",
+    "patterns",
+    "modules",
+    "knots"
+  ],
+  "title": "Weave Story IR v4",
+  "type": "object",
+  "x-weave-ir-version": 4
+}

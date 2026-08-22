@@ -65,6 +65,17 @@ impl Formatter {
                                 seen_content = true;
                                 self.line(1, &format!("pack: {}", quote(value)));
                             }
+                            ModuleEntry::Override { path, value } => {
+                                seen_content = true;
+                                self.line(
+                                    1,
+                                    &format!(
+                                        "override {}: {}",
+                                        path.join("."),
+                                        format_expr(&value.node)
+                                    ),
+                                );
+                            }
                             ModuleEntry::Comment(comment) => {
                                 seen_content = true;
                                 self.comment(1, comment);

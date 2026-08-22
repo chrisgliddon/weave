@@ -58,6 +58,7 @@ RUSTDOC_PACKAGES = (
     "weave-bevy",
     "weave-web",
     "weave-lsp",
+    "weave-world",
     "weave-world-corpus",
     "tree-sitter-weave",
 )
@@ -287,14 +288,18 @@ def compile_examples() -> None:
     compiler = compiler_binary()
     domain_tracer = ROOT / "examples/domain-modules/contract/tracer.weave"
     domain_tutorial = ROOT / "examples/domain-modules/third-party-tutorial/story.weave"
-    domain_world = ROOT / "examples/domain-modules/weave-world/reference-place.weave"
+    domain_world_sources = {
+        ROOT / "examples/domain-modules/weave-world/reference-place.weave",
+        ROOT / "examples/domain-modules/weave-world/authored-setting.weave",
+    }
     domain_world_corpus = set(
         (ROOT / "examples/domain-modules/weave-world/corpus/stories").glob("*.weave")
     )
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
-        if source not in {domain_tracer, domain_tutorial, domain_world}
+        if source not in {domain_tracer, domain_tutorial}
+        and source not in domain_world_sources
         and source not in domain_world_corpus
     ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
@@ -448,6 +453,11 @@ def verify_domain_contract() -> None:
     world_manifest = world_fixture / "module.weave-module.json"
     world_pack = world_fixture / "pack.weave-domain.json"
     world_source = world_fixture / "reference-place.weave"
+    authored_world_source = world_fixture / "authored-setting.weave"
+    authored_world_ron = world_fixture / "authored-setting.story.ron"
+    authored_world_json = world_fixture / "authored-setting.story.json"
+    naming_manifest = world_fixture / "naming" / "module.weave-module.json"
+    naming_pack = world_fixture / "naming" / "glasswind.weave-domain.json"
     world_index = world_fixture / "corpus.weave-world.json"
     world_packs = (
         world_pack,
@@ -513,6 +523,16 @@ def verify_domain_contract() -> None:
     run(world_validation, capture=True)
     run(
         [
+            str(domain_tool),
+            "validate",
+            str(naming_manifest.relative_to(ROOT)),
+            "--pack",
+            str(naming_pack.relative_to(ROOT)),
+        ],
+        capture=True,
+    )
+    run(
+        [
             str(world_corpus_tool),
             "check",
             str(world_index.relative_to(ROOT)),
@@ -546,6 +566,8 @@ def verify_domain_contract() -> None:
         normalized_pack_json = workspace / "pack.weave-domain.json"
         normalized_pack_ron = workspace / "pack.weave-domain.ron"
         normalized_world_manifest_json = workspace / "world-module.weave-module.json"
+        normalized_naming_manifest_json = workspace / "world-naming-module.weave-module.json"
+        normalized_naming_pack_json = workspace / "world-naming-pack.weave-domain.json"
         normalized_world_packs = tuple(
             (workspace / f"world-pack-{index}.weave-domain.json", pack)
             for index, pack in enumerate(world_packs)
@@ -554,6 +576,8 @@ def verify_domain_contract() -> None:
         compiled_tracer_json = workspace / "tracer.story.json"
         compiled_world_ron = workspace / "reference-place.story.ron"
         compiled_world_json = workspace / "reference-place.story.json"
+        compiled_authored_world_ron = workspace / "authored-setting.story.ron"
+        compiled_authored_world_json = workspace / "authored-setting.story.json"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -604,6 +628,8 @@ def verify_domain_contract() -> None:
             ("pack", pack_json, "json", normalized_pack_json),
             ("pack", pack_json, "ron", normalized_pack_ron),
             ("manifest", world_manifest, "json", normalized_world_manifest_json),
+            ("manifest", naming_manifest, "json", normalized_naming_manifest_json),
+            ("pack", naming_pack, "json", normalized_naming_pack_json),
         ) + tuple(
             ("pack", pack, "json", generated)
             for generated, pack in normalized_world_packs
@@ -628,6 +654,8 @@ def verify_domain_contract() -> None:
             (normalized_pack_json, pack_json),
             (normalized_pack_ron, pack_ron),
             (normalized_world_manifest_json, world_manifest),
+            (normalized_naming_manifest_json, naming_manifest),
+            (normalized_naming_pack_json, naming_pack),
         ) + normalized_world_packs
         for generated, checked in normalized_checks:
             if generated.read_bytes() != checked.read_bytes():
@@ -688,7 +716,7 @@ def verify_domain_contract() -> None:
         compiled = json.loads(compiled_tracer_json.read_text(encoding="utf-8"))
         module = compiled.get("modules", {}).get("constellation", {})
         if (
-            compiled.get("version") != 3
+            compiled.get("version") != 4
             or module.get("id") != "org.weave.synthetic_constellation"
             or module.get("exports", {}).get("phase", {}).get("value", {}).get("value")
             != "twilight"
@@ -735,7 +763,7 @@ def verify_domain_contract() -> None:
             .get("value", {})
         )
         if (
-            world_story.get("version") != 3
+            world_story.get("version") != 4
             or world_seed.get("primary_biome", {}).get("value")
             != "temperate_broadleaf_and_mixed_forest"
             or world_seed.get("identity", {})
@@ -759,6 +787,63 @@ def verify_domain_contract() -> None:
             or "hazards" not in world_seed
         ):
             raise DocsError("compiled Weave World fixture omitted its environmental seed")
+
+        for encoding, output in (
+            ("ron", compiled_authored_world_ron),
+            ("json", compiled_authored_world_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(authored_world_source.relative_to(ROOT)),
+                    "--module-manifest",
+                    str(world_manifest.relative_to(ROOT)),
+                    "--module-pack",
+                    str(world_pack.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+        for generated, checked in (
+            (compiled_authored_world_ron, authored_world_ron),
+            (compiled_authored_world_json, authored_world_json),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"compiled authored World fixture is stale: {checked.name}")
+        authored_story = json.loads(compiled_authored_world_json.read_text(encoding="utf-8"))
+        authored_module = authored_story.get("modules", {}).get("world", {})
+        authored_exports = authored_module.get("exports", {})
+        authored_places = (
+            authored_exports.get("places", {}).get("value", {}).get("value", {})
+        )
+        authored_rules = (
+            authored_exports.get("rules", {}).get("value", {}).get("value", {})
+        )
+        if (
+            authored_module.get("version") != "1.1.0"
+            or authored_module.get("pack_version") != "1.1.0"
+            or len(authored_module.get("authored_overrides", [])) != 42
+            or authored_rules.get("booleans", {})
+            .get("value", {})
+            .get("beacons_answer_storms", {})
+            .get("value")
+            is not True
+            or authored_places.get("emberwake_harbor", {})
+            .get("value", {})
+            .get("parent_id", {})
+            .get("value")
+            != "glasswind_reach"
+            or authored_places.get("lantern_road", {})
+            .get("value", {})
+            .get("name", {})
+            .get("value")
+            != "Lantern Road"
+            or len(authored_story.get("modules", {})) != 1
+        ):
+            raise DocsError("compiled authored World layer omitted rules, places, or lineage")
 
         observed_world_presets = {
             "aotearoa_new_zealand": "country_scale_selected_stations"
@@ -823,7 +908,7 @@ def verify_domain_contract() -> None:
                 .get("value")
             )
             if (
-                story.get("version") != 3
+                story.get("version") != 4
                 or preset != expected_preset
                 or resolution != expected_resolution
                 or culture_included is not False
@@ -919,7 +1004,7 @@ def verify_domain_contract() -> None:
             raise DocsError("third-party tutorial module data was not embedded")
 
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, and four-preset Weave World corpus",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -990,6 +1075,7 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
     for schema in (
         "weave-story-ir-v2.schema.json",
         "weave-story-ir-v3.schema.json",
+        "weave-story-ir-v4.schema.json",
         "community-pattern-package-v1.schema.json",
         "domain-module-manifest-v1.schema.json",
         "domain-pack-v1.schema.json",

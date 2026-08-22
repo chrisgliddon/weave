@@ -1,5 +1,5 @@
 StoryIr(
-    version: 3,
+    version: 4,
     source_name: Some("crates/weave-compiler/tests/fixtures/golden.weave"),
     entry: "start",
     globals: [

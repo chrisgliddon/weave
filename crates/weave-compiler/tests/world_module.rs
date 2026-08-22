@@ -16,10 +16,20 @@ const HOKKAIDO_PACK: &str = include_str!(
 );
 const MALDIVES_PACK: &str =
     include_str!("../../../examples/domain-modules/weave-world/packs/maldives.weave-domain.json");
+const NAMING_MANIFEST: &str =
+    include_str!("../../../examples/domain-modules/weave-world/naming/module.weave-module.json");
+const NAMING_PACK: &str =
+    include_str!("../../../examples/domain-modules/weave-world/naming/glasswind.weave-domain.json");
 const CHECKED_RON: &str =
     include_str!("../../../examples/domain-modules/weave-world/reference-place.story.ron");
 const CHECKED_JSON: &str =
     include_str!("../../../examples/domain-modules/weave-world/reference-place.story.json");
+const AUTHORED_SOURCE: &str =
+    include_str!("../../../examples/domain-modules/weave-world/authored-setting.weave");
+const AUTHORED_RON: &str =
+    include_str!("../../../examples/domain-modules/weave-world/authored-setting.story.ron");
+const AUTHORED_JSON: &str =
+    include_str!("../../../examples/domain-modules/weave-world/authored-setting.story.json");
 const BRITISH_COLUMBIA_SOURCE: &str = include_str!(
     "../../../examples/domain-modules/weave-world/corpus/stories/british-columbia-temperate-forest.weave"
 );
@@ -69,6 +79,12 @@ fn corpus_catalog() -> DomainCatalog {
 fn options() -> CompileOptions {
     CompileOptions {
         source_name: Some("examples/domain-modules/weave-world/reference-place.weave".to_owned()),
+    }
+}
+
+fn authored_options() -> CompileOptions {
+    CompileOptions {
+        source_name: Some("examples/domain-modules/weave-world/authored-setting.weave".to_owned()),
     }
 }
 
@@ -208,7 +224,7 @@ fn preset_resolution_failures_are_distinct_and_actionable() {
             .is_some_and(|help| help.contains("install the selected preset pack"))
     );
 
-    let unavailable = SOURCE.replace("aotearoa_new_zealand@=1.0.0", "aotearoa_new_zealand@=9.0.0");
+    let unavailable = SOURCE.replace("aotearoa_new_zealand@=1.1.0", "aotearoa_new_zealand@=9.0.0");
     let error = compile_with_modules(&unavailable, &options(), &catalog)
         .expect_err("unavailable preset release must fail");
     assert_eq!(error.diagnostics[0].code.0, "D104");
@@ -236,4 +252,134 @@ fn preset_resolution_failures_are_distinct_and_actionable() {
         .expect_err("duplicate preset coordinate must be ambiguous");
     assert!(matches!(error, DomainError::DuplicatePackArtifact));
     assert!(error.to_string().contains("ambiguous"));
+}
+
+#[test]
+fn authored_rules_places_and_lineage_round_trip_exactly() {
+    let catalog = catalog_with(pack());
+    let compiled = compile_with_modules(AUTHORED_SOURCE, &authored_options(), &catalog)
+        .expect("authored setting compiles");
+    let ron = to_ron(&compiled.story).expect("authored RON");
+    let json = to_json(&compiled.story).expect("authored JSON");
+
+    assert_eq!(ron, AUTHORED_RON);
+    assert_eq!(json, AUTHORED_JSON);
+    assert_eq!(
+        ron::from_str::<StoryIr>(&ron).expect("decode authored RON"),
+        serde_json::from_str::<StoryIr>(&json).expect("decode authored JSON")
+    );
+    let world = &compiled.story.modules["world"];
+    assert_eq!(world.version, "1.1.0");
+    assert_eq!(world.pack_version, "1.1.0");
+    assert_eq!(
+        world.value(&["rules", "booleans", "beacons_answer_storms"]),
+        Some(&DomainValueIr::Bool(true))
+    );
+    assert_eq!(
+        world.value(&["places", "emberwake_harbor", "parent_id"]),
+        Some(&DomainValueIr::String("glasswind_reach".to_owned()))
+    );
+    assert_eq!(
+        world.value(&["places", "saltglass_point", "climate_source"]),
+        Some(&DomainValueIr::String("emberwake_harbor".to_owned()))
+    );
+    assert_eq!(world.authored_overrides.len(), 42);
+    assert!(
+        world
+            .authored_overrides
+            .windows(2)
+            .all(|pair| pair[0].path < pair[1].path)
+    );
+    assert!(
+        !compiled.domain_modules["world"]
+            .pack
+            .values
+            .contains_key("places"),
+        "immutable pack defaults stay separate from fictional source values"
+    );
+}
+
+#[test]
+fn authored_place_conflicts_and_nonconstants_fail_closed() {
+    let catalog = catalog_with(pack());
+    let duplicate = AUTHORED_SOURCE.replace(
+        "override rules.booleans.beacons_answer_storms: true",
+        "override rules.booleans.beacons_answer_storms: true\n    override rules.booleans.beacons_answer_storms: false",
+    );
+    let error = compile_with_modules(&duplicate, &authored_options(), &catalog)
+        .expect_err("duplicate override must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D145");
+
+    let nonconstant = AUTHORED_SOURCE.replace(
+        "override rules.numbers.safe_crossing_temperature_c: 6",
+        "override rules.numbers.safe_crossing_temperature_c: 3 + 3",
+    );
+    let error = compile_with_modules(&nonconstant, &authored_options(), &catalog)
+        .expect_err("computed override must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D144");
+
+    let dangling = AUTHORED_SOURCE.replace(
+        "override places.saltglass_point.parent_id: \"emberwake_harbor\"",
+        "override places.saltglass_point.parent_id: \"missing_place\"",
+    );
+    let error = compile_with_modules(&dangling, &authored_options(), &catalog)
+        .expect_err("dangling place reference must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+
+    let cyclic = AUTHORED_SOURCE.replace(
+        "override places.glasswind_reach.parent_id: \"\"",
+        "override places.glasswind_reach.parent_id: \"saltglass_point\"",
+    );
+    let error = compile_with_modules(&cyclic, &authored_options(), &catalog)
+        .expect_err("place hierarchy cycle must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+
+    let asymmetric = AUTHORED_SOURCE.replace(
+        "override places.lantern_road.related_place_ids: [\"emberwake_harbor\"]",
+        "override places.lantern_road.related_place_ids: []",
+    );
+    let error = compile_with_modules(&asymmetric, &authored_options(), &catalog)
+        .expect_err("asymmetric relation must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+}
+
+#[test]
+fn fictional_naming_is_optional_separate_and_never_inferred_from_the_reference() {
+    let default = compile_with_modules(AUTHORED_SOURCE, &authored_options(), &catalog_with(pack()))
+        .expect("default authored world compiles");
+    assert_eq!(default.story.modules.keys().collect::<Vec<_>>(), ["world"]);
+    assert_eq!(
+        default.story.modules["world"].value(&["seed", "identity", "culture_included"]),
+        Some(&DomainValueIr::Bool(false))
+    );
+
+    let naming_manifest =
+        ModuleManifest::from_json(NAMING_MANIFEST).expect("naming manifest is canonical");
+    let naming_pack = DomainPack::from_json(NAMING_PACK).expect("naming pack is canonical");
+    assert_eq!(naming_manifest.license, "CC0-1.0");
+    let catalog =
+        DomainCatalog::from_artifacts([manifest(), naming_manifest], [pack(), naming_pack])
+            .expect("optional naming catalog");
+    let source = r#"module world {
+    id: "org.weave.world"
+    version: "=1.1.0"
+    pack: "aotearoa_new_zealand@=1.1.0"
+}
+
+module world_names {
+    id: "org.weave.world.naming"
+    version: "=1.0.0"
+    pack: "glasswind_original_names@=1.0.0"
+}
+
+=== start ===
+The chart suggests {world_names.suggestions.harbor}.
+-> END
+"#;
+    let compiled = compile_with_modules(source, &CompileOptions::default(), &catalog)
+        .expect("explicit optional naming activation compiles");
+    assert_eq!(
+        compiled.story.modules["world_names"].value(&["suggestions", "harbor"]),
+        Some(&DomainValueIr::String("Emberwake Harbor".to_owned()))
+    );
 }

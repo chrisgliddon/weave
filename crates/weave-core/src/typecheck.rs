@@ -1150,24 +1150,29 @@ impl Checker {
         };
         for field in fields {
             value_type = resolve_named_domain_type(value_type, &signature.types);
-            let TypeExpression::Object { fields } = value_type else {
-                self.diagnostics.push(
-                    Diagnostic::error(
-                        "D142",
-                        format!("cannot access field `{field}` on this domain value"),
-                    )
-                    .with_span(span),
-                );
-                return Type::Any;
-            };
-            let Some(next) = fields.get(field) else {
-                self.diagnostics.push(
-                    Diagnostic::error("D143", format!("unknown domain field `{field}`"))
+            match value_type {
+                TypeExpression::Object { fields } => {
+                    let Some(next) = fields.get(field) else {
+                        self.diagnostics.push(
+                            Diagnostic::error("D143", format!("unknown domain field `{field}`"))
+                                .with_span(span),
+                        );
+                        return Type::Any;
+                    };
+                    value_type = &next.value_type;
+                }
+                TypeExpression::Map { values, .. } => value_type = values,
+                _ => {
+                    self.diagnostics.push(
+                        Diagnostic::error(
+                            "D142",
+                            format!("cannot access field `{field}` on this domain value"),
+                        )
                         .with_span(span),
-                );
-                return Type::Any;
-            };
-            value_type = &next.value_type;
+                    );
+                    return Type::Any;
+                }
+            }
         }
         core_type(
             resolve_named_domain_type(value_type, &signature.types),
@@ -1398,6 +1403,7 @@ fn core_type(value_type: &TypeExpression, types: &BTreeMap<String, TypeExpressio
         TypeExpression::String { .. } => Type::String,
         TypeExpression::Symbol { .. } => Type::Symbol,
         TypeExpression::List { items, .. } => Type::List(Box::new(core_type(items, types))),
+        TypeExpression::Map { .. } => Type::Object,
         TypeExpression::Object { .. } => Type::Object,
         TypeExpression::Named { .. } => Type::Any,
     }

@@ -1396,6 +1396,19 @@ fn validate_story(data: &StoryIr) -> Result<(), RuntimeError> {
                 "compiled domain module contains an invalid value".to_owned(),
             )));
         }
+        let mut previous = None;
+        for authored in &module.authored_overrides {
+            if authored.path.is_empty()
+                || authored.path.iter().any(String::is_empty)
+                || previous.is_some_and(|path: &[String]| path >= authored.path.as_slice())
+                || !valid_domain_value(&authored.value)
+            {
+                return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                    "compiled domain module contains invalid authored metadata".to_owned(),
+                )));
+            }
+            previous = Some(authored.path.as_slice());
+        }
     }
     Ok(())
 }
@@ -1734,6 +1747,7 @@ mod tests {
                         value,
                     },
                 )]),
+                authored_overrides: Vec::new(),
             },
         );
 

@@ -1,7 +1,7 @@
 module world {
     id: "org.weave.world"
-    version: "=1.0.0"
-    pack: "aotearoa_new_zealand@=1.0.0"
+    version: "=1.1.0"
+    pack: "aotearoa_new_zealand@=1.1.0"
 }
 
 VAR reference_name = world.seed.identity.display_name

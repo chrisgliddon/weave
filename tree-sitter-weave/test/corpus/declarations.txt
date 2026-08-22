@@ -6,6 +6,7 @@ module constellation {
     id: "org.weave.synthetic_constellation"
     version: "=1.0.0"
     pack: "glasswing_sky@=1.0.0"
+    override observation.label: "North Window"
 }
 
 grammar omens {
@@ -36,6 +37,12 @@ pattern weather_omens {
       (string
         (string_content)))
     (module_pack_setting
+      (string
+        (string_content)))
+    (module_override_setting
+      (path_expression
+        (identifier)
+        (identifier))
       (string
         (string_content))))
   (grammar_declaration

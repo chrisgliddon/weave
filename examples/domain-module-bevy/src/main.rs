@@ -13,6 +13,8 @@ const WORLD_STORIES: [&str; 4] = [
     include_str!("../../domain-modules/weave-world/corpus/stories/maldives.story.ron"),
     include_str!("../../domain-modules/weave-world/reference-place.story.ron"),
 ];
+const AUTHORED_WORLD_STORY: &str =
+    include_str!("../../domain-modules/weave-world/authored-setting.story.ron");
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -32,6 +34,15 @@ struct WorldReading {
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct WorldReadings(Vec<WorldReading>);
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct AuthoredWorldReading {
+    beacons_answer_storms: bool,
+    harbor_name: String,
+    harbor_parent_id: String,
+    road_name: String,
+    authored_value_count: usize,
+}
 
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
     let module = story.modules.get("constellation").ok_or_else(|| {
@@ -109,6 +120,43 @@ fn world_reading_from_story(story: &StoryIr, alias: &str) -> Result<WorldReading
     })
 }
 
+fn authored_world_reading(story: &StoryIr) -> Result<AuthoredWorldReading, io::Error> {
+    let module = story
+        .modules
+        .get("world")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "world module is absent"))?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let beacons_answer_storms = match module.value(&["rules", "booleans", "beacons_answer_storms"])
+    {
+        Some(DomainValueIr::Bool(value)) => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "authored world rule is invalid",
+            ));
+        }
+    };
+    Ok(AuthoredWorldReading {
+        beacons_answer_storms,
+        harbor_name: string(
+            &["places", "emberwake_harbor", "name"],
+            "authored harbor name is invalid",
+        )?,
+        harbor_parent_id: string(
+            &["places", "emberwake_harbor", "parent_id"],
+            "authored harbor parent is invalid",
+        )?,
+        road_name: string(
+            &["places", "lantern_road", "name"],
+            "authored road name is invalid",
+        )?,
+        authored_value_count: module.authored_overrides.len(),
+    })
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -129,6 +177,16 @@ fn report_world(readings: Res<WorldReadings>) {
     }
 }
 
+fn report_authored_world(reading: Res<AuthoredWorldReading>) {
+    println!(
+        "Bevy read {} under {} with {} ({} authored values)",
+        reading.harbor_name,
+        reading.harbor_parent_id,
+        reading.road_name,
+        reading.authored_value_count,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -141,11 +199,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             })
             .collect::<Result<_, _>>()?,
     );
+    let authored_world = authored_world_reading(&ron::from_str::<StoryIr>(AUTHORED_WORLD_STORY)?)?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
         .insert_resource(world_readings)
-        .add_systems(Startup, (report_reading, report_world));
+        .insert_resource(authored_world)
+        .add_systems(
+            Startup,
+            (report_reading, report_world, report_authored_world),
+        );
     app.update();
     Ok(())
 }
@@ -207,6 +270,21 @@ mod tests {
                     maximum_annual_mean_temperature_c: 16.0,
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn reads_authored_rules_places_and_lineage_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(AUTHORED_WORLD_STORY).expect("authored World RON");
+        assert_eq!(
+            authored_world_reading(&story).expect("read authored World values"),
+            AuthoredWorldReading {
+                beacons_answer_storms: true,
+                harbor_name: "Emberwake Harbor".to_owned(),
+                harbor_parent_id: "glasswind_reach".to_owned(),
+                road_name: "Lantern Road".to_owned(),
+                authored_value_count: 42,
+            }
         );
     }
 }

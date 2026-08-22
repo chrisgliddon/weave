@@ -2,7 +2,10 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use semver::{Version, VersionReq};
 
-use crate::{DomainError, DomainPack, ModuleManifest, validate_manifest, validate_pack};
+use crate::{
+    DomainError, DomainOverride, DomainPack, DomainValue, ModuleManifest, validate_manifest,
+    validate_pack,
+};
 
 /// Explicit, in-memory set of available domain manifests and packs.
 ///
@@ -22,6 +25,10 @@ pub struct ResolvedDomainModule {
     pub manifest: ModuleManifest,
     /// Validated data pack.
     pub pack: DomainPack,
+    /// Effective values after deterministic source-authored replacements.
+    pub effective_values: BTreeMap<String, DomainValue>,
+    /// Canonically ordered source-authored replacements.
+    pub authored_overrides: Vec<DomainOverride>,
 }
 
 /// Complete deterministic dependency closure selected for one or more source activations.
@@ -168,6 +175,8 @@ impl DomainCatalog {
         Ok(ResolvedDomainModule {
             manifest: manifest.clone(),
             pack: pack.clone(),
+            effective_values: pack.values.clone(),
+            authored_overrides: Vec::new(),
         })
     }
 

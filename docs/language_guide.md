@@ -156,7 +156,21 @@ module constellation {
 }
 ```
 
-`id` is the stable module identity, `version` is a semantic-version requirement, and `pack` combines a pack identifier with its own requirement. Each field appears exactly once. Compilation succeeds only when the host supplies one compatible, validated manifest and pack; source activation never triggers ambient discovery or network access.
+`id` is the stable module identity, `version` is a semantic-version requirement, and `pack` combines a pack identifier with its own requirement. Each selection field appears exactly once. Compilation succeeds only when the host supplies one compatible, validated manifest and pack; source activation never triggers ambient discovery or network access.
+
+An activation may add source-owned fictional values with `override`:
+
+```weave
+module world {
+    id: "org.weave.world"
+    version: "=1.1.0"
+    pack: "aotearoa_new_zealand@=1.1.0"
+    override rules.booleans.beacons_answer_storms: true
+    override places.glasswind_reach.name: "Glasswind Reach"
+}
+```
+
+The path begins with an exported value and is checked through closed objects or bounded stable-identifier maps. The replacement must be a compile-time constant: `null`, a Boolean, finite number, string, symbol, or a list containing only constants. Calls, grammar references, variable reads, and computed expressions are rejected with `D144`; repeating one path is `D145`. Replacements are sorted by path in compiled IR and retained separately from immutable pack defaults. Removing an `override` line resets that path to its pack or module-defined inheritance behavior.
 
 The alias is the first segment of a typed value path:
 
@@ -168,7 +182,7 @@ The sign is {constellation.observation.label}.
 -> END
 ```
 
-Aliases cannot collide with modules, variables, grammars, patterns, or knots. Export and nested object fields are checked against the selected manifest. Pack exports are immutable compiled values. State exports receive isolated runtime state keyed by the stable module identity and exact module version.
+Aliases cannot collide with modules, variables, grammars, patterns, or knots. Export, nested object, and stable map paths are checked against the selected manifest. Effective pack exports remain immutable compiled values; `authored_overrides` records which effective paths are fictional source decisions. State exports receive isolated runtime state keyed by the stable module identity and exact module version.
 
 ## 7. Values and types
 
@@ -351,10 +365,10 @@ All diagnostics have a stable code, severity, message, and source span. Errors p
 
 ## 15. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 3 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 4 includes:
 
 - Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
-- Sorted active module metadata with exact module and pack versions plus validated tagged exports.
+- Sorted active module metadata with exact module and pack versions, validated tagged effective exports, and canonical authored override metadata.
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.

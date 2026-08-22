@@ -43,8 +43,47 @@ pub struct ModuleManifest {
     pub types: BTreeMap<String, TypeExpression>,
     /// Values exposed to source, compiler, runtime, and host integrations.
     pub exports: BTreeMap<String, ExportDeclaration>,
+    /// Optional declarative editor semantics for stable authored entities.
+    #[serde(default, skip_serializing_if = "ModuleAuthoring::is_empty")]
+    pub authoring: ModuleAuthoring,
     /// Machine-readable authorship and source lineage.
     pub provenance: Provenance,
+}
+
+/// Declarative authoring surfaces that hosts can present without module-specific code.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ModuleAuthoring {
+    /// Stable entity maps exposed by this module, sorted by export name.
+    pub entity_collections: Vec<EntityCollectionDeclaration>,
+}
+
+impl ModuleAuthoring {
+    /// Whether this manifest declares no structured authoring surfaces.
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.entity_collections.is_empty()
+    }
+}
+
+/// Schema paths that let a generic editor create and safely reorganize stable entities.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct EntityCollectionDeclaration {
+    /// Map-valued module export containing entities keyed by stable identifier.
+    pub export: String,
+    /// String field that must equal the containing map key.
+    pub id_field: String,
+    /// Human-editable display-label field; changing it never changes the stable identifier.
+    pub label_field: String,
+    /// Integral numeric field used for deterministic sibling ordering.
+    pub order_field: String,
+    /// String field containing an optional parent identifier; the empty string means a root.
+    pub parent_field: String,
+    /// List-of-string field containing symmetric related-entity identifiers.
+    pub relation_field: String,
+    /// Optional scalar reference fields with independent acyclic inheritance chains.
+    pub inheritance_fields: Vec<String>,
 }
 
 /// One module author or steward.
@@ -117,6 +156,15 @@ pub enum TypeExpression {
         min_items: usize,
         /// Maximum item count.
         max_items: usize,
+    },
+    /// Bounded stable-identifier map with homogeneous values.
+    Map {
+        /// Value type shared by every map entry.
+        values: Box<TypeExpression>,
+        /// Minimum entry count.
+        min_entries: usize,
+        /// Maximum entry count.
+        max_entries: usize,
     },
     /// Closed string-keyed value.
     Object {
@@ -235,6 +283,16 @@ pub enum DomainValue {
     List(Vec<DomainValue>),
     /// Closed string-keyed value.
     Object(BTreeMap<String, DomainValue>),
+}
+
+/// One source-authored replacement at a typed module export path.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct DomainOverride {
+    /// Export path segments, beginning with the export name.
+    pub path: Vec<String>,
+    /// Compile-time constant replacement value.
+    pub value: DomainValue,
 }
 
 /// Machine-readable source lineage shared by manifests and packs.

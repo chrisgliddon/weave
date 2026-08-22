@@ -15,7 +15,28 @@ cargo run -p weave-compiler -- \
   --output examples/domain-modules/weave-world/reference-place.story.json
 ```
 
-The adjacent `weave.modules.json` is the complete preset-selection boundary. The exact lock pins the module and pack bytes; authoring and runtime do not contact the network.
+The adjacent `weave.modules.json` is the complete preset-selection boundary. The exact lock pins the selected module and pack bytes; authoring and runtime do not contact the network.
+
+## Author a fictional layer
+
+`authored-setting.weave` keeps the reference pack immutable while adding typed rules plus four original fictional places. Stable ids, parent and symmetric relationship references, display order, explicit climate/environment inheritance, local overrides, and type-separated attributes all compile to exact RON/JSON. The sorted `authored_overrides` metadata lets hosts distinguish fictional decisions from pack defaults.
+
+```bash
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-world/authored-setting.weave \
+  --module-manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --module-pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --output examples/domain-modules/weave-world/authored-setting.story.ron
+
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-world/authored-setting.weave \
+  --module-manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --module-pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --format json \
+  --output examples/domain-modules/weave-world/authored-setting.story.json
+```
+
+The optional `naming/` manifest and pack are a separate `CC0-1.0` module containing only original fictional suggestions. They are available for explicit activation but are not selected by the default story, and no environmental preset infers cultural or naming data.
 
 ## Build the corpus offline
 

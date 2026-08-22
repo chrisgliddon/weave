@@ -21,6 +21,53 @@
       ],
       "type": "object"
     },
+    "EntityCollectionDeclaration": {
+      "additionalProperties": false,
+      "description": "Schema paths that let a generic editor create and safely reorganize stable entities.",
+      "properties": {
+        "export": {
+          "description": "Map-valued module export containing entities keyed by stable identifier.",
+          "type": "string"
+        },
+        "id_field": {
+          "description": "String field that must equal the containing map key.",
+          "type": "string"
+        },
+        "inheritance_fields": {
+          "description": "Optional scalar reference fields with independent acyclic inheritance chains.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label_field": {
+          "description": "Human-editable display-label field; changing it never changes the stable identifier.",
+          "type": "string"
+        },
+        "order_field": {
+          "description": "Integral numeric field used for deterministic sibling ordering.",
+          "type": "string"
+        },
+        "parent_field": {
+          "description": "String field containing an optional parent identifier; the empty string means a root.",
+          "type": "string"
+        },
+        "relation_field": {
+          "description": "List-of-string field containing symmetric related-entity identifiers.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "export",
+        "id_field",
+        "label_field",
+        "order_field",
+        "parent_field",
+        "relation_field",
+        "inheritance_fields"
+      ],
+      "type": "object"
+    },
     "ExportDeclaration": {
       "additionalProperties": false,
       "description": "One typed value exported by a module.",
@@ -107,6 +154,23 @@
       },
       "required": [
         "name"
+      ],
+      "type": "object"
+    },
+    "ModuleAuthoring": {
+      "additionalProperties": false,
+      "description": "Declarative authoring surfaces that hosts can present without module-specific code.",
+      "properties": {
+        "entity_collections": {
+          "description": "Stable entity maps exposed by this module, sorted by export name.",
+          "items": {
+            "$ref": "#/$defs/EntityCollectionDeclaration"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "entity_collections"
       ],
       "type": "object"
     },
@@ -419,6 +483,39 @@
         },
         {
           "additionalProperties": false,
+          "description": "Bounded stable-identifier map with homogeneous values.",
+          "properties": {
+            "kind": {
+              "const": "map",
+              "type": "string"
+            },
+            "max_entries": {
+              "description": "Maximum entry count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min_entries": {
+              "description": "Minimum entry count.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "values": {
+              "$ref": "#/$defs/TypeExpression",
+              "description": "Value type shared by every map entry."
+            }
+          },
+          "required": [
+            "kind",
+            "values",
+            "min_entries",
+            "max_entries"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "Closed string-keyed value.",
           "properties": {
             "fields": {
@@ -466,6 +563,10 @@
   "additionalProperties": false,
   "description": "A portable, declarative domain-module manifest.",
   "properties": {
+    "authoring": {
+      "$ref": "#/$defs/ModuleAuthoring",
+      "description": "Optional declarative editor semantics for stable authored entities."
+    },
     "authors": {
       "description": "Module authors or stewards.",
       "items": {

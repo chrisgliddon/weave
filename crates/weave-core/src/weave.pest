@@ -15,7 +15,14 @@ module_decl = {
     ws* ~ "module" ~ ws+ ~ identifier ~ ws* ~ "{" ~
     module_entry* ~ ws* ~ "}" ~ ws* ~ newline?
 }
-module_entry = _{ blank_line | comment_line | module_id_decl | module_version_decl | module_pack_decl }
+module_entry = _{
+    blank_line |
+    comment_line |
+    module_id_decl |
+    module_version_decl |
+    module_pack_decl |
+    module_override_decl
+}
 module_id_decl = {
     ws* ~ "id" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
 }
@@ -24,6 +31,9 @@ module_version_decl = {
 }
 module_pack_decl = {
     ws* ~ "pack" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+module_override_decl = {
+    ws* ~ "override" ~ ws+ ~ path ~ ws* ~ ":" ~ ws* ~ expression ~ ws* ~ (newline | &"}")
 }
 
 grammar_decl = {

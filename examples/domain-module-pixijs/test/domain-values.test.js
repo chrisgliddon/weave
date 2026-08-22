@@ -11,6 +11,10 @@ const worldStoryUrls = [
   "../../domain-modules/weave-world/corpus/stories/maldives.story.json",
   "../../domain-modules/weave-world/reference-place.story.json",
 ].map((path) => new URL(path, import.meta.url));
+const authoredWorldUrl = new URL(
+  "../../domain-modules/weave-world/authored-setting.story.json",
+  import.meta.url,
+);
 
 test("reads the exact portable tracer exports", async () => {
   const story = JSON.parse(await readFile(storyUrl, "utf8"));
@@ -55,6 +59,30 @@ test("reads four exact portable world seeds", async () => {
       },
     ],
   );
+});
+
+test("reads exact authored world rules, places, and replacement lineage", async () => {
+  const story = JSON.parse(await readFile(authoredWorldUrl, "utf8"));
+  assert.equal(
+    readModuleExport(story, "world", ["rules", "booleans", "beacons_answer_storms"]),
+    true,
+  );
+  assert.equal(
+    readModuleExport(story, "world", ["places", "emberwake_harbor", "name"]),
+    "Emberwake Harbor",
+  );
+  assert.equal(
+    readModuleExport(story, "world", ["places", "emberwake_harbor", "parent_id"]),
+    "glasswind_reach",
+  );
+  assert.equal(story.modules.world.authored_overrides.length, 42);
+  assert.deepEqual(story.modules.world.authored_overrides[0].path, [
+    "places",
+    "emberwake_harbor",
+    "attributes",
+    "booleans",
+    "has_beacon",
+  ]);
 });
 
 test("rejects invalid tagged values without echoing them", () => {
