@@ -23,6 +23,9 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | Full/compact World export | `1` | `weave_world::WORLD_EXPORT_FORMAT_VERSION` |
 | Character profile/template/overlay/synthesis | `1` | [`character_module.md`](character_module.md) |
 | Character collection/request/proposal/review/progress | `1` | [`character_module.md`](character_module.md) |
+| Character authoring workspace/revision/preview | `1` | [`character_module.md`](character_module.md) |
+| Character questionnaire pack/answers/proposal/review/receipt | `1` | [`character_module.md`](character_module.md) |
+| Character final review | `1` | [`character_module.md`](character_module.md) |
 | Weave Character domain module | `1.0.0` | `weave_character::CHARACTER_DOMAIN_MODULE_VERSION` |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |

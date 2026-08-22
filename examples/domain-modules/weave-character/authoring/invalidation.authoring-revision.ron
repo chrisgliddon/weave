@@ -1,0 +1,52 @@
+(
+    revision_format_version: 1,
+    id: "org.weave.character.revision.invalidate_alignment",
+    draft_id: "org.weave.character.ari_vale",
+    expected_draft_revision: 1,
+    input_mode: direct_facets,
+    rationale: "Revise one canonical facet after inspecting downstream invalidation.",
+    changes: [
+        (
+            id: "revise_social_boldness",
+            rationale: "The author chose a more reserved scene behavior.",
+            action: (
+                action: "set_hexaco_trait",
+                trait_id: social_boldness,
+                value: (
+                    value: (
+                        form: "band",
+                        band: low,
+                    ),
+                    state: authored,
+                    confidence: high,
+                    review: not_required,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "revision_original",
+                    ],
+                ),
+            ),
+        ),
+    ],
+    provenance: (
+        sources: [
+            (
+                id: "revision_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "guided-authoring-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic facet revision.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "revision": [
+                "revision_original",
+            ],
+        },
+    ),
+)

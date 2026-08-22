@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "CharacterQuestionnairePackRef": {
+      "additionalProperties": false,
+      "description": "Exact questionnaire pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-questionnaire-answers:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact responses to one pinned pack. Response values range from -2 through 2.",
+  "properties": {
+    "answers_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "pack": {
+      "$ref": "#/$defs/CharacterQuestionnairePackRef"
+    },
+    "responses": {
+      "additionalProperties": {
+        "format": "int8",
+        "maximum": 127,
+        "minimum": -128,
+        "type": "integer"
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "answers_format_version",
+    "id",
+    "pack",
+    "responses"
+  ],
+  "title": "Weave Character Narrative Questionnaire Answers v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}

@@ -423,7 +423,7 @@ fn extension_authority(extension: &CharacterExtension) -> (LockState, ValueState
     (header.lock, header.state)
 }
 
-fn current_value_hash(
+pub(crate) fn current_value_hash(
     profile: &CharacterProfile,
     action: &CharacterOperationAction,
 ) -> Result<Option<String>, CharacterError> {
@@ -555,7 +555,7 @@ fn template_origins(
         .collect()
 }
 
-fn profile_field_paths(profile: &CharacterProfile) -> Vec<String> {
+pub(crate) fn profile_field_paths(profile: &CharacterProfile) -> Vec<String> {
     let mut paths = vec!["canon.identity.display_name".to_owned()];
     if profile.canon.identity.aliases.is_some() {
         paths.push("canon.identity.aliases".to_owned());

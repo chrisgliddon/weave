@@ -1,0 +1,26 @@
+(
+    workspace_format_version: 1,
+    id: "org.weave.character.authoring.lumen_reed",
+    revision: 0,
+    drafts: {},
+    provenance: (
+        sources: [
+            (
+                id: "workspace_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "guided-authoring-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic guided-authoring workspace.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "workspace": [
+                "workspace_original",
+            ],
+        },
+    ),
+)

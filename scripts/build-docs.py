@@ -383,6 +383,9 @@ def compile_examples() -> None:
         ROOT
         / "examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave",
     }
+    domain_tabletop_sources = {
+        ROOT / "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
+    }
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
@@ -390,6 +393,7 @@ def compile_examples() -> None:
         and source not in domain_world_sources
         and source not in domain_world_corpus
         and source not in domain_character_sources
+        and source not in domain_tabletop_sources
     ]
     readme_fixture = (
         ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
@@ -582,6 +586,7 @@ def verify_domain_contract() -> None:
     character_story_json = character_fixture / "ari-vale.story.json"
     character_story_ron = character_fixture / "ari-vale.story.ron"
     character_project = character_fixture / "weave.modules.json"
+    character_authoring = character_fixture / "authoring"
     character_operations = character_fixture / "operations"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
@@ -721,6 +726,21 @@ def verify_domain_contract() -> None:
             "weave-character",
             "--example",
             "character_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
+            "guided_authoring_fixture",
             "--",
             "--check",
         ],
@@ -878,6 +898,25 @@ def verify_domain_contract() -> None:
         generated_alignment_receipt_schema = (
             workspace / "weave-character-alignment-receipt-v1.schema.json"
         )
+        generated_authoring_schemas = {
+            "authoring-workspace": workspace
+            / "weave-character-authoring-workspace-v1.schema.json",
+            "authoring-revision": workspace
+            / "weave-character-authoring-revision-v1.schema.json",
+            "authoring-preview": workspace
+            / "weave-character-authoring-preview-v1.schema.json",
+            "questionnaire-pack": workspace
+            / "weave-character-questionnaire-pack-v1.schema.json",
+            "questionnaire-answers": workspace
+            / "weave-character-questionnaire-answers-v1.schema.json",
+            "questionnaire-proposal": workspace
+            / "weave-character-questionnaire-proposal-v1.schema.json",
+            "questionnaire-review": workspace
+            / "weave-character-questionnaire-review-v1.schema.json",
+            "questionnaire-receipt": workspace
+            / "weave-character-questionnaire-receipt-v1.schema.json",
+            "final-review": workspace / "weave-character-final-review-v1.schema.json",
+        }
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -1019,6 +1058,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_authoring_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for generated, checked in (
             (
                 generated_manifest_schema,
@@ -1137,6 +1181,78 @@ def verify_domain_contract() -> None:
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
+        for generated in generated_authoring_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"checked-in authoring schema is stale: {checked.name}")
+
+        for kind, source in (
+            (
+                "authoring-workspace",
+                character_authoring / "workspace.reviewed.authoring-workspace.json",
+            ),
+            (
+                "authoring-workspace",
+                character_authoring / "workspace.reviewed.authoring-workspace.ron",
+            ),
+            (
+                "authoring-revision",
+                character_authoring / "questionnaire.authoring-revision.json",
+            ),
+            (
+                "authoring-revision",
+                character_authoring / "questionnaire.authoring-revision.ron",
+            ),
+            (
+                "questionnaire-pack",
+                character_authoring / "lantern_choices.questionnaire-pack.json",
+            ),
+            (
+                "questionnaire-pack",
+                character_authoring / "lantern_choices.questionnaire-pack.ron",
+            ),
+            (
+                "questionnaire-answers",
+                character_authoring / "answers.questionnaire-answers.json",
+            ),
+            (
+                "questionnaire-answers",
+                character_authoring / "answers.questionnaire-answers.ron",
+            ),
+            (
+                "questionnaire-proposal",
+                character_authoring / "proposal.questionnaire-proposal.json",
+            ),
+            (
+                "questionnaire-proposal",
+                character_authoring / "proposal.questionnaire-proposal.ron",
+            ),
+            (
+                "questionnaire-review",
+                character_authoring / "review.questionnaire-review.json",
+            ),
+            (
+                "questionnaire-review",
+                character_authoring / "review.questionnaire-review.ron",
+            ),
+            (
+                "questionnaire-receipt",
+                character_authoring / "receipt.questionnaire-receipt.json",
+            ),
+            (
+                "questionnaire-receipt",
+                character_authoring / "receipt.questionnaire-receipt.ron",
+            ),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "validate",
+                    kind,
+                    str(source.relative_to(ROOT)),
+                ],
+                capture=True,
+            )
 
         for kind, source in (
             ("profile", character_profile_json),
@@ -2879,6 +2995,15 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-alignment-proposal-v1.schema.json",
         "weave-character-alignment-review-v1.schema.json",
         "weave-character-alignment-receipt-v1.schema.json",
+        "weave-character-authoring-workspace-v1.schema.json",
+        "weave-character-authoring-revision-v1.schema.json",
+        "weave-character-authoring-preview-v1.schema.json",
+        "weave-character-questionnaire-pack-v1.schema.json",
+        "weave-character-questionnaire-answers-v1.schema.json",
+        "weave-character-questionnaire-proposal-v1.schema.json",
+        "weave-character-questionnaire-review-v1.schema.json",
+        "weave-character-questionnaire-receipt-v1.schema.json",
+        "weave-character-final-review-v1.schema.json",
         "weave-tabletop-adapter-manifest-v1.schema.json",
         "weave-tabletop-adapter-selection-v1.schema.json",
         "weave-tabletop-character-projection-v1.schema.json",

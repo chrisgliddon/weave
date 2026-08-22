@@ -8,6 +8,8 @@ The reviewed date-context workflow has separate generated schemas for its [offli
 
 Explainable alignment views have separate generated schemas for the [declarative pack](downloads/weave-character-alignment-pack-v1.schema.json), [project selection](downloads/weave-character-alignment-config-v1.schema.json), [immutable proposal](downloads/weave-character-alignment-proposal-v1.schema.json), [complete review](downloads/weave-character-alignment-review-v1.schema.json), and [independently reproducible receipt](downloads/weave-character-alignment-receipt-v1.schema.json).
 
+Guided authoring adds generated schemas for the [workspace](downloads/weave-character-authoring-workspace-v1.schema.json), [revision](downloads/weave-character-authoring-revision-v1.schema.json), [pre-apply preview](downloads/weave-character-authoring-preview-v1.schema.json), [original questionnaire pack](downloads/weave-character-questionnaire-pack-v1.schema.json), [answers](downloads/weave-character-questionnaire-answers-v1.schema.json), [proposal](downloads/weave-character-questionnaire-proposal-v1.schema.json), [review](downloads/weave-character-questionnaire-review-v1.schema.json), [receipt](downloads/weave-character-questionnaire-receipt-v1.schema.json), and [final review](downloads/weave-character-final-review-v1.schema.json).
+
 ## Trust and data boundaries
 
 A `CharacterProfile` has four deliberately separate layers:
@@ -183,6 +185,128 @@ Synthesis is deterministic:
 Updating a template changes its fingerprint. The old overlay then reports `C107` and cannot silently acquire template changes or replace an authored override. Callers may preview the changed template and author a reviewed overlay migration with new expected fingerprints. Blank synthesis omits the template reference and requires one attributed display-name operation; all other canon remains explicitly absent until authored.
 
 The closed v1 operation set covers display name, aliases, birth date, every factor/facet, inner-life records, voice records, suggestions, and extensions. No operation can set an OCEAN field. RON and JSON use the same operation enum and diagnostic record.
+
+## Guided authoring and conflict review
+
+`CharacterAuthoringWorkspace` is a reopenable project artifact, not another profile format. Each
+draft retains an optional exact `CharacterTemplate`, one sparse `CharacterOverlay`, immutable
+questionnaire receipts, blocking invalidations, and an optional `CharacterFinalReview`.
+`synthesize_character` remains the only way to obtain the effective profile. Consequently direct
+editing, concise picker choices, imported fields, questionnaire results, the editor, and the CLI
+all converge on the same attributed values, lock/precedence checks, derived recomputation, and
+complete profile validator.
+
+Template availability and authoring access are ordinary project data. The workspace has no field
+for an account, purchase, subscription, tier, provider, or service entitlement. A bundled template
+must have an exact semantic version, SHA-256 coordinate, validated provenance, and an allowed
+MIT/Apache-2.0/CC0-1.0 source license. The checked bundled templates are original MIT material.
+
+Every editor control has one persisted source representation:
+
+| Authoring control | Source representation | Authority boundary |
+|---|---|---|
+| Identity and aliases | `set_display_name` / `set_aliases` overlay operation | Canonical attributed text |
+| Birth date | `set_birth_date` with explicit year, month-day, or full precision | Omission represents unknown components |
+| Direct 24-facet editor | `set_hexaco_trait` | Canonical attributed measurement and confidence |
+| Concise picker | The same `set_hexaco_trait`, using a closed `TraitBand` | No separate preset authority |
+| Imported profile field | The same canonical action with `state: imported` | Import mode cannot masquerade as authored input |
+| Behavior questionnaire | Pack + answers + immutable proposal | Suggestions only; no canonical mutation |
+| Confidence/conflict review | Complete questionnaire review | Every facet and triggered conflict is decided |
+| Derived OCEAN | `CharacterProfile.derived.ocean` | Read-only, lossy, visually marked `derived` |
+| Alignment and date context | Existing independently reproducible receipts | Only the receipt-owned extension may change |
+| Inner life and voice | `upsert_inner_life` / `upsert_voice` | Canonical attributed prose |
+| Final review | `CharacterFinalReview` | Exact profile hash, summary, and unresolved diagnostics |
+
+The ordinary revision vocabulary deliberately excludes suggestions and extensions. Unknown fields
+fail strict deserialization; placeholder strings such as `<unknown>` fail validation; broken
+template references fail synthesis; and direct attempts to change derived or pack-owned data return
+`C109` before the candidate workspace exists. Alignment and historical context enter a draft only
+through their complete existing receipts, which are independently reproduced and checked to have
+changed only their owned extension and provenance.
+
+### Original narrative questionnaires
+
+A `CharacterQuestionnairePack` is inert data. It declares an exact id/version/hash, methodology,
+limitations, license, public provenance, independently authored fictional behavior prompts, signed
+fixed-point facet weights, and optional narrative-tension rules. A distributable pack must state
+both `narrative_authoring_only: true` and `independently_authored_prompts: true`. It cannot claim to
+be a psychometric, clinical, hiring, or real-person assessment.
+
+Every pack must cover all 24 factor-specific facets. Responses are integers from -2 through 2. For
+one facet, scoring sums the declared signed contributions and divides by twice the sum of answered
+absolute weights, producing deterministic millionths from zero through one million. No answer is
+imputed: a missing item remains in the trace with no response or contribution. Confidence is
+`unknown` with no answer, `low` for partial coverage, `moderate` for one completely covered item,
+and `high` for two or more completely covered items. A review may lower computed confidence but
+cannot silently raise it.
+
+Every facet receives exactly one `accept`, `edit`, `override`, `reject`, or `withhold` decision.
+Accept creates reviewed canon, edit creates an authored value, and override creates a reviewed
+high-precedence replacement. Reject and withhold preserve the trace but create no operation. Each
+triggered cross-axis rule also requires exactly one action:
+
+| Conflict action | Effect |
+|---|---|
+| `accept` | Retain the reviewed suggestions; include a rationale when pack policy requires it |
+| `reject` | Omit the rule's declared facet suggestions from the application |
+| `deliberate_exception` | Retain the tension with a mandatory author rationale |
+
+The receipt embeds the exact pack, answers, input profile, proposal, review, generated canonical
+operations, applied/rejected facet lists, and output profile. Parsing a receipt reproduces the
+entire operation; a changed prompt, weight, answer, confidence, conflict disposition, input field,
+or output byte is stale.
+
+The included [Lantern Choices fixture](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/authoring) is original MIT-licensed material with 24 fictional prompts and one explicit narrative tension. It contains no copied inventory item or protected presentation.
+
+### Preview, migration, invalidation, and final review
+
+`authoring-preview` is required before persistence by the editor flow and available directly to
+text workflows. It exposes every template base and effective value, exact template/overlay origin,
+inherited/overridden state, lock state, protected ownership, before/after field difference, derived
+OCEAN difference, migration effect, and downstream invalidation. The candidate draft is included,
+so apply independently repeats the preview instead of trusting an opaque UI mutation.
+
+A template migration names the exact prior SHA-256, embeds another reviewed release of the same
+template id, and records reviewer plus rationale. It rebases sparse operations against the new
+template only inside the preview. A missing base value, newly locked field, stale old hash, changed
+template identity, or invalid effective result stops the migration atomically. No automatic
+conversion or hidden default is available.
+
+HEXACO changes recompute OCEAN in the candidate and show that invalidation before apply. If an
+approved alignment view exists, a personality change creates a blocking `alignment_review`
+invalidation. If accepted date context exists, a birth or personality change creates a blocking
+`date_context_review` invalidation. Those records remain until a fresh exact reviewed receipt is
+adopted. Any edit clears the old final review.
+
+The final review includes stable identity and birth data, every present canonical factor/facet,
+the explicitly derived OCEAN display, approved alignment, accepted date context, inner-life and
+voice records, complete provenance, and stable unresolved diagnostics. `accepted` is invalid while
+any blocking diagnostic remains; `needs_changes` preserves the complete summary. Reviewed export
+requires an accepted final review by default.
+
+### Text workflow
+
+The `weave-character` binary exposes the editor-equivalent verbs `authoring-create`,
+`authoring-list`, `authoring-show`, `authoring-clone`, `authoring-preview`, `authoring-revise`,
+`authoring-validate`, `authoring-review`, `authoring-export`, and `authoring-reopen`. Questionnaire
+propose/review/apply commands produce the same bytes as the Rust/editor functions. Mutating commands
+validate the complete candidate and use a same-directory atomic replacement.
+
+```bash
+cargo run -p weave-character -- authoring-preview \
+  examples/domain-modules/weave-character/authoring/workspace.created.authoring-workspace.json \
+  examples/domain-modules/weave-character/authoring/questionnaire.authoring-revision.json \
+  --output target/lumen.authoring-preview.json
+
+cargo run -p weave-character -- authoring-revise \
+  examples/domain-modules/weave-character/authoring/workspace.created.authoring-workspace.json \
+  examples/domain-modules/weave-character/authoring/questionnaire.authoring-revision.json \
+  --output target/lumen.authoring-workspace.json
+```
+
+The checked JSON/RON corpus covers blank and template creation, clone safety, direct/picker and
+questionnaire convergence, revision, derived invalidation, blocking alignment invalidation,
+template migration, final accept/needs-changes review, export, and reopen.
 
 ## Collections and reviewed corpus operations
 

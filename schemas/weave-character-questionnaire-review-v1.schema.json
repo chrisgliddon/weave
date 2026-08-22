@@ -1,0 +1,385 @@
+{
+  "$defs": {
+    "CharacterQuestionnaireConflictDecision": {
+      "description": "Required disposition for one triggered conflict.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "accept",
+              "type": "string"
+            },
+            "rationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "deliberate_exception",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterQuestionnaireFacetDecision": {
+      "description": "Explicit confidence-aware decision for every facet.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "accept",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            }
+          },
+          "required": [
+            "action",
+            "confidence",
+            "lock"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "edit",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/TraitMeasurement"
+            }
+          },
+          "required": [
+            "action",
+            "value",
+            "confidence",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "override",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/TraitMeasurement"
+            }
+          },
+          "required": [
+            "action",
+            "value",
+            "confidence",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "withhold",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Confidence": {
+      "description": "Bounded confidence vocabulary shared by evidence and projections.",
+      "enum": [
+        "unknown",
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "TraitBand": {
+      "description": "Closed five-band trait vocabulary.",
+      "enum": [
+        "very_low",
+        "low",
+        "middle",
+        "high",
+        "very_high"
+      ],
+      "type": "string"
+    },
+    "TraitMeasurement": {
+      "description": "One canonical trait measurement. A record uses a bounded score or one closed band, never both.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Inclusive normalized value from 0.0 through 1.0.",
+          "properties": {
+            "form": {
+              "const": "score",
+              "type": "string"
+            },
+            "score": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "form",
+            "score"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Coarse representation with a documented v1 numeric anchor for projections.",
+          "properties": {
+            "band": {
+              "$ref": "#/$defs/TraitBand"
+            },
+            "form": {
+              "const": "band",
+              "type": "string"
+            }
+          },
+          "required": [
+            "form",
+            "band"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-questionnaire-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete per-facet confidence review and per-conflict disposition.",
+  "properties": {
+    "conflict_decisions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CharacterQuestionnaireConflictDecision"
+      },
+      "type": "object"
+    },
+    "facet_decisions": {
+      "additionalProperties": false,
+      "properties": {
+        "aesthetic_appreciation": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "agreeableness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "anxiety": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "conscientiousness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "creativity": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "dependence": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "diligence": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "emotionality": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "extraversion": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "fairness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "fearfulness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "flexibility": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "forgivingness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "gentleness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "greed_avoidance": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "honesty_humility": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "inquisitiveness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "liveliness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "modesty": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "openness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "organization": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "patience": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "perfectionism": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "prudence": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "sentimentality": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "sincerity": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "sociability": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "social_boldness": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "social_self_esteem": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        },
+        "unconventionality": {
+          "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+        }
+      },
+      "type": "object"
+    },
+    "proposal_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "proposal_sha256",
+    "reviewer",
+    "rationale",
+    "facet_decisions",
+    "conflict_decisions"
+  ],
+  "title": "Weave Character Narrative Questionnaire Review v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}

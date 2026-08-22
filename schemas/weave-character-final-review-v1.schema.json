@@ -1,0 +1,1412 @@
+{
+  "$defs": {
+    "AcceptedDateContextCue": {
+      "additionalProperties": false,
+      "description": "One reviewed fictional cue exposed to narrative logic without writing into canon.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "cue_source_ids": {
+          "description": "Public or original lineage for the fictional cue and its declared ranking vector.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "decision": {
+          "$ref": "#/$defs/DateContextDecision"
+        },
+        "fact_source_ids": {
+          "description": "Public lineage for the matched dated fact; never used as personality evidence.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DateContextCueKind"
+        },
+        "pack": {
+          "$ref": "#/$defs/DateContextPackRef"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "relevance": {
+          "format": "double",
+          "type": "number"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/DateContextSensitivity"
+        },
+        "source_ids": {
+          "description": "Sorted union of fact and cue lineage retained for compatibility.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/DateContextUncertainty"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "pack",
+        "kind",
+        "content",
+        "relevance",
+        "uncertainty",
+        "sensitivity",
+        "decision",
+        "fact_source_ids",
+        "cue_source_ids",
+        "source_ids",
+        "review_sha256"
+      ],
+      "type": "object"
+    },
+    "AlignmentPackRef": {
+      "additionalProperties": false,
+      "description": "Exact alignment-pack coordinate retained by a reviewed public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "AlignmentPublicDecision": {
+      "description": "Review path by which an alignment value entered the approved public view.",
+      "enum": [
+        "reviewed",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
+    "AlignmentView": {
+      "additionalProperties": false,
+      "description": "One reviewed, pluggable alignment view with declared authority and rationale in its header.",
+      "properties": {
+        "applied_sha256": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pack": {
+          "$ref": "#/$defs/AlignmentPackRef"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ApprovedAlignmentValue"
+          },
+          "description": "Approved public values keyed by stable axis identifier. Review traces stay in receipts.",
+          "type": "object"
+        },
+        "view_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "view_id",
+        "pack",
+        "values",
+        "input_paths",
+        "review_sha256",
+        "applied_sha256"
+      ],
+      "type": "object"
+    },
+    "ApprovedAlignmentValue": {
+      "additionalProperties": false,
+      "description": "One approved narrative alignment value. It is shorthand, never diagnostic evidence.",
+      "properties": {
+        "coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "decision": {
+          "$ref": "#/$defs/AlignmentPublicDecision"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "label_id": {
+          "type": "string"
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label_id",
+        "label",
+        "decision",
+        "coverage_micros",
+        "explanation",
+        "input_paths"
+      ],
+      "type": "object"
+    },
+    "Attributed": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "description": "Typed value.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed2": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "description": "Typed value.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed3": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/BirthDate",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed4": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/TraitMeasurement",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "AuthoredNote": {
+      "additionalProperties": false,
+      "description": "One stable authored inner-life record.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/InnerLifeCategory"
+        },
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "content"
+      ],
+      "type": "object"
+    },
+    "BirthDate": {
+      "description": "Date-only birth data with no fabricated components.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Known year; month and day remain unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "precision": {
+              "const": "year",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Known recurring month and day; year remains unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "month_day",
+              "type": "string"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Complete date.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "full",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Calendar": {
+      "description": "Closed v1 calendar vocabulary. New calendars require a versioned extension.",
+      "enum": [
+        "proleptic_gregorian"
+      ],
+      "type": "string"
+    },
+    "CharacterDerivedViews": {
+      "additionalProperties": false,
+      "description": "Reproducible, non-authoritative views derived from canon.",
+      "properties": {
+        "ocean": {
+          "$ref": "#/$defs/OceanView",
+          "description": "Lossy HEXACO-to-OCEAN compatibility view."
+        }
+      },
+      "required": [
+        "ocean"
+      ],
+      "type": "object"
+    },
+    "CharacterDiagnostic": {
+      "additionalProperties": false,
+      "description": "Typed diagnostic shape shared by every Character surface.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/CharacterDiagnosticCode"
+        },
+        "message": {
+          "description": "Static redaction-safe explanation; rejected values are never included.",
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/DiagnosticSeverity"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "type": "object"
+    },
+    "CharacterDiagnosticCode": {
+      "description": "Stable redaction-safe diagnostic codes for the Character contract.",
+      "enum": [
+        "C100",
+        "C101",
+        "C102",
+        "C103",
+        "C104",
+        "C105",
+        "C106",
+        "C107",
+        "C108",
+        "C109",
+        "C110"
+      ],
+      "type": "string"
+    },
+    "CharacterFinalReviewDecision": {
+      "description": "Accepted or needs-changes final authoring review.",
+      "enum": [
+        "accepted",
+        "needs_changes"
+      ],
+      "type": "string"
+    },
+    "CharacterFinalReviewSummary": {
+      "additionalProperties": false,
+      "description": "Complete human-review surface generated from one validated effective profile.",
+      "properties": {
+        "accepted_date_context": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approved_alignment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlignmentView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "birth_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed3"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "canonical_traits": {
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic_appreciation": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "agreeableness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "anxiety": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "conscientiousness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "creativity": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "dependence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "diligence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "emotionality": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "extraversion": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "fairness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "fearfulness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "flexibility": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "forgivingness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "gentleness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "greed_avoidance": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "honesty_humility": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "inquisitiveness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "liveliness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "modesty": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "openness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "organization": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "patience": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "perfectionism": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "prudence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sentimentality": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sincerity": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sociability": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "social_boldness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "social_self_esteem": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "unconventionality": {
+              "$ref": "#/$defs/Attributed4"
+            }
+          },
+          "type": "object"
+        },
+        "derived_ocean": {
+          "$ref": "#/$defs/CharacterDerivedViews"
+        },
+        "identity": {
+          "$ref": "#/$defs/CharacterIdentity"
+        },
+        "inner_life": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AuthoredNote"
+          },
+          "type": "object"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "unresolved_diagnostics": {
+          "items": {
+            "$ref": "#/$defs/CharacterDiagnostic"
+          },
+          "type": "array"
+        },
+        "voice": {
+          "additionalProperties": {
+            "$ref": "#/$defs/VoiceDirection"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile_id",
+        "identity",
+        "canonical_traits",
+        "derived_ocean",
+        "inner_life",
+        "voice",
+        "provenance",
+        "unresolved_diagnostics"
+      ],
+      "type": "object"
+    },
+    "CharacterIdentity": {
+      "additionalProperties": false,
+      "description": "Stable identity distinct from optional visual presentation.",
+      "properties": {
+        "aliases": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional ordered aliases; an omitted field means no assertion."
+        },
+        "display_name": {
+          "$ref": "#/$defs/Attributed",
+          "description": "Primary human-readable name."
+        }
+      },
+      "required": [
+        "display_name"
+      ],
+      "type": "object"
+    },
+    "Confidence": {
+      "description": "Bounded confidence vocabulary shared by evidence and projections.",
+      "enum": [
+        "unknown",
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContext": {
+      "additionalProperties": false,
+      "description": "Accepted or proposed date-context references. They are authoring cues, never causal evidence.",
+      "properties": {
+        "accepted_cues": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AcceptedDateContextCue"
+          },
+          "description": "Approved public cues keyed by their stable candidate id.",
+          "type": "object"
+        },
+        "accepted_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "additional_context_packs": {
+          "description": "Additional exact context packs used by one reviewed enrichment.",
+          "items": {
+            "$ref": "#/$defs/DateContextPackRef"
+          },
+          "type": "array"
+        },
+        "context_hash": {
+          "type": "string"
+        },
+        "context_pack": {
+          "type": "string"
+        },
+        "context_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "context_pack",
+        "context_version",
+        "context_hash",
+        "accepted_record_ids"
+      ],
+      "type": "object"
+    },
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextDecision": {
+      "description": "How an approved temporal cue entered the public view.",
+      "enum": [
+        "accepted",
+        "auto_approved",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
+    "DateContextPackRef": {
+      "additionalProperties": false,
+      "description": "Exact temporal-context pack coordinate retained by an accepted public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContextUncertainty": {
+      "description": "Bounded uncertainty retained in the approved public projection.",
+      "enum": [
+        "exact",
+        "bounded",
+        "disputed"
+      ],
+      "type": "string"
+    },
+    "DerivedTrait": {
+      "additionalProperties": false,
+      "description": "One derived dimension with exact input paths.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "score",
+        "confidence",
+        "input_paths"
+      ],
+      "type": "object"
+    },
+    "DiagnosticSeverity": {
+      "description": "Diagnostic severity vocabulary.",
+      "enum": [
+        "error",
+        "warning"
+      ],
+      "type": "string"
+    },
+    "Freshness": {
+      "description": "Whether lineage still matches the exact upstream inputs.",
+      "enum": [
+        "current",
+        "stale"
+      ],
+      "type": "string"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "InnerLifeCategory": {
+      "description": "Closed baseline categories; custom taxonomies use a versioned extension.",
+      "enum": [
+        "value",
+        "fear",
+        "desire",
+        "contradiction",
+        "memory",
+        "boundary"
+      ],
+      "type": "string"
+    },
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "OceanView": {
+      "additionalProperties": false,
+      "description": "Explicitly lossy OCEAN compatibility projection.",
+      "properties": {
+        "agreeableness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "algorithm": {
+          "type": "string"
+        },
+        "algorithm_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "conscientiousness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraversion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "independent_evidence": {
+          "type": "boolean"
+        },
+        "lossy": {
+          "type": "boolean"
+        },
+        "neuroticism": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "omitted_factor": {
+          "$ref": "#/$defs/HexacoTrait",
+          "description": "Canonical factor intentionally omitted by this five-factor view."
+        },
+        "openness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "algorithm",
+        "algorithm_version",
+        "lossy",
+        "independent_evidence",
+        "omitted_factor"
+      ],
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "description": "Explicit editorial state.",
+      "enum": [
+        "not_required",
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "type": "string"
+    },
+    "TraitBand": {
+      "description": "Closed five-band trait vocabulary.",
+      "enum": [
+        "very_low",
+        "low",
+        "middle",
+        "high",
+        "very_high"
+      ],
+      "type": "string"
+    },
+    "TraitMeasurement": {
+      "description": "One canonical trait measurement. A record uses a bounded score or one closed band, never both.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Inclusive normalized value from 0.0 through 1.0.",
+          "properties": {
+            "form": {
+              "const": "score",
+              "type": "string"
+            },
+            "score": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "form",
+            "score"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Coarse representation with a documented v1 numeric anchor for projections.",
+          "properties": {
+            "band": {
+              "$ref": "#/$defs/TraitBand"
+            },
+            "form": {
+              "const": "band",
+              "type": "string"
+            }
+          },
+          "required": [
+            "form",
+            "band"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ValueState": {
+      "description": "Distinguishable value states with deterministic precedence.",
+      "oneOf": [
+        {
+          "const": "suggested",
+          "description": "Unaccepted proposal; lowest precedence and never canonical personality evidence.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Mechanical projection; never independent evidence and never writable to canon.",
+          "type": "string"
+        },
+        {
+          "const": "imported",
+          "description": "Value acquired from a declared external source.",
+          "type": "string"
+        },
+        {
+          "const": "reviewed",
+          "description": "Proposal or import explicitly accepted by a reviewer.",
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Direct author decision.",
+          "type": "string"
+        },
+        {
+          "const": "overridden",
+          "description": "Explicit replacement naming and fingerprinting the prior value; highest precedence.",
+          "type": "string"
+        }
+      ]
+    },
+    "VoiceCategory": {
+      "description": "Closed baseline voice categories; detailed expression data remains an extension.",
+      "enum": [
+        "cadence",
+        "tone",
+        "vocabulary",
+        "constraint",
+        "sample"
+      ],
+      "type": "string"
+    },
+    "VoiceDirection": {
+      "additionalProperties": false,
+      "description": "One stable authored voice direction.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/VoiceCategory"
+        },
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "content"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-final-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Saved final review with the exact visible summary and unresolved diagnostics.",
+  "properties": {
+    "decision": {
+      "$ref": "#/$defs/CharacterFinalReviewDecision"
+    },
+    "draft_id": {
+      "type": "string"
+    },
+    "draft_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/CharacterFinalReviewSummary"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "draft_id",
+    "draft_revision",
+    "profile_sha256",
+    "reviewer",
+    "rationale",
+    "decision",
+    "summary"
+  ],
+  "title": "Weave Character Final Authoring Review v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}

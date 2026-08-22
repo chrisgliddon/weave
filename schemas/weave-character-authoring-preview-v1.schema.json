@@ -1,0 +1,4419 @@
+{
+  "$defs": {
+    "AcceptedDateContextCue": {
+      "additionalProperties": false,
+      "description": "One reviewed fictional cue exposed to narrative logic without writing into canon.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "cue_source_ids": {
+          "description": "Public or original lineage for the fictional cue and its declared ranking vector.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "decision": {
+          "$ref": "#/$defs/DateContextDecision"
+        },
+        "fact_source_ids": {
+          "description": "Public lineage for the matched dated fact; never used as personality evidence.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DateContextCueKind"
+        },
+        "pack": {
+          "$ref": "#/$defs/DateContextPackRef"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "relevance": {
+          "format": "double",
+          "type": "number"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/DateContextSensitivity"
+        },
+        "source_ids": {
+          "description": "Sorted union of fact and cue lineage retained for compatibility.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/DateContextUncertainty"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "pack",
+        "kind",
+        "content",
+        "relevance",
+        "uncertainty",
+        "sensitivity",
+        "decision",
+        "fact_source_ids",
+        "cue_source_ids",
+        "source_ids",
+        "review_sha256"
+      ],
+      "type": "object"
+    },
+    "Agreeableness": {
+      "additionalProperties": false,
+      "description": "Agreeableness factor and its four canonical facets.",
+      "properties": {
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "flexibility": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "forgivingness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gentleness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "patience": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "AlignmentPackRef": {
+      "additionalProperties": false,
+      "description": "Exact alignment-pack coordinate retained by a reviewed public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "AlignmentPublicDecision": {
+      "description": "Review path by which an alignment value entered the approved public view.",
+      "enum": [
+        "reviewed",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
+    "AlignmentView": {
+      "additionalProperties": false,
+      "description": "One reviewed, pluggable alignment view with declared authority and rationale in its header.",
+      "properties": {
+        "applied_sha256": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pack": {
+          "$ref": "#/$defs/AlignmentPackRef"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ApprovedAlignmentValue"
+          },
+          "description": "Approved public values keyed by stable axis identifier. Review traces stay in receipts.",
+          "type": "object"
+        },
+        "view_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "view_id",
+        "pack",
+        "values",
+        "input_paths",
+        "review_sha256",
+        "applied_sha256"
+      ],
+      "type": "object"
+    },
+    "ApprovedAlignmentValue": {
+      "additionalProperties": false,
+      "description": "One approved narrative alignment value. It is shorthand, never diagnostic evidence.",
+      "properties": {
+        "coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "decision": {
+          "$ref": "#/$defs/AlignmentPublicDecision"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "label_id": {
+          "type": "string"
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label_id",
+        "label",
+        "decision",
+        "coverage_micros",
+        "explanation",
+        "input_paths"
+      ],
+      "type": "object"
+    },
+    "Attributed": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "description": "Typed value.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed2": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "description": "Typed value.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed3": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/BirthDate",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed4": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/TraitMeasurement",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed5": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValue",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "AuthoredNote": {
+      "additionalProperties": false,
+      "description": "One stable authored inner-life record.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/InnerLifeCategory"
+        },
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "content"
+      ],
+      "type": "object"
+    },
+    "BehavioralSignature": {
+      "additionalProperties": false,
+      "description": "One normalized behavioral signature.",
+      "properties": {
+        "cue": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "cue",
+        "strength"
+      ],
+      "type": "object"
+    },
+    "BehavioralSignatures": {
+      "additionalProperties": false,
+      "description": "Stable behavioral signatures remain projections, not personality evidence.",
+      "properties": {
+        "signatures": {
+          "additionalProperties": {
+            "$ref": "#/$defs/BehavioralSignature"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "signatures"
+      ],
+      "type": "object"
+    },
+    "BirthDate": {
+      "description": "Date-only birth data with no fabricated components.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Known year; month and day remain unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "precision": {
+              "const": "year",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Known recurring month and day; year remains unknown.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "month_day",
+              "type": "string"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Complete date.",
+          "properties": {
+            "calendar": {
+              "$ref": "#/$defs/Calendar"
+            },
+            "day": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "month": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "precision": {
+              "const": "full",
+              "type": "string"
+            },
+            "year": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "precision",
+            "calendar",
+            "year",
+            "month",
+            "day"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Calendar": {
+      "description": "Closed v1 calendar vocabulary. New calendars require a versioned extension.",
+      "enum": [
+        "proleptic_gregorian"
+      ],
+      "type": "string"
+    },
+    "CharacterAuthoringDraft": {
+      "additionalProperties": false,
+      "description": "One reopenable draft whose effective profile is always synthesized from retained source.",
+      "properties": {
+        "final_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterFinalReview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "overlay": {
+          "$ref": "#/$defs/CharacterOverlay"
+        },
+        "questionnaire_receipts": {
+          "description": "Immutable questionnaire applications retained in chronological order.",
+          "items": {
+            "$ref": "#/$defs/CharacterQuestionnaireReceipt"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterTemplate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unresolved_invalidations": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterAuthoringInvalidation"
+          },
+          "description": "Blocking projection/context work created by an accepted canonical revision.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "overlay"
+      ],
+      "type": "object"
+    },
+    "CharacterAuthoringFieldChange": {
+      "additionalProperties": false,
+      "description": "One effective field difference in a revision or migration preview.",
+      "properties": {
+        "after": true,
+        "after_locked": {
+          "type": "boolean"
+        },
+        "before": true,
+        "before_locked": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "before_locked",
+        "after_locked"
+      ],
+      "type": "object"
+    },
+    "CharacterAuthoringFieldView": {
+      "additionalProperties": false,
+      "description": "Base/effective field pair with visible inheritance, override, lock, and protection state.",
+      "properties": {
+        "base_value": true,
+        "effective_value": true,
+        "inherited": {
+          "type": "boolean"
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SynthesisOrigin"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overridden": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "protected_or_pack_owned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path",
+        "inherited",
+        "overridden",
+        "locked",
+        "protected_or_pack_owned"
+      ],
+      "type": "object"
+    },
+    "CharacterAuthoringInvalidation": {
+      "additionalProperties": false,
+      "description": "Downstream work exposed before a canonical change is accepted.",
+      "properties": {
+        "blocking_final_review": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/CharacterAuthoringInvalidationKind"
+        },
+        "message": {
+          "type": "string"
+        },
+        "required_action": {
+          "$ref": "#/$defs/CharacterAuthoringRequiredAction"
+        },
+        "resolved_in_candidate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "input_paths",
+        "required_action",
+        "blocking_final_review",
+        "resolved_in_candidate",
+        "message"
+      ],
+      "type": "object"
+    },
+    "CharacterAuthoringInvalidationKind": {
+      "description": "Closed invalidation families.",
+      "enum": [
+        "derived_ocean",
+        "alignment_review",
+        "date_context_review",
+        "final_review"
+      ],
+      "type": "string"
+    },
+    "CharacterAuthoringRequiredAction": {
+      "description": "Action needed to clear an invalidation.",
+      "enum": [
+        "recompute",
+        "refresh_and_review",
+        "repeat_final_review"
+      ],
+      "type": "string"
+    },
+    "CharacterCanon": {
+      "additionalProperties": false,
+      "description": "Normative character data. Optional projections and suggestions live outside this record.",
+      "properties": {
+        "birth_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicitly precise date-only birth information, when authored or imported."
+        },
+        "identity": {
+          "$ref": "#/$defs/CharacterIdentity",
+          "description": "Stable identity and human-facing names."
+        },
+        "inner_life": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AuthoredNote"
+          },
+          "description": "Authored inner-life records keyed by stable local identifier.",
+          "type": "object"
+        },
+        "personality": {
+          "$ref": "#/$defs/HexacoProfile",
+          "description": "Canonical HEXACO evidence. Missing traits remain absent and are never imputed."
+        },
+        "voice": {
+          "additionalProperties": {
+            "$ref": "#/$defs/VoiceDirection"
+          },
+          "description": "Authored voice guidance keyed by stable local identifier.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "identity",
+        "personality"
+      ],
+      "type": "object"
+    },
+    "CharacterDerivedViews": {
+      "additionalProperties": false,
+      "description": "Reproducible, non-authoritative views derived from canon.",
+      "properties": {
+        "ocean": {
+          "$ref": "#/$defs/OceanView",
+          "description": "Lossy HEXACO-to-OCEAN compatibility view."
+        }
+      },
+      "required": [
+        "ocean"
+      ],
+      "type": "object"
+    },
+    "CharacterDiagnostic": {
+      "additionalProperties": false,
+      "description": "Typed diagnostic shape shared by every Character surface.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/CharacterDiagnosticCode"
+        },
+        "message": {
+          "description": "Static redaction-safe explanation; rejected values are never included.",
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/DiagnosticSeverity"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "type": "object"
+    },
+    "CharacterDiagnosticCode": {
+      "description": "Stable redaction-safe diagnostic codes for the Character contract.",
+      "enum": [
+        "C100",
+        "C101",
+        "C102",
+        "C103",
+        "C104",
+        "C105",
+        "C106",
+        "C107",
+        "C108",
+        "C109",
+        "C110"
+      ],
+      "type": "string"
+    },
+    "CharacterExtension": {
+      "description": "One versioned optional extension.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "identity_presentation",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "expression",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension2"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "behavioral_signatures",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension3"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "role_projections",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension4"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "relationships",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension5"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "alignment_view",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension6"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "date_context",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension7"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "tabletop",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension8"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "opaque",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VersionedExtension8"
+            }
+          },
+          "required": [
+            "kind",
+            "record"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterFinalReview": {
+      "additionalProperties": false,
+      "description": "Saved final review with the exact visible summary and unresolved diagnostics.",
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/CharacterFinalReviewDecision"
+        },
+        "draft_id": {
+          "type": "string"
+        },
+        "draft_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "profile_sha256": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reviewer": {
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/CharacterFinalReviewSummary"
+        }
+      },
+      "required": [
+        "review_format_version",
+        "draft_id",
+        "draft_revision",
+        "profile_sha256",
+        "reviewer",
+        "rationale",
+        "decision",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "CharacterFinalReviewDecision": {
+      "description": "Accepted or needs-changes final authoring review.",
+      "enum": [
+        "accepted",
+        "needs_changes"
+      ],
+      "type": "string"
+    },
+    "CharacterFinalReviewSummary": {
+      "additionalProperties": false,
+      "description": "Complete human-review surface generated from one validated effective profile.",
+      "properties": {
+        "accepted_date_context": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approved_alignment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlignmentView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "birth_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed3"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "canonical_traits": {
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic_appreciation": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "agreeableness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "anxiety": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "conscientiousness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "creativity": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "dependence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "diligence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "emotionality": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "extraversion": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "fairness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "fearfulness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "flexibility": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "forgivingness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "gentleness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "greed_avoidance": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "honesty_humility": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "inquisitiveness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "liveliness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "modesty": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "openness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "organization": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "patience": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "perfectionism": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "prudence": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sentimentality": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sincerity": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "sociability": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "social_boldness": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "social_self_esteem": {
+              "$ref": "#/$defs/Attributed4"
+            },
+            "unconventionality": {
+              "$ref": "#/$defs/Attributed4"
+            }
+          },
+          "type": "object"
+        },
+        "derived_ocean": {
+          "$ref": "#/$defs/CharacterDerivedViews"
+        },
+        "identity": {
+          "$ref": "#/$defs/CharacterIdentity"
+        },
+        "inner_life": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AuthoredNote"
+          },
+          "type": "object"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "unresolved_diagnostics": {
+          "items": {
+            "$ref": "#/$defs/CharacterDiagnostic"
+          },
+          "type": "array"
+        },
+        "voice": {
+          "additionalProperties": {
+            "$ref": "#/$defs/VoiceDirection"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile_id",
+        "identity",
+        "canonical_traits",
+        "derived_ocean",
+        "inner_life",
+        "voice",
+        "provenance",
+        "unresolved_diagnostics"
+      ],
+      "type": "object"
+    },
+    "CharacterIdentity": {
+      "additionalProperties": false,
+      "description": "Stable identity distinct from optional visual presentation.",
+      "properties": {
+        "aliases": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional ordered aliases; an omitted field means no assertion."
+        },
+        "display_name": {
+          "$ref": "#/$defs/Attributed",
+          "description": "Primary human-readable name."
+        }
+      },
+      "required": [
+        "display_name"
+      ],
+      "type": "object"
+    },
+    "CharacterOperation": {
+      "additionalProperties": false,
+      "description": "One typed, reviewable profile operation.",
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/CharacterOperationAction"
+        },
+        "expected_prior_sha256": {
+          "description": "Required when replacing or removing a present value.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "rationale",
+        "action"
+      ],
+      "type": "object"
+    },
+    "CharacterOperationAction": {
+      "description": "Closed v1 operation vocabulary shared by source tooling, editor actions, CLI, RON, and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "set_display_name",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Attributed"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "set_aliases",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Attributed2"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "clear_aliases",
+              "type": "string"
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "set_birth_date",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Attributed3"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "clear_birth_date",
+              "type": "string"
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "set_hexaco_trait",
+              "type": "string"
+            },
+            "trait_id": {
+              "$ref": "#/$defs/HexacoTrait"
+            },
+            "value": {
+              "$ref": "#/$defs/Attributed4"
+            }
+          },
+          "required": [
+            "action",
+            "trait_id",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "clear_hexaco_trait",
+              "type": "string"
+            },
+            "trait_id": {
+              "$ref": "#/$defs/HexacoTrait"
+            }
+          },
+          "required": [
+            "action",
+            "trait_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_inner_life",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/AuthoredNote"
+            }
+          },
+          "required": [
+            "action",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "remove_inner_life",
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_voice",
+              "type": "string"
+            },
+            "record": {
+              "$ref": "#/$defs/VoiceDirection"
+            }
+          },
+          "required": [
+            "action",
+            "record"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "remove_voice",
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_suggestion",
+              "type": "string"
+            },
+            "suggestion": {
+              "$ref": "#/$defs/CharacterSuggestion"
+            }
+          },
+          "required": [
+            "action",
+            "suggestion"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "remove_suggestion",
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_extension",
+              "type": "string"
+            },
+            "extension": {
+              "$ref": "#/$defs/CharacterExtension"
+            },
+            "namespace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "namespace",
+            "extension"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "remove_extension",
+              "type": "string"
+            },
+            "namespace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "namespace"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterOverlay": {
+      "additionalProperties": false,
+      "description": "Sparse operations applied over a separately inspectable template.",
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "operations": {
+          "description": "Operations must be canonically ordered by target path and then operation id.",
+          "items": {
+            "$ref": "#/$defs/CharacterOperation"
+          },
+          "type": "array"
+        },
+        "overlay_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "template": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterTemplateRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "overlay_format_version",
+        "id",
+        "character_id",
+        "operations",
+        "provenance"
+      ],
+      "type": "object"
+    },
+    "CharacterProfile": {
+      "additionalProperties": false,
+      "description": "Portable Character Profile with canon, projections, suggestions, and derived views separated.",
+      "properties": {
+        "canon": {
+          "$ref": "#/$defs/CharacterCanon",
+          "description": "Normative authored or imported character data."
+        },
+        "derived": {
+          "$ref": "#/$defs/CharacterDerivedViews",
+          "description": "Reproducible compatibility projections computed from canon."
+        },
+        "extensions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterExtension"
+          },
+          "description": "Optional, versioned records that cannot write back into canonical personality evidence.",
+          "type": "object"
+        },
+        "id": {
+          "description": "Globally stable, namespaced character identifier.",
+          "type": "string"
+        },
+        "profile_format_version": {
+          "description": "Serialized profile contract version.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance",
+          "description": "Machine-readable source and transformation lineage."
+        },
+        "suggestions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterSuggestion"
+          },
+          "description": "Reviewable proposals kept outside canon until an explicit operation accepts them.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile_format_version",
+        "id",
+        "canon",
+        "derived",
+        "provenance"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireAnswers": {
+      "additionalProperties": false,
+      "description": "Exact responses to one pinned pack. Response values range from -2 through 2.",
+      "properties": {
+        "answers_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "pack": {
+          "$ref": "#/$defs/CharacterQuestionnairePackRef"
+        },
+        "responses": {
+          "additionalProperties": {
+            "format": "int8",
+            "maximum": 127,
+            "minimum": -128,
+            "type": "integer"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "answers_format_version",
+        "id",
+        "pack",
+        "responses"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireComparison": {
+      "enum": [
+        "at_least",
+        "at_most"
+      ],
+      "type": "string"
+    },
+    "CharacterQuestionnaireConflict": {
+      "additionalProperties": false,
+      "description": "Triggered narrative-tension warning requiring one explicit author decision.",
+      "properties": {
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "rationale_required": {
+          "type": "boolean"
+        },
+        "rejected_traits": {
+          "items": {
+            "$ref": "#/$defs/HexacoTrait"
+          },
+          "type": "array"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "rule_id",
+        "label",
+        "explanation",
+        "input_paths",
+        "rejected_traits",
+        "rationale_required"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireConflictDecision": {
+      "description": "Required disposition for one triggered conflict.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "accept",
+              "type": "string"
+            },
+            "rationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "deliberate_exception",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterQuestionnaireConflictPredicate": {
+      "additionalProperties": false,
+      "description": "One fixed-point predicate in a conflict rule.",
+      "properties": {
+        "comparison": {
+          "$ref": "#/$defs/CharacterQuestionnaireComparison"
+        },
+        "threshold_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        }
+      },
+      "required": [
+        "trait_id",
+        "comparison",
+        "threshold_micros"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireConflictRule": {
+      "additionalProperties": false,
+      "description": "Declarative narrative-tension rule. It is not evidence or a diagnosis.",
+      "properties": {
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "predicates": {
+          "items": {
+            "$ref": "#/$defs/CharacterQuestionnaireConflictPredicate"
+          },
+          "type": "array"
+        },
+        "rationale_required": {
+          "type": "boolean"
+        },
+        "rejected_traits": {
+          "description": "Facet suggestions omitted when the author rejects this conflict.",
+          "items": {
+            "$ref": "#/$defs/HexacoTrait"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "explanation",
+        "predicates",
+        "rejected_traits",
+        "rationale_required"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireContribution": {
+      "additionalProperties": false,
+      "description": "One visible item contribution; omitted responses remain visible without a contribution.",
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "response": {
+          "format": "int8",
+          "maximum": 127,
+          "minimum": -128,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "weight_micros": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "weighted_contribution": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "item_id",
+        "weight_micros"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireFacetDecision": {
+      "description": "Explicit confidence-aware decision for every facet.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "accept",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            }
+          },
+          "required": [
+            "action",
+            "confidence",
+            "lock"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "edit",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/TraitMeasurement"
+            }
+          },
+          "required": [
+            "action",
+            "value",
+            "confidence",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "override",
+              "type": "string"
+            },
+            "confidence": {
+              "$ref": "#/$defs/Confidence"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/TraitMeasurement"
+            }
+          },
+          "required": [
+            "action",
+            "value",
+            "confidence",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "withhold",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterQuestionnaireFacetProposal": {
+      "additionalProperties": false,
+      "description": "Proposed score, confidence, and complete answer-to-facet trace.",
+      "properties": {
+        "answered_items": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "score_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "total_items": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trace": {
+          "items": {
+            "$ref": "#/$defs/CharacterQuestionnaireContribution"
+          },
+          "type": "array"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        }
+      },
+      "required": [
+        "trait_id",
+        "confidence",
+        "answered_items",
+        "total_items",
+        "trace"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireItem": {
+      "additionalProperties": false,
+      "description": "One original behavior prompt with signed fixed-point facet weights.",
+      "properties": {
+        "facet_weights_micros": {
+          "additionalProperties": false,
+          "description": "Only the 24 facet identifiers are accepted. Values are signed millionths.",
+          "properties": {
+            "aesthetic_appreciation": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "agreeableness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "anxiety": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "conscientiousness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "creativity": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "dependence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "diligence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "emotionality": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "extraversion": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "fairness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "fearfulness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "flexibility": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "forgivingness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "gentleness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "greed_avoidance": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "honesty_humility": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "inquisitiveness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "liveliness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "modesty": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "openness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "organization": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "patience": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "perfectionism": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "prudence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sentimentality": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sincerity": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sociability": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "social_boldness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "social_self_esteem": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "unconventionality": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "prompt",
+        "facet_weights_micros"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnairePack": {
+      "additionalProperties": false,
+      "description": "Original, data-only narrative behavior questionnaire.",
+      "properties": {
+        "conflict_rules": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterQuestionnaireConflictRule"
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "independently_authored_prompts": {
+          "description": "Must be true for a distributable pack.",
+          "type": "boolean"
+        },
+        "items": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterQuestionnaireItem"
+          },
+          "type": "object"
+        },
+        "license": {
+          "type": "string"
+        },
+        "license_url": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "methodology": {
+          "type": "string"
+        },
+        "narrative_authoring_only": {
+          "description": "Must be true: prompts are fictional authoring aids, not a psychometric instrument.",
+          "type": "boolean"
+        },
+        "pack_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "title": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack_format_version",
+        "id",
+        "version",
+        "title",
+        "methodology",
+        "limitations",
+        "narrative_authoring_only",
+        "independently_authored_prompts",
+        "license",
+        "license_url",
+        "items",
+        "provenance"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnairePackRef": {
+      "additionalProperties": false,
+      "description": "Exact questionnaire pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireProposal": {
+      "additionalProperties": false,
+      "description": "Immutable, independently reproducible questionnaire scoring proposal.",
+      "properties": {
+        "answers": {
+          "$ref": "#/$defs/CharacterQuestionnaireAnswers"
+        },
+        "conflicts": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterQuestionnaireConflict"
+          },
+          "type": "object"
+        },
+        "facets": {
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic_appreciation": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "agreeableness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "anxiety": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "conscientiousness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "creativity": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "dependence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "diligence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "emotionality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "extraversion": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "fairness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "fearfulness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "flexibility": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "forgivingness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "gentleness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "greed_avoidance": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "honesty_humility": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "inquisitiveness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "liveliness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "modesty": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "openness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "organization": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "patience": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "perfectionism": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "prudence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "sentimentality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "sincerity": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "sociability": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "social_boldness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "social_self_esteem": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            },
+            "unconventionality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetProposal"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_profile": {
+          "$ref": "#/$defs/CharacterProfile"
+        },
+        "input_profile_sha256": {
+          "type": "string"
+        },
+        "pack": {
+          "$ref": "#/$defs/CharacterQuestionnairePack"
+        },
+        "pack_ref": {
+          "$ref": "#/$defs/CharacterQuestionnairePackRef"
+        },
+        "proposal_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "proposal_format_version",
+        "id",
+        "input_profile",
+        "input_profile_sha256",
+        "pack",
+        "pack_ref",
+        "answers",
+        "seed",
+        "facets",
+        "conflicts"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireReceipt": {
+      "additionalProperties": false,
+      "description": "Full proof of questionnaire scoring, review, canonical operations, and output.",
+      "properties": {
+        "applied_traits": {
+          "items": {
+            "$ref": "#/$defs/HexacoTrait"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/CharacterOperation"
+          },
+          "type": "array"
+        },
+        "output_profile": {
+          "$ref": "#/$defs/CharacterProfile"
+        },
+        "output_profile_sha256": {
+          "type": "string"
+        },
+        "proposal": {
+          "$ref": "#/$defs/CharacterQuestionnaireProposal"
+        },
+        "receipt_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rejected_traits": {
+          "items": {
+            "$ref": "#/$defs/HexacoTrait"
+          },
+          "type": "array"
+        },
+        "review": {
+          "$ref": "#/$defs/CharacterQuestionnaireReview"
+        },
+        "review_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_format_version",
+        "id",
+        "proposal",
+        "review",
+        "review_sha256",
+        "operations",
+        "applied_traits",
+        "rejected_traits",
+        "output_profile",
+        "output_profile_sha256"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireReview": {
+      "additionalProperties": false,
+      "description": "Complete per-facet confidence review and per-conflict disposition.",
+      "properties": {
+        "conflict_decisions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterQuestionnaireConflictDecision"
+          },
+          "type": "object"
+        },
+        "facet_decisions": {
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic_appreciation": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "agreeableness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "anxiety": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "conscientiousness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "creativity": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "dependence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "diligence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "emotionality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "extraversion": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "fairness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "fearfulness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "flexibility": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "forgivingness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "gentleness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "greed_avoidance": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "honesty_humility": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "inquisitiveness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "liveliness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "modesty": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "openness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "organization": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "patience": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "perfectionism": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "prudence": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "sentimentality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "sincerity": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "sociability": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "social_boldness": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "social_self_esteem": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            },
+            "unconventionality": {
+              "$ref": "#/$defs/CharacterQuestionnaireFacetDecision"
+            }
+          },
+          "type": "object"
+        },
+        "proposal_sha256": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reviewer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_format_version",
+        "proposal_sha256",
+        "reviewer",
+        "rationale",
+        "facet_decisions",
+        "conflict_decisions"
+      ],
+      "type": "object"
+    },
+    "CharacterSuggestion": {
+      "additionalProperties": false,
+      "description": "A proposal that remains non-canonical until an explicit reviewed operation accepts it.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "proposal": {
+          "$ref": "#/$defs/Attributed5"
+        },
+        "target_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "target_path",
+        "proposal"
+      ],
+      "type": "object"
+    },
+    "CharacterTemplate": {
+      "additionalProperties": false,
+      "description": "Immutable versioned template input.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/CharacterProfile"
+        },
+        "template_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "template_format_version",
+        "id",
+        "version",
+        "profile"
+      ],
+      "type": "object"
+    },
+    "CharacterTemplateRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable template coordinate retained by an overlay.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "Confidence": {
+      "description": "Bounded confidence vocabulary shared by evidence and projections.",
+      "enum": [
+        "unknown",
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "Conscientiousness": {
+      "additionalProperties": false,
+      "description": "Conscientiousness factor and its four canonical facets.",
+      "properties": {
+        "diligence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "organization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "perfectionism": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prudence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "DateContext": {
+      "additionalProperties": false,
+      "description": "Accepted or proposed date-context references. They are authoring cues, never causal evidence.",
+      "properties": {
+        "accepted_cues": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AcceptedDateContextCue"
+          },
+          "description": "Approved public cues keyed by their stable candidate id.",
+          "type": "object"
+        },
+        "accepted_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "additional_context_packs": {
+          "description": "Additional exact context packs used by one reviewed enrichment.",
+          "items": {
+            "$ref": "#/$defs/DateContextPackRef"
+          },
+          "type": "array"
+        },
+        "context_hash": {
+          "type": "string"
+        },
+        "context_pack": {
+          "type": "string"
+        },
+        "context_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "context_pack",
+        "context_version",
+        "context_hash",
+        "accepted_record_ids"
+      ],
+      "type": "object"
+    },
+    "DateContextCueKind": {
+      "description": "Fictional authoring surface of one temporal cue.",
+      "enum": [
+        "affinity",
+        "tension",
+        "value",
+        "memory",
+        "voice"
+      ],
+      "type": "string"
+    },
+    "DateContextDecision": {
+      "description": "How an approved temporal cue entered the public view.",
+      "enum": [
+        "accepted",
+        "auto_approved",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
+    "DateContextPackRef": {
+      "additionalProperties": false,
+      "description": "Exact temporal-context pack coordinate retained by an accepted public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "DateContextSensitivity": {
+      "description": "Sensitivity band controlling auto-approval and review policy.",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "DateContextUncertainty": {
+      "description": "Bounded uncertainty retained in the approved public projection.",
+      "enum": [
+        "exact",
+        "bounded",
+        "disputed"
+      ],
+      "type": "string"
+    },
+    "DerivedOceanInspection": {
+      "additionalProperties": false,
+      "description": "Explicit derived styling metadata for editor and text renderers.",
+      "properties": {
+        "after": {
+          "$ref": "#/$defs/OceanView"
+        },
+        "authority": {
+          "$ref": "#/$defs/ValueState"
+        },
+        "before": {
+          "$ref": "#/$defs/OceanView"
+        },
+        "lossy": {
+          "type": "boolean"
+        },
+        "recomputed_in_candidate": {
+          "type": "boolean"
+        },
+        "visually_distinct_from_canon": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "authority",
+        "visually_distinct_from_canon",
+        "lossy",
+        "before",
+        "after",
+        "recomputed_in_candidate"
+      ],
+      "type": "object"
+    },
+    "DerivedTrait": {
+      "additionalProperties": false,
+      "description": "One derived dimension with exact input paths.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "score",
+        "confidence",
+        "input_paths"
+      ],
+      "type": "object"
+    },
+    "DiagnosticSeverity": {
+      "description": "Diagnostic severity vocabulary.",
+      "enum": [
+        "error",
+        "warning"
+      ],
+      "type": "string"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Emotionality": {
+      "additionalProperties": false,
+      "description": "Emotionality factor and its four canonical facets.",
+      "properties": {
+        "anxiety": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dependence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fearfulness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sentimentality": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ExpressionData": {
+      "additionalProperties": false,
+      "description": "Normalized expression and preference records plus behavioral-signature links.",
+      "properties": {
+        "behavioral_signature_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lexicon": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NormalizedExpressionTerm"
+          },
+          "type": "object"
+        },
+        "preferences": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NormalizedPreference"
+          },
+          "type": "object"
+        },
+        "source_pack_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "lexicon",
+        "preferences",
+        "behavioral_signature_refs",
+        "source_pack_refs"
+      ],
+      "type": "object"
+    },
+    "ExtensionHeader": {
+      "additionalProperties": false,
+      "description": "Authority and lifecycle metadata required for every optional extension.",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "canonical_personality_write_back": {
+          "$ref": "#/$defs/ExtensionWriteBack",
+          "description": "Always `forbidden` in v1; projections cannot mutate canonical personality evidence."
+        },
+        "extension_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState"
+        }
+      },
+      "required": [
+        "namespace",
+        "extension_version",
+        "authority",
+        "rationale",
+        "state",
+        "review",
+        "lock",
+        "freshness",
+        "lineage",
+        "canonical_personality_write_back"
+      ],
+      "type": "object"
+    },
+    "ExtensionWriteBack": {
+      "description": "V1 write-back policy has no permissive state.",
+      "enum": [
+        "forbidden"
+      ],
+      "type": "string"
+    },
+    "Extraversion": {
+      "additionalProperties": false,
+      "description": "Extraversion factor and its four canonical facets.",
+      "properties": {
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "liveliness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sociability": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "social_boldness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "social_self_esteem": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Freshness": {
+      "description": "Whether lineage still matches the exact upstream inputs.",
+      "enum": [
+        "current",
+        "stale"
+      ],
+      "type": "string"
+    },
+    "HexacoProfile": {
+      "additionalProperties": false,
+      "description": "Canonical six-factor, 24-facet HEXACO record.",
+      "properties": {
+        "agreeableness": {
+          "$ref": "#/$defs/Agreeableness"
+        },
+        "conscientiousness": {
+          "$ref": "#/$defs/Conscientiousness"
+        },
+        "emotionality": {
+          "$ref": "#/$defs/Emotionality"
+        },
+        "extraversion": {
+          "$ref": "#/$defs/Extraversion"
+        },
+        "honesty_humility": {
+          "$ref": "#/$defs/HonestyHumility"
+        },
+        "openness": {
+          "$ref": "#/$defs/Openness"
+        }
+      },
+      "required": [
+        "honesty_humility",
+        "emotionality",
+        "extraversion",
+        "agreeableness",
+        "conscientiousness",
+        "openness"
+      ],
+      "type": "object"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "HonestyHumility": {
+      "additionalProperties": false,
+      "description": "Honesty-Humility factor and its four canonical facets.",
+      "properties": {
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fairness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "greed_avoidance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modesty": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sincerity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "IdentityPresentation": {
+      "additionalProperties": false,
+      "description": "Optional identity and project-relative presentation references.",
+      "properties": {
+        "identity_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "presentation_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "identity_refs",
+        "presentation_refs"
+      ],
+      "type": "object"
+    },
+    "InnerLifeCategory": {
+      "description": "Closed baseline categories; custom taxonomies use a versioned extension.",
+      "enum": [
+        "value",
+        "fear",
+        "desire",
+        "contradiction",
+        "memory",
+        "boundary"
+      ],
+      "type": "string"
+    },
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "NormalizedExpressionTerm": {
+      "additionalProperties": false,
+      "description": "One normalized lexicon entry.",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "normalized": {
+          "type": "string"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "normalized",
+        "strength"
+      ],
+      "type": "object"
+    },
+    "NormalizedPreference": {
+      "additionalProperties": false,
+      "description": "One normalized preference record.",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "polarity": {
+          "$ref": "#/$defs/PreferencePolarity"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "target",
+        "polarity",
+        "strength"
+      ],
+      "type": "object"
+    },
+    "OceanView": {
+      "additionalProperties": false,
+      "description": "Explicitly lossy OCEAN compatibility projection.",
+      "properties": {
+        "agreeableness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "algorithm": {
+          "type": "string"
+        },
+        "algorithm_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "conscientiousness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraversion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "independent_evidence": {
+          "type": "boolean"
+        },
+        "lossy": {
+          "type": "boolean"
+        },
+        "neuroticism": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "omitted_factor": {
+          "$ref": "#/$defs/HexacoTrait",
+          "description": "Canonical factor intentionally omitted by this five-factor view."
+        },
+        "openness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedTrait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "algorithm",
+        "algorithm_version",
+        "lossy",
+        "independent_evidence",
+        "omitted_factor"
+      ],
+      "type": "object"
+    },
+    "OpaqueExtensionData": {
+      "additionalProperties": false,
+      "description": "Forward-compatible payload preserved without interpretation or write-back.",
+      "properties": {
+        "interpretation": {
+          "$ref": "#/$defs/OpaqueInterpretation"
+        },
+        "payload": {
+          "$ref": "#/$defs/DomainValue"
+        }
+      },
+      "required": [
+        "interpretation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    "OpaqueInterpretation": {
+      "description": "Unknown extension versions are retained only in this inactive state.",
+      "enum": [
+        "preserved_inactive"
+      ],
+      "type": "string"
+    },
+    "Openness": {
+      "additionalProperties": false,
+      "description": "Openness factor and its four canonical facets.",
+      "properties": {
+        "aesthetic_appreciation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "creativity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "factor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inquisitiveness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unconventionality": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "PreferencePolarity": {
+      "description": "Closed baseline preference direction.",
+      "enum": [
+        "prefer",
+        "avoid"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "RelationshipEdge": {
+      "additionalProperties": false,
+      "description": "One portable relationship edge.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "source_character_id": {
+          "type": "string"
+        },
+        "target_character_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source_character_id",
+        "target_character_id",
+        "kind",
+        "confidence"
+      ],
+      "type": "object"
+    },
+    "RelationshipEdges": {
+      "additionalProperties": false,
+      "description": "Character relationship references; richer graph semantics remain in the relationship extension.",
+      "properties": {
+        "edges": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RelationshipEdge"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "edges"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "description": "Explicit editorial state.",
+      "enum": [
+        "not_required",
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "type": "string"
+    },
+    "RoleProjection": {
+      "additionalProperties": false,
+      "description": "A reviewed narrative or vocational projection.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "taxonomy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "taxonomy",
+        "role",
+        "rationale",
+        "input_paths"
+      ],
+      "type": "object"
+    },
+    "RoleProjections": {
+      "additionalProperties": false,
+      "description": "Accepted role projections keyed by stable identifier.",
+      "properties": {
+        "roles": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RoleProjection"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "roles"
+      ],
+      "type": "object"
+    },
+    "SynthesisOrigin": {
+      "description": "Exact source of one effective field.",
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "template",
+              "type": "string"
+            },
+            "source_path": {
+              "type": "string"
+            },
+            "template_id": {
+              "type": "string"
+            },
+            "template_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "template_id",
+            "template_version",
+            "source_path"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "overlay",
+              "type": "string"
+            },
+            "operation_id": {
+              "type": "string"
+            },
+            "overlay_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "overlay_id",
+            "operation_id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TraitBand": {
+      "description": "Closed five-band trait vocabulary.",
+      "enum": [
+        "very_low",
+        "low",
+        "middle",
+        "high",
+        "very_high"
+      ],
+      "type": "string"
+    },
+    "TraitMeasurement": {
+      "description": "One canonical trait measurement. A record uses a bounded score or one closed band, never both.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Inclusive normalized value from 0.0 through 1.0.",
+          "properties": {
+            "form": {
+              "const": "score",
+              "type": "string"
+            },
+            "score": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "form",
+            "score"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Coarse representation with a documented v1 numeric anchor for projections.",
+          "properties": {
+            "band": {
+              "$ref": "#/$defs/TraitBand"
+            },
+            "form": {
+              "const": "band",
+              "type": "string"
+            }
+          },
+          "required": [
+            "form",
+            "band"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ValueState": {
+      "description": "Distinguishable value states with deterministic precedence.",
+      "oneOf": [
+        {
+          "const": "suggested",
+          "description": "Unaccepted proposal; lowest precedence and never canonical personality evidence.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Mechanical projection; never independent evidence and never writable to canon.",
+          "type": "string"
+        },
+        {
+          "const": "imported",
+          "description": "Value acquired from a declared external source.",
+          "type": "string"
+        },
+        {
+          "const": "reviewed",
+          "description": "Proposal or import explicitly accepted by a reviewer.",
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Direct author decision.",
+          "type": "string"
+        },
+        {
+          "const": "overridden",
+          "description": "Explicit replacement naming and fingerprinting the prior value; highest precedence.",
+          "type": "string"
+        }
+      ]
+    },
+    "VersionedExtension": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/IdentityPresentation"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension2": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/ExpressionData"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension3": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/BehavioralSignatures"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension4": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/RoleProjections"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension5": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/RelationshipEdges"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension6": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/AlignmentView"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension7": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/DateContext"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VersionedExtension8": {
+      "additionalProperties": false,
+      "description": "Shared envelope for optional records.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/ExtensionHeader"
+        },
+        "value": {
+          "$ref": "#/$defs/OpaqueExtensionData"
+        }
+      },
+      "required": [
+        "header",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VoiceCategory": {
+      "description": "Closed baseline voice categories; detailed expression data remains an extension.",
+      "enum": [
+        "cadence",
+        "tone",
+        "vocabulary",
+        "constraint",
+        "sample"
+      ],
+      "type": "string"
+    },
+    "VoiceDirection": {
+      "additionalProperties": false,
+      "description": "One stable authored voice direction.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/VoiceCategory"
+        },
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "content"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-authoring-preview:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete dry-run inspection returned before a revision is persisted.",
+  "properties": {
+    "base_fields": {
+      "items": {
+        "$ref": "#/$defs/CharacterAuthoringFieldView"
+      },
+      "type": "array"
+    },
+    "candidate_draft": {
+      "$ref": "#/$defs/CharacterAuthoringDraft"
+    },
+    "changes": {
+      "items": {
+        "$ref": "#/$defs/CharacterAuthoringFieldChange"
+      },
+      "type": "array"
+    },
+    "derived_ocean": {
+      "$ref": "#/$defs/DerivedOceanInspection"
+    },
+    "draft_id": {
+      "type": "string"
+    },
+    "input_draft_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "invalidations": {
+      "items": {
+        "$ref": "#/$defs/CharacterAuthoringInvalidation"
+      },
+      "type": "array"
+    },
+    "migration_effects": {
+      "items": {
+        "$ref": "#/$defs/CharacterAuthoringFieldChange"
+      },
+      "type": "array"
+    },
+    "preview_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "resulting_profile_sha256": {
+      "type": "string"
+    },
+    "revision_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "preview_format_version",
+    "workspace_id",
+    "draft_id",
+    "input_draft_revision",
+    "revision_id",
+    "base_fields",
+    "changes",
+    "derived_ocean",
+    "invalidations",
+    "resulting_profile_sha256",
+    "candidate_draft"
+  ],
+  "title": "Weave Character Guided Authoring Preview v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}

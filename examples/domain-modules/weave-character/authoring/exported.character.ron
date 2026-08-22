@@ -1,0 +1,536 @@
+(
+    profile_format_version: 1,
+    id: "org.weave.character.lumen_reed",
+    canon: (
+        identity: (
+            display_name: (
+                value: "Lumen Reed",
+                state: authored,
+                confidence: high,
+                review: not_required,
+                lock: unlocked,
+                freshness: current,
+                lineage: [
+                    "authoring_original",
+                ],
+            ),
+        ),
+        birth_date: Some((
+            value: (
+                precision: "full",
+                calendar: proleptic_gregorian,
+                year: 1001,
+                month: 4,
+                day: 7,
+            ),
+            state: authored,
+            confidence: high,
+            review: not_required,
+            lock: unlocked,
+            freshness: current,
+            lineage: [
+                "authoring_original",
+            ],
+        )),
+        personality: (
+            honesty_humility: (
+                sincerity: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                fairness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                greed_avoidance: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                modesty: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+            emotionality: (
+                fearfulness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                anxiety: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                dependence: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                sentimentality: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+            extraversion: (
+                social_self_esteem: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                social_boldness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                sociability: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                liveliness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+            agreeableness: (
+                forgivingness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                gentleness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                flexibility: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                patience: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+            conscientiousness: (
+                organization: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                diligence: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                perfectionism: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                prudence: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+            openness: (
+                aesthetic_appreciation: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                inquisitiveness: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                creativity: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+                unconventionality: Some((
+                    value: (
+                        form: "score",
+                        score: 1.0,
+                    ),
+                    state: reviewed,
+                    confidence: moderate,
+                    review: accepted,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "questionnaire_original",
+                    ],
+                    rationale: Some("Accepted from a reviewed original narrative questionnaire."),
+                )),
+            ),
+        ),
+        inner_life: {
+            "quiet_vow": (
+                id: "quiet_vow",
+                category: value,
+                content: (
+                    value: "Leave a clear trail for anyone who must follow after the storm.",
+                    state: authored,
+                    confidence: high,
+                    review: not_required,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "authoring_original",
+                    ],
+                ),
+            ),
+        },
+        voice: {
+            "measured_cadence": (
+                id: "measured_cadence",
+                category: cadence,
+                content: (
+                    value: "Uses short clauses, then leaves a deliberate pause before a decision.",
+                    state: authored,
+                    confidence: high,
+                    review: not_required,
+                    lock: unlocked,
+                    freshness: current,
+                    lineage: [
+                        "authoring_original",
+                    ],
+                ),
+            ),
+        },
+    ),
+    derived: (
+        ocean: (
+            algorithm: "weave_hexaco_to_ocean_compatibility",
+            algorithm_version: 1,
+            lossy: true,
+            independent_evidence: false,
+            openness: Some((
+                score: 1.0,
+                confidence: moderate,
+                input_paths: [
+                    "canon.personality.openness.aesthetic_appreciation",
+                    "canon.personality.openness.inquisitiveness",
+                    "canon.personality.openness.creativity",
+                    "canon.personality.openness.unconventionality",
+                ],
+            )),
+            conscientiousness: Some((
+                score: 1.0,
+                confidence: moderate,
+                input_paths: [
+                    "canon.personality.conscientiousness.organization",
+                    "canon.personality.conscientiousness.diligence",
+                    "canon.personality.conscientiousness.perfectionism",
+                    "canon.personality.conscientiousness.prudence",
+                ],
+            )),
+            extraversion: Some((
+                score: 1.0,
+                confidence: moderate,
+                input_paths: [
+                    "canon.personality.extraversion.social_self_esteem",
+                    "canon.personality.extraversion.social_boldness",
+                    "canon.personality.extraversion.sociability",
+                    "canon.personality.extraversion.liveliness",
+                ],
+            )),
+            agreeableness: Some((
+                score: 1.0,
+                confidence: moderate,
+                input_paths: [
+                    "canon.personality.agreeableness.forgivingness",
+                    "canon.personality.agreeableness.gentleness",
+                    "canon.personality.agreeableness.flexibility",
+                    "canon.personality.agreeableness.patience",
+                ],
+            )),
+            neuroticism: Some((
+                score: 1.0,
+                confidence: moderate,
+                input_paths: [
+                    "canon.personality.emotionality.fearfulness",
+                    "canon.personality.emotionality.anxiety",
+                    "canon.personality.emotionality.dependence",
+                    "canon.personality.emotionality.sentimentality",
+                ],
+            )),
+            omitted_factor: honesty_humility,
+        ),
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "authoring_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "guided-authoring-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic blank Character overlay.",
+                modified: false,
+            ),
+            (
+                id: "questionnaire_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "guided-authoring-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Lantern Choices questionnaire pack.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "overlay": [
+                "authoring_original",
+            ],
+            "pack": [
+                "questionnaire_original",
+            ],
+        },
+    ),
+)

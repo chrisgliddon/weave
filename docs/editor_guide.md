@@ -31,6 +31,25 @@ The editor loads the adjacent `weave.modules.json` through the public `weave-dom
 
 Watching is bounded to the open project and its approved project-relative artifacts. A fully validated module update swaps into all editor surfaces and rebuilds preview. A malformed, incompatible, or tampered update is reported while the last valid catalog, graph, and preview remain active. The editor never searches the machine or network for a module named in source.
 
+## Guided Character authoring
+
+`CharacterAuthoringSession` opens the same versioned workspace used by the
+`weave-character authoring-*` commands. Create, list, show, clone, revise, validate, final review,
+export, and reopen therefore call the same contract functions and produce the same JSON/RON bytes.
+An editor failure leaves the complete prior workspace selected and unchanged.
+
+The focus order is stable: identity, birth date, direct facets, questionnaire, confidence review,
+derived OCEAN, alignment, date context, inner life, voice, conflicts, final review, and export.
+Tab and Shift+Tab move through every control, Home/End jump to its bounds, and Enter or Space
+activates the focused control. Each accessibility record exposes a tab role, human label, position,
+total, keyboard hint, and the exact source representation. The OCEAN panel is explicitly read-only
+and derived.
+
+Before apply, the revision panel shows template base versus effective values, inherited and
+overridden ownership, locks, protected or pack-owned paths, field differences, template migration
+effects, the recomputed derived view, and blocking alignment/date-context invalidations. A final
+accepted review is unavailable while blocking diagnostics remain. See the [Character guide](character_module.md#guided-authoring-and-conflict-review) and the checked [authoring corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/authoring).
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source and updates `weave.lock` for a configured domain project. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:

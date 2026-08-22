@@ -1,0 +1,38 @@
+{
+  "revision_format_version": 1,
+  "id": "org.weave.character.revision.protected",
+  "draft_id": "org.weave.character.lumen_reed",
+  "expected_draft_revision": 0,
+  "input_mode": "general",
+  "rationale": "Invalid placeholder fixture.",
+  "changes": [
+    {
+      "id": "remove_alignment",
+      "rationale": "Invalid placeholder fixture.",
+      "action": {
+        "action": "remove_extension",
+        "namespace": "org.weave.character.alignment"
+      }
+    }
+  ],
+  "provenance": {
+    "sources": [
+      {
+        "id": "authoring_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "guided-authoring-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic blank Character overlay.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "overlay": [
+        "authoring_original"
+      ]
+    }
+  }
+}

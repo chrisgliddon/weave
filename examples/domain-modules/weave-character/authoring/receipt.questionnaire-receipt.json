@@ -1,0 +1,2018 @@
+{
+  "receipt_format_version": 1,
+  "id": "org.weave.character.answers.lumen_reed.proposal.receipt",
+  "proposal": {
+    "proposal_format_version": 1,
+    "id": "org.weave.character.answers.lumen_reed.proposal",
+    "input_profile": {
+      "profile_format_version": 1,
+      "id": "org.weave.character.lumen_reed",
+      "canon": {
+        "identity": {
+          "display_name": {
+            "value": "Lumen Reed",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "authoring_original"
+            ]
+          }
+        },
+        "birth_date": {
+          "value": {
+            "precision": "full",
+            "calendar": "proleptic_gregorian",
+            "year": 1001,
+            "month": 4,
+            "day": 7
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "authoring_original"
+          ]
+        },
+        "personality": {
+          "honesty_humility": {},
+          "emotionality": {},
+          "extraversion": {},
+          "agreeableness": {},
+          "conscientiousness": {},
+          "openness": {}
+        },
+        "inner_life": {
+          "quiet_vow": {
+            "id": "quiet_vow",
+            "category": "value",
+            "content": {
+              "value": "Leave a clear trail for anyone who must follow after the storm.",
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "authoring_original"
+              ]
+            }
+          }
+        },
+        "voice": {
+          "measured_cadence": {
+            "id": "measured_cadence",
+            "category": "cadence",
+            "content": {
+              "value": "Uses short clauses, then leaves a deliberate pause before a decision.",
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "authoring_original"
+              ]
+            }
+          }
+        }
+      },
+      "derived": {
+        "ocean": {
+          "algorithm": "weave_hexaco_to_ocean_compatibility",
+          "algorithm_version": 1,
+          "lossy": true,
+          "independent_evidence": false,
+          "omitted_factor": "honesty_humility"
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "authoring_original",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "guided-authoring-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic blank Character overlay.",
+            "modified": false
+          }
+        ],
+        "transformations": [],
+        "claims": {
+          "overlay": [
+            "authoring_original"
+          ]
+        }
+      }
+    },
+    "input_profile_sha256": "686181dae1873761c1cbd7a4ba462ba7606dbbff5271d4458daa530b9e1c1192",
+    "pack": {
+      "pack_format_version": 1,
+      "id": "org.weave.character.questionnaire.lantern_choices",
+      "version": "1.0.0",
+      "title": "Lantern Choices",
+      "methodology": "Each independently written fictional behavior response contributes through one declared signed fixed-point facet weight; authors review every result before canon changes.",
+      "limitations": [
+        "It is a fictional authoring aid, not an assessment of a person.",
+        "Scores are reviewable prompts and are not independent personality evidence."
+      ],
+      "narrative_authoring_only": true,
+      "independently_authored_prompts": true,
+      "license": "MIT",
+      "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+      "items": {
+        "behavior_00": {
+          "id": "behavior_00",
+          "prompt": "When a promise becomes inconvenient, the character states their real intent plainly.",
+          "facet_weights_micros": {
+            "sincerity": 1000000
+          }
+        },
+        "behavior_01": {
+          "id": "behavior_01",
+          "prompt": "When dividing scarce supplies, the character applies the same rule to every companion.",
+          "facet_weights_micros": {
+            "fairness": 1000000
+          }
+        },
+        "behavior_02": {
+          "id": "behavior_02",
+          "prompt": "When offered status for its own sake, the character can leave the offer behind.",
+          "facet_weights_micros": {
+            "greed_avoidance": 1000000
+          }
+        },
+        "behavior_03": {
+          "id": "behavior_03",
+          "prompt": "When praised in a crowded room, the character shares credit without erasing their work.",
+          "facet_weights_micros": {
+            "modesty": 1000000
+          }
+        },
+        "behavior_04": {
+          "id": "behavior_04",
+          "prompt": "When a route becomes dangerous, the character notices the risk before stepping forward.",
+          "facet_weights_micros": {
+            "fearfulness": 1000000
+          }
+        },
+        "behavior_05": {
+          "id": "behavior_05",
+          "prompt": "When plans remain uncertain, the character revisits possible outcomes before resting.",
+          "facet_weights_micros": {
+            "anxiety": 1000000
+          }
+        },
+        "behavior_06": {
+          "id": "behavior_06",
+          "prompt": "When overwhelmed, the character asks a trusted companion to stay nearby.",
+          "facet_weights_micros": {
+            "dependence": 1000000
+          }
+        },
+        "behavior_07": {
+          "id": "behavior_07",
+          "prompt": "When an old keepsake resurfaces, the character allows the memory to affect the moment.",
+          "facet_weights_micros": {
+            "sentimentality": 1000000
+          }
+        },
+        "behavior_08": {
+          "id": "behavior_08",
+          "prompt": "When challenged publicly, the character retains a stable sense of their own worth.",
+          "facet_weights_micros": {
+            "social_self_esteem": 1000000
+          }
+        },
+        "behavior_09": {
+          "id": "behavior_09",
+          "prompt": "When a room falls silent, the character is willing to speak first.",
+          "facet_weights_micros": {
+            "social_boldness": 1000000
+          }
+        },
+        "behavior_10": {
+          "id": "behavior_10",
+          "prompt": "When work pauses, the character seeks company rather than solitude.",
+          "facet_weights_micros": {
+            "sociability": 1000000
+          }
+        },
+        "behavior_11": {
+          "id": "behavior_11",
+          "prompt": "When the group is tired, the character brings visible energy back to the task.",
+          "facet_weights_micros": {
+            "liveliness": 1000000
+          }
+        },
+        "behavior_12": {
+          "id": "behavior_12",
+          "prompt": "When someone repairs a past harm, the character can loosen an old grievance.",
+          "facet_weights_micros": {
+            "forgivingness": 1000000
+          }
+        },
+        "behavior_13": {
+          "id": "behavior_13",
+          "prompt": "When correcting a mistake, the character chooses language that preserves dignity.",
+          "facet_weights_micros": {
+            "gentleness": 1000000
+          }
+        },
+        "behavior_14": {
+          "id": "behavior_14",
+          "prompt": "When a plan changes, the character can adapt without treating revision as defeat.",
+          "facet_weights_micros": {
+            "flexibility": 1000000
+          }
+        },
+        "behavior_15": {
+          "id": "behavior_15",
+          "prompt": "When provoked, the character leaves space before answering.",
+          "facet_weights_micros": {
+            "patience": 1000000
+          }
+        },
+        "behavior_16": {
+          "id": "behavior_16",
+          "prompt": "When tools scatter, the character restores an order others can follow.",
+          "facet_weights_micros": {
+            "organization": 1000000
+          }
+        },
+        "behavior_17": {
+          "id": "behavior_17",
+          "prompt": "When a long task becomes repetitive, the character continues the necessary work.",
+          "facet_weights_micros": {
+            "diligence": 1000000
+          }
+        },
+        "behavior_18": {
+          "id": "behavior_18",
+          "prompt": "When a craft is nearly complete, the character still notices small inconsistencies.",
+          "facet_weights_micros": {
+            "perfectionism": 1000000
+          }
+        },
+        "behavior_19": {
+          "id": "behavior_19",
+          "prompt": "Before a consequential choice, the character checks likely effects and escape routes.",
+          "facet_weights_micros": {
+            "prudence": 1000000
+          }
+        },
+        "behavior_20": {
+          "id": "behavior_20",
+          "prompt": "When entering an unfamiliar place, the character pauses to notice its form and texture.",
+          "facet_weights_micros": {
+            "aesthetic_appreciation": 1000000
+          }
+        },
+        "behavior_21": {
+          "id": "behavior_21",
+          "prompt": "When a mechanism behaves strangely, the character keeps asking how it works.",
+          "facet_weights_micros": {
+            "inquisitiveness": 1000000
+          }
+        },
+        "behavior_22": {
+          "id": "behavior_22",
+          "prompt": "When a familiar method fails, the character invents another way to frame the problem.",
+          "facet_weights_micros": {
+            "creativity": 1000000
+          }
+        },
+        "behavior_23": {
+          "id": "behavior_23",
+          "prompt": "When custom blocks a useful idea, the character is willing to question the custom.",
+          "facet_weights_micros": {
+            "unconventionality": 1000000
+          }
+        }
+      },
+      "conflict_rules": {
+        "bold_plan_tension": {
+          "id": "bold_plan_tension",
+          "label": "Bold plan tension",
+          "explanation": "High social boldness and high prudence can be retained as an intentional fictional tension rather than silently averaged.",
+          "predicates": [
+            {
+              "trait_id": "social_boldness",
+              "comparison": "at_least",
+              "threshold_micros": 700000
+            },
+            {
+              "trait_id": "prudence",
+              "comparison": "at_least",
+              "threshold_micros": 700000
+            }
+          ],
+          "rejected_traits": [
+            "social_boldness",
+            "prudence"
+          ],
+          "rationale_required": true
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "questionnaire_original",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "guided-authoring-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic Lantern Choices questionnaire pack.",
+            "modified": false
+          }
+        ],
+        "transformations": [],
+        "claims": {
+          "pack": [
+            "questionnaire_original"
+          ]
+        }
+      }
+    },
+    "pack_ref": {
+      "id": "org.weave.character.questionnaire.lantern_choices",
+      "version": "1.0.0",
+      "sha256": "fef2869f389ed87c880d720fdaf426cadf53bb049b0e7fc14b3eaeda04815dba"
+    },
+    "answers": {
+      "answers_format_version": 1,
+      "id": "org.weave.character.answers.lumen_reed",
+      "pack": {
+        "id": "org.weave.character.questionnaire.lantern_choices",
+        "version": "1.0.0",
+        "sha256": "fef2869f389ed87c880d720fdaf426cadf53bb049b0e7fc14b3eaeda04815dba"
+      },
+      "responses": {
+        "behavior_00": 2,
+        "behavior_01": 2,
+        "behavior_02": 2,
+        "behavior_03": 2,
+        "behavior_04": 2,
+        "behavior_05": 2,
+        "behavior_06": 2,
+        "behavior_07": 2,
+        "behavior_08": 2,
+        "behavior_09": 2,
+        "behavior_10": 2,
+        "behavior_11": 2,
+        "behavior_12": 2,
+        "behavior_13": 2,
+        "behavior_14": 2,
+        "behavior_15": 2,
+        "behavior_16": 2,
+        "behavior_17": 2,
+        "behavior_18": 2,
+        "behavior_19": 2,
+        "behavior_20": 2,
+        "behavior_21": 2,
+        "behavior_22": 2,
+        "behavior_23": 2
+      }
+    },
+    "seed": 20260822,
+    "facets": {
+      "sincerity": {
+        "trait_id": "sincerity",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_00",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "fairness": {
+        "trait_id": "fairness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_01",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "greed_avoidance": {
+        "trait_id": "greed_avoidance",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_02",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "modesty": {
+        "trait_id": "modesty",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_03",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "fearfulness": {
+        "trait_id": "fearfulness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_04",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "anxiety": {
+        "trait_id": "anxiety",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_05",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "dependence": {
+        "trait_id": "dependence",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_06",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "sentimentality": {
+        "trait_id": "sentimentality",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_07",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "social_self_esteem": {
+        "trait_id": "social_self_esteem",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_08",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "social_boldness": {
+        "trait_id": "social_boldness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_09",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "sociability": {
+        "trait_id": "sociability",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_10",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "liveliness": {
+        "trait_id": "liveliness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_11",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "forgivingness": {
+        "trait_id": "forgivingness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_12",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "gentleness": {
+        "trait_id": "gentleness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_13",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "flexibility": {
+        "trait_id": "flexibility",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_14",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "patience": {
+        "trait_id": "patience",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_15",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "organization": {
+        "trait_id": "organization",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_16",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "diligence": {
+        "trait_id": "diligence",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_17",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "perfectionism": {
+        "trait_id": "perfectionism",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_18",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "prudence": {
+        "trait_id": "prudence",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_19",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "aesthetic_appreciation": {
+        "trait_id": "aesthetic_appreciation",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_20",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "inquisitiveness": {
+        "trait_id": "inquisitiveness",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_21",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "creativity": {
+        "trait_id": "creativity",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_22",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      },
+      "unconventionality": {
+        "trait_id": "unconventionality",
+        "score_micros": 1000000,
+        "confidence": "moderate",
+        "answered_items": 1,
+        "total_items": 1,
+        "trace": [
+          {
+            "item_id": "behavior_23",
+            "response": 2,
+            "weight_micros": 1000000,
+            "weighted_contribution": 2000000
+          }
+        ]
+      }
+    },
+    "conflicts": {
+      "bold_plan_tension": {
+        "id": "bold_plan_tension",
+        "rule_id": "bold_plan_tension",
+        "label": "Bold plan tension",
+        "explanation": "High social boldness and high prudence can be retained as an intentional fictional tension rather than silently averaged.",
+        "input_paths": [
+          "canon.personality.conscientiousness.prudence",
+          "canon.personality.extraversion.social_boldness"
+        ],
+        "rejected_traits": [
+          "social_boldness",
+          "prudence"
+        ],
+        "rationale_required": true
+      }
+    }
+  },
+  "review": {
+    "review_format_version": 1,
+    "proposal_sha256": "8c01f0b182c595293e8fcd86d61024d12812c88d5447fe5bf2caf7d17370a897",
+    "reviewer": "org.weave.reviewer.fixture",
+    "rationale": "Review every proposed facet and retain one intentional narrative tension.",
+    "facet_decisions": {
+      "sincerity": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "fairness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "greed_avoidance": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "modesty": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "fearfulness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "anxiety": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "dependence": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "sentimentality": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "social_self_esteem": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "social_boldness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "sociability": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "liveliness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "forgivingness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "gentleness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "flexibility": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "patience": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "organization": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "diligence": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "perfectionism": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "prudence": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "aesthetic_appreciation": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "inquisitiveness": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "creativity": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      },
+      "unconventionality": {
+        "action": "accept",
+        "confidence": "moderate",
+        "lock": "unlocked"
+      }
+    },
+    "conflict_decisions": {
+      "bold_plan_tension": {
+        "action": "deliberate_exception",
+        "rationale": "Lumen speaks readily while still preparing careful routes."
+      }
+    }
+  },
+  "review_sha256": "8dcce3a985b8bd7274ac0f35471f6897b28435f5076f6204f4ddf8b103bdeca1",
+  "operations": [
+    {
+      "id": "questionnaire_flexibility",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "flexibility",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_forgivingness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "forgivingness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_gentleness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "gentleness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_patience",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "patience",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_diligence",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "diligence",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_organization",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "organization",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_perfectionism",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "perfectionism",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_prudence",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "prudence",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_anxiety",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "anxiety",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_dependence",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "dependence",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_fearfulness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "fearfulness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_sentimentality",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "sentimentality",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_liveliness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "liveliness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_sociability",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "sociability",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_social_boldness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "social_boldness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_social_self_esteem",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "social_self_esteem",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_fairness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "fairness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_greed_avoidance",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "greed_avoidance",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_modesty",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "modesty",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_sincerity",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "sincerity",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_aesthetic_appreciation",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "aesthetic_appreciation",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_creativity",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "creativity",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_inquisitiveness",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "inquisitiveness",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    },
+    {
+      "id": "questionnaire_unconventionality",
+      "rationale": "Apply one explicitly reviewed questionnaire facet.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "unconventionality",
+        "value": {
+          "value": {
+            "form": "score",
+            "score": 1.0
+          },
+          "state": "reviewed",
+          "confidence": "moderate",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "questionnaire_original"
+          ],
+          "rationale": "Accepted from a reviewed original narrative questionnaire."
+        }
+      }
+    }
+  ],
+  "applied_traits": [
+    "sincerity",
+    "fairness",
+    "greed_avoidance",
+    "modesty",
+    "fearfulness",
+    "anxiety",
+    "dependence",
+    "sentimentality",
+    "social_self_esteem",
+    "social_boldness",
+    "sociability",
+    "liveliness",
+    "forgivingness",
+    "gentleness",
+    "flexibility",
+    "patience",
+    "organization",
+    "diligence",
+    "perfectionism",
+    "prudence",
+    "aesthetic_appreciation",
+    "inquisitiveness",
+    "creativity",
+    "unconventionality"
+  ],
+  "rejected_traits": [],
+  "output_profile": {
+    "profile_format_version": 1,
+    "id": "org.weave.character.lumen_reed",
+    "canon": {
+      "identity": {
+        "display_name": {
+          "value": "Lumen Reed",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "authoring_original"
+          ]
+        }
+      },
+      "birth_date": {
+        "value": {
+          "precision": "full",
+          "calendar": "proleptic_gregorian",
+          "year": 1001,
+          "month": 4,
+          "day": 7
+        },
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "authoring_original"
+        ]
+      },
+      "personality": {
+        "honesty_humility": {
+          "sincerity": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "fairness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "greed_avoidance": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "modesty": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        },
+        "emotionality": {
+          "fearfulness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "anxiety": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "dependence": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "sentimentality": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        },
+        "extraversion": {
+          "social_self_esteem": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "social_boldness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "sociability": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "liveliness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        },
+        "agreeableness": {
+          "forgivingness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "gentleness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "flexibility": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "patience": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        },
+        "conscientiousness": {
+          "organization": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "diligence": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "perfectionism": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "prudence": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        },
+        "openness": {
+          "aesthetic_appreciation": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "inquisitiveness": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "creativity": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          },
+          "unconventionality": {
+            "value": {
+              "form": "score",
+              "score": 1.0
+            },
+            "state": "reviewed",
+            "confidence": "moderate",
+            "review": "accepted",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "questionnaire_original"
+            ],
+            "rationale": "Accepted from a reviewed original narrative questionnaire."
+          }
+        }
+      },
+      "inner_life": {
+        "quiet_vow": {
+          "id": "quiet_vow",
+          "category": "value",
+          "content": {
+            "value": "Leave a clear trail for anyone who must follow after the storm.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "authoring_original"
+            ]
+          }
+        }
+      },
+      "voice": {
+        "measured_cadence": {
+          "id": "measured_cadence",
+          "category": "cadence",
+          "content": {
+            "value": "Uses short clauses, then leaves a deliberate pause before a decision.",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "authoring_original"
+            ]
+          }
+        }
+      }
+    },
+    "derived": {
+      "ocean": {
+        "algorithm": "weave_hexaco_to_ocean_compatibility",
+        "algorithm_version": 1,
+        "lossy": true,
+        "independent_evidence": false,
+        "openness": {
+          "score": 1.0,
+          "confidence": "moderate",
+          "input_paths": [
+            "canon.personality.openness.aesthetic_appreciation",
+            "canon.personality.openness.inquisitiveness",
+            "canon.personality.openness.creativity",
+            "canon.personality.openness.unconventionality"
+          ]
+        },
+        "conscientiousness": {
+          "score": 1.0,
+          "confidence": "moderate",
+          "input_paths": [
+            "canon.personality.conscientiousness.organization",
+            "canon.personality.conscientiousness.diligence",
+            "canon.personality.conscientiousness.perfectionism",
+            "canon.personality.conscientiousness.prudence"
+          ]
+        },
+        "extraversion": {
+          "score": 1.0,
+          "confidence": "moderate",
+          "input_paths": [
+            "canon.personality.extraversion.social_self_esteem",
+            "canon.personality.extraversion.social_boldness",
+            "canon.personality.extraversion.sociability",
+            "canon.personality.extraversion.liveliness"
+          ]
+        },
+        "agreeableness": {
+          "score": 1.0,
+          "confidence": "moderate",
+          "input_paths": [
+            "canon.personality.agreeableness.forgivingness",
+            "canon.personality.agreeableness.gentleness",
+            "canon.personality.agreeableness.flexibility",
+            "canon.personality.agreeableness.patience"
+          ]
+        },
+        "neuroticism": {
+          "score": 1.0,
+          "confidence": "moderate",
+          "input_paths": [
+            "canon.personality.emotionality.fearfulness",
+            "canon.personality.emotionality.anxiety",
+            "canon.personality.emotionality.dependence",
+            "canon.personality.emotionality.sentimentality"
+          ]
+        },
+        "omitted_factor": "honesty_humility"
+      }
+    },
+    "provenance": {
+      "sources": [
+        {
+          "id": "authoring_original",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "guided-authoring-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic blank Character overlay.",
+          "modified": false
+        },
+        {
+          "id": "questionnaire_original",
+          "kind": "original",
+          "url": "https://github.com/chrisgliddon/weave",
+          "revision": "guided-authoring-v1",
+          "license": "MIT",
+          "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+          "attribution": "Original synthetic Lantern Choices questionnaire pack.",
+          "modified": false
+        }
+      ],
+      "transformations": [],
+      "claims": {
+        "overlay": [
+          "authoring_original"
+        ],
+        "pack": [
+          "questionnaire_original"
+        ]
+      }
+    }
+  },
+  "output_profile_sha256": "30fcc42c23bc8bfa8633a6ca35d75ee3a058aed5bcab2109f89fbb77b9f9394a"
+}

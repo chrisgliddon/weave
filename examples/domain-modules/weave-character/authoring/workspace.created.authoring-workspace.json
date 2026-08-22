@@ -1,0 +1,144 @@
+{
+  "workspace_format_version": 1,
+  "id": "org.weave.character.authoring.lumen_reed",
+  "revision": 1,
+  "drafts": {
+    "org.weave.character.lumen_reed": {
+      "id": "org.weave.character.lumen_reed",
+      "revision": 0,
+      "overlay": {
+        "overlay_format_version": 1,
+        "id": "org.weave.character.overlay.lumen_reed",
+        "character_id": "org.weave.character.lumen_reed",
+        "operations": [
+          {
+            "id": "set_birth_date",
+            "rationale": "Record only the explicitly authored date precision.",
+            "action": {
+              "action": "set_birth_date",
+              "value": {
+                "value": {
+                  "precision": "full",
+                  "calendar": "proleptic_gregorian",
+                  "year": 1001,
+                  "month": 4,
+                  "day": 7
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "authoring_original"
+                ]
+              }
+            }
+          },
+          {
+            "id": "set_display_name",
+            "rationale": "Create one stable fictional identity.",
+            "action": {
+              "action": "set_display_name",
+              "value": {
+                "value": "Lumen Reed",
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "authoring_original"
+                ]
+              }
+            }
+          },
+          {
+            "id": "set_quiet_vow",
+            "rationale": "Record one authored inner-life value.",
+            "action": {
+              "action": "upsert_inner_life",
+              "record": {
+                "id": "quiet_vow",
+                "category": "value",
+                "content": {
+                  "value": "Leave a clear trail for anyone who must follow after the storm.",
+                  "state": "authored",
+                  "confidence": "high",
+                  "review": "not_required",
+                  "lock": "unlocked",
+                  "freshness": "current",
+                  "lineage": [
+                    "authoring_original"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "set_measured_cadence",
+            "rationale": "Record one authored voice direction.",
+            "action": {
+              "action": "upsert_voice",
+              "record": {
+                "id": "measured_cadence",
+                "category": "cadence",
+                "content": {
+                  "value": "Uses short clauses, then leaves a deliberate pause before a decision.",
+                  "state": "authored",
+                  "confidence": "high",
+                  "review": "not_required",
+                  "lock": "unlocked",
+                  "freshness": "current",
+                  "lineage": [
+                    "authoring_original"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "provenance": {
+          "sources": [
+            {
+              "id": "authoring_original",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "guided-authoring-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original synthetic blank Character overlay.",
+              "modified": false
+            }
+          ],
+          "transformations": [],
+          "claims": {
+            "overlay": [
+              "authoring_original"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "workspace_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "guided-authoring-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic guided-authoring workspace.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "workspace": [
+        "workspace_original"
+      ]
+    }
+  }
+}

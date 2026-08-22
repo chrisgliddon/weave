@@ -1,0 +1,107 @@
+{
+  "profile_format_version": 1,
+  "id": "org.weave.character.lumen_reed",
+  "canon": {
+    "identity": {
+      "display_name": {
+        "value": "Lumen Reed",
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "authoring_original"
+        ]
+      }
+    },
+    "birth_date": {
+      "value": {
+        "precision": "full",
+        "calendar": "proleptic_gregorian",
+        "year": 1001,
+        "month": 4,
+        "day": 7
+      },
+      "state": "authored",
+      "confidence": "high",
+      "review": "not_required",
+      "lock": "unlocked",
+      "freshness": "current",
+      "lineage": [
+        "authoring_original"
+      ]
+    },
+    "personality": {
+      "honesty_humility": {},
+      "emotionality": {},
+      "extraversion": {},
+      "agreeableness": {},
+      "conscientiousness": {},
+      "openness": {}
+    },
+    "inner_life": {
+      "quiet_vow": {
+        "id": "quiet_vow",
+        "category": "value",
+        "content": {
+          "value": "Leave a clear trail for anyone who must follow after the storm.",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "authoring_original"
+          ]
+        }
+      }
+    },
+    "voice": {
+      "measured_cadence": {
+        "id": "measured_cadence",
+        "category": "cadence",
+        "content": {
+          "value": "Uses short clauses, then leaves a deliberate pause before a decision.",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "authoring_original"
+          ]
+        }
+      }
+    }
+  },
+  "derived": {
+    "ocean": {
+      "algorithm": "weave_hexaco_to_ocean_compatibility",
+      "algorithm_version": 1,
+      "lossy": true,
+      "independent_evidence": false,
+      "omitted_factor": "honesty_humility"
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "authoring_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "guided-authoring-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic blank Character overlay.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "overlay": [
+        "authoring_original"
+      ]
+    }
+  }
+}

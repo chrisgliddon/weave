@@ -1280,7 +1280,7 @@ fn validate_profile_path(path: &str, value: &str) -> Result<(), CharacterError> 
     Ok(())
 }
 
-fn validate_namespaced_id(path: &str, value: &str) -> Result<(), CharacterError> {
+pub(crate) fn validate_namespaced_id(path: &str, value: &str) -> Result<(), CharacterError> {
     if value.len() > 256
         || value.split('.').count() < 2
         || value.split('.').any(|part| !valid_local_id(part))
@@ -1294,7 +1294,7 @@ fn validate_namespaced_id(path: &str, value: &str) -> Result<(), CharacterError>
     Ok(())
 }
 
-fn validate_local_id(path: &str, value: &str) -> Result<(), CharacterError> {
+pub(crate) fn validate_local_id(path: &str, value: &str) -> Result<(), CharacterError> {
     if !valid_local_id(value) {
         return Err(error(
             CharacterDiagnosticCode::InvalidIdentifier,
@@ -1318,7 +1318,7 @@ fn valid_local_id(value: &str) -> bool {
         && !value.contains("__")
 }
 
-fn validate_text(
+pub(crate) fn validate_text(
     path: &str,
     value: &str,
     minimum: usize,
@@ -1355,13 +1355,13 @@ fn validate_unit_interval(path: &str, value: f64) -> Result<(), CharacterError> 
     Ok(())
 }
 
-fn validate_semver(path: &str, value: &str) -> Result<(), CharacterError> {
+pub(crate) fn validate_semver(path: &str, value: &str) -> Result<(), CharacterError> {
     Version::parse(value)
         .map(|_| ())
         .map_err(|_| invalid_value(path, "expected a semantic version"))
 }
 
-fn validate_sha256(path: &str, value: &str) -> Result<(), CharacterError> {
+pub(crate) fn validate_sha256(path: &str, value: &str) -> Result<(), CharacterError> {
     if value.len() != 64
         || !value
             .bytes()

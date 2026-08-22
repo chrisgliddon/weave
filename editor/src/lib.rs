@@ -3,6 +3,7 @@
 pub mod alignment;
 pub mod app;
 pub mod character;
+pub mod character_authoring;
 pub mod domain;
 pub mod graph;
 pub mod graph_view;
@@ -21,6 +22,10 @@ pub mod theme;
 pub use alignment::AlignmentSession;
 pub use app::{LaunchMode, StartupError, launch};
 pub use character::CharacterCorpusSession;
+pub use character_authoring::{
+    CHARACTER_AUTHORING_CONTROLS, CharacterAuthoringAccessibility, CharacterAuthoringControl,
+    CharacterAuthoringKey, CharacterAuthoringKeyboardAction, CharacterAuthoringSession,
+};
 pub use domain::{
     DomainError, DomainSession, ModuleExportInspection, ModuleInspection,
     builtin_pattern_definitions,

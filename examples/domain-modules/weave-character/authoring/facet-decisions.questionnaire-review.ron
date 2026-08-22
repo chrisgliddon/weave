@@ -1,0 +1,122 @@
+{
+    sincerity: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    fairness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    greed_avoidance: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    modesty: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    fearfulness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    anxiety: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    dependence: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    sentimentality: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    social_self_esteem: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    social_boldness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    sociability: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    liveliness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    forgivingness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    gentleness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    flexibility: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    patience: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    organization: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    diligence: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    perfectionism: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    prudence: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    aesthetic_appreciation: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    inquisitiveness: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    creativity: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+    unconventionality: (
+        action: "accept",
+        confidence: moderate,
+        lock: unlocked,
+    ),
+}

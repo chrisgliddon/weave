@@ -4,25 +4,39 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand, ValueEnum};
+use serde::Serialize;
 use tempfile::NamedTempFile;
 use weave_character::{
     AlignmentConfig, AlignmentPack, AlignmentProposal, AlignmentReceipt, AlignmentReview,
-    AlignmentReviewDecision, CharacterCollection, CharacterJobProgress, CharacterOperationRequest,
-    CharacterOverlay, CharacterProfile, CharacterProposal, CharacterProposalReview,
+    AlignmentReviewDecision, CharacterAuthoringRevision, CharacterAuthoringWorkspace,
+    CharacterCollection, CharacterFinalReview, CharacterFinalReviewDecision, CharacterJobProgress,
+    CharacterOperationRequest, CharacterOverlay, CharacterProfile, CharacterProposal,
+    CharacterProposalReview, CharacterQuestionnaireAnswers, CharacterQuestionnaireConflictDecision,
+    CharacterQuestionnaireFacetDecision, CharacterQuestionnairePack,
+    CharacterQuestionnaireProposal, CharacterQuestionnaireReceipt, CharacterQuestionnaireReview,
     CharacterReviewDecision, CharacterScope, CharacterSynthesisResult, CharacterTemplate,
-    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextReceipt,
-    TemporalContextReview, TemporalReviewDecision, alignment_config_schema, alignment_pack_schema,
-    alignment_profile_fingerprint, alignment_proposal_schema, alignment_receipt_schema,
-    alignment_review_schema, apply_reviewed_alignment, apply_reviewed_character_proposal,
-    apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
-    character_domain_pack, character_module_manifest, character_operation_request_schema,
-    character_overlay_schema, character_profile_schema, character_progress_schema,
-    character_proposal_schema, character_review_schema, character_synthesis_schema,
-    character_template_schema, collection_fingerprint, create_alignment_review,
-    create_temporal_context_review, list_characters, propose_alignment,
-    propose_character_operation, propose_temporal_context, resume_character_operation,
-    review_character_proposal, show_character, synthesize_character,
-    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
+    HexacoTrait, TemporalContextConfig, TemporalContextPack, TemporalContextProposal,
+    TemporalContextReceipt, TemporalContextReview, TemporalReviewDecision, alignment_config_schema,
+    alignment_pack_schema, alignment_profile_fingerprint, alignment_proposal_schema,
+    alignment_receipt_schema, alignment_review_schema, apply_authoring_revision,
+    apply_character_questionnaire_review, apply_reviewed_alignment,
+    apply_reviewed_character_proposal, apply_reviewed_temporal_context,
+    character_authoring_preview_schema, character_authoring_revision_schema,
+    character_authoring_workspace_schema, character_collection_schema, character_diagnostic_schema,
+    character_domain_pack, character_final_review_schema, character_module_manifest,
+    character_operation_request_schema, character_overlay_schema, character_profile_schema,
+    character_progress_schema, character_proposal_schema, character_questionnaire_answers_schema,
+    character_questionnaire_pack_schema, character_questionnaire_proposal_schema,
+    character_questionnaire_receipt_schema, character_questionnaire_review_schema,
+    character_review_schema, character_synthesis_schema, character_template_schema,
+    clone_authoring_draft, collection_fingerprint, create_alignment_review, create_authoring_draft,
+    create_character_questionnaire_review, create_temporal_context_review,
+    export_authoring_profile, list_authoring_drafts, list_characters, new_authoring_workspace,
+    preview_authoring_revision, propose_alignment, propose_character_operation,
+    propose_character_questionnaire, propose_temporal_context, questionnaire_authoring_revision,
+    resume_character_operation, review_authoring_draft, review_character_proposal,
+    show_authoring_draft, show_character, synthesize_character, temporal_context_config_schema,
+    temporal_context_pack_schema, temporal_context_proposal_schema,
     temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
 };
 
@@ -247,6 +261,161 @@ enum Command {
         #[arg(long)]
         output: Option<PathBuf>,
     },
+    /// Initialize an empty guided-authoring workspace.
+    AuthoringInit {
+        #[arg(long)]
+        id: String,
+        #[arg(long)]
+        provenance: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create a draft from a blank or exact versioned template overlay.
+    AuthoringCreate {
+        workspace: PathBuf,
+        overlay: PathBuf,
+        #[arg(long)]
+        template: Option<PathBuf>,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// List deterministic guided-authoring drafts.
+    AuthoringList {
+        workspace: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Show one exact retained draft source document.
+    AuthoringShow {
+        workspace: PathBuf,
+        id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Clone a reference-safe draft under another stable character id.
+    AuthoringClone {
+        workspace: PathBuf,
+        source_id: String,
+        #[arg(long)]
+        new_character_id: String,
+        #[arg(long)]
+        new_overlay_id: String,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Preview base/effective differences, migration effects, and invalidations.
+    AuthoringPreview {
+        workspace: PathBuf,
+        revision: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Apply one already-previewable revision atomically.
+    AuthoringRevise {
+        workspace: PathBuf,
+        revision: PathBuf,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Validate and independently reopen a workspace without rewriting it.
+    AuthoringValidate { workspace: PathBuf },
+    /// Save a complete final authoring review.
+    AuthoringReview {
+        workspace: PathBuf,
+        id: String,
+        #[arg(long, value_enum)]
+        decision: FinalReviewDecision,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Export one validated effective profile.
+    AuthoringExport {
+        workspace: PathBuf,
+        id: String,
+        #[arg(long)]
+        allow_unreviewed: bool,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Parse, validate, and canonically rewrite a workspace to prove reopen parity.
+    AuthoringReopen {
+        workspace: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Score one exact original narrative-questionnaire pack.
+    QuestionnairePropose {
+        profile: PathBuf,
+        pack: PathBuf,
+        answers: PathBuf,
+        #[arg(long)]
+        seed: u64,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create a complete questionnaire review from facet and conflict decision maps.
+    QuestionnaireReview {
+        proposal: PathBuf,
+        facet_decisions: PathBuf,
+        conflict_decisions: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Reproduce and apply one complete questionnaire review.
+    QuestionnaireApply {
+        proposal: PathBuf,
+        review: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Convert one questionnaire receipt into the exact workspace revision source document.
+    QuestionnaireRevision {
+        workspace: PathBuf,
+        draft_id: String,
+        receipt: PathBuf,
+        #[arg(long)]
+        id: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -271,6 +440,15 @@ enum DocumentKind {
     AlignmentProposal,
     AlignmentReview,
     AlignmentReceipt,
+    AuthoringWorkspace,
+    AuthoringRevision,
+    AuthoringPreview,
+    QuestionnairePack,
+    QuestionnaireAnswers,
+    QuestionnaireProposal,
+    QuestionnaireReview,
+    QuestionnaireReceipt,
+    FinalReview,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -283,6 +461,12 @@ enum OutputFormat {
 enum ReviewDecision {
     Accepted,
     Rejected,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum FinalReviewDecision {
+    Accepted,
+    NeedsChanges,
 }
 
 fn main() {
@@ -316,6 +500,15 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::AlignmentProposal => alignment_proposal_schema()?,
                 DocumentKind::AlignmentReview => alignment_review_schema()?,
                 DocumentKind::AlignmentReceipt => alignment_receipt_schema()?,
+                DocumentKind::AuthoringWorkspace => character_authoring_workspace_schema()?,
+                DocumentKind::AuthoringRevision => character_authoring_revision_schema()?,
+                DocumentKind::AuthoringPreview => character_authoring_preview_schema()?,
+                DocumentKind::QuestionnairePack => character_questionnaire_pack_schema()?,
+                DocumentKind::QuestionnaireAnswers => character_questionnaire_answers_schema()?,
+                DocumentKind::QuestionnaireProposal => character_questionnaire_proposal_schema()?,
+                DocumentKind::QuestionnaireReview => character_questionnaire_review_schema()?,
+                DocumentKind::QuestionnaireReceipt => character_questionnaire_receipt_schema()?,
+                DocumentKind::FinalReview => character_final_review_schema()?,
             };
             atomic_write(&output, schema.as_bytes())?;
         }
@@ -383,6 +576,36 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::AlignmentReceipt => {
                     parse_alignment_receipt(&input, &source)?;
+                }
+                DocumentKind::AuthoringWorkspace => {
+                    parse_authoring_workspace(&input, &source)?;
+                }
+                DocumentKind::AuthoringRevision => {
+                    parse_authoring_revision(&input, &source)?;
+                }
+                DocumentKind::AuthoringPreview => {
+                    return Err(
+                        "authoring previews are generated receipts without a standalone state validator"
+                            .into(),
+                    );
+                }
+                DocumentKind::QuestionnairePack => {
+                    parse_questionnaire_pack(&input, &source)?;
+                }
+                DocumentKind::QuestionnaireAnswers => {
+                    parse_questionnaire_answers(&input, &source)?;
+                }
+                DocumentKind::QuestionnaireProposal => {
+                    parse_questionnaire_proposal(&input, &source)?;
+                }
+                DocumentKind::QuestionnaireReview => {
+                    parse_questionnaire_review(&input, &source)?;
+                }
+                DocumentKind::QuestionnaireReceipt => {
+                    parse_questionnaire_receipt(&input, &source)?;
+                }
+                DocumentKind::FinalReview => {
+                    parse_final_review(&input, &source)?;
                 }
             }
             println!("validated {}", input.display());
@@ -737,6 +960,270 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 println!("applied alignment view {}", destination.display());
             }
         }
+        Command::AuthoringInit {
+            id,
+            provenance,
+            format,
+            output,
+        } => {
+            let provenance = read_provenance(&provenance)?;
+            let workspace = new_authoring_workspace(id, provenance)?;
+            let serialized = serialize_authoring_workspace(&workspace, format)?;
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "initialized Character authoring workspace {}",
+                output.display()
+            );
+        }
+        Command::AuthoringCreate {
+            workspace,
+            overlay,
+            template,
+            format,
+            output,
+        } => {
+            let workspace_value = read_authoring_workspace(&workspace)?;
+            let overlay_value = parse_overlay(&overlay, &fs::read_to_string(&overlay)?)?;
+            let template_value = match template.as_ref() {
+                Some(path) => Some(parse_template(path, &fs::read_to_string(path)?)?),
+                None => None,
+            };
+            let created = create_authoring_draft(&workspace_value, template_value, overlay_value)?;
+            let destination = output.as_deref().unwrap_or(&workspace);
+            let format = format.unwrap_or_else(|| output_format_for(destination));
+            let serialized = serialize_authoring_workspace(&created, format)?;
+            atomic_write(destination, serialized.as_bytes())?;
+            println!(
+                "created Character authoring draft {}",
+                destination.display()
+            );
+        }
+        Command::AuthoringList {
+            workspace,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let summaries = list_authoring_drafts(&workspace)?;
+            let serialized = serialize_value(&summaries, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::AuthoringShow {
+            workspace,
+            id,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let draft = show_authoring_draft(&workspace, &id)?;
+            let serialized = serialize_value(draft, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::AuthoringClone {
+            workspace,
+            source_id,
+            new_character_id,
+            new_overlay_id,
+            format,
+            output,
+        } => {
+            let workspace_value = read_authoring_workspace(&workspace)?;
+            let cloned = clone_authoring_draft(
+                &workspace_value,
+                &source_id,
+                new_character_id,
+                new_overlay_id,
+            )?;
+            let destination = output.as_deref().unwrap_or(&workspace);
+            let format = format.unwrap_or_else(|| output_format_for(destination));
+            let serialized = serialize_authoring_workspace(&cloned, format)?;
+            atomic_write(destination, serialized.as_bytes())?;
+            println!("cloned Character authoring draft {}", destination.display());
+        }
+        Command::AuthoringPreview {
+            workspace,
+            revision,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let revision = read_authoring_revision(&revision)?;
+            let preview = preview_authoring_revision(&workspace, &revision)?;
+            let serialized = match format {
+                OutputFormat::Json => preview.to_json()?,
+                OutputFormat::Ron => preview.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character authoring preview {}", output.display());
+        }
+        Command::AuthoringRevise {
+            workspace,
+            revision,
+            format,
+            output,
+        } => {
+            let workspace_value = read_authoring_workspace(&workspace)?;
+            let revision = read_authoring_revision(&revision)?;
+            let revised = apply_authoring_revision(&workspace_value, &revision)?;
+            let destination = output.as_deref().unwrap_or(&workspace);
+            let format = format.unwrap_or_else(|| output_format_for(destination));
+            let serialized = serialize_authoring_workspace(&revised, format)?;
+            atomic_write(destination, serialized.as_bytes())?;
+            println!(
+                "revised Character authoring draft {}",
+                destination.display()
+            );
+        }
+        Command::AuthoringValidate { workspace } => {
+            read_authoring_workspace(&workspace)?;
+            println!(
+                "validated Character authoring workspace {}",
+                workspace.display()
+            );
+        }
+        Command::AuthoringReview {
+            workspace,
+            id,
+            decision,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let workspace_value = read_authoring_workspace(&workspace)?;
+            let decision = match decision {
+                FinalReviewDecision::Accepted => CharacterFinalReviewDecision::Accepted,
+                FinalReviewDecision::NeedsChanges => CharacterFinalReviewDecision::NeedsChanges,
+            };
+            let reviewed =
+                review_authoring_draft(&workspace_value, &id, reviewer, rationale, decision)?;
+            let destination = output.as_deref().unwrap_or(&workspace);
+            let format = format.unwrap_or_else(|| output_format_for(destination));
+            let serialized = serialize_authoring_workspace(&reviewed, format)?;
+            atomic_write(destination, serialized.as_bytes())?;
+            println!(
+                "reviewed Character authoring draft {}",
+                destination.display()
+            );
+        }
+        Command::AuthoringExport {
+            workspace,
+            id,
+            allow_unreviewed,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let profile = export_authoring_profile(&workspace, &id, !allow_unreviewed)?;
+            let serialized = match format {
+                OutputFormat::Json => profile.to_json()?,
+                OutputFormat::Ron => profile.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("exported Character profile {}", output.display());
+        }
+        Command::AuthoringReopen {
+            workspace,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let serialized = serialize_authoring_workspace(&workspace, format)?;
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "reopened Character authoring workspace {}",
+                output.display()
+            );
+        }
+        Command::QuestionnairePropose {
+            profile,
+            pack,
+            answers,
+            seed,
+            format,
+            output,
+        } => {
+            let profile = parse_profile(&profile, &fs::read_to_string(&profile)?)?;
+            let pack = parse_questionnaire_pack(&pack, &fs::read_to_string(&pack)?)?;
+            let answers = parse_questionnaire_answers(&answers, &fs::read_to_string(&answers)?)?;
+            let proposal = propose_character_questionnaire(&profile, &pack, &answers, seed)?;
+            let serialized = match format {
+                OutputFormat::Json => proposal.to_json()?,
+                OutputFormat::Ron => proposal.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote Character questionnaire proposal {}",
+                output.display()
+            );
+        }
+        Command::QuestionnaireReview {
+            proposal,
+            facet_decisions,
+            conflict_decisions,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal =
+                parse_questionnaire_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let facet_decisions = read_questionnaire_facet_decisions(&facet_decisions)?;
+            let conflict_decisions = read_questionnaire_conflict_decisions(&conflict_decisions)?;
+            let review = create_character_questionnaire_review(
+                &proposal,
+                reviewer,
+                rationale,
+                facet_decisions,
+                conflict_decisions,
+            )?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character questionnaire review {}", output.display());
+        }
+        Command::QuestionnaireApply {
+            proposal,
+            review,
+            format,
+            output,
+        } => {
+            let proposal =
+                parse_questionnaire_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let review = parse_questionnaire_review(&review, &fs::read_to_string(&review)?)?;
+            let receipt = apply_character_questionnaire_review(&proposal, &review)?;
+            let serialized = match format {
+                OutputFormat::Json => receipt.to_json()?,
+                OutputFormat::Ron => receipt.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("applied Character questionnaire {}", output.display());
+        }
+        Command::QuestionnaireRevision {
+            workspace,
+            draft_id,
+            receipt,
+            id,
+            rationale,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let draft = show_authoring_draft(&workspace, &draft_id)?;
+            let receipt = parse_questionnaire_receipt(&receipt, &fs::read_to_string(&receipt)?)?;
+            let revision = questionnaire_authoring_revision(draft, id, rationale, receipt)?;
+            let serialized = match format {
+                OutputFormat::Json => revision.to_json()?,
+                OutputFormat::Ron => revision.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote questionnaire authoring revision {}",
+                output.display()
+            );
+        }
     }
     Ok(())
 }
@@ -950,6 +1437,117 @@ fn parse_alignment_receipt(
     }
 }
 
+fn parse_authoring_workspace(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterAuthoringWorkspace, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterAuthoringWorkspace::from_ron(source)
+    } else {
+        CharacterAuthoringWorkspace::from_json(source)
+    }
+}
+
+fn parse_authoring_revision(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterAuthoringRevision, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterAuthoringRevision::from_ron(source)
+    } else {
+        CharacterAuthoringRevision::from_json(source)
+    }
+}
+
+fn parse_questionnaire_pack(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterQuestionnairePack, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterQuestionnairePack::from_ron(source)
+    } else {
+        CharacterQuestionnairePack::from_json(source)
+    }
+}
+
+fn parse_questionnaire_answers(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterQuestionnaireAnswers, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterQuestionnaireAnswers::from_ron(source)
+    } else {
+        CharacterQuestionnaireAnswers::from_json(source)
+    }
+}
+
+fn parse_questionnaire_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterQuestionnaireProposal, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterQuestionnaireProposal::from_ron(source)
+    } else {
+        CharacterQuestionnaireProposal::from_json(source)
+    }
+}
+
+fn parse_questionnaire_review(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterQuestionnaireReview, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterQuestionnaireReview::from_ron(source)
+    } else {
+        CharacterQuestionnaireReview::from_json(source)
+    }
+}
+
+fn parse_questionnaire_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterQuestionnaireReceipt, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterQuestionnaireReceipt::from_ron(source)
+    } else {
+        CharacterQuestionnaireReceipt::from_json(source)
+    }
+}
+
+fn parse_final_review(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterFinalReview, weave_character::CharacterError> {
+    if is_ron(path) {
+        CharacterFinalReview::from_ron(source)
+    } else {
+        CharacterFinalReview::from_json(source)
+    }
+}
+
+fn read_authoring_workspace(
+    path: &Path,
+) -> Result<CharacterAuthoringWorkspace, Box<dyn std::error::Error>> {
+    Ok(parse_authoring_workspace(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_authoring_revision(
+    path: &Path,
+) -> Result<CharacterAuthoringRevision, Box<dyn std::error::Error>> {
+    Ok(parse_authoring_revision(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_provenance(path: &Path) -> Result<weave_domain::Provenance, Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
+    let provenance = if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid provenance RON")?
+    } else {
+        weave_domain::parse_strict_json(&source).map_err(|_| "invalid provenance JSON")?
+    };
+    weave_domain::validate_provenance(&provenance)?;
+    Ok(provenance)
+}
+
 fn read_collection(path: &Path) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
     Ok(parse_collection(path, &fs::read_to_string(path)?)?)
 }
@@ -1003,6 +1601,31 @@ fn read_alignment_decisions(
     }
 }
 
+fn read_questionnaire_facet_decisions(
+    path: &Path,
+) -> Result<BTreeMap<HexacoTrait, CharacterQuestionnaireFacetDecision>, Box<dyn std::error::Error>>
+{
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid questionnaire facet-decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid questionnaire facet-decision JSON".into())
+    }
+}
+
+fn read_questionnaire_conflict_decisions(
+    path: &Path,
+) -> Result<BTreeMap<String, CharacterQuestionnaireConflictDecision>, Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid questionnaire conflict-decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid questionnaire conflict-decision JSON".into())
+    }
+}
+
 fn collection_scope(
     mut ids: Vec<String>,
     id_prefix: Option<String>,
@@ -1033,6 +1656,26 @@ fn serialize_proposal(
         OutputFormat::Json => proposal.to_json(),
         OutputFormat::Ron => proposal.to_ron(),
     }
+}
+
+fn serialize_authoring_workspace(
+    workspace: &CharacterAuthoringWorkspace,
+    format: OutputFormat,
+) -> Result<String, weave_character::CharacterError> {
+    match format {
+        OutputFormat::Json => workspace.to_json(),
+        OutputFormat::Ron => workspace.to_ron(),
+    }
+}
+
+fn serialize_value<T: Serialize>(
+    value: &T,
+    format: OutputFormat,
+) -> Result<String, Box<dyn std::error::Error>> {
+    Ok(match format {
+        OutputFormat::Json => weave_domain::to_pretty_json(value)?,
+        OutputFormat::Ron => weave_domain::to_pretty_ron(value)?,
+    })
 }
 
 fn output_format_for(path: &Path) -> OutputFormat {

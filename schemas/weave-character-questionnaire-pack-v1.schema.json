@@ -1,0 +1,470 @@
+{
+  "$defs": {
+    "CharacterQuestionnaireComparison": {
+      "enum": [
+        "at_least",
+        "at_most"
+      ],
+      "type": "string"
+    },
+    "CharacterQuestionnaireConflictPredicate": {
+      "additionalProperties": false,
+      "description": "One fixed-point predicate in a conflict rule.",
+      "properties": {
+        "comparison": {
+          "$ref": "#/$defs/CharacterQuestionnaireComparison"
+        },
+        "threshold_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        }
+      },
+      "required": [
+        "trait_id",
+        "comparison",
+        "threshold_micros"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireConflictRule": {
+      "additionalProperties": false,
+      "description": "Declarative narrative-tension rule. It is not evidence or a diagnosis.",
+      "properties": {
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "predicates": {
+          "items": {
+            "$ref": "#/$defs/CharacterQuestionnaireConflictPredicate"
+          },
+          "type": "array"
+        },
+        "rationale_required": {
+          "type": "boolean"
+        },
+        "rejected_traits": {
+          "description": "Facet suggestions omitted when the author rejects this conflict.",
+          "items": {
+            "$ref": "#/$defs/HexacoTrait"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "explanation",
+        "predicates",
+        "rejected_traits",
+        "rationale_required"
+      ],
+      "type": "object"
+    },
+    "CharacterQuestionnaireItem": {
+      "additionalProperties": false,
+      "description": "One original behavior prompt with signed fixed-point facet weights.",
+      "properties": {
+        "facet_weights_micros": {
+          "additionalProperties": false,
+          "description": "Only the 24 facet identifiers are accepted. Values are signed millionths.",
+          "properties": {
+            "aesthetic_appreciation": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "agreeableness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "anxiety": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "conscientiousness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "creativity": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "dependence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "diligence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "emotionality": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "extraversion": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "fairness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "fearfulness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "flexibility": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "forgivingness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "gentleness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "greed_avoidance": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "honesty_humility": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "inquisitiveness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "liveliness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "modesty": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "openness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "organization": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "patience": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "perfectionism": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "prudence": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sentimentality": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sincerity": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "sociability": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "social_boldness": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "social_self_esteem": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "unconventionality": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "prompt",
+        "facet_weights_micros"
+      ],
+      "type": "object"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-questionnaire-pack:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Original, data-only narrative behavior questionnaire.",
+  "properties": {
+    "conflict_rules": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CharacterQuestionnaireConflictRule"
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "independently_authored_prompts": {
+      "description": "Must be true for a distributable pack.",
+      "type": "boolean"
+    },
+    "items": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CharacterQuestionnaireItem"
+      },
+      "type": "object"
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_url": {
+      "type": "string"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "methodology": {
+      "type": "string"
+    },
+    "narrative_authoring_only": {
+      "description": "Must be true: prompts are fictional authoring aids, not a psychometric instrument.",
+      "type": "boolean"
+    },
+    "pack_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pack_format_version",
+    "id",
+    "version",
+    "title",
+    "methodology",
+    "limitations",
+    "narrative_authoring_only",
+    "independently_authored_prompts",
+    "license",
+    "license_url",
+    "items",
+    "provenance"
+  ],
+  "title": "Weave Character Narrative Questionnaire Pack v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}
