@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "CharacterDiagnosticCode": {
+      "description": "Stable redaction-safe diagnostic codes for the Character contract.",
+      "enum": [
+        "C100",
+        "C101",
+        "C102",
+        "C103",
+        "C104",
+        "C105",
+        "C106",
+        "C107",
+        "C108",
+        "C109",
+        "C110"
+      ],
+      "type": "string"
+    },
+    "DiagnosticSeverity": {
+      "description": "Diagnostic severity vocabulary.",
+      "enum": [
+        "error",
+        "warning"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-diagnostic:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed diagnostic shape shared by every Character surface.",
+  "properties": {
+    "code": {
+      "$ref": "#/$defs/CharacterDiagnosticCode"
+    },
+    "message": {
+      "description": "Static redaction-safe explanation; rejected values are never included.",
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/DiagnosticSeverity"
+    }
+  },
+  "required": [
+    "code",
+    "severity",
+    "path",
+    "message"
+  ],
+  "title": "Weave Character Diagnostic v1",
+  "type": "object",
+  "x-weave-character-contract-version": 1
+}

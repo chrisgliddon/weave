@@ -21,6 +21,7 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | Domain registry index | `1` | `weave_domain::DOMAIN_REGISTRY_INDEX_VERSION` |
 | World composition plan/receipt | `1` | `weave_world::WORLD_COMPOSITION_FORMAT_VERSION` |
 | Full/compact World export | `1` | `weave_world::WORLD_EXPORT_FORMAT_VERSION` |
+| Character profile/template/overlay/synthesis | `1` | [`character_module.md`](character_module.md) |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |
 | Tree-sitter package | `0.1.0` | [`tree_sitter.md`](tree_sitter.md) |

@@ -8687,6 +8687,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-character"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "ron",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tempfile",
+ "weave-domain",
+]
+
+[[package]]
 name = "weave-compiler"
 version = "0.1.0"
 dependencies = [

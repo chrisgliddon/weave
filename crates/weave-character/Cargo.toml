@@ -1,0 +1,22 @@
+[package]
+name = "weave-character"
+description = "Portable, provenance-aware Weave Character profiles and deterministic synthesis"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+clap.workspace = true
+ron.workspace = true
+schemars.workspace = true
+semver.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tempfile.workspace = true
+weave-domain = { path = "../weave-domain" }
+
+[lints]
+workspace = true

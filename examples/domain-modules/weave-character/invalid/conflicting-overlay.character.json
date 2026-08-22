@@ -1,0 +1,135 @@
+{
+  "overlay_format_version": 1,
+  "id": "org.weave.character.overlay.ari_vale_revision",
+  "character_id": "org.weave.character.ari_vale",
+  "template": {
+    "id": "org.weave.character.template.glasswind_wayfinder",
+    "version": "1.0.0",
+    "sha256": "15245d1a086e312e9cfac323ee15f3cbb1e9a8eb9f34c22a0ef133f6efa41d0a"
+  },
+  "operations": [
+    {
+      "id": "rename_for_glasswind",
+      "expected_prior_sha256": "a7fa6529f4fab80f16917abe35f8e3a3e1016c8f40d049bb156b279c4265faca",
+      "rationale": "Make the authored setting identity explicit.",
+      "action": {
+        "action": "set_display_name",
+        "value": {
+          "value": "Ari Vale of Glasswind",
+          "state": "overridden",
+          "confidence": "high",
+          "review": "accepted",
+          "lock": "locked",
+          "freshness": "current",
+          "lineage": [
+            "overlay_original"
+          ],
+          "rationale": "Reviewed fictional author decision."
+        }
+      }
+    },
+    {
+      "id": "rename_again",
+      "expected_prior_sha256": "a7fa6529f4fab80f16917abe35f8e3a3e1016c8f40d049bb156b279c4265faca",
+      "rationale": "Make the authored setting identity explicit.",
+      "action": {
+        "action": "set_display_name",
+        "value": {
+          "value": "Ari Vale of Glasswind",
+          "state": "overridden",
+          "confidence": "high",
+          "review": "accepted",
+          "lock": "locked",
+          "freshness": "current",
+          "lineage": [
+            "overlay_original"
+          ],
+          "rationale": "Reviewed fictional author decision."
+        }
+      }
+    },
+    {
+      "id": "confirm_prudence",
+      "expected_prior_sha256": "d3c9375201165434dbf860c483dfc8036494952c3586463d9ba7a7e203a16e1e",
+      "rationale": "Explicitly replace a locked template trait after review.",
+      "action": {
+        "action": "set_hexaco_trait",
+        "trait_id": "prudence",
+        "value": {
+          "value": {
+            "form": "band",
+            "band": "very_high"
+          },
+          "state": "overridden",
+          "confidence": "high",
+          "review": "accepted",
+          "lock": "locked",
+          "freshness": "current",
+          "lineage": [
+            "overlay_original"
+          ],
+          "rationale": "Reviewed fictional author decision."
+        }
+      }
+    },
+    {
+      "id": "preserve_future_palette",
+      "rationale": "Retain an unknown optional extension without interpreting it.",
+      "action": {
+        "action": "upsert_extension",
+        "namespace": "org.weave.character.future_palette",
+        "extension": {
+          "kind": "opaque",
+          "record": {
+            "header": {
+              "namespace": "org.weave.character.future_palette",
+              "extension_version": 99,
+              "authority": "org.weave.extension.future_palette",
+              "rationale": "Preserved for a future compatible host.",
+              "state": "imported",
+              "review": "accepted",
+              "lock": "locked",
+              "freshness": "current",
+              "lineage": [
+                "overlay_original"
+              ],
+              "canonical_personality_write_back": "forbidden"
+            },
+            "value": {
+              "interpretation": "preserved_inactive",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "accent": {
+                    "kind": "symbol",
+                    "value": "pine"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "provenance": {
+    "sources": [
+      {
+        "id": "overlay_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "character-contract-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic Weave Character contract fixture.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "overlay": [
+        "overlay_original"
+      ]
+    }
+  }
+}

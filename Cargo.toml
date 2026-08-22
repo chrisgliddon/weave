@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/weave-bevy",
+    "crates/weave-character",
     "crates/weave-compiler",
     "crates/weave-core",
     "crates/weave-domain",

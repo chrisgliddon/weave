@@ -35,6 +35,7 @@ REQUIRED_CHAPTERS = {
     "domain_modules.md",
     "domain_module_tutorial.md",
     "world_module.md",
+    "character_module.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -60,6 +61,7 @@ RUSTDOC_PACKAGES = (
     "weave-lsp",
     "weave-world",
     "weave-world-corpus",
+    "weave-character",
     "tree-sitter-weave",
 )
 
@@ -304,6 +306,28 @@ def world_tool_binary() -> Path:
     return binary
 
 
+def character_tool_binary() -> Path:
+    """Build and locate the portable Weave Character contract tool."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--bin",
+            "weave-character",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-character{suffix}"
+    if not binary.is_file():
+        raise DocsError(f"Character contract tool was not produced at {binary}")
+    return binary
+
+
 def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
@@ -466,6 +490,7 @@ def verify_domain_contract() -> None:
     domain_tool = domain_tool_binary()
     world_corpus_tool = world_corpus_tool_binary()
     world_tool = world_tool_binary()
+    character_tool = character_tool_binary()
     compiler = compiler_binary()
     fixture = ROOT / "examples" / "domain-modules" / "contract"
     manifest_json = fixture / "module.weave-module.json"
@@ -492,6 +517,15 @@ def verify_domain_contract() -> None:
     naming_manifest = world_fixture / "naming" / "module.weave-module.json"
     naming_pack = world_fixture / "naming" / "glasswind.weave-domain.json"
     world_index = world_fixture / "corpus.weave-world.json"
+    character_fixture = ROOT / "examples" / "domain-modules" / "weave-character"
+    character_profile_json = character_fixture / "profile.character.json"
+    character_profile_ron = character_fixture / "profile.character.ron"
+    character_template_json = character_fixture / "template.character.json"
+    character_template_ron = character_fixture / "template.character.ron"
+    character_overlay_json = character_fixture / "overlay.character.json"
+    character_overlay_ron = character_fixture / "overlay.character.ron"
+    character_synthesis_json = character_fixture / "synthesis.character.json"
+    character_synthesis_ron = character_fixture / "synthesis.character.ron"
     world_packs = (
         world_pack,
         world_fixture
@@ -546,6 +580,21 @@ def verify_domain_contract() -> None:
         ],
         capture=True,
     )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
+            "character_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
     world_validation = [
         str(domain_tool),
         "validate",
@@ -597,6 +646,11 @@ def verify_domain_contract() -> None:
         generated_world_composition_schema = workspace / "weave-world-composition-v1.schema.json"
         generated_world_full_schema = workspace / "weave-world-full-v1.schema.json"
         generated_world_compact_schema = workspace / "weave-world-compact-v1.schema.json"
+        generated_character_profile_schema = workspace / "weave-character-profile-v1.schema.json"
+        generated_character_template_schema = workspace / "weave-character-template-v1.schema.json"
+        generated_character_overlay_schema = workspace / "weave-character-overlay-v1.schema.json"
+        generated_character_synthesis_schema = workspace / "weave-character-synthesis-v1.schema.json"
+        generated_character_diagnostic_schema = workspace / "weave-character-diagnostic-v1.schema.json"
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -620,6 +674,8 @@ def verify_domain_contract() -> None:
         generated_composed_pack = workspace / "glasswind_composed.weave-domain.json"
         generated_composition_receipt_json = workspace / "composition.receipt.json"
         generated_composition_receipt_ron = workspace / "composition.receipt.ron"
+        generated_character_synthesis_json = workspace / "synthesis.character.json"
+        generated_character_synthesis_ron = workspace / "synthesis.character.ron"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -647,6 +703,17 @@ def verify_domain_contract() -> None:
         ):
             run(
                 [str(world_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
+        for kind, output in (
+            ("profile", generated_character_profile_schema),
+            ("template", generated_character_template_schema),
+            ("overlay", generated_character_overlay_schema),
+            ("synthesis", generated_character_synthesis_schema),
+            ("diagnostic", generated_character_diagnostic_schema),
+        ):
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
         for generated, checked in (
@@ -681,9 +748,69 @@ def verify_domain_contract() -> None:
                 generated_world_compact_schema,
                 ROOT / "schemas" / "weave-world-compact-v1.schema.json",
             ),
+            (
+                generated_character_profile_schema,
+                ROOT / "schemas" / "weave-character-profile-v1.schema.json",
+            ),
+            (
+                generated_character_template_schema,
+                ROOT / "schemas" / "weave-character-template-v1.schema.json",
+            ),
+            (
+                generated_character_overlay_schema,
+                ROOT / "schemas" / "weave-character-overlay-v1.schema.json",
+            ),
+            (
+                generated_character_synthesis_schema,
+                ROOT / "schemas" / "weave-character-synthesis-v1.schema.json",
+            ),
+            (
+                generated_character_diagnostic_schema,
+                ROOT / "schemas" / "weave-character-diagnostic-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
+
+        for kind, source in (
+            ("profile", character_profile_json),
+            ("profile", character_profile_ron),
+            ("template", character_template_json),
+            ("template", character_template_ron),
+            ("overlay", character_overlay_json),
+            ("overlay", character_overlay_ron),
+            ("synthesis", character_synthesis_json),
+            ("synthesis", character_synthesis_ron),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "validate",
+                    kind,
+                    str(source.relative_to(ROOT)),
+                ],
+                capture=True,
+            )
+        for encoding, output, checked in (
+            ("json", generated_character_synthesis_json, character_synthesis_json),
+            ("ron", generated_character_synthesis_ron, character_synthesis_ron),
+        ):
+            run(
+                [
+                    str(character_tool),
+                    "synthesize",
+                    str(character_overlay_json.relative_to(ROOT)),
+                    "--template",
+                    str(character_template_json.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+            if output.read_bytes() != checked.read_bytes():
+                raise DocsError(f"canonical Character synthesis is stale: {checked.name}")
 
         normalization_jobs = (
             ("manifest", manifest_json, "json", normalized_manifest_json),
@@ -1214,7 +1341,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -1297,6 +1424,11 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-world-composition-v1.schema.json",
         "weave-world-full-v1.schema.json",
         "weave-world-compact-v1.schema.json",
+        "weave-character-profile-v1.schema.json",
+        "weave-character-template-v1.schema.json",
+        "weave-character-overlay-v1.schema.json",
+        "weave-character-synthesis-v1.schema.json",
+        "weave-character-diagnostic-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

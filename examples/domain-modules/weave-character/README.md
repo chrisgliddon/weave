@@ -1,0 +1,35 @@
+# Weave Character contract fixtures
+
+This directory contains original MIT-licensed synthetic data for the public Character Profile v1 contract. Ari Vale, Sable Reed, Glasswind, all prose, all numeric values, every optional extension payload, and every expected result were authored for Weave. The fixture uses the publicly documented HEXACO factor/facet vocabulary but contains no questionnaire items, scoring keys, normative data, private person data, or model-generated biography.
+
+The canonical pairs are:
+
+- `profile.character.{json,ron}`: complete six-factor and 24-facet profile;
+- `template.character.{json,ron}`: immutable versioned input;
+- `overlay.character.{json,ron}`: sparse reviewed operations with exact prior hashes;
+- `synthesis.character.{json,ron}`: reproducible template/overlay/effective-profile proof;
+- `omitted-extensions.character.{json,ron}`: valid minimal optional-domain behavior; and
+- `unknown-extension-preserved.character.{json,ron}`: inactive opaque version preservation.
+
+The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template lineage, a broken relationship reference, and forbidden derived canonical evidence.
+
+Rebuild or check every fixture and schema from the repository root:
+
+```bash
+cargo run -p weave-character --example character_fixture -- --write
+cargo run -p weave-character --example character_fixture -- --check
+```
+
+Validate or reproduce individual artifacts:
+
+```bash
+cargo run -p weave-character -- validate profile \
+  examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- synthesize \
+  examples/domain-modules/weave-character/overlay.character.json \
+  --template examples/domain-modules/weave-character/template.character.json \
+  --output target/synthesis.character.json
+```
+
+See the [Character contract guide](../../../docs/character_module.md) for authority, missing-data, OCEAN, extension, synthesis, compatibility, privacy, and diagnostic rules.
