@@ -48,6 +48,8 @@ Every record needs a unique string or symbol `name` and a `meaning`. A weighted 
 
 Add `reversed_meaning` to records that can reverse, then set `reversals: true` on the pattern. Upright-only records remain upright even in that system.
 
+Reusable third-party data belongs in a versioned, data-only [community pattern package](community_patterns.md). Packages add licensing, provenance, compatibility, integrity, discovery, and moderation metadata while lowering to this same runtime model.
+
 ## Result objects
 
 A single draw exposes its semantic fields directly:

@@ -55,6 +55,23 @@ pub struct TypeCheckResult {
     pub variables: BTreeMap<String, Type>,
 }
 
+/// Draw surface supplied by a validated external pattern package.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PatternSignature {
+    /// Named spreads available to source expressions.
+    pub spreads: BTreeSet<String>,
+}
+
+impl PatternSignature {
+    /// Construct an external signature from its spread names.
+    #[must_use]
+    pub fn new(spreads: impl IntoIterator<Item = String>) -> Self {
+        Self {
+            spreads: spreads.into_iter().collect(),
+        }
+    }
+}
+
 impl TypeCheckResult {
     /// Whether checking produced no errors.
     #[must_use]
@@ -103,6 +120,27 @@ impl Checker {
             patterns: BTreeMap::new(),
             knots: BTreeSet::new(),
         }
+    }
+
+    fn with_patterns(patterns: &BTreeMap<String, PatternSignature>) -> Self {
+        let mut checker = Self::new();
+        checker.patterns = patterns
+            .iter()
+            .map(|(name, signature)| {
+                (
+                    name.clone(),
+                    PatternInfo {
+                        spreads: signature
+                            .spreads
+                            .iter()
+                            .map(|spread| (spread.clone(), BTreeSet::new()))
+                            .collect(),
+                        ..PatternInfo::default()
+                    },
+                )
+            })
+            .collect();
+        checker
     }
 
     fn check(mut self, document: &Document) -> TypeCheckResult {
@@ -1181,6 +1219,15 @@ pub fn type_check(document: &Document) -> TypeCheckResult {
     Checker::new().check(document)
 }
 
+/// Check a document with validated, data-only pattern packages in scope.
+#[must_use]
+pub fn type_check_with_patterns(
+    document: &Document,
+    patterns: &BTreeMap<String, PatternSignature>,
+) -> TypeCheckResult {
+    Checker::with_patterns(patterns).check(document)
+}
+
 fn literal_type(literal: &Literal) -> Type {
     match literal {
         Literal::Null => Type::Null,
@@ -1360,6 +1407,29 @@ pattern changes {
                 .diagnostics
                 .iter()
                 .any(|diagnostic| diagnostic.code.0 == "W2115")
+        );
+    }
+
+    #[test]
+    fn checks_draws_against_external_pattern_signatures() {
+        let source = "VAR sign = ember_omens.spread.three_signs.draw()\n=== start ===\n{sign.kindling.meaning}\n-> END\n";
+        let document = parse_document(source).expect("source parses");
+        let patterns = BTreeMap::from([(
+            "ember_omens".to_owned(),
+            PatternSignature::new(["three_signs".to_owned()]),
+        )]);
+        let valid = type_check_with_patterns(&document, &patterns);
+        assert!(valid.is_success(), "{:?}", valid.diagnostics);
+
+        let missing =
+            parse_document("VAR sign = ember_omens.spread.unknown.draw()\n=== start ===\n-> END\n")
+                .expect("source parses");
+        let invalid = type_check_with_patterns(&missing, &patterns);
+        assert!(
+            invalid
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code.0 == "W2029")
         );
     }
 }

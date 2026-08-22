@@ -7,11 +7,22 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[[bin]]
+name = "weave-pattern"
+path = "src/main.rs"
+
 [dependencies]
+clap.workspace = true
 rand.workspace = true
 rand_chacha.workspace = true
+schemars.workspace = true
+semver.workspace = true
 serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tempfile.workspace = true
 thiserror.workspace = true
+url.workspace = true
 weave-core = { path = "../weave-core" }
 
 [dev-dependencies]

@@ -4,6 +4,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use tempfile::tempdir;
+use weave_patterns::PackageRegistry;
 
 fn binary() -> &'static str {
     env!("CARGO_BIN_EXE_weavec")
@@ -47,6 +48,65 @@ fn emits_the_published_json_schema() {
         serde_json::from_slice(&output.stdout).expect("schema output is JSON");
     assert_eq!(schema["$id"], "urn:weave:schema:story-ir:2");
     assert_eq!(schema["properties"]["version"]["const"], 2);
+}
+
+#[test]
+fn compiles_a_story_against_an_installed_community_pattern() {
+    let directory = tempdir().expect("temporary directory");
+    let registry_path = directory.path().join("registry");
+    let package = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../patterns/community/ember-omens/package.weave-pattern.json");
+    PackageRegistry::new(&registry_path)
+        .install(package)
+        .expect("install sample package");
+    let source = directory.path().join("community.weave");
+    fs::write(
+        &source,
+        "VAR sign = ember_omens.spread.three_signs.draw()\n=== start ===\n{sign.kindling.meaning}\n-> END\n",
+    )
+    .expect("write source");
+    let output_path = directory.path().join("community.json");
+
+    let output = Command::new(binary())
+        .args(["--format", "json", "--output"])
+        .arg(&output_path)
+        .args(["--pattern-registry"])
+        .arg(&registry_path)
+        .args(["--pattern", "ember_omens@^1.0"])
+        .arg(&source)
+        .output()
+        .expect("run compiler");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let compiled: serde_json::Value =
+        serde_json::from_slice(&fs::read(output_path).expect("read output"))
+            .expect("compiled JSON");
+    assert_eq!(
+        compiled["patterns"]["ember_omens"]["draw_method"]["kind"],
+        "weighted_by"
+    );
+}
+
+#[test]
+fn missing_community_package_fails_without_partial_output() {
+    let directory = tempdir().expect("temporary directory");
+    let source = source_fixture(&directory);
+    let destination = directory.path().join("missing.json");
+    let output = Command::new(binary())
+        .args(["--format", "json", "--output"])
+        .arg(&destination)
+        .args(["--pattern-registry"])
+        .arg(directory.path().join("registry"))
+        .args(["--pattern", "missing@^1"])
+        .arg(source)
+        .output()
+        .expect("run compiler");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(!destination.exists());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("no installed community package"));
 }
 
 #[test]

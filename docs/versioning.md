@@ -12,6 +12,8 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | JSON Schema | IR `2` | [`json_format.md`](json_format.md) |
 | Saved browser state | `1` | `weave_web::WEB_STATE_VERSION` |
 | Pattern model | `1` | `weave_patterns::PATTERN_MODEL_VERSION` |
+| Community pattern package | `1` | [`community_patterns.md`](community_patterns.md) |
+| Community registry index | `1` | `weave_patterns::COMMUNITY_REGISTRY_INDEX_VERSION` |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |
 | Tree-sitter package | `0.1.0` | [`tree_sitter.md`](tree_sitter.md) |

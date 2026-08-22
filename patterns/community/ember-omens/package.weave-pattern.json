@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "pattern_model_version": 1,
+  "metadata": {
+    "id": "ember_omens",
+    "version": "1.0.0",
+    "title": "Ember Omens",
+    "summary": "Four original firelight signs for stories about change, patience, and shared purpose.",
+    "authors": [
+      {
+        "name": "Weave contributors",
+        "url": "https://github.com/chrisgliddon/weave/graphs/contributors"
+      }
+    ],
+    "license": "MIT",
+    "license_url": "https://spdx.org/licenses/MIT.html",
+    "attribution": "Ember Omens is an original sample pattern system created for the Weave project.",
+    "weave_version": "^0.1.0",
+    "source": {
+      "url": "https://github.com/chrisgliddon/weave",
+      "revision": "ember-omens-1.0.0",
+      "modified": false
+    },
+    "tags": [
+      "omens",
+      "story-prompts"
+    ],
+    "content_warnings": []
+  },
+  "pattern": {
+    "name": "Ember Omens",
+    "draw_method": {
+      "kind": "weighted",
+      "field": "weight"
+    },
+    "allow_duplicates": false,
+    "reversals": true,
+    "elements": [
+      {
+        "id": "rising_spark",
+        "fields": {
+          "description": "A bright spark climbs above the coals.",
+          "meaning": {
+            "symbol": "initiative"
+          },
+          "name": "Rising Spark",
+          "weight": 3.0
+        },
+        "reversed_fields": {
+          "meaning": {
+            "symbol": "haste"
+          }
+        }
+      },
+      {
+        "id": "patient_coal",
+        "fields": {
+          "description": "A banked coal keeps its warmth through the dark.",
+          "meaning": {
+            "symbol": "endurance"
+          },
+          "name": "Patient Coal",
+          "weight": 2.0
+        },
+        "reversed_fields": {
+          "meaning": {
+            "symbol": "stagnation"
+          }
+        }
+      },
+      {
+        "id": "shared_flame",
+        "fields": {
+          "description": "Two small flames lean together and burn steadily.",
+          "meaning": {
+            "symbol": "cooperation"
+          },
+          "name": "Shared Flame",
+          "weight": 3.0
+        },
+        "reversed_fields": {
+          "meaning": {
+            "symbol": "dependence"
+          }
+        }
+      },
+      {
+        "id": "cooling_ash",
+        "fields": {
+          "description": "Grey ash settles around a quiet red center.",
+          "meaning": {
+            "symbol": "reflection"
+          },
+          "name": "Cooling Ash",
+          "weight": 1.0
+        },
+        "reversed_fields": {
+          "meaning": {
+            "symbol": "avoidance"
+          }
+        }
+      }
+    ],
+    "spreads": [
+      {
+        "id": "three_signs",
+        "positions": [
+          "kindling",
+          "flame",
+          "embers"
+        ]
+      }
+    ]
+  }
+}

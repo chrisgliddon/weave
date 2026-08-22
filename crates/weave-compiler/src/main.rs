@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -6,8 +7,9 @@ use std::sync::mpsc;
 
 use clap::{Parser, ValueEnum};
 use notify::{Event, RecursiveMode, Watcher};
-use weave_compiler::{CompileOptions, compile, json_schema, to_json, to_ron};
+use weave_compiler::{CompileOptions, compile_with_patterns, json_schema, to_json, to_ron};
 use weave_core::{Diagnostic, Severity};
+use weave_patterns::{PackageRegistry, PackageRequirement};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -33,8 +35,25 @@ struct Cli {
     watch: bool,
 
     /// Emit the current story IR JSON Schema instead of compiling a story.
-    #[arg(long, conflicts_with = "watch")]
+    #[arg(
+        long,
+        conflicts_with = "watch",
+        conflicts_with = "patterns",
+        conflicts_with = "pattern_registry"
+    )]
     schema: bool,
+
+    /// Installed package selector, for example `ember_omens@^1.0`. Repeat as needed.
+    #[arg(
+        long = "pattern",
+        value_name = "ID@VERSION_REQ",
+        requires = "pattern_registry"
+    )]
+    patterns: Vec<String>,
+
+    /// Explicit local registry containing packages selected with `--pattern`.
+    #[arg(long, value_name = "DIRECTORY", requires = "patterns")]
+    pattern_registry: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -76,7 +95,14 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
     let options = CompileOptions {
         source_name: Some(input.display().to_string()),
     };
-    let compiled = match compile(&source, &options) {
+    let external_patterns = match external_patterns(cli) {
+        Ok(patterns) => patterns,
+        Err(error) => {
+            eprintln!("weavec: {error}");
+            return 2;
+        }
+    };
+    let compiled = match compile_with_patterns(&source, &options, &external_patterns) {
         Ok(compiled) => compiled,
         Err(error) => {
             print_diagnostics(input, &source, &error.diagnostics);
@@ -113,6 +139,34 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
         eprintln!("compiled {} -> {}", input.display(), destination.display());
     }
     0
+}
+
+fn external_patterns(
+    cli: &Cli,
+) -> Result<BTreeMap<String, weave_core::ir::PatternSystemIr>, String> {
+    if cli.patterns.is_empty() {
+        return Ok(BTreeMap::new());
+    }
+    let registry_path = cli
+        .pattern_registry
+        .as_ref()
+        .ok_or_else(|| "--pattern requires --pattern-registry".to_owned())?;
+    let registry = PackageRegistry::new(registry_path);
+    let mut patterns = BTreeMap::new();
+    for selector in &cli.patterns {
+        let requirement = selector
+            .parse::<PackageRequirement>()
+            .map_err(|error| error.to_string())?;
+        let package = registry
+            .resolve(&requirement)
+            .map_err(|error| error.to_string())?;
+        let id = package.metadata.id.clone();
+        let pattern = package.pattern_ir().map_err(|error| error.to_string())?;
+        if patterns.insert(id.clone(), pattern).is_some() {
+            return Err(format!("pattern `{id}` was selected more than once"));
+        }
+    }
+    Ok(patterns)
 }
 
 fn emit_schema(cli: &Cli) -> u8 {

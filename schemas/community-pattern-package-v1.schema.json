@@ -1,0 +1,346 @@
+{
+  "$defs": {
+    "PackageAuthor": {
+      "additionalProperties": false,
+      "description": "One package author or steward.",
+      "properties": {
+        "name": {
+          "description": "Display name.",
+          "type": "string"
+        },
+        "url": {
+          "description": "Optional public HTTPS profile or project page.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "PackageDrawMethod": {
+      "description": "Data-only draw methods available to community packages.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Select every eligible element with equal probability.",
+          "properties": {
+            "kind": {
+              "const": "uniform",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Use one positive numeric semantic field as a relative weight.",
+          "properties": {
+            "field": {
+              "description": "Weight field present on every element.",
+              "type": "string"
+            },
+            "kind": {
+              "const": "weighted",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "field"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "PackageElement": {
+      "additionalProperties": false,
+      "description": "One immutable semantic element.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackageValue"
+          },
+          "description": "Upright scalar semantic fields.",
+          "type": "object"
+        },
+        "id": {
+          "description": "Stable identity, canonicalized from the element's `name` field.",
+          "type": "string"
+        },
+        "reversed_fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackageValue"
+          },
+          "default": {},
+          "description": "Fields overlaid when the element is reversed.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "PackageMetadata": {
+      "additionalProperties": false,
+      "description": "Human and machine-readable package metadata.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained when the package is redistributed.",
+          "type": "string"
+        },
+        "authors": {
+          "description": "People or groups responsible for the package.",
+          "items": {
+            "$ref": "#/$defs/PackageAuthor"
+          },
+          "type": "array"
+        },
+        "content_warnings": {
+          "default": [],
+          "description": "Author-declared content notices used during discovery and moderation.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Stable Weave identifier used by stories, registries, and installed paths.",
+          "type": "string"
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS page containing the applicable license text.",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/PackageSource",
+          "description": "Public source and revision from which the package was produced."
+        },
+        "summary": {
+          "description": "Short discovery summary.",
+          "type": "string"
+        },
+        "tags": {
+          "default": [],
+          "description": "Lowercase discovery tags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Semantic package version.",
+          "type": "string"
+        },
+        "weave_version": {
+          "description": "Version requirement for compatible Weave releases.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title",
+        "summary",
+        "authors",
+        "license",
+        "license_url",
+        "attribution",
+        "weave_version",
+        "source"
+      ],
+      "type": "object"
+    },
+    "PackagePattern": {
+      "additionalProperties": false,
+      "description": "One generic pattern definition carried by a package.",
+      "properties": {
+        "allow_duplicates": {
+          "description": "Whether one spread may repeat an element.",
+          "type": "boolean"
+        },
+        "draw_method": {
+          "$ref": "#/$defs/PackageDrawMethod",
+          "description": "Default selection algorithm. Community packages cannot add algorithms."
+        },
+        "elements": {
+          "description": "Source-ordered semantic elements.",
+          "items": {
+            "$ref": "#/$defs/PackageElement"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Human-readable pattern-system name.",
+          "type": "string"
+        },
+        "reversals": {
+          "description": "Whether elements with reversed fields may be reversed.",
+          "type": "boolean"
+        },
+        "spreads": {
+          "default": [],
+          "description": "Named position sequences.",
+          "items": {
+            "$ref": "#/$defs/PackageSpread"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "draw_method",
+        "allow_duplicates",
+        "reversals",
+        "elements"
+      ],
+      "type": "object"
+    },
+    "PackageSource": {
+      "additionalProperties": false,
+      "description": "Auditable public source metadata.",
+      "properties": {
+        "modified": {
+          "description": "Whether the packaged data differs from that source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable tag, commit, release, or source revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Optional SHA-256 of the reviewed upstream source artifact.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "revision",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "PackageSpread": {
+      "additionalProperties": false,
+      "description": "One named spread.",
+      "properties": {
+        "id": {
+          "description": "Stable spread identifier.",
+          "type": "string"
+        },
+        "positions": {
+          "description": "Ordered semantic positions.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "positions"
+      ],
+      "type": "object"
+    },
+    "PackageSymbol": {
+      "additionalProperties": false,
+      "description": "Explicit semantic symbol used by [`PackageValue`].",
+      "properties": {
+        "symbol": {
+          "description": "Symbol value.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "type": "object"
+    },
+    "PackageValue": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PackageSymbol",
+          "description": "Meaning-bearing atom encoded as `{ \"symbol\": \"value\" }`."
+        },
+        {
+          "description": "Boolean.",
+          "type": "boolean"
+        },
+        {
+          "description": "Finite number.",
+          "format": "double",
+          "type": "number"
+        },
+        {
+          "description": "Display string.",
+          "type": "string"
+        },
+        {
+          "description": "Null.",
+          "type": "null"
+        }
+      ],
+      "description": "Ergonomic scalar value syntax for package JSON."
+    }
+  },
+  "$id": "urn:weave:schema:community-pattern-package:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One portable, data-only community pattern package.",
+  "properties": {
+    "metadata": {
+      "$ref": "#/$defs/PackageMetadata",
+      "description": "Discovery, compatibility, licensing, and provenance metadata."
+    },
+    "pattern": {
+      "$ref": "#/$defs/PackagePattern",
+      "description": "Executable-through-data pattern definition. Packages cannot provide code."
+    },
+    "pattern_model_version": {
+      "const": 1,
+      "description": "Runtime pattern-model version used by the data.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": 1,
+      "description": "Package-file schema version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "pattern_model_version",
+    "metadata",
+    "pattern"
+  ],
+  "title": "Weave Community Pattern Package v1",
+  "type": "object",
+  "x-weave-community-package-version": 1
+}

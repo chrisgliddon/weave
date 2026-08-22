@@ -123,6 +123,7 @@ Pattern systems are Weave's signature feature. They generate not just random out
 | **I-Ching** | 64 hexagrams | Coin method, yarrow stalks |
 | **Runes** | 24 Elder Futhark runes | Single draw, three-rune spread |
 | **Custom** | Authored semantic records | Uniform, weighted, spread-based |
+| **Community package** | Versioned, licensed, provenance-tracked semantic data | Uniform, weighted, spread-based |
 
 Built-ins are declared explicitly and may be given any source-level name:
 
@@ -167,6 +168,8 @@ VAR omen = weather_omens.spread.day_omen.draw()
     The dawn breaks clean and clear.
 }
 ```
+
+Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
 ---
 
@@ -261,7 +264,7 @@ weave/
 ├── crates/
 │   ├── weave-core/          # Language parser, AST, type system
 │   ├── weave-runtime/       # Story runtime engine (no Bevy dependency)
-│   ├── weave-patterns/      # Built-in pattern systems (tarot, i-ching, runes)
+│   ├── weave-patterns/      # Built-ins plus data-only community packages and registry CLI
 │   ├── weave-compiler/      # .weave → .ron / .json compiler
 │   ├── weave-bevy/          # Bevy plugin
 │   ├── weave-web/           # Browser-safe WASM runtime bindings
@@ -288,11 +291,14 @@ weave/
 │   ├── bevy-dialogue/       # Interactive Bevy dialogue game + smoke test
 │   └── web-player/          # Accessible no-bundler WASM player
 │
+├── patterns/                # Reviewed community packages and original examples
+│
 ├── docs/
 │   ├── index.md            # Documentation site landing page
 │   ├── language_guide.md   # Full syntax documentation
 │   ├── language_server.md  # LSP capabilities and editor setup
 │   ├── pattern_systems.md  # How to define and use pattern systems
+│   ├── community_patterns.md # Package format, registry, provenance, and moderation
 │   ├── bevy_integration.md # Using Weave in Bevy games
 │   ├── editor_guide.md     # Using the visual editor
 │   └── api_reference.md    # Generated rustdoc entry points
@@ -479,7 +485,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Syntax highlighting grammars (tree-sitter)
 - [x] Documentation site
 - [x] Example game integration
-- [ ] Community pattern system library
+- [x] Community pattern system library
 
 ### Phase 5 — Pluggable Domain Modules
 - [ ] Shared module manifests, namespaces, compatibility, and provenance contract

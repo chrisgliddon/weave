@@ -17,4 +17,6 @@ pub use ast::{Document, Span, Spanned};
 pub use diagnostic::{Diagnostic, DiagnosticCode, Severity, has_errors};
 pub use parser::{parse_document, parse_expression};
 pub use template::{TemplatePart, parse_template};
-pub use typecheck::{Type, TypeCheckResult, type_check};
+pub use typecheck::{
+    PatternSignature, Type, TypeCheckResult, type_check, type_check_with_patterns,
+};

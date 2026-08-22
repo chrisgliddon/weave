@@ -14,7 +14,10 @@ use weave_core::ir::{
     PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr,
     Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
-use weave_core::{Diagnostic, Severity, TemplatePart, has_errors, parse_document, parse_template};
+use weave_core::{
+    Diagnostic, PatternSignature, Severity, TemplatePart, has_errors, parse_document,
+    parse_template, type_check_with_patterns,
+};
 
 /// Compiler version corresponding to the current IR.
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
@@ -72,8 +75,47 @@ pub enum SerializeError {
 
 /// Parse, statically check, and lower source into runtime IR.
 pub fn compile(source: &str, options: &CompileOptions) -> Result<CompiledStory, CompileError> {
+    compile_with_patterns(source, options, &BTreeMap::new())
+}
+
+/// Compile source with validated, data-only external pattern definitions in scope.
+///
+/// The definitions are embedded into the resulting story IR. Runtime consumers therefore do not
+/// access the package registry or execute package-provided code.
+pub fn compile_with_patterns(
+    source: &str,
+    options: &CompileOptions,
+    external_patterns: &BTreeMap<String, PatternSystemIr>,
+) -> Result<CompiledStory, CompileError> {
+    let mut external_diagnostics = Vec::new();
+    for (name, pattern) in external_patterns {
+        if let Err(error) = weave_patterns::system_from_ir(name, pattern) {
+            external_diagnostics.push(Diagnostic::error(
+                "W3001",
+                format!("external pattern `{name}` is invalid: {error}"),
+            ));
+        }
+    }
+    if has_errors(&external_diagnostics) {
+        return Err(CompileError {
+            diagnostics: external_diagnostics,
+        });
+    }
+
     let document = parse_document(source).map_err(|diagnostics| CompileError { diagnostics })?;
-    let checked = weave_core::type_check(&document);
+    let signatures = external_patterns
+        .iter()
+        .map(|(name, pattern)| {
+            let mut spreads = pattern.spreads.keys().cloned().collect::<Vec<_>>();
+            match pattern.builtin {
+                Some(BuiltinPatternIr::Tarot) => spreads.push("three_card".to_owned()),
+                Some(BuiltinPatternIr::ElderFuthark) => spreads.push("three_rune".to_owned()),
+                Some(BuiltinPatternIr::IChing) | None => {}
+            }
+            (name.clone(), PatternSignature::new(spreads))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let checked = type_check_with_patterns(&document, &signatures);
     if has_errors(&checked.diagnostics) {
         return Err(CompileError {
             diagnostics: checked.diagnostics,
@@ -81,7 +123,7 @@ pub fn compile(source: &str, options: &CompileOptions) -> Result<CompiledStory, 
     }
 
     let mut lowerer = Lowerer::new(options.source_name.clone());
-    let story = lowerer.lower_document(&document);
+    let mut story = lowerer.lower_document(&document);
     if has_errors(&lowerer.diagnostics) {
         return Err(CompileError {
             diagnostics: lowerer.diagnostics,
@@ -94,6 +136,7 @@ pub fn compile(source: &str, options: &CompileOptions) -> Result<CompiledStory, 
         .filter(|diagnostic| diagnostic.severity == Severity::Warning)
         .collect::<Vec<_>>();
     diagnostics.append(&mut lowerer.diagnostics);
+    story.patterns.extend(external_patterns.clone());
     Ok(CompiledStory { story, diagnostics })
 }
 

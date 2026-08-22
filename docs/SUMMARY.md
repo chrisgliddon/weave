@@ -11,6 +11,7 @@
 
 - [Language guide](language_guide.md)
 - [Pattern systems](pattern_systems.md)
+- [Community pattern packages](community_patterns.md)
 - [Weave Editor](editor_guide.md)
 
 # Integration

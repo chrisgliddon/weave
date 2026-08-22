@@ -22,6 +22,7 @@ Every document contains a numeric top-level `version`. A consumer must check it 
 - `source_name` and instruction `span` values are diagnostic metadata. Runtime identity never depends on an input path.
 - Choice identifiers derive from the semantic knot/instruction path. Comments, blank lines, source filenames, and output format do not change them.
 - Pattern definitions, draw methods, spreads, and semantic fields are part of the shared IR. Loading equal RON and JSON with the same random seed produces equal draws, events, and saved state.
+- Explicitly selected [community packages](community_patterns.md) are validated and embedded as ordinary pattern definitions; a runtime never needs registry access to load the compiled story.
 
 Unknown fields are not a substitute for version negotiation. Hosts should reject an unsupported top-level version even if their JSON decoder would otherwise ignore an unfamiliar member.
 

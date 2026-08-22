@@ -31,6 +31,7 @@ REQUIRED_CHAPTERS = {
     "getting_started.md",
     "language_guide.md",
     "pattern_systems.md",
+    "community_patterns.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -132,7 +133,7 @@ def markdown_destination(source: Path, raw_target: str) -> Path | None:
     if target.startswith("api/"):
         return None
     if target.startswith("downloads/"):
-        return ROOT / "schemas" / "weave-story-ir-v2.schema.json"
+        return ROOT / "schemas" / Path(target).name
     return (source.parent / target).resolve()
 
 
@@ -206,6 +207,28 @@ def compiler_binary() -> Path:
     return binary
 
 
+def pattern_tool_binary() -> Path:
+    """Build and locate the community package command-line tool."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-patterns",
+            "--bin",
+            "weave-pattern",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-pattern{suffix}"
+    if not binary.is_file():
+        raise DocsError(f"pattern tool binary was not produced at {binary}")
+    return binary
+
+
 def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
@@ -247,6 +270,103 @@ def compile_examples() -> None:
             raise DocsError("examples/web-player/story.json is stale; rebuild the web player")
 
     print(f"verified {len(sources)} Weave source examples", flush=True)
+
+
+def verify_community_package() -> None:
+    """Exercise package schema, publication, installation, discovery, and story loading."""
+
+    pattern_tool = pattern_tool_binary()
+    compiler = compiler_binary()
+    package = ROOT / "patterns/community/ember-omens/package.weave-pattern.json"
+    story = ROOT / "patterns/community/ember-omens/example.weave"
+    run([str(pattern_tool), "validate", str(package.relative_to(ROOT))], capture=True)
+
+    with tempfile.TemporaryDirectory(prefix="weave-community-") as temporary:
+        workspace = Path(temporary)
+        publication = workspace / "publication"
+        registry = workspace / "registry"
+        generated_schema = workspace / "community-pattern-package-v1.schema.json"
+        run(
+            [
+                str(pattern_tool),
+                "schema",
+                "--output",
+                str(generated_schema),
+            ],
+            capture=True,
+        )
+        checked_schema = ROOT / "schemas/community-pattern-package-v1.schema.json"
+        if generated_schema.read_bytes() != checked_schema.read_bytes():
+            raise DocsError("the checked-in community package schema is stale")
+
+        run(
+            [
+                str(pattern_tool),
+                "publish",
+                str(package.relative_to(ROOT)),
+                "--output",
+                str(publication),
+            ],
+            capture=True,
+        )
+        artifact = publication / "ember_omens-1.0.0.weave-pattern.json"
+        run(
+            [
+                str(pattern_tool),
+                "install",
+                str(artifact),
+                "--registry",
+                str(registry),
+            ],
+            capture=True,
+        )
+        listing = run(
+            [str(pattern_tool), "list", "--registry", str(registry)],
+            capture=True,
+        )
+        if "ember_omens@1.0.0" not in listing.stdout or "MIT" not in listing.stdout:
+            raise DocsError("installed community package is absent from discovery")
+
+        index = workspace / "index.json"
+        run(
+            [
+                str(pattern_tool),
+                "index",
+                "--registry",
+                str(registry),
+                "--output",
+                str(index),
+            ],
+            capture=True,
+        )
+        index_data = json.loads(index.read_text(encoding="utf-8"))
+        if index_data["packages"][0]["id"] != "ember_omens":
+            raise DocsError("community registry index omitted the sample package")
+
+        output = workspace / "story.json"
+        run(
+            [
+                str(compiler),
+                str(story.relative_to(ROOT)),
+                "--pattern-registry",
+                str(registry),
+                "--pattern",
+                "ember_omens@=1.0.0",
+                "--format",
+                "json",
+                "--output",
+                str(output),
+            ],
+            capture=True,
+        )
+        compiled = json.loads(output.read_text(encoding="utf-8"))
+        elements = compiled["patterns"]["ember_omens"]["collections"]["elements"][
+            "elements"
+        ]
+        if len(elements) != 4:
+            raise DocsError("community package data was not embedded in story IR")
+
+    print("verified community package publication and story loading", flush=True)
 
 
 def run_finite_examples() -> None:
@@ -301,10 +421,11 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
 
     downloads = BOOK / "downloads"
     downloads.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(
-        ROOT / "schemas" / "weave-story-ir-v2.schema.json",
-        downloads / "weave-story-ir-v2.schema.json",
-    )
+    for schema in (
+        "weave-story-ir-v2.schema.json",
+        "community-pattern-package-v1.schema.json",
+    ):
+        shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")
 
 
@@ -462,6 +583,7 @@ def main() -> None:
     check_source_links()
     check_quickstart_source()
     compile_examples()
+    verify_community_package()
     run_finite_examples()
     rustdoc = build_rustdoc()
     build_site(rustdoc, mdbook)

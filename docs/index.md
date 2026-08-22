@@ -4,7 +4,7 @@ Weave is a narrative scripting language, deterministic Rust runtime, Bevy integr
 
 This site documents language version **0.1.0**. Start with the [five-minute quickstart](getting_started.md) to compile and run a complete story, then choose the path that matches your work:
 
-- Authors: learn the [language](language_guide.md), [pattern systems](pattern_systems.md), and [visual editor](editor_guide.md).
+- Authors: learn the [language](language_guide.md), [pattern systems](pattern_systems.md), [community packages](community_patterns.md), and [visual editor](editor_guide.md).
 - Game developers: use the standalone [Rust APIs](api_reference.md), [Bevy plugin](bevy_integration.md), or [browser runtime](web_player.md).
 - Tool builders: integrate the [language server](language_server.md) and [Tree-sitter grammar](tree_sitter.md).
 - Contributors: read the [architecture](architecture.md), [contribution guide](contributing.md), and [security policy](security.md).

@@ -8,8 +8,8 @@ This document defines package ownership and dependency boundaries for the Rust w
 |---|---|---|
 | `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | General-purpose parsing and serialization crates only |
 | `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
-| `weave-patterns` | Serializable pattern extension boundary plus built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core` |
-| `weave-compiler` | Checked AST-to-IR lowering, RON/JSON serialization, and the `weavec` CLI | `weave-core`; never `weave-runtime` or Bevy |
+| `weave-patterns` | Serializable pattern extension boundary, data-only community package registry, and built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core`; never compiler, runtime, or host APIs |
+| `weave-compiler` | Checked AST-to-IR lowering, external package embedding, RON/JSON serialization, and the `weavec` CLI | `weave-core`, `weave-patterns`; never `weave-runtime` or Bevy |
 | `weave-fmt` | Canonical `.weave` source rendering | `weave-core` |
 | `weave-bevy` | Bevy asset loading, hot reload, ECS resources, commands, and observer events | `weave-core`, `weave-compiler`, and `weave-runtime` |
 | `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
@@ -22,10 +22,10 @@ The dependency direction is:
 ```text
 weave-core
 ├── weave-patterns
-├── weave-compiler
 └── weave-fmt
 
 weave-core + weave-patterns
+├── weave-compiler
 └── weave-runtime
 
 weave-core + weave-patterns + weave-runtime
@@ -53,6 +53,8 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 - Source files use the versioned language contract in [`language_guide.md`](language_guide.md).
 
 Changing source semantics requires updating the language guide and parser fixtures. Changing serialized IR requires an explicit version decision and compatibility tests; the [JSON format contract](json_format.md) and its checked-in schema are authoritative for interoperable hosts. `PatternDefinition` and `StoryIr` are immutable/shareable. `PatternState` is caller-owned, serialized inside `StoryState`, and reconciled against the current definition on restore. The runtime owns only trait objects and never switches on Tarot, I-Ching, or rune identities; specialization lives behind `weave-patterns::PatternSystem`.
+
+Community package parsing, compatibility, checksums, publication, installation, and discovery live in `weave-patterns`. `weavec` resolves explicitly selected installed packages, supplies their spread signatures to static analysis, and embeds their validated data into ordinary IR. Neither the compiler nor runtime downloads packages, loads dynamic libraries, or executes package-defined hooks.
 
 ## Quality gates
 

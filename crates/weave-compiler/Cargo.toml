@@ -23,6 +23,7 @@ serde_json.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
 weave-core = { path = "../weave-core" }
+weave-patterns = { path = "../weave-patterns" }
 
 [lints]
 workspace = true

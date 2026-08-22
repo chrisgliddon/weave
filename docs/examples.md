@@ -7,6 +7,7 @@ Every `.weave` source below is compiled by the documentation gate. The finite st
 | Basic source | Grammar expansion and terminal flow | `cargo run -p weave-compiler -- examples/stories/basic.weave --output target/basic.ron` |
 | Branching source | Conditions, choices, variables, and diverts | `cargo run -p weave-compiler -- examples/stories/branching.weave --output target/branching.ron` |
 | Pattern source | Structured pattern draws and semantic branches | `cargo run -p weave-compiler -- examples/stories/patterns.weave --output target/patterns.ron` |
+| Community package | Validation, publication, installation, version resolution, and runtime embedding | `cargo run -p weave-patterns --bin weave-pattern -- validate patterns/community/ember-omens/package.weave-pattern.json` |
 | Standalone Rust | Compiler-to-runtime flow without an engine | `cargo run -p weave-example-standalone` |
 | Bevy dialogue game | Interactive dialogue, choices, observable state, hot reload, and pattern-event UI | `cargo run -p weave-example-bevy-dialogue` |
 | Browser player | JSON, WASM, deterministic restart, and save/restore | `./scripts/build-web-player.sh` |
@@ -28,3 +29,5 @@ The Bevy game also has a window-free integration gate for CI and servers:
 ```bash
 cargo run -p weave-example-bevy-dialogue -- --smoke-test
 ```
+
+The [community package guide](community_patterns.md) provides the complete commands for publishing and installing Ember Omens, then compiling its package-backed example story.

@@ -1,0 +1,7 @@
+VAR reading = ember_omens.spread.three_signs.draw()
+
+=== start ===
+The first sign is {reading.kindling.name}: {reading.kindling.meaning}.
+The second sign is {reading.flame.name}: {reading.flame.meaning}.
+The final sign is {reading.embers.name}: {reading.embers.meaning}.
+-> END
