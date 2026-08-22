@@ -1,0 +1,311 @@
+{
+  "$defs": {
+    "AlignmentConfig": {
+      "additionalProperties": false,
+      "description": "Project-specific selection and coverage policy, fingerprinted into every proposal.",
+      "properties": {
+        "config_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "minimum_coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "override_locked_view": {
+          "type": "boolean"
+        },
+        "override_rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "selected_axes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "config_format_version",
+        "id",
+        "selected_axes",
+        "minimum_coverage_micros",
+        "override_locked_view"
+      ],
+      "type": "object"
+    },
+    "AlignmentExplanationInput": {
+      "additionalProperties": false,
+      "description": "One ordered explanation input, including missing evidence rather than inventing a value.",
+      "properties": {
+        "centered_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "input_id": {
+          "type": "string"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "profile_path": {
+          "type": "string"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        },
+        "weight_thousandths": {
+          "format": "int16",
+          "maximum": 32767,
+          "minimum": -32768,
+          "type": "integer"
+        },
+        "weighted_contribution": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "input_id",
+        "profile_path",
+        "trait_id",
+        "weight_thousandths",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "AlignmentPackRef": {
+      "additionalProperties": false,
+      "description": "Exact alignment-pack coordinate retained by a reviewed public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "AlignmentProposalState": {
+      "description": "Whether an axis has enough declared evidence to be proposed or must begin withheld.",
+      "enum": [
+        "proposed",
+        "withheld"
+      ],
+      "type": "string"
+    },
+    "AlignmentProposedValue": {
+      "additionalProperties": false,
+      "description": "One immutable, reviewable axis proposal.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "proposed_label_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/AlignmentProposalState"
+        },
+        "trace": {
+          "$ref": "#/$defs/AlignmentScoreTrace"
+        }
+      },
+      "required": [
+        "id",
+        "state",
+        "trace"
+      ],
+      "type": "object"
+    },
+    "AlignmentScoreTrace": {
+      "additionalProperties": false,
+      "description": "Complete fixed-point explanation trace for one proposed public value.",
+      "properties": {
+        "axis_id": {
+          "type": "string"
+        },
+        "coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "covered_weight_thousandths": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "ordered_inputs": {
+          "items": {
+            "$ref": "#/$defs/AlignmentExplanationInput"
+          },
+          "type": "array"
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "seed_sha256": {
+          "type": "string"
+        },
+        "threshold_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "total_weight_thousandths": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "weighted_sum": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "axis_id",
+        "ordered_inputs",
+        "total_weight_thousandths",
+        "covered_weight_thousandths",
+        "coverage_micros",
+        "seed_sha256",
+        "explanation"
+      ],
+      "type": "object"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-alignment-proposal:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Immutable proposal pinning profile, pack, configuration, seed, and explanation inputs.",
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/AlignmentConfig"
+    },
+    "config_sha256": {
+      "type": "string"
+    },
+    "pack": {
+      "$ref": "#/$defs/AlignmentPackRef"
+    },
+    "profile_id": {
+      "type": "string"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "proposal_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "values": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AlignmentProposedValue"
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "proposal_format_version",
+    "profile_id",
+    "profile_sha256",
+    "pack",
+    "config",
+    "config_sha256",
+    "seed",
+    "values"
+  ],
+  "title": "Weave Character Alignment Proposal v1",
+  "type": "object",
+  "x-weave-character-alignment-version": 1
+}

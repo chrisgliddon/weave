@@ -615,13 +615,52 @@ pub struct RelationshipEdge {
     pub confidence: Confidence,
 }
 
-/// One pluggable alignment view with declared authority and rationale in its header.
+/// One reviewed, pluggable alignment view with declared authority and rationale in its header.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AlignmentView {
     pub view_id: String,
-    pub values: DomainValue,
+    pub pack: AlignmentPackRef,
+    /// Approved public values keyed by stable axis identifier. Review traces stay in receipts.
+    pub values: BTreeMap<String, ApprovedAlignmentValue>,
     pub input_paths: Vec<String>,
+    pub review_sha256: String,
+    pub applied_sha256: String,
+}
+
+/// Exact alignment-pack coordinate retained by a reviewed public view.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AlignmentPackRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// One approved narrative alignment value. It is shorthand, never diagnostic evidence.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ApprovedAlignmentValue {
+    pub id: String,
+    pub label_id: String,
+    pub label: String,
+    pub decision: AlignmentPublicDecision,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub score_micros: Option<i32>,
+    pub coverage_micros: u32,
+    pub explanation: String,
+    pub input_paths: Vec<String>,
+}
+
+/// Review path by which an alignment value entered the approved public view.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum AlignmentPublicDecision {
+    Reviewed,
+    Edited,
+    Overridden,
 }
 
 /// Accepted or proposed date-context references. They are authoring cues, never causal evidence.

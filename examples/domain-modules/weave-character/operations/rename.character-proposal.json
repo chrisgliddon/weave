@@ -2,9 +2,9 @@
   "proposal_format_version": 1,
   "id": "org.weave.character.operation.rename_ari.proposal",
   "collection_id": "org.weave.character.collection.glasswind",
-  "input_sha256": "140e61c43ad62a16eb330d0e42a7aa11637ff5d94ecebcfe43dae11fb48e061d",
-  "request_sha256": "8f69e402ffbb0a410dea2d63fcde07ff068b939fbbe89587e42d439f6ca0f09c",
-  "output_sha256": "2542fe2210a618ba0250160347649d41ccd47a4d29cfdb8fab5cdd7f289cf6fe",
+  "input_sha256": "b9feebdf711e1b9b53b7bf64cbe6e3f49e849a400cb874901304a2bc46fcbfdc",
+  "request_sha256": "2cbbfd5098619badf49de13dcd1c33f40044e0c3e110fbc19152fcd40d134783",
+  "output_sha256": "a6b14f342294307256e00827ea0618ba69ee1e0945f3685c308cb8e7ae2163ed",
   "seed": 4271,
   "selected_ids": [
     "org.weave.character.ari_vale",
@@ -12,12 +12,12 @@
   ],
   "changes": [
     {
-      "id": "change_2f0b94fddb11d1098186e914",
+      "id": "change_8e5de09416d28493b70d9c85",
       "kind": "renamed",
       "before_id": "org.weave.character.ari_vale",
       "after_id": "org.weave.character.ari_vale_wayfinder",
-      "before_sha256": "7dee4e5d391eb74871880dabfe17b6eb590c79ee0f4c56dfcdd5d210a90dd7f8",
-      "after_sha256": "0f9d26c328244f2315f818b7000fdbae9d7495f0fca00dcbfed82ba2261244e9",
+      "before_sha256": "a3bf46d3e742bb228fd30ef492555e124259954b626b85e63133ba22625e9834",
+      "after_sha256": "6c807f11d55198bd11fbccf5f17ff1280911c71bc4f2af78b84097b17d6ccd6b",
       "affected_references": [
         {
           "owner_character_id": "org.weave.character.ari_vale_wayfinder",
@@ -26,12 +26,12 @@
       ]
     },
     {
-      "id": "change_8ec96839368703f80d2d4280",
+      "id": "change_a3cb45ac0e8e621fe3d77735",
       "kind": "reference_updated",
       "before_id": "org.weave.character.sable_reed",
       "after_id": "org.weave.character.sable_reed",
-      "before_sha256": "f2a1eeb92be247bb3af1291be7d78dfe2dbbce0375a054149b5b5a1f2e65b386",
-      "after_sha256": "257e7d5a33619fd11b774b822e5c3dece08b52a91a1f219be96f6ccfd2885532",
+      "before_sha256": "86f72519afe81f604f6612284cfec426c5630786a7609f72108a42d395571f03",
+      "after_sha256": "6be665a1af3aa5008031ef71fb3b5fe67f89f8a45a1aa7f4df0f5b8f52146a21",
       "affected_references": [
         {
           "owner_character_id": "org.weave.character.sable_reed",
@@ -570,32 +570,79 @@
               "header": {
                 "namespace": "org.weave.character.alignment",
                 "extension_version": 1,
-                "authority": "org.weave.character.contract",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
+                "authority": "org.weave.reviewer.fixture",
+                "rationale": "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
                 "state": "reviewed",
                 "review": "accepted",
                 "lock": "unlocked",
                 "freshness": "current",
                 "lineage": [
-                  "character_original"
+                  "alignment_apply_361b86102edd3c9a",
+                  "character_original",
+                  "weave_wayfinder_compass"
                 ],
                 "canonical_personality_write_back": "forbidden"
               },
               "value": {
-                "view_id": "org.weave.alignment.compass",
+                "view_id": "org.weave.alignment.wayfinder_compass",
+                "pack": {
+                  "id": "org.weave.alignment.wayfinder_compass",
+                  "version": "1.0.0",
+                  "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442"
+                },
                 "values": {
-                  "kind": "object",
-                  "value": {
-                    "orientation": {
-                      "kind": "symbol",
-                      "value": "steward"
-                    }
+                  "horizon": {
+                    "id": "horizon",
+                    "label_id": "seeking",
+                    "label": "Seeking",
+                    "decision": "reviewed",
+                    "score_micros": 644000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.openness.factor",
+                      "canon.personality.openness.inquisitiveness"
+                    ]
+                  },
+                  "reciprocity": {
+                    "id": "reciprocity",
+                    "label_id": "mutual",
+                    "label": "Mutual",
+                    "decision": "edited",
+                    "score_micros": 449000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.agreeableness.factor",
+                      "canon.personality.honesty_humility.factor",
+                      "canon.personality.honesty_humility.fairness"
+                    ]
+                  },
+                  "structure": {
+                    "id": "structure",
+                    "label_id": "adapting",
+                    "label": "Adapting",
+                    "decision": "overridden",
+                    "score_micros": 536000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.conscientiousness.factor",
+                      "canon.personality.conscientiousness.organization"
+                    ]
                   }
                 },
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
-                  "canon.personality.honesty_humility.factor"
-                ]
+                  "canon.personality.conscientiousness.factor",
+                  "canon.personality.conscientiousness.organization",
+                  "canon.personality.honesty_humility.factor",
+                  "canon.personality.honesty_humility.fairness",
+                  "canon.personality.openness.factor",
+                  "canon.personality.openness.inquisitiveness"
+                ],
+                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6"
               }
             }
           },
@@ -897,10 +944,44 @@
               "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
               "attribution": "Original synthetic Weave Character contract fixture.",
               "modified": false
+            },
+            {
+              "id": "weave_wayfinder_compass",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "wayfinder-compass-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+              "modified": false
             }
           ],
-          "transformations": [],
+          "transformations": [
+            {
+              "id": "alignment_apply_361b86102edd3c9a",
+              "inputs": [
+                "character_original",
+                "weave_wayfinder_compass"
+              ],
+              "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+            }
+          ],
           "claims": {
+            "axes": [
+              "weave_wayfinder_compass"
+            ],
+            "calibrations": [
+              "weave_wayfinder_compass"
+            ],
+            "extensions.org.weave.character.alignment": [
+              "alignment_apply_361b86102edd3c9a"
+            ],
+            "inputs": [
+              "weave_wayfinder_compass"
+            ],
+            "methodology": [
+              "weave_wayfinder_compass"
+            ],
             "profile": [
               "character_original"
             ]
@@ -1431,32 +1512,79 @@
               "header": {
                 "namespace": "org.weave.character.alignment",
                 "extension_version": 1,
-                "authority": "org.weave.character.contract",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
+                "authority": "org.weave.reviewer.fixture",
+                "rationale": "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
                 "state": "reviewed",
                 "review": "accepted",
                 "lock": "unlocked",
                 "freshness": "current",
                 "lineage": [
-                  "character_original"
+                  "alignment_apply_361b86102edd3c9a",
+                  "character_original",
+                  "weave_wayfinder_compass"
                 ],
                 "canonical_personality_write_back": "forbidden"
               },
               "value": {
-                "view_id": "org.weave.alignment.compass",
+                "view_id": "org.weave.alignment.wayfinder_compass",
+                "pack": {
+                  "id": "org.weave.alignment.wayfinder_compass",
+                  "version": "1.0.0",
+                  "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442"
+                },
                 "values": {
-                  "kind": "object",
-                  "value": {
-                    "orientation": {
-                      "kind": "symbol",
-                      "value": "steward"
-                    }
+                  "horizon": {
+                    "id": "horizon",
+                    "label_id": "seeking",
+                    "label": "Seeking",
+                    "decision": "reviewed",
+                    "score_micros": 644000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.openness.factor",
+                      "canon.personality.openness.inquisitiveness"
+                    ]
+                  },
+                  "reciprocity": {
+                    "id": "reciprocity",
+                    "label_id": "mutual",
+                    "label": "Mutual",
+                    "decision": "edited",
+                    "score_micros": 449000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.agreeableness.factor",
+                      "canon.personality.honesty_humility.factor",
+                      "canon.personality.honesty_humility.fairness"
+                    ]
+                  },
+                  "structure": {
+                    "id": "structure",
+                    "label_id": "adapting",
+                    "label": "Adapting",
+                    "decision": "overridden",
+                    "score_micros": 536000,
+                    "coverage_micros": 1000000,
+                    "explanation": "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                    "input_paths": [
+                      "canon.personality.conscientiousness.factor",
+                      "canon.personality.conscientiousness.organization"
+                    ]
                   }
                 },
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
-                  "canon.personality.honesty_humility.factor"
-                ]
+                  "canon.personality.conscientiousness.factor",
+                  "canon.personality.conscientiousness.organization",
+                  "canon.personality.honesty_humility.factor",
+                  "canon.personality.honesty_humility.fairness",
+                  "canon.personality.openness.factor",
+                  "canon.personality.openness.inquisitiveness"
+                ],
+                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6"
               }
             }
           },
@@ -1758,10 +1886,44 @@
               "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
               "attribution": "Original synthetic Weave Character contract fixture.",
               "modified": false
+            },
+            {
+              "id": "weave_wayfinder_compass",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "wayfinder-compass-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+              "modified": false
             }
           ],
-          "transformations": [],
+          "transformations": [
+            {
+              "id": "alignment_apply_361b86102edd3c9a",
+              "inputs": [
+                "character_original",
+                "weave_wayfinder_compass"
+              ],
+              "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+            }
+          ],
           "claims": {
+            "axes": [
+              "weave_wayfinder_compass"
+            ],
+            "calibrations": [
+              "weave_wayfinder_compass"
+            ],
+            "extensions.org.weave.character.alignment": [
+              "alignment_apply_361b86102edd3c9a"
+            ],
+            "inputs": [
+              "weave_wayfinder_compass"
+            ],
+            "methodology": [
+              "weave_wayfinder_compass"
+            ],
             "profile": [
               "character_original"
             ]
@@ -1773,7 +1935,7 @@
   "request": {
     "request_format_version": 1,
     "id": "org.weave.character.operation.rename_ari",
-    "expected_input_sha256": "140e61c43ad62a16eb330d0e42a7aa11637ff5d94ecebcfe43dae11fb48e061d",
+    "expected_input_sha256": "b9feebdf711e1b9b53b7bf64cbe6e3f49e849a400cb874901304a2bc46fcbfdc",
     "seed": 4271,
     "scope": {
       "kind": "characters",

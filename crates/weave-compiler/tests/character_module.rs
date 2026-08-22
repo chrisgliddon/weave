@@ -67,6 +67,7 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(from_ron, first.story);
     let character = &from_ron.modules["character"];
     assert_eq!(character.id, "org.weave.character");
+    assert_eq!(character.version, "1.2.0");
     assert_eq!(character.pack_id, "ari_vale");
     assert_eq!(
         character.value(&["profile", "identity", "id"]),
@@ -95,6 +96,46 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(
         character.value(&["profile", "ocean", "lossy"]),
         Some(&DomainValueIr::Bool(true))
+    );
+    assert_eq!(
+        character.value(&["profile", "alignment", "canonical_personality_write_back"]),
+        Some(&DomainValueIr::Bool(false))
+    );
+    assert_eq!(
+        character.value(&["profile", "alignment", "pack", "id"]),
+        Some(&DomainValueIr::String(
+            "org.weave.alignment.wayfinder_compass".to_owned()
+        ))
+    );
+    assert_eq!(
+        character.value(&["profile", "alignment", "pack", "version"]),
+        Some(&DomainValueIr::String("1.0.0".to_owned()))
+    );
+    assert!(matches!(
+        character.value(&["profile", "alignment", "pack", "sha256"]),
+        Some(DomainValueIr::String(value)) if value.len() == 64
+    ));
+    assert_eq!(
+        character.value(&["profile", "alignment", "values", "horizon", "label_id"]),
+        Some(&DomainValueIr::String("seeking".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "alignment", "values", "reciprocity", "decision"]),
+        Some(&DomainValueIr::Symbol("edited".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "alignment", "values", "structure", "decision"]),
+        Some(&DomainValueIr::Symbol("overridden".to_owned()))
+    );
+    assert!(
+        character
+            .value(&["profile", "alignment", "values", "signal"])
+            .is_none()
+    );
+    assert!(
+        character
+            .value(&["profile", "alignment", "values", "tempo"])
+            .is_none()
     );
     assert_eq!(character.authored_overrides.len(), 1);
     assert_eq!(
@@ -134,6 +175,15 @@ fn character_schema_paths_are_static_and_derived_evidence_is_read_only() {
     let error = compile_with_modules(&canonical_writeback, &options(), &catalog())
         .expect_err("canonical evidence bypass must fail");
     assert_eq!(error.diagnostics[0].code.0, "D140");
+
+    let alignment_writeback = SOURCE.replace(
+        "override profile.identity.display_name.value: \"Ari Vale, Wayfinder\"",
+        "override profile.alignment.values.horizon.label_id: \"anchored\"",
+    );
+    let error = compile_with_modules(&alignment_writeback, &options(), &catalog())
+        .expect_err("reviewed alignment bypass must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+    assert!(error.diagnostics[0].message.contains("read-only path"));
 }
 
 #[test]

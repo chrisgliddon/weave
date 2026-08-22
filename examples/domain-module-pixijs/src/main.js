@@ -8,7 +8,11 @@ import composedWorldStory from "../../domain-modules/weave-world/composed-settin
 import characterStory from "../../domain-modules/weave-character/ari-vale.story.json";
 import temporalCharacterStory from "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json";
 
-import { characterPresentation, temporalCharacterPresentation } from "./character-presentation.js";
+import {
+  alignmentCharacterPresentation,
+  characterPresentation,
+  temporalCharacterPresentation,
+} from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
 
@@ -29,6 +33,7 @@ try {
   );
   const composedWorld = composedWorldPresentation(composedWorldStory);
   const character = characterPresentation(characterStory);
+  const alignmentCharacter = alignmentCharacterPresentation(characterStory);
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
 
   const app = new Application();
@@ -43,7 +48,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · creativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${temporalCharacter.cues.length} reviewed temporal cues · personality write-back ${temporalCharacter.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · creativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${temporalCharacter.cues.length} reviewed temporal cues · personality write-back ${temporalCharacter.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
@@ -57,7 +62,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read portable World and Character exports; temporal fact/cue lineage stays separate and OCEAN remains visibly derived and lossy.";
+    "PixiJS read portable World and Character exports; approved alignment stays non-diagnostic, temporal fact/cue lineage stays separate, and OCEAN remains visibly derived and lossy.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

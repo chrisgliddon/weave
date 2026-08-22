@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.1.0"
+    version: "=1.2.0"
     pack: "ari_vale@=1.0.0"
     override profile.identity.display_name.value: "Ari Vale, Wayfinder"
 }
@@ -9,11 +9,21 @@ VAR character_name = character.profile.identity.display_name.value
 VAR openness = character.profile.hexaco.openness.summary.projection_score
 VAR creativity = character.profile.hexaco.openness.creativity.projection_score
 VAR ocean_openness = character.profile.ocean.openness.score
+VAR alignment_pack = character.profile.alignment.pack.id
+VAR alignment_pack_version = character.profile.alignment.pack.version
+VAR alignment_pack_sha256 = character.profile.alignment.pack.sha256
+VAR alignment_horizon = character.profile.alignment.values.horizon.label
+VAR alignment_reciprocity = character.profile.alignment.values.reciprocity.label
+VAR alignment_personality_writeback = character.profile.alignment.canonical_personality_write_back
 
 === start ===
-{character.profile.ocean.lossy:
-    {character_name} carries {creativity} creativity evidence and a derived OCEAN openness view of {ocean_openness}.
+{alignment_personality_writeback:
+    This branch is unreachable because reviewed alignment shorthand cannot become personality evidence.
 - else:
-    The compatibility projection is unavailable.
+    {character.profile.ocean.lossy:
+        {character_name} carries {creativity} creativity evidence, a derived OCEAN openness view of {ocean_openness}, and reviewed {alignment_horizon} / {alignment_reciprocity} narrative alignment labels selected from {alignment_pack}@{alignment_pack_version} ({alignment_pack_sha256}).
+    - else:
+        The compatibility projection is unavailable.
+    }
 }
 -> END

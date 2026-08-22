@@ -2,7 +2,7 @@
     contract_version: 1,
     pack_format_version: 1,
     id: "org.weave.character",
-    version: "1.1.0",
+    version: "1.2.0",
     namespace: "character",
     title: "Weave Character",
     summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence and a visibly lossy derived OCEAN view.",
@@ -169,6 +169,199 @@
                     ),
                     required: true,
                     description: "Authored or reviewed text value.",
+                ),
+            },
+        ),
+        "CharacterAlignmentPack": (
+            kind: "object",
+            fields: {
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact alignment pack identity.",
+                ),
+                "sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact lowercase pack content SHA-256.",
+                ),
+                "version": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact alignment pack version.",
+                ),
+            },
+        ),
+        "CharacterAlignmentValue": (
+            kind: "object",
+            fields: {
+                "coverage_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Exact evidence coverage in integer millionths.",
+                ),
+                "decision": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "edited",
+                            "overridden",
+                            "reviewed",
+                        ],
+                    ),
+                    required: true,
+                    description: "Review path by which this value entered the public view.",
+                ),
+                "explanation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Public non-diagnostic narrative explanation.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable alignment axis identifier.",
+                ),
+                "input_paths": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted canonical evidence paths actually used by the reviewed value.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Pack-declared public narrative label.",
+                ),
+                "label_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable pack-declared label identifier.",
+                ),
+                "score_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Optional exact signed score retained for the approved shorthand.",
+                ),
+            },
+        ),
+        "CharacterAlignmentView": (
+            kind: "object",
+            fields: {
+                "applied_sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact atomic application fingerprint.",
+                ),
+                "canonical_personality_write_back": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; alignment is never canonical evidence.",
+                ),
+                "input_paths": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted union of canonical paths used by approved public values.",
+                ),
+                "pack": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterAlignmentPack",
+                    ),
+                    required: true,
+                    description: "Exact declarative alignment pack coordinate.",
+                ),
+                "review_sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact complete review fingerprint.",
+                ),
+                "values": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "CharacterAlignmentValue",
+                        ),
+                        min_entries: 0,
+                        max_entries: 4096,
+                    ),
+                    required: true,
+                    description: "Approved alignment values only; rejected and withheld values stay private to the authoring receipt.",
+                ),
+                "view_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Selected alignment view identity.",
                 ),
             },
         ),
@@ -434,6 +627,14 @@
         "CharacterProfile": (
             kind: "object",
             fields: {
+                "alignment": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterAlignmentView",
+                    ),
+                    required: false,
+                    description: "Optional reviewed, non-diagnostic narrative alignment shorthand.",
+                ),
                 "date_context": (
                     type: (
                         kind: "named",
@@ -1058,6 +1259,13 @@
     authoring: (
         entity_collections: [],
         read_only_paths: [
+            (
+                path: [
+                    "profile",
+                    "alignment",
+                ],
+                reason: "Reviewed alignment values retain exact pack and review fingerprints and remain non-diagnostic read-only shorthand; canonical authoring requires a separate reviewed operation.",
+            ),
             (
                 path: [
                     "profile",

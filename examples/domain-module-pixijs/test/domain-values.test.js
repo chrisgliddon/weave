@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
 import {
+  alignmentCharacterPresentation,
   characterPresentation,
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
@@ -115,6 +116,45 @@ test("reads the complete portable Character profile", async () => {
     oceanIsLossy: true,
     oceanIsIndependentEvidence: false,
   });
+});
+
+test("reads only approved alignment values with exact portable fingerprints", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const alignment = alignmentCharacterPresentation(story);
+  assert.equal(alignment.viewId, "org.weave.alignment.wayfinder_compass");
+  assert.equal(alignment.pack.id, "org.weave.alignment.wayfinder_compass");
+  assert.equal(alignment.pack.version, "1.0.0");
+  assert.match(alignment.pack.sha256, /^[0-9a-f]{64}$/);
+  assert.match(alignment.reviewSha256, /^[0-9a-f]{64}$/);
+  assert.match(alignment.appliedSha256, /^[0-9a-f]{64}$/);
+  assert.equal(alignment.canonicalPersonalityWriteBack, false);
+  assert.deepEqual(
+    alignment.values.map(({ id, labelId, label, decision }) => ({
+      id,
+      labelId,
+      label,
+      decision,
+    })),
+    [
+      { id: "horizon", labelId: "seeking", label: "Seeking", decision: "reviewed" },
+      { id: "reciprocity", labelId: "mutual", label: "Mutual", decision: "edited" },
+      {
+        id: "structure",
+        labelId: "adapting",
+        label: "Adapting",
+        decision: "overridden",
+      },
+    ],
+  );
+  assert.ok(
+    alignment.values.every(
+      (value) =>
+        value.coverageMicros === 1_000_000 &&
+        value.inputPaths.length > 0 &&
+        value.id !== "signal" &&
+        value.id !== "tempo",
+    ),
+  );
 });
 
 test("reads reviewed temporal cues with separate fact and fictional-cue lineage", async () => {

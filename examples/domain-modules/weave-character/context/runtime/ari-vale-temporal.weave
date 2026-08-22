@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.1.0"
+    version: "=1.2.0"
     pack: "ari_vale_temporal@=1.0.0"
 }
 

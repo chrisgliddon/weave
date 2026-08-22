@@ -562,34 +562,81 @@
       "kind": "alignment_view",
       "record": {
         "header": {
-          "authority": "org.weave.character.contract",
+          "authority": "org.weave.reviewer.fixture",
           "canonical_personality_write_back": "forbidden",
           "extension_version": 1,
           "freshness": "current",
           "lineage": [
-            "character_original"
+            "alignment_apply_361b86102edd3c9a",
+            "character_original",
+            "weave_wayfinder_compass"
           ],
           "lock": "unlocked",
           "namespace": "org.weave.character.alignment",
-          "rationale": "Explicit optional projection authored for the synthetic fixture.",
+          "rationale": "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
           "review": "accepted",
           "state": "reviewed"
         },
         "value": {
+          "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
           "input_paths": [
             "canon.personality.agreeableness.factor",
-            "canon.personality.honesty_humility.factor"
+            "canon.personality.conscientiousness.factor",
+            "canon.personality.conscientiousness.organization",
+            "canon.personality.honesty_humility.factor",
+            "canon.personality.honesty_humility.fairness",
+            "canon.personality.openness.factor",
+            "canon.personality.openness.inquisitiveness"
           ],
+          "pack": {
+            "id": "org.weave.alignment.wayfinder_compass",
+            "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
+            "version": "1.0.0"
+          },
+          "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
           "values": {
-            "kind": "object",
-            "value": {
-              "orientation": {
-                "kind": "symbol",
-                "value": "steward"
-              }
+            "horizon": {
+              "coverage_micros": 1000000,
+              "decision": "reviewed",
+              "explanation": "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+              "id": "horizon",
+              "input_paths": [
+                "canon.personality.openness.factor",
+                "canon.personality.openness.inquisitiveness"
+              ],
+              "label": "Seeking",
+              "label_id": "seeking",
+              "score_micros": 644000
+            },
+            "reciprocity": {
+              "coverage_micros": 1000000,
+              "decision": "edited",
+              "explanation": "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+              "id": "reciprocity",
+              "input_paths": [
+                "canon.personality.agreeableness.factor",
+                "canon.personality.honesty_humility.factor",
+                "canon.personality.honesty_humility.fairness"
+              ],
+              "label": "Mutual",
+              "label_id": "mutual",
+              "score_micros": 449000
+            },
+            "structure": {
+              "coverage_micros": 1000000,
+              "decision": "overridden",
+              "explanation": "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+              "id": "structure",
+              "input_paths": [
+                "canon.personality.conscientiousness.factor",
+                "canon.personality.conscientiousness.organization"
+              ],
+              "label": "Adapting",
+              "label_id": "adapting",
+              "score_micros": 536000
             }
           },
-          "view_id": "org.weave.alignment.compass"
+          "view_id": "org.weave.alignment.wayfinder_compass"
         }
       }
     },
@@ -819,6 +866,21 @@
   "profile_format_version": 2,
   "provenance": {
     "claims": {
+      "axes": [
+        "weave_wayfinder_compass"
+      ],
+      "calibrations": [
+        "weave_wayfinder_compass"
+      ],
+      "extensions.org.weave.character.alignment": [
+        "alignment_apply_361b86102edd3c9a"
+      ],
+      "inputs": [
+        "weave_wayfinder_compass"
+      ],
+      "methodology": [
+        "weave_wayfinder_compass"
+      ],
       "profile": [
         "character_original"
       ]
@@ -833,9 +895,28 @@
         "modified": false,
         "revision": "character-contract-v1",
         "url": "https://github.com/chrisgliddon/weave"
+      },
+      {
+        "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+        "id": "weave_wayfinder_compass",
+        "kind": "original",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "modified": false,
+        "revision": "wayfinder-compass-v1",
+        "url": "https://github.com/chrisgliddon/weave"
       }
     ],
-    "transformations": []
+    "transformations": [
+      {
+        "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
+        "id": "alignment_apply_361b86102edd3c9a",
+        "inputs": [
+          "character_original",
+          "weave_wayfinder_compass"
+        ]
+      }
+    ]
   },
   "suggestions": {
     "night_market_memory": {

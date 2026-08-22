@@ -1,5 +1,6 @@
 //! Standalone GPUI application and testable editor-domain services.
 
+pub mod alignment;
 pub mod app;
 pub mod character;
 pub mod domain;
@@ -16,6 +17,7 @@ pub mod text_editor;
 pub mod text_view;
 pub mod theme;
 
+pub use alignment::AlignmentSession;
 pub use app::{LaunchMode, StartupError, launch};
 pub use character::CharacterCorpusSession;
 pub use domain::{

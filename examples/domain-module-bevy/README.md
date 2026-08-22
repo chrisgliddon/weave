@@ -3,7 +3,10 @@
 This finite Bevy 0.18 example deserializes the canonical compiled RON tracer, Weave World
 reference seed, and complete synthetic Weave Character profile. It extracts their typed exports
 through `weave-core`, inserts the results as Bevy resources, and reports them from `Startup`
-systems. It has no editor dependency and performs no artifact discovery at runtime.
+systems. The Character reader retains exact alignment pack/review/application fingerprints, reads
+only reviewed/edited/overridden narrative labels, proves rejected and withheld axes are absent,
+and verifies canonical personality write-back is false. It has no editor dependency and performs
+no artifact discovery at runtime.
 
 Run it from the repository root:
 

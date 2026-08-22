@@ -23,8 +23,8 @@
       "candidate_id": "cue_afa4e07801cd5172193f83f1"
     }
   },
-  "profile_sha256": "11b6f71674c9991ed37a356e2378b15a03b53fd30751c5a9575ff7d33400a9af",
-  "proposal_sha256": "1ff1a13a36b15a7d9e38ec3fe2e352a536914442d46e68166032bf8359171798",
+  "profile_sha256": "29c9df9f1416332caec905b67dc1380c6766494c1f2b1990ae3127e81c42d0e8",
+  "proposal_sha256": "75bbae844c9c87e159d7f84b3517f2839f9244ea07efbd33b9a20cf7afa3f28f",
   "rationale": "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
   "review_format_version": 1,
   "reviewer": "org.weave.reviewer.fixture"

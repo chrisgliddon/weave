@@ -2698,8 +2698,9 @@ mod tests {
     use super::*;
     use weave_domain::{ProvenanceKind, ProvenanceSource};
 
-    const PROFILE: &str =
-        include_str!("../../../examples/domain-modules/weave-character/profile.character.json");
+    const PROFILE: &str = include_str!(
+        "../../../examples/domain-modules/weave-character/omitted-extensions.character.json"
+    );
 
     fn pack() -> TemporalContextPack {
         TemporalContextPack {

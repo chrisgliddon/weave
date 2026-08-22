@@ -52,6 +52,20 @@ const CONTEXT_REVIEW: &str =
     "examples/domain-modules/weave-character/context/review.temporal-review.json";
 const CONTEXT_RECEIPT: &str =
     "examples/domain-modules/weave-character/context/receipt.temporal-receipt.json";
+const ALIGNMENT_INPUT: &str =
+    "examples/domain-modules/weave-character/alignment/input.character.json";
+const ALIGNMENT_PACK: &str =
+    "examples/domain-modules/weave-character/alignment/wayfinder_compass.alignment-pack.json";
+const ALIGNMENT_CONFIG: &str =
+    "examples/domain-modules/weave-character/alignment/selection.alignment-config.json";
+const ALIGNMENT_PROPOSAL: &str =
+    "examples/domain-modules/weave-character/alignment/proposal.alignment-proposal.json";
+const ALIGNMENT_DECISIONS: &str =
+    "examples/domain-modules/weave-character/alignment/decisions.alignment-review.json";
+const ALIGNMENT_REVIEW: &str =
+    "examples/domain-modules/weave-character/alignment/review.alignment-review.json";
+const ALIGNMENT_RECEIPT: &str =
+    "examples/domain-modules/weave-character/alignment/receipt.alignment-receipt.json";
 
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-character"))
@@ -190,6 +204,31 @@ fn validates_and_writes_every_collection_contract_schema_exactly() {
             "temporal-receipt",
             CONTEXT_RECEIPT,
             "schemas/weave-character-temporal-receipt-v1.schema.json",
+        ),
+        (
+            "alignment-pack",
+            ALIGNMENT_PACK,
+            "schemas/weave-character-alignment-pack-v1.schema.json",
+        ),
+        (
+            "alignment-config",
+            ALIGNMENT_CONFIG,
+            "schemas/weave-character-alignment-config-v1.schema.json",
+        ),
+        (
+            "alignment-proposal",
+            ALIGNMENT_PROPOSAL,
+            "schemas/weave-character-alignment-proposal-v1.schema.json",
+        ),
+        (
+            "alignment-review",
+            ALIGNMENT_REVIEW,
+            "schemas/weave-character-alignment-review-v1.schema.json",
+        ),
+        (
+            "alignment-receipt",
+            ALIGNMENT_RECEIPT,
+            "schemas/weave-character-alignment-receipt-v1.schema.json",
         ),
     ] {
         let validation = run(&["validate", kind, input]);
@@ -574,6 +613,119 @@ fn temporal_dry_run_and_stale_inputs_never_write_partial_receipts() {
         CONTEXT_WORLD_PACK,
         "examples/domain-modules/weave-character/invalid/stale-temporal-proposal.json",
         CONTEXT_REVIEW,
+        "--output",
+        stale_output.to_str().unwrap(),
+    ]);
+    assert!(!stale.status.success());
+    assert!(!stale_output.exists());
+    assert!(!String::from_utf8_lossy(&stale.stderr).contains("Ari Vale"));
+}
+
+#[test]
+fn alignment_propose_review_and_apply_match_shared_fixture_bytes() {
+    let temporary = tempdir().expect("temporary output directory");
+    let proposal = temporary.path().join("proposal.json");
+    let proposed = run(&[
+        "alignment-propose",
+        ALIGNMENT_INPUT,
+        "--pack",
+        ALIGNMENT_PACK,
+        "--config",
+        ALIGNMENT_CONFIG,
+        "--seed",
+        "20260822",
+        "--output",
+        proposal.to_str().unwrap(),
+    ]);
+    assert!(
+        proposed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&proposed.stderr)
+    );
+    assert_eq!(
+        fs::read(&proposal).unwrap(),
+        fs::read(repository_root().join(ALIGNMENT_PROPOSAL)).unwrap()
+    );
+
+    let expected_review: serde_json::Value =
+        serde_json::from_slice(&fs::read(repository_root().join(ALIGNMENT_REVIEW)).unwrap())
+            .unwrap();
+    let review = temporary.path().join("review.json");
+    let reviewed = run(&[
+        "alignment-review",
+        proposal.to_str().unwrap(),
+        "--pack",
+        ALIGNMENT_PACK,
+        ALIGNMENT_DECISIONS,
+        "--reviewer",
+        expected_review["reviewer"].as_str().unwrap(),
+        "--rationale",
+        expected_review["rationale"].as_str().unwrap(),
+        "--output",
+        review.to_str().unwrap(),
+    ]);
+    assert!(
+        reviewed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&reviewed.stderr)
+    );
+    assert_eq!(
+        fs::read(&review).unwrap(),
+        fs::read(repository_root().join(ALIGNMENT_REVIEW)).unwrap()
+    );
+
+    let receipt = temporary.path().join("receipt.json");
+    let applied = run(&[
+        "alignment-apply",
+        ALIGNMENT_INPUT,
+        "--pack",
+        ALIGNMENT_PACK,
+        proposal.to_str().unwrap(),
+        review.to_str().unwrap(),
+        "--output",
+        receipt.to_str().unwrap(),
+    ]);
+    assert!(
+        applied.status.success(),
+        "{}",
+        String::from_utf8_lossy(&applied.stderr)
+    );
+    assert_eq!(
+        fs::read(receipt).unwrap(),
+        fs::read(repository_root().join(ALIGNMENT_RECEIPT)).unwrap()
+    );
+}
+
+#[test]
+fn alignment_dry_run_and_stale_inputs_never_write_partial_receipts() {
+    let temporary = tempdir().expect("temporary output directory");
+    let forbidden = temporary.path().join("dry-run-receipt.json");
+    let dry_run = run(&[
+        "alignment-apply",
+        ALIGNMENT_INPUT,
+        "--pack",
+        ALIGNMENT_PACK,
+        ALIGNMENT_PROPOSAL,
+        ALIGNMENT_REVIEW,
+        "--dry-run",
+        "--output",
+        forbidden.to_str().unwrap(),
+    ]);
+    assert!(
+        dry_run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&dry_run.stderr)
+    );
+    assert!(!forbidden.exists());
+
+    let stale_output = temporary.path().join("stale-receipt.json");
+    let stale = run(&[
+        "alignment-apply",
+        ALIGNMENT_INPUT,
+        "--pack",
+        ALIGNMENT_PACK,
+        "examples/domain-modules/weave-character/invalid/stale-alignment-proposal.json",
+        ALIGNMENT_REVIEW,
         "--output",
         stale_output.to_str().unwrap(),
     ]);

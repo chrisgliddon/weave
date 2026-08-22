@@ -1,0 +1,47 @@
+{
+  "review_format_version": 1,
+  "proposal_sha256": "9f6ea1879d8321e65ed13d7876d738351b00de222ba4c4e041585f0094caf57a",
+  "profile_sha256": "eae5bd47cd1f6aa2a8e6575039210cbdab863a7cad4d347b2e11cfbd22267b40",
+  "pack_sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
+  "reviewer": "org.weave.reviewer.fixture",
+  "rationale": "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
+  "decisions": {
+    "horizon": {
+      "axis_id": "horizon",
+      "action": {
+        "decision": "accept",
+        "rationale": "Accept the proposed fictional shorthand after inspecting its complete fixed-point explanation and non-diagnostic limitations."
+      }
+    },
+    "reciprocity": {
+      "axis_id": "reciprocity",
+      "action": {
+        "decision": "edit",
+        "label_id": "mutual",
+        "rationale": "Select a different declared narrative label because the authored scene context emphasizes exchange rather than stewardship; canonical evidence remains unchanged."
+      }
+    },
+    "signal": {
+      "axis_id": "signal",
+      "action": {
+        "decision": "reject",
+        "rationale": "Do not expose this optional axis to narrative logic for the reference character."
+      }
+    },
+    "structure": {
+      "axis_id": "structure",
+      "action": {
+        "decision": "override",
+        "label_id": "adapting",
+        "rationale": "Deliberately override the computed shorthand for this project while retaining the exact proposal, score, and reviewer rationale in the authoring receipt."
+      }
+    },
+    "tempo": {
+      "axis_id": "tempo",
+      "action": {
+        "decision": "withhold",
+        "rationale": "Keep this complete proposal in the authoring review without publishing it to runtime narrative logic."
+      }
+    }
+  }
+}

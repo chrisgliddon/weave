@@ -47,6 +47,65 @@ export function characterPresentation(story) {
   };
 }
 
+export function alignmentCharacterPresentation(story) {
+  const alignment = readModuleExport(story, "character", ["profile", "alignment"]);
+  const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  const isHash = (value) => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+  if (
+    !isObject(alignment) ||
+    typeof alignment.view_id !== "string" ||
+    !isObject(alignment.pack) ||
+    typeof alignment.pack.id !== "string" ||
+    typeof alignment.pack.version !== "string" ||
+    !isHash(alignment.pack.sha256) ||
+    !isHash(alignment.review_sha256) ||
+    !isHash(alignment.applied_sha256) ||
+    alignment.canonical_personality_write_back !== false ||
+    !Array.isArray(alignment.input_paths) ||
+    !alignment.input_paths.every((path) => typeof path === "string") ||
+    !isObject(alignment.values)
+  ) {
+    throw new TypeError("invalid reviewed Character alignment");
+  }
+  const values = Object.entries(alignment.values)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([axisId, value]) => {
+      if (
+        !isObject(value) ||
+        value.id !== axisId ||
+        typeof value.label_id !== "string" ||
+        typeof value.label !== "string" ||
+        !["reviewed", "edited", "overridden"].includes(value.decision) ||
+        !Number.isInteger(value.coverage_micros) ||
+        value.coverage_micros < 0 ||
+        value.coverage_micros > 1_000_000 ||
+        (value.score_micros !== undefined && !Number.isInteger(value.score_micros)) ||
+        !Array.isArray(value.input_paths) ||
+        !value.input_paths.every((path) => typeof path === "string")
+      ) {
+        throw new TypeError("invalid approved Character alignment value");
+      }
+      return {
+        id: value.id,
+        labelId: value.label_id,
+        label: value.label,
+        decision: value.decision,
+        scoreMicros: value.score_micros,
+        coverageMicros: value.coverage_micros,
+        inputPaths: value.input_paths,
+      };
+    });
+  return {
+    viewId: alignment.view_id,
+    pack: alignment.pack,
+    reviewSha256: alignment.review_sha256,
+    appliedSha256: alignment.applied_sha256,
+    canonicalPersonalityWriteBack: alignment.canonical_personality_write_back,
+    inputPaths: alignment.input_paths,
+    values,
+  };
+}
+
 export function temporalCharacterPresentation(story) {
   const context = readModuleExport(story, "character", ["profile", "date_context"]);
   if (

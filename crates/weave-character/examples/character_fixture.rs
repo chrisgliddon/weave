@@ -4,15 +4,19 @@ use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
 use weave_character::{
-    Agreeableness, AlignmentView, Attributed, AuthoredNote, BehavioralSignature,
-    BehavioralSignatures, BirthDate, CHARACTER_COLLECTION_FORMAT_VERSION,
-    CHARACTER_OPERATION_REQUEST_FORMAT_VERSION, CHARACTER_OVERLAY_FORMAT_VERSION,
-    CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterCanon,
-    CharacterCollection, CharacterCorpusAction, CharacterDerivedViews, CharacterExtension,
-    CharacterIdentity, CharacterOperation, CharacterOperationAction, CharacterOperationRequest,
-    CharacterOverlay, CharacterProfile, CharacterReviewDecision, CharacterScope,
-    CharacterSuggestion, CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness,
-    DateContext, DateContextCueKind, DateContextSensitivity, DateContextUncertainty, Emotionality,
+    ALIGNMENT_CONFIG_FORMAT_VERSION, ALIGNMENT_PACK_FORMAT_VERSION, Agreeableness, AlignmentAxis,
+    AlignmentCalibrationExpected, AlignmentCalibrationFixture, AlignmentConfig,
+    AlignmentInputField, AlignmentPack, AlignmentPackProvider, AlignmentProposal, AlignmentReceipt,
+    AlignmentReview, AlignmentReviewAction, AlignmentReviewDecision, AlignmentThreshold,
+    Attributed, AuthoredNote, BehavioralSignature, BehavioralSignatures, BirthDate,
+    CHARACTER_COLLECTION_FORMAT_VERSION, CHARACTER_OPERATION_REQUEST_FORMAT_VERSION,
+    CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_PROFILE_FORMAT_VERSION,
+    CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterCanon, CharacterCollection,
+    CharacterCorpusAction, CharacterDerivedViews, CharacterExtension, CharacterIdentity,
+    CharacterOperation, CharacterOperationAction, CharacterOperationRequest, CharacterOverlay,
+    CharacterProfile, CharacterReviewDecision, CharacterScope, CharacterSuggestion,
+    CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness, DateContext,
+    DateContextCueKind, DateContextSensitivity, DateContextUncertainty, Emotionality,
     ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion, Freshness, HexacoProfile,
     HexacoTrait, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
     NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
@@ -24,17 +28,20 @@ use weave_character::{
     TemporalExtent, TemporalPlaceScope, TemporalRecordKind, TemporalReferencePeriod,
     TemporalResolution, TemporalReviewAction, TemporalReviewDecision, TemporalSensitivity,
     TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState, VersionedExtension,
-    VoiceCategory, VoiceDirection, apply_reviewed_character_proposal,
+    VoiceCategory, VoiceDirection, alignment_config_schema, alignment_pack_schema,
+    alignment_proposal_schema, alignment_provider_content_fingerprint, alignment_receipt_schema,
+    alignment_review_schema, apply_reviewed_alignment, apply_reviewed_character_proposal,
     apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
     character_domain_pack, character_module_manifest, character_operation_request_schema,
     character_overlay_schema, character_profile_schema, character_progress_schema,
     character_proposal_schema, character_review_schema, character_synthesis_schema,
-    character_template_schema, collection_fingerprint, create_temporal_context_review,
-    propose_character_operation, propose_temporal_context, recompute_derived,
-    resume_character_operation, review_character_proposal, synthesize_character,
-    template_fingerprint, temporal_context_config_schema, temporal_context_pack_schema,
-    temporal_context_proposal_schema, temporal_context_receipt_schema,
-    temporal_context_review_schema, temporal_provider_content_fingerprint,
+    character_template_schema, collection_fingerprint, create_alignment_review,
+    create_temporal_context_review, propose_alignment, propose_character_operation,
+    propose_temporal_context, recompute_derived, resume_character_operation,
+    review_character_proposal, synthesize_character, template_fingerprint,
+    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
+    temporal_context_receipt_schema, temporal_context_review_schema,
+    temporal_provider_content_fingerprint,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, to_pretty_json};
 
@@ -62,7 +69,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let fixture = root.join("examples/domain-modules/weave-character");
     let schemas = root.join("schemas");
 
-    let profile = complete_profile();
+    let alignment = alignment_fixture(&complete_profile())?;
+    let profile = alignment.receipt.output_profile.clone();
     let template = CharacterTemplate {
         template_format_version: CHARACTER_TEMPLATE_FORMAT_VERSION,
         id: "org.weave.character.template.glasswind_wayfinder".to_owned(),
@@ -116,6 +124,56 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     write_pair(&fixture, "module.weave-module", &module_manifest, write)?;
     write_pair(&fixture, "ari_vale.weave-domain", &domain_pack, write)?;
+
+    let alignment_dir = fixture.join("alignment");
+    write_pair(
+        &alignment_dir,
+        "input.character",
+        &alignment.input_profile,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "wayfinder_compass.alignment-pack",
+        &alignment.pack,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "selection.alignment-config",
+        &alignment.config,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "proposal.alignment-proposal",
+        &alignment.proposal,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "decisions.alignment-review",
+        &alignment.review.decisions,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "review.alignment-review",
+        &alignment.review,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "receipt.alignment-receipt",
+        &alignment.receipt,
+        write,
+    )?;
+    write_pair(
+        &alignment_dir,
+        "approved.character",
+        &alignment.receipt.output_profile,
+        write,
+    )?;
 
     let operations = fixture.join("operations");
     write_pair(
@@ -213,6 +271,26 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     write_raw_json(
         &fixture.join("invalid/incomplete-temporal-review.json"),
         &incomplete_review,
+        write,
+    )?;
+
+    let mut stale_alignment = serde_json::to_value(&alignment.proposal)?;
+    stale_alignment["profile_sha256"] = serde_json::Value::String("0".repeat(64));
+    write_raw_json(
+        &fixture.join("invalid/stale-alignment-proposal.json"),
+        &stale_alignment,
+        write,
+    )?;
+    let mut incomplete_alignment = serde_json::to_value(&alignment.review)?;
+    if let Some(decisions) = incomplete_alignment["decisions"].as_object_mut() {
+        let first = decisions.keys().next().cloned();
+        if let Some(first) = first {
+            decisions.remove(&first);
+        }
+    }
+    write_raw_json(
+        &fixture.join("invalid/incomplete-alignment-review.json"),
+        &incomplete_alignment,
         write,
     )?;
 
@@ -383,10 +461,444 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "weave-character-temporal-receipt-v1.schema.json",
             temporal_context_receipt_schema()?,
         ),
+        (
+            "weave-character-alignment-pack-v1.schema.json",
+            alignment_pack_schema()?,
+        ),
+        (
+            "weave-character-alignment-config-v1.schema.json",
+            alignment_config_schema()?,
+        ),
+        (
+            "weave-character-alignment-proposal-v1.schema.json",
+            alignment_proposal_schema()?,
+        ),
+        (
+            "weave-character-alignment-review-v1.schema.json",
+            alignment_review_schema()?,
+        ),
+        (
+            "weave-character-alignment-receipt-v1.schema.json",
+            alignment_receipt_schema()?,
+        ),
     ] {
         write_or_check(&schemas.join(name), contents.as_bytes(), write)?;
     }
     Ok(())
+}
+
+struct AlignmentFixture {
+    input_profile: CharacterProfile,
+    pack: AlignmentPack,
+    config: AlignmentConfig,
+    proposal: AlignmentProposal,
+    review: AlignmentReview,
+    receipt: AlignmentReceipt,
+}
+
+fn alignment_fixture(
+    base: &CharacterProfile,
+) -> Result<AlignmentFixture, Box<dyn std::error::Error>> {
+    let mut input_profile = base.clone();
+    input_profile
+        .extensions
+        .remove("org.weave.character.alignment");
+    let pack = wayfinder_compass_alignment_pack()?;
+    let config = AlignmentConfig {
+        config_format_version: ALIGNMENT_CONFIG_FORMAT_VERSION,
+        id: "org.weave.alignment.wayfinder_reference".to_owned(),
+        selected_axes: ["horizon", "reciprocity", "signal", "structure", "tempo"]
+            .map(str::to_owned)
+            .to_vec(),
+        minimum_coverage_micros: 1_000_000,
+        override_locked_view: false,
+        override_rationale: None,
+    };
+    let proposal = propose_alignment(&input_profile, &pack, &config, 20_260_822)?;
+    let decisions = proposal
+        .values
+        .keys()
+        .map(|axis_id| {
+            let action = match axis_id.as_str() {
+                "horizon" => AlignmentReviewAction::Accept {
+                    rationale: Some(
+                        "Accept the proposed fictional shorthand after inspecting its complete fixed-point explanation and non-diagnostic limitations.".to_owned(),
+                    ),
+                },
+                "reciprocity" => AlignmentReviewAction::Edit {
+                    label_id: "mutual".to_owned(),
+                    rationale: "Select a different declared narrative label because the authored scene context emphasizes exchange rather than stewardship; canonical evidence remains unchanged.".to_owned(),
+                },
+                "signal" => AlignmentReviewAction::Reject {
+                    rationale: "Do not expose this optional axis to narrative logic for the reference character.".to_owned(),
+                },
+                "structure" => AlignmentReviewAction::Override {
+                    label_id: "adapting".to_owned(),
+                    rationale: "Deliberately override the computed shorthand for this project while retaining the exact proposal, score, and reviewer rationale in the authoring receipt.".to_owned(),
+                },
+                "tempo" => AlignmentReviewAction::Withhold {
+                    rationale: "Keep this complete proposal in the authoring review without publishing it to runtime narrative logic.".to_owned(),
+                },
+                _ => unreachable!("reference config selects only declared fixture axes"),
+            };
+            (
+                axis_id.clone(),
+                AlignmentReviewDecision {
+                    axis_id: axis_id.clone(),
+                    action,
+                },
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let review = create_alignment_review(
+        &proposal,
+        &pack,
+        "org.weave.reviewer.fixture",
+        "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
+        decisions,
+    )?;
+    let receipt = apply_reviewed_alignment(&input_profile, &pack, &proposal, &review)?;
+    Ok(AlignmentFixture {
+        input_profile,
+        pack,
+        config,
+        proposal,
+        review,
+        receipt,
+    })
+}
+
+fn wayfinder_compass_alignment_pack() -> Result<AlignmentPack, Box<dyn std::error::Error>> {
+    let inputs: BTreeMap<String, AlignmentInputField> = [
+        (
+            "agreeableness",
+            HexacoTrait::Agreeableness,
+            "canon.personality.agreeableness.factor",
+            "Agreeableness",
+        ),
+        (
+            "conscientiousness",
+            HexacoTrait::Conscientiousness,
+            "canon.personality.conscientiousness.factor",
+            "Conscientiousness",
+        ),
+        (
+            "diligence",
+            HexacoTrait::Diligence,
+            "canon.personality.conscientiousness.diligence",
+            "Diligence",
+        ),
+        (
+            "emotionality",
+            HexacoTrait::Emotionality,
+            "canon.personality.emotionality.factor",
+            "Emotionality",
+        ),
+        (
+            "extraversion",
+            HexacoTrait::Extraversion,
+            "canon.personality.extraversion.factor",
+            "Extraversion",
+        ),
+        (
+            "fairness",
+            HexacoTrait::Fairness,
+            "canon.personality.honesty_humility.fairness",
+            "Fairness",
+        ),
+        (
+            "honesty_humility",
+            HexacoTrait::HonestyHumility,
+            "canon.personality.honesty_humility.factor",
+            "Honesty-Humility",
+        ),
+        (
+            "inquisitiveness",
+            HexacoTrait::Inquisitiveness,
+            "canon.personality.openness.inquisitiveness",
+            "Inquisitiveness",
+        ),
+        (
+            "openness",
+            HexacoTrait::Openness,
+            "canon.personality.openness.factor",
+            "Openness",
+        ),
+        (
+            "organization",
+            HexacoTrait::Organization,
+            "canon.personality.conscientiousness.organization",
+            "Organization",
+        ),
+    ]
+    .map(|(id, trait_id, profile_path, label)| {
+        (
+            id.to_owned(),
+            AlignmentInputField {
+                id: id.to_owned(),
+                trait_id,
+                profile_path: profile_path.to_owned(),
+                label: label.to_owned(),
+                description: format!(
+                    "Canonical {label} evidence used only as one transparent input to optional fictional narrative shorthand."
+                ),
+            },
+        )
+    })
+    .into();
+
+    let axes = BTreeMap::from([
+        (
+            "horizon".to_owned(),
+            alignment_axis(
+                "horizon",
+                "Horizon",
+                "How a fictional character balances continuity with unfamiliar possibilities in the current story.",
+                [("inquisitiveness", 400), ("openness", 600)],
+                [
+                    (
+                        "anchoring",
+                        "Anchoring",
+                        "Leans toward continuity in the current fictional situation.",
+                    ),
+                    (
+                        "bridging",
+                        "Bridging",
+                        "Moves between continuity and possibility in the current fictional situation.",
+                    ),
+                    (
+                        "seeking",
+                        "Seeking",
+                        "Leans toward unfamiliar possibilities in the current fictional situation.",
+                    ),
+                ],
+            ),
+        ),
+        (
+            "reciprocity".to_owned(),
+            alignment_axis(
+                "reciprocity",
+                "Reciprocity",
+                "How a fictional character frames exchange, mutual obligation, and care in the current story.",
+                [
+                    ("agreeableness", 300),
+                    ("fairness", 350),
+                    ("honesty_humility", 350),
+                ],
+                [
+                    (
+                        "guarded",
+                        "Guarded",
+                        "Keeps exchanges bounded in the current fictional situation.",
+                    ),
+                    (
+                        "mutual",
+                        "Mutual",
+                        "Frames exchange as reciprocal in the current fictional situation.",
+                    ),
+                    (
+                        "stewarding",
+                        "Stewarding",
+                        "Takes responsibility for sustaining exchange in the current fictional situation.",
+                    ),
+                ],
+            ),
+        ),
+        (
+            "signal".to_owned(),
+            alignment_axis(
+                "signal",
+                "Signal",
+                "How visibly a fictional character tends to signal their internal response in the current story.",
+                [("emotionality", 500), ("extraversion", 500)],
+                [
+                    (
+                        "inward",
+                        "Inward",
+                        "Keeps more response internal in the current fictional situation.",
+                    ),
+                    (
+                        "modulated",
+                        "Modulated",
+                        "Varies how much response becomes visible in the current fictional situation.",
+                    ),
+                    (
+                        "outward",
+                        "Outward",
+                        "Makes more response visible in the current fictional situation.",
+                    ),
+                ],
+            ),
+        ),
+        (
+            "structure".to_owned(),
+            alignment_axis(
+                "structure",
+                "Structure",
+                "How a fictional character balances improvisation and prior structure in the current story.",
+                [("conscientiousness", 600), ("organization", 400)],
+                [
+                    (
+                        "improvising",
+                        "Improvising",
+                        "Relies more on in-the-moment structure in the current fictional situation.",
+                    ),
+                    (
+                        "adapting",
+                        "Adapting",
+                        "Moves between prior structure and improvisation in the current fictional situation.",
+                    ),
+                    (
+                        "planning",
+                        "Planning",
+                        "Relies more on prior structure in the current fictional situation.",
+                    ),
+                ],
+            ),
+        ),
+        (
+            "tempo".to_owned(),
+            alignment_axis(
+                "tempo",
+                "Tempo",
+                "How a fictional character balances deliberation and momentum in the current story.",
+                [("diligence", 500), ("extraversion", 500)],
+                [
+                    (
+                        "measured",
+                        "Measured",
+                        "Favors deliberation in the current fictional situation.",
+                    ),
+                    (
+                        "alternating",
+                        "Alternating",
+                        "Alternates between deliberation and momentum in the current fictional situation.",
+                    ),
+                    (
+                        "quickening",
+                        "Quickening",
+                        "Favors momentum in the current fictional situation.",
+                    ),
+                ],
+            ),
+        ),
+    ]);
+    let calibration = |id: &str, value: u32, score: i32, labels: [&str; 5]| {
+        (
+            id.to_owned(),
+            AlignmentCalibrationFixture {
+                id: id.to_owned(),
+                description: format!(
+                    "Every synthetic input is {value} millionths, proving the exact shared signed fixed-point boundary."
+                ),
+                inputs_micros: inputs.keys().map(|key| (key.clone(), value)).collect(),
+                expected: ["horizon", "reciprocity", "signal", "structure", "tempo"]
+                    .into_iter()
+                    .zip(labels)
+                    .map(|(axis, label)| {
+                        (
+                            axis.to_owned(),
+                            AlignmentCalibrationExpected {
+                                score_micros: score,
+                                label_id: label.to_owned(),
+                            },
+                        )
+                    })
+                    .collect(),
+            },
+        )
+    };
+    let calibrations = BTreeMap::from([
+        calibration(
+            "lower_boundary",
+            100_000,
+            -800_000,
+            ["anchoring", "guarded", "inward", "improvising", "measured"],
+        ),
+        calibration(
+            "middle_boundary",
+            500_000,
+            0,
+            ["bridging", "mutual", "modulated", "adapting", "alternating"],
+        ),
+        calibration(
+            "upper_boundary",
+            900_000,
+            800_000,
+            ["seeking", "stewarding", "outward", "planning", "quickening"],
+        ),
+    ]);
+    let source_id = "weave_wayfinder_compass";
+    let mut pack = AlignmentPack {
+        pack_format_version: ALIGNMENT_PACK_FORMAT_VERSION,
+        id: "org.weave.alignment.wayfinder_compass".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Wayfinder Compass".to_owned(),
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        methodology: "For each selected axis, normalize declared canonical HEXACO scores to integer millionths, use documented band anchors when only a band exists, center present values around one half, multiply by non-zero signed thousandth weights, divide the signed sum by covered absolute weight with deterministic half-away-from-zero rounding, measure missing-input coverage separately, and select the first inclusive declared threshold. The seed changes only the trace fingerprint because v1 scoring has no random branch.".to_owned(),
+        limitations: "Wayfinder Compass is original fictional storytelling shorthand. Its labels are contextual prompts, not clinical or psychometric diagnoses, moral rankings, protected-class inferences, causal predictions, canonical personality evidence, or runtime authority. Reviewers may reject, edit, withhold, or override every proposal.".to_owned(),
+        provider: AlignmentPackProvider::Standalone,
+        inputs,
+        axes,
+        calibrations,
+        provenance: Provenance {
+            sources: vec![ProvenanceSource {
+                id: source_id.to_owned(),
+                kind: ProvenanceKind::Original,
+                url: "https://github.com/chrisgliddon/weave".to_owned(),
+                revision: "wayfinder-compass-v1".to_owned(),
+                sha256: None,
+                license: "MIT".to_owned(),
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE"
+                    .to_owned(),
+                attribution: "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.".to_owned(),
+                modified: false,
+            }],
+            transformations: Vec::new(),
+            claims: ["axes", "calibrations", "inputs", "methodology"]
+                .map(|claim| (claim.to_owned(), vec![source_id.to_owned()]))
+                .into(),
+        },
+    };
+    let content_sha256 = alignment_provider_content_fingerprint(&pack)?;
+    pack.provider = AlignmentPackProvider::DomainModule {
+        module_id: "org.weave.alignment.wayfinder_compass".to_owned(),
+        module_version: "1.0.0".to_owned(),
+        pack_id: "reference".to_owned(),
+        pack_version: "1.0.0".to_owned(),
+        content_sha256,
+    };
+    Ok(pack)
+}
+
+fn alignment_axis<const N: usize>(
+    id: &str,
+    label: &str,
+    description: &str,
+    inputs: [(&str, i16); N],
+    labels: [(&str, &str, &str); 3],
+) -> AlignmentAxis {
+    let bounds = [-250_000, 250_000, 1_000_000];
+    AlignmentAxis {
+        id: id.to_owned(),
+        label: label.to_owned(),
+        description: description.to_owned(),
+        inputs: inputs
+            .map(|(input, weight)| (input.to_owned(), weight))
+            .into(),
+        thresholds: labels
+            .into_iter()
+            .zip(bounds)
+            .map(|((id, label, description), upper_bound_micros)| AlignmentThreshold {
+                id: id.to_owned(),
+                label: label.to_owned(),
+                upper_bound_micros,
+                description: description.to_owned(),
+            })
+            .collect(),
+        limitations: "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior.".to_owned(),
+    }
 }
 
 struct TemporalFixture {
@@ -1151,27 +1663,9 @@ fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
     let behavior_namespace = "org.weave.character.behavioral_signatures";
     let role_namespace = "org.weave.character.role_projections";
     let relationship_namespace = "org.weave.character.relationships";
-    let alignment_namespace = "org.weave.character.alignment";
     let date_namespace = "org.weave.character.date_context";
     let tabletop_namespace = "org.weave.character.tabletop";
     BTreeMap::from([
-        (
-            alignment_namespace.to_owned(),
-            CharacterExtension::AlignmentView(VersionedExtension {
-                header: extension_header(alignment_namespace, 1, lineage),
-                value: AlignmentView {
-                    view_id: "org.weave.alignment.compass".to_owned(),
-                    values: DomainValue::Object(BTreeMap::from([(
-                        "orientation".to_owned(),
-                        DomainValue::Symbol("steward".to_owned()),
-                    )])),
-                    input_paths: vec![
-                        "canon.personality.agreeableness.factor".to_owned(),
-                        "canon.personality.honesty_humility.factor".to_owned(),
-                    ],
-                },
-            }),
-        ),
         (
             behavior_namespace.to_owned(),
             CharacterExtension::BehavioralSignatures(VersionedExtension {

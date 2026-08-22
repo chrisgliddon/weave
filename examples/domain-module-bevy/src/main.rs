@@ -65,6 +65,29 @@ struct CharacterReading {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+struct AlignmentValueReading {
+    id: String,
+    label_id: String,
+    label: String,
+    decision: String,
+    score_micros: Option<f64>,
+    coverage_micros: f64,
+    input_paths: Vec<String>,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct AlignmentCharacterReading {
+    view_id: String,
+    pack_id: String,
+    pack_version: String,
+    pack_sha256: String,
+    review_sha256: String,
+    applied_sha256: String,
+    canonical_personality_write_back: bool,
+    values: Vec<AlignmentValueReading>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 struct TemporalCueReading {
     record_id: String,
     kind: String,
@@ -371,6 +394,131 @@ fn temporal_character_reading(story: &StoryIr) -> Result<TemporalCharacterReadin
     })
 }
 
+fn alignment_character_reading(story: &StoryIr) -> Result<AlignmentCharacterReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let Some(DomainValueIr::Object(alignment)) = module.value(&["profile", "alignment"]) else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "reviewed Character alignment is invalid",
+        ));
+    };
+    let string = |fields: &std::collections::BTreeMap<String, DomainValueIr>,
+                  name: &str,
+                  message: &'static str| {
+        match fields.get(name) {
+            Some(DomainValueIr::String(value)) => Ok(value.clone()),
+            _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+        }
+    };
+    let view_id = string(alignment, "view_id", "alignment view id is invalid")?;
+    let review_sha256 = string(
+        alignment,
+        "review_sha256",
+        "alignment review fingerprint is invalid",
+    )?;
+    let applied_sha256 = string(
+        alignment,
+        "applied_sha256",
+        "alignment application fingerprint is invalid",
+    )?;
+    let canonical_personality_write_back = match alignment.get("canonical_personality_write_back") {
+        Some(DomainValueIr::Bool(value)) => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "alignment write-back marker is invalid",
+            ));
+        }
+    };
+    let Some(DomainValueIr::Object(pack)) = alignment.get("pack") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "alignment pack coordinate is invalid",
+        ));
+    };
+    let Some(DomainValueIr::Object(raw_values)) = alignment.get("values") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "approved alignment value map is invalid",
+        ));
+    };
+    let values = raw_values
+        .iter()
+        .map(|(axis_id, value)| {
+            let DomainValueIr::Object(fields) = value else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved alignment value is invalid",
+                ));
+            };
+            let id = string(fields, "id", "approved alignment id is invalid")?;
+            if id != *axis_id {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved alignment id does not match its map key",
+                ));
+            }
+            let decision = match fields.get("decision") {
+                Some(DomainValueIr::Symbol(value))
+                    if matches!(value.as_str(), "reviewed" | "edited" | "overridden") =>
+                {
+                    value.clone()
+                }
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "approved alignment decision is invalid",
+                    ));
+                }
+            };
+            let score_micros = match fields.get("score_micros") {
+                Some(DomainValueIr::Number(value)) => Some(*value),
+                None => None,
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "approved alignment score is invalid",
+                    ));
+                }
+            };
+            let coverage_micros = match fields.get("coverage_micros") {
+                Some(DomainValueIr::Number(value)) => *value,
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "approved alignment coverage is invalid",
+                    ));
+                }
+            };
+            Ok(AlignmentValueReading {
+                id,
+                label_id: string(fields, "label_id", "approved alignment label id is invalid")?,
+                label: string(fields, "label", "approved alignment label is invalid")?,
+                decision,
+                score_micros,
+                coverage_micros,
+                input_paths: string_list(
+                    fields.get("input_paths"),
+                    "approved alignment input paths are invalid",
+                )?,
+            })
+        })
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    Ok(AlignmentCharacterReading {
+        view_id,
+        pack_id: string(pack, "id", "alignment pack id is invalid")?,
+        pack_version: string(pack, "version", "alignment pack version is invalid")?,
+        pack_sha256: string(pack, "sha256", "alignment pack fingerprint is invalid")?,
+        review_sha256,
+        applied_sha256,
+        canonical_personality_write_back,
+        values,
+    })
+}
+
 fn string_list(
     value: Option<&DomainValueIr>,
     message: &'static str,
@@ -434,6 +582,16 @@ fn report_character(reading: Res<CharacterReading>) {
     );
 }
 
+fn report_alignment_character(reading: Res<AlignmentCharacterReading>) {
+    println!(
+        "Bevy read {} approved alignment values from {}@{}; personality write-back={}",
+        reading.values.len(),
+        reading.pack_id,
+        reading.pack_version,
+        reading.canonical_personality_write_back,
+    );
+}
+
 fn report_temporal_character(reading: Res<TemporalCharacterReading>) {
     println!(
         "Bevy read {} reviewed temporal cues across {} accepted records; personality write-back={}",
@@ -457,6 +615,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     let composed_world = composed_world_reading(&ron::from_str::<StoryIr>(COMPOSED_WORLD_STORY)?)?;
     let character = character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
+    let alignment_character =
+        alignment_character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let temporal_character =
         temporal_character_reading(&ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)?)?;
     let mut app = App::new();
@@ -465,6 +625,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(world_readings)
         .insert_resource(composed_world)
         .insert_resource(character)
+        .insert_resource(alignment_character)
         .insert_resource(temporal_character)
         .add_systems(
             Startup,
@@ -473,6 +634,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_world,
                 report_composed_world,
                 report_character,
+                report_alignment_character,
                 report_temporal_character,
             ),
         );
@@ -574,6 +736,45 @@ mod tests {
                 ocean_is_lossy: true,
             }
         );
+    }
+
+    #[test]
+    fn reads_only_approved_alignment_values_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(CHARACTER_STORY).expect("checked Character RON");
+        let reading =
+            alignment_character_reading(&story).expect("read approved Character alignment");
+        assert_eq!(reading.view_id, "org.weave.alignment.wayfinder_compass");
+        assert_eq!(reading.pack_id, "org.weave.alignment.wayfinder_compass");
+        assert_eq!(reading.pack_version, "1.0.0");
+        assert_eq!(reading.pack_sha256.len(), 64);
+        assert_eq!(reading.review_sha256.len(), 64);
+        assert_eq!(reading.applied_sha256.len(), 64);
+        assert!(!reading.canonical_personality_write_back);
+        assert_eq!(reading.values.len(), 3);
+        assert_eq!(
+            reading
+                .values
+                .iter()
+                .map(|value| (
+                    value.id.as_str(),
+                    value.label_id.as_str(),
+                    value.label.as_str(),
+                    value.decision.as_str(),
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                ("horizon", "seeking", "Seeking", "reviewed"),
+                ("reciprocity", "mutual", "Mutual", "edited"),
+                ("structure", "adapting", "Adapting", "overridden"),
+            ]
+        );
+        assert!(reading.values.iter().all(|value| {
+            value.score_micros.is_some()
+                && value.coverage_micros == 1_000_000.0
+                && !value.input_paths.is_empty()
+                && value.id != "signal"
+                && value.id != "tempo"
+        }));
     }
 
     #[test]

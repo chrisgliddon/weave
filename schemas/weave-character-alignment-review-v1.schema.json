@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "AlignmentReviewAction": {
+      "description": "Explicit editorial decision. Every non-accept path retains a rationale.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "accept",
+              "type": "string"
+            },
+            "rationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "decision"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "edit",
+              "type": "string"
+            },
+            "label_id": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "label_id",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "withhold",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "override",
+              "type": "string"
+            },
+            "label_id": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "label_id",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AlignmentReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/AlignmentReviewAction"
+        },
+        "axis_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "axis_id",
+        "action"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-alignment-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One complete review decision per selected axis.",
+  "properties": {
+    "decisions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AlignmentReviewDecision"
+      },
+      "type": "object"
+    },
+    "pack_sha256": {
+      "type": "string"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "proposal_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "proposal_sha256",
+    "profile_sha256",
+    "pack_sha256",
+    "reviewer",
+    "rationale",
+    "decisions"
+  ],
+  "title": "Weave Character Alignment Review v1",
+  "type": "object",
+  "x-weave-character-alignment-version": 1
+}

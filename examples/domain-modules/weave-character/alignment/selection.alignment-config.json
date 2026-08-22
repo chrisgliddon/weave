@@ -1,0 +1,13 @@
+{
+  "config_format_version": 1,
+  "id": "org.weave.alignment.wayfinder_reference",
+  "selected_axes": [
+    "horizon",
+    "reciprocity",
+    "signal",
+    "structure",
+    "tempo"
+  ],
+  "minimum_coverage_micros": 1000000,
+  "override_locked_view": false
+}

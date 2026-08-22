@@ -1,0 +1,388 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.alignment.wayfinder_compass",
+  "version": "1.0.0",
+  "title": "Wayfinder Compass",
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "methodology": "For each selected axis, normalize declared canonical HEXACO scores to integer millionths, use documented band anchors when only a band exists, center present values around one half, multiply by non-zero signed thousandth weights, divide the signed sum by covered absolute weight with deterministic half-away-from-zero rounding, measure missing-input coverage separately, and select the first inclusive declared threshold. The seed changes only the trace fingerprint because v1 scoring has no random branch.",
+  "limitations": "Wayfinder Compass is original fictional storytelling shorthand. Its labels are contextual prompts, not clinical or psychometric diagnoses, moral rankings, protected-class inferences, causal predictions, canonical personality evidence, or runtime authority. Reviewers may reject, edit, withhold, or override every proposal.",
+  "provider": {
+    "kind": "domain_module",
+    "module_id": "org.weave.alignment.wayfinder_compass",
+    "module_version": "1.0.0",
+    "pack_id": "reference",
+    "pack_version": "1.0.0",
+    "content_sha256": "ee4d2f6ec1be33c9da62d4ea310e2cb6837e3f17e424afc76184d5dea1466ef3"
+  },
+  "inputs": {
+    "agreeableness": {
+      "id": "agreeableness",
+      "trait_id": "agreeableness",
+      "profile_path": "canon.personality.agreeableness.factor",
+      "label": "Agreeableness",
+      "description": "Canonical Agreeableness evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "conscientiousness": {
+      "id": "conscientiousness",
+      "trait_id": "conscientiousness",
+      "profile_path": "canon.personality.conscientiousness.factor",
+      "label": "Conscientiousness",
+      "description": "Canonical Conscientiousness evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "diligence": {
+      "id": "diligence",
+      "trait_id": "diligence",
+      "profile_path": "canon.personality.conscientiousness.diligence",
+      "label": "Diligence",
+      "description": "Canonical Diligence evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "emotionality": {
+      "id": "emotionality",
+      "trait_id": "emotionality",
+      "profile_path": "canon.personality.emotionality.factor",
+      "label": "Emotionality",
+      "description": "Canonical Emotionality evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "extraversion": {
+      "id": "extraversion",
+      "trait_id": "extraversion",
+      "profile_path": "canon.personality.extraversion.factor",
+      "label": "Extraversion",
+      "description": "Canonical Extraversion evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "fairness": {
+      "id": "fairness",
+      "trait_id": "fairness",
+      "profile_path": "canon.personality.honesty_humility.fairness",
+      "label": "Fairness",
+      "description": "Canonical Fairness evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "honesty_humility": {
+      "id": "honesty_humility",
+      "trait_id": "honesty_humility",
+      "profile_path": "canon.personality.honesty_humility.factor",
+      "label": "Honesty-Humility",
+      "description": "Canonical Honesty-Humility evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "inquisitiveness": {
+      "id": "inquisitiveness",
+      "trait_id": "inquisitiveness",
+      "profile_path": "canon.personality.openness.inquisitiveness",
+      "label": "Inquisitiveness",
+      "description": "Canonical Inquisitiveness evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "openness": {
+      "id": "openness",
+      "trait_id": "openness",
+      "profile_path": "canon.personality.openness.factor",
+      "label": "Openness",
+      "description": "Canonical Openness evidence used only as one transparent input to optional fictional narrative shorthand."
+    },
+    "organization": {
+      "id": "organization",
+      "trait_id": "organization",
+      "profile_path": "canon.personality.conscientiousness.organization",
+      "label": "Organization",
+      "description": "Canonical Organization evidence used only as one transparent input to optional fictional narrative shorthand."
+    }
+  },
+  "axes": {
+    "horizon": {
+      "id": "horizon",
+      "label": "Horizon",
+      "description": "How a fictional character balances continuity with unfamiliar possibilities in the current story.",
+      "inputs": {
+        "inquisitiveness": 400,
+        "openness": 600
+      },
+      "thresholds": [
+        {
+          "id": "anchoring",
+          "label": "Anchoring",
+          "upper_bound_micros": -250000,
+          "description": "Leans toward continuity in the current fictional situation."
+        },
+        {
+          "id": "bridging",
+          "label": "Bridging",
+          "upper_bound_micros": 250000,
+          "description": "Moves between continuity and possibility in the current fictional situation."
+        },
+        {
+          "id": "seeking",
+          "label": "Seeking",
+          "upper_bound_micros": 1000000,
+          "description": "Leans toward unfamiliar possibilities in the current fictional situation."
+        }
+      ],
+      "limitations": "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior."
+    },
+    "reciprocity": {
+      "id": "reciprocity",
+      "label": "Reciprocity",
+      "description": "How a fictional character frames exchange, mutual obligation, and care in the current story.",
+      "inputs": {
+        "agreeableness": 300,
+        "fairness": 350,
+        "honesty_humility": 350
+      },
+      "thresholds": [
+        {
+          "id": "guarded",
+          "label": "Guarded",
+          "upper_bound_micros": -250000,
+          "description": "Keeps exchanges bounded in the current fictional situation."
+        },
+        {
+          "id": "mutual",
+          "label": "Mutual",
+          "upper_bound_micros": 250000,
+          "description": "Frames exchange as reciprocal in the current fictional situation."
+        },
+        {
+          "id": "stewarding",
+          "label": "Stewarding",
+          "upper_bound_micros": 1000000,
+          "description": "Takes responsibility for sustaining exchange in the current fictional situation."
+        }
+      ],
+      "limitations": "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior."
+    },
+    "signal": {
+      "id": "signal",
+      "label": "Signal",
+      "description": "How visibly a fictional character tends to signal their internal response in the current story.",
+      "inputs": {
+        "emotionality": 500,
+        "extraversion": 500
+      },
+      "thresholds": [
+        {
+          "id": "inward",
+          "label": "Inward",
+          "upper_bound_micros": -250000,
+          "description": "Keeps more response internal in the current fictional situation."
+        },
+        {
+          "id": "modulated",
+          "label": "Modulated",
+          "upper_bound_micros": 250000,
+          "description": "Varies how much response becomes visible in the current fictional situation."
+        },
+        {
+          "id": "outward",
+          "label": "Outward",
+          "upper_bound_micros": 1000000,
+          "description": "Makes more response visible in the current fictional situation."
+        }
+      ],
+      "limitations": "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior."
+    },
+    "structure": {
+      "id": "structure",
+      "label": "Structure",
+      "description": "How a fictional character balances improvisation and prior structure in the current story.",
+      "inputs": {
+        "conscientiousness": 600,
+        "organization": 400
+      },
+      "thresholds": [
+        {
+          "id": "improvising",
+          "label": "Improvising",
+          "upper_bound_micros": -250000,
+          "description": "Relies more on in-the-moment structure in the current fictional situation."
+        },
+        {
+          "id": "adapting",
+          "label": "Adapting",
+          "upper_bound_micros": 250000,
+          "description": "Moves between prior structure and improvisation in the current fictional situation."
+        },
+        {
+          "id": "planning",
+          "label": "Planning",
+          "upper_bound_micros": 1000000,
+          "description": "Relies more on prior structure in the current fictional situation."
+        }
+      ],
+      "limitations": "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior."
+    },
+    "tempo": {
+      "id": "tempo",
+      "label": "Tempo",
+      "description": "How a fictional character balances deliberation and momentum in the current story.",
+      "inputs": {
+        "diligence": 500,
+        "extraversion": 500
+      },
+      "thresholds": [
+        {
+          "id": "measured",
+          "label": "Measured",
+          "upper_bound_micros": -250000,
+          "description": "Favors deliberation in the current fictional situation."
+        },
+        {
+          "id": "alternating",
+          "label": "Alternating",
+          "upper_bound_micros": 250000,
+          "description": "Alternates between deliberation and momentum in the current fictional situation."
+        },
+        {
+          "id": "quickening",
+          "label": "Quickening",
+          "upper_bound_micros": 1000000,
+          "description": "Favors momentum in the current fictional situation."
+        }
+      ],
+      "limitations": "This original axis is optional fictional shorthand, not a diagnosis, moral classification, causal claim, or prediction of actual behavior."
+    }
+  },
+  "calibrations": {
+    "lower_boundary": {
+      "id": "lower_boundary",
+      "description": "Every synthetic input is 100000 millionths, proving the exact shared signed fixed-point boundary.",
+      "inputs_micros": {
+        "agreeableness": 100000,
+        "conscientiousness": 100000,
+        "diligence": 100000,
+        "emotionality": 100000,
+        "extraversion": 100000,
+        "fairness": 100000,
+        "honesty_humility": 100000,
+        "inquisitiveness": 100000,
+        "openness": 100000,
+        "organization": 100000
+      },
+      "expected": {
+        "horizon": {
+          "score_micros": -800000,
+          "label_id": "anchoring"
+        },
+        "reciprocity": {
+          "score_micros": -800000,
+          "label_id": "guarded"
+        },
+        "signal": {
+          "score_micros": -800000,
+          "label_id": "inward"
+        },
+        "structure": {
+          "score_micros": -800000,
+          "label_id": "improvising"
+        },
+        "tempo": {
+          "score_micros": -800000,
+          "label_id": "measured"
+        }
+      }
+    },
+    "middle_boundary": {
+      "id": "middle_boundary",
+      "description": "Every synthetic input is 500000 millionths, proving the exact shared signed fixed-point boundary.",
+      "inputs_micros": {
+        "agreeableness": 500000,
+        "conscientiousness": 500000,
+        "diligence": 500000,
+        "emotionality": 500000,
+        "extraversion": 500000,
+        "fairness": 500000,
+        "honesty_humility": 500000,
+        "inquisitiveness": 500000,
+        "openness": 500000,
+        "organization": 500000
+      },
+      "expected": {
+        "horizon": {
+          "score_micros": 0,
+          "label_id": "bridging"
+        },
+        "reciprocity": {
+          "score_micros": 0,
+          "label_id": "mutual"
+        },
+        "signal": {
+          "score_micros": 0,
+          "label_id": "modulated"
+        },
+        "structure": {
+          "score_micros": 0,
+          "label_id": "adapting"
+        },
+        "tempo": {
+          "score_micros": 0,
+          "label_id": "alternating"
+        }
+      }
+    },
+    "upper_boundary": {
+      "id": "upper_boundary",
+      "description": "Every synthetic input is 900000 millionths, proving the exact shared signed fixed-point boundary.",
+      "inputs_micros": {
+        "agreeableness": 900000,
+        "conscientiousness": 900000,
+        "diligence": 900000,
+        "emotionality": 900000,
+        "extraversion": 900000,
+        "fairness": 900000,
+        "honesty_humility": 900000,
+        "inquisitiveness": 900000,
+        "openness": 900000,
+        "organization": 900000
+      },
+      "expected": {
+        "horizon": {
+          "score_micros": 800000,
+          "label_id": "seeking"
+        },
+        "reciprocity": {
+          "score_micros": 800000,
+          "label_id": "stewarding"
+        },
+        "signal": {
+          "score_micros": 800000,
+          "label_id": "outward"
+        },
+        "structure": {
+          "score_micros": 800000,
+          "label_id": "planning"
+        },
+        "tempo": {
+          "score_micros": 800000,
+          "label_id": "quickening"
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_wayfinder_compass",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "wayfinder-compass-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "axes": [
+        "weave_wayfinder_compass"
+      ],
+      "calibrations": [
+        "weave_wayfinder_compass"
+      ],
+      "inputs": [
+        "weave_wayfinder_compass"
+      ],
+      "methodology": [
+        "weave_wayfinder_compass"
+      ]
+    }
+  }
+}

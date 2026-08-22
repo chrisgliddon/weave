@@ -579,6 +579,29 @@ def verify_domain_contract() -> None:
     renamed_character_collection_ron = (
         character_operations / "renamed.character-collection.ron"
     )
+    character_alignment = character_fixture / "alignment"
+    alignment_profile_json = character_alignment / "input.character.json"
+    alignment_profile_ron = character_alignment / "input.character.ron"
+    alignment_pack_json = (
+        character_alignment / "wayfinder_compass.alignment-pack.json"
+    )
+    alignment_pack_ron = character_alignment / "wayfinder_compass.alignment-pack.ron"
+    alignment_config_json = character_alignment / "selection.alignment-config.json"
+    alignment_config_ron = character_alignment / "selection.alignment-config.ron"
+    alignment_proposal_json = (
+        character_alignment / "proposal.alignment-proposal.json"
+    )
+    alignment_proposal_ron = character_alignment / "proposal.alignment-proposal.ron"
+    alignment_decisions_json = (
+        character_alignment / "decisions.alignment-review.json"
+    )
+    alignment_decisions_ron = character_alignment / "decisions.alignment-review.ron"
+    alignment_review_json = character_alignment / "review.alignment-review.json"
+    alignment_review_ron = character_alignment / "review.alignment-review.ron"
+    alignment_receipt_json = character_alignment / "receipt.alignment-receipt.json"
+    alignment_receipt_ron = character_alignment / "receipt.alignment-receipt.ron"
+    alignment_approved_json = character_alignment / "approved.character.json"
+    alignment_approved_ron = character_alignment / "approved.character.ron"
     character_context = character_fixture / "context"
     temporal_profile_json = character_context / "input.character.json"
     temporal_profile_ron = character_context / "input.character.ron"
@@ -816,6 +839,21 @@ def verify_domain_contract() -> None:
         generated_temporal_receipt_schema = (
             workspace / "weave-character-temporal-receipt-v1.schema.json"
         )
+        generated_alignment_pack_schema = (
+            workspace / "weave-character-alignment-pack-v1.schema.json"
+        )
+        generated_alignment_config_schema = (
+            workspace / "weave-character-alignment-config-v1.schema.json"
+        )
+        generated_alignment_proposal_schema = (
+            workspace / "weave-character-alignment-proposal-v1.schema.json"
+        )
+        generated_alignment_review_schema = (
+            workspace / "weave-character-alignment-review-v1.schema.json"
+        )
+        generated_alignment_receipt_schema = (
+            workspace / "weave-character-alignment-receipt-v1.schema.json"
+        )
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -892,6 +930,16 @@ def verify_domain_contract() -> None:
         generated_temporal_review_ron = workspace / "review.temporal-review.ron"
         generated_temporal_receipt_json = workspace / "receipt.temporal-receipt.json"
         generated_temporal_receipt_ron = workspace / "receipt.temporal-receipt.ron"
+        generated_alignment_proposal_json = (
+            workspace / "proposal.alignment-proposal.json"
+        )
+        generated_alignment_proposal_ron = (
+            workspace / "proposal.alignment-proposal.ron"
+        )
+        generated_alignment_review_json = workspace / "review.alignment-review.json"
+        generated_alignment_review_ron = workspace / "review.alignment-review.ron"
+        generated_alignment_receipt_json = workspace / "receipt.alignment-receipt.json"
+        generated_alignment_receipt_ron = workspace / "receipt.alignment-receipt.ron"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -937,6 +985,11 @@ def verify_domain_contract() -> None:
             ("temporal-proposal", generated_temporal_proposal_schema),
             ("temporal-review", generated_temporal_review_schema),
             ("temporal-receipt", generated_temporal_receipt_schema),
+            ("alignment-pack", generated_alignment_pack_schema),
+            ("alignment-config", generated_alignment_config_schema),
+            ("alignment-proposal", generated_alignment_proposal_schema),
+            ("alignment-review", generated_alignment_review_schema),
+            ("alignment-receipt", generated_alignment_receipt_schema),
         ):
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
@@ -1037,6 +1090,26 @@ def verify_domain_contract() -> None:
                 generated_temporal_receipt_schema,
                 ROOT / "schemas" / "weave-character-temporal-receipt-v1.schema.json",
             ),
+            (
+                generated_alignment_pack_schema,
+                ROOT / "schemas" / "weave-character-alignment-pack-v1.schema.json",
+            ),
+            (
+                generated_alignment_config_schema,
+                ROOT / "schemas" / "weave-character-alignment-config-v1.schema.json",
+            ),
+            (
+                generated_alignment_proposal_schema,
+                ROOT / "schemas" / "weave-character-alignment-proposal-v1.schema.json",
+            ),
+            (
+                generated_alignment_review_schema,
+                ROOT / "schemas" / "weave-character-alignment-review-v1.schema.json",
+            ),
+            (
+                generated_alignment_receipt_schema,
+                ROOT / "schemas" / "weave-character-alignment-receipt-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -1078,6 +1151,20 @@ def verify_domain_contract() -> None:
             ("temporal-review", temporal_review_ron),
             ("temporal-receipt", temporal_receipt_json),
             ("temporal-receipt", temporal_receipt_ron),
+            ("profile", alignment_profile_json),
+            ("profile", alignment_profile_ron),
+            ("profile", alignment_approved_json),
+            ("profile", alignment_approved_ron),
+            ("alignment-pack", alignment_pack_json),
+            ("alignment-pack", alignment_pack_ron),
+            ("alignment-config", alignment_config_json),
+            ("alignment-config", alignment_config_ron),
+            ("alignment-proposal", alignment_proposal_json),
+            ("alignment-proposal", alignment_proposal_ron),
+            ("alignment-review", alignment_review_json),
+            ("alignment-review", alignment_review_ron),
+            ("alignment-receipt", alignment_receipt_json),
+            ("alignment-receipt", alignment_receipt_ron),
         ):
             run(
                 [
@@ -1259,6 +1346,181 @@ def verify_domain_contract() -> None:
         )
         if dry_run_output.exists():
             raise DocsError("Character apply dry-run wrote a collection")
+
+        alignment_encodings = (
+            (
+                "json",
+                alignment_profile_json,
+                alignment_pack_json,
+                alignment_config_json,
+                alignment_proposal_json,
+                generated_alignment_proposal_json,
+                alignment_decisions_json,
+                alignment_review_json,
+                generated_alignment_review_json,
+                alignment_receipt_json,
+                generated_alignment_receipt_json,
+            ),
+            (
+                "ron",
+                alignment_profile_ron,
+                alignment_pack_ron,
+                alignment_config_ron,
+                alignment_proposal_ron,
+                generated_alignment_proposal_ron,
+                alignment_decisions_ron,
+                alignment_review_ron,
+                generated_alignment_review_ron,
+                alignment_receipt_ron,
+                generated_alignment_receipt_ron,
+            ),
+        )
+        for (
+            encoding,
+            profile,
+            pack,
+            config,
+            checked_proposal,
+            generated_proposal,
+            decisions,
+            checked_review,
+            generated_review,
+            checked_receipt,
+            generated_receipt,
+        ) in alignment_encodings:
+            run(
+                [
+                    str(character_tool),
+                    "alignment-propose",
+                    str(profile.relative_to(ROOT)),
+                    "--pack",
+                    str(pack.relative_to(ROOT)),
+                    "--config",
+                    str(config.relative_to(ROOT)),
+                    "--seed",
+                    "20260822",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_proposal),
+                ],
+                capture=True,
+            )
+            if generated_proposal.read_bytes() != checked_proposal.read_bytes():
+                raise DocsError(
+                    f"canonical alignment proposal is stale: {checked_proposal.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "alignment-review",
+                    str(checked_proposal.relative_to(ROOT)),
+                    "--pack",
+                    str(pack.relative_to(ROOT)),
+                    str(decisions.relative_to(ROOT)),
+                    "--reviewer",
+                    "org.weave.reviewer.fixture",
+                    "--rationale",
+                    "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_review),
+                ],
+                capture=True,
+            )
+            if generated_review.read_bytes() != checked_review.read_bytes():
+                raise DocsError(
+                    f"canonical alignment review is stale: {checked_review.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "alignment-apply",
+                    str(profile.relative_to(ROOT)),
+                    "--pack",
+                    str(pack.relative_to(ROOT)),
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(checked_review.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_receipt),
+                ],
+                capture=True,
+            )
+            if generated_receipt.read_bytes() != checked_receipt.read_bytes():
+                raise DocsError(
+                    f"canonical alignment receipt is stale: {checked_receipt.name}"
+                )
+
+        alignment_dry_run_output = workspace / "forbidden-alignment-dry-run-output.json"
+        run(
+            [
+                str(character_tool),
+                "alignment-apply",
+                str(alignment_profile_json.relative_to(ROOT)),
+                "--pack",
+                str(alignment_pack_json.relative_to(ROOT)),
+                str(alignment_proposal_json.relative_to(ROOT)),
+                str(alignment_review_json.relative_to(ROOT)),
+                "--dry-run",
+                "--output",
+                str(alignment_dry_run_output),
+            ],
+            capture=True,
+        )
+        if alignment_dry_run_output.exists():
+            raise DocsError("alignment dry-run wrote a receipt")
+
+        alignment_proposal = json.loads(
+            alignment_proposal_json.read_text(encoding="utf-8")
+        )
+        alignment_review = json.loads(
+            alignment_review_json.read_text(encoding="utf-8")
+        )
+        alignment_receipt = json.loads(
+            alignment_receipt_json.read_text(encoding="utf-8")
+        )
+        alignment_approved = json.loads(
+            alignment_approved_json.read_text(encoding="utf-8")
+        )
+        alignment_record = (
+            alignment_receipt.get("output_profile", {})
+            .get("extensions", {})
+            .get("org.weave.character.alignment", {})
+            .get("record", {})
+        )
+        alignment_public = alignment_record.get("value", {})
+        alignment_decision_kinds = {
+            decision.get("action", {}).get("decision")
+            for decision in alignment_review.get("decisions", {}).values()
+        }
+        if (
+            alignment_proposal.get("seed") != 20_260_822
+            or list(alignment_proposal.get("values", {}))
+            != ["horizon", "reciprocity", "signal", "structure", "tempo"]
+            or any(
+                not value.get("trace", {}).get("ordered_inputs")
+                for value in alignment_proposal.get("values", {}).values()
+            )
+            or alignment_decision_kinds
+            != {"accept", "edit", "reject", "override", "withhold"}
+            or alignment_receipt.get("output_profile") != alignment_approved
+            or alignment_receipt.get("input_profile", {}).get("canon")
+            != alignment_receipt.get("output_profile", {}).get("canon")
+            or list(alignment_public.get("values", {}))
+            != ["horizon", "reciprocity", "structure"]
+            or alignment_record.get("header", {}).get(
+                "canonical_personality_write_back"
+            )
+            != "forbidden"
+            or len(alignment_public.get("review_sha256", "")) != 64
+            or len(alignment_public.get("applied_sha256", "")) != 64
+        ):
+            raise DocsError(
+                "alignment fixture omitted exact traces, complete review, approved-only output, or immutable canon"
+            )
 
         temporal_encodings = (
             (
@@ -1739,16 +2001,20 @@ def verify_domain_contract() -> None:
         character_story = json.loads(
             compiled_character_json.read_text(encoding="utf-8")
         )
+        character_module = character_story.get("modules", {}).get("character", {})
         character_profile = (
-            character_story.get("modules", {})
-            .get("character", {})
-            .get("exports", {})
+            character_module.get("exports", {})
             .get("profile", {})
             .get("value", {})
             .get("value", {})
         )
+        character_alignment = character_profile.get("alignment", {}).get("value", {})
+        character_alignment_values = (
+            character_alignment.get("values", {}).get("value", {})
+        )
         if (
             character_story.get("version") != 4
+            or character_module.get("version") != "1.2.0"
             or character_profile.get("identity", {})
             .get("value", {})
             .get("id", {})
@@ -1773,9 +2039,41 @@ def verify_domain_contract() -> None:
             .get("independent_evidence", {})
             .get("value")
             is not False
+            or character_alignment.get(
+                "canonical_personality_write_back", {}
+            ).get("value")
+            is not False
+            or list(character_alignment_values)
+            != ["horizon", "reciprocity", "structure"]
+            or character_alignment_values.get("horizon", {})
+            .get("value", {})
+            .get("decision", {})
+            .get("value")
+            != "reviewed"
+            or character_alignment_values.get("reciprocity", {})
+            .get("value", {})
+            .get("decision", {})
+            .get("value")
+            != "edited"
+            or character_alignment_values.get("structure", {})
+            .get("value", {})
+            .get("decision", {})
+            .get("value")
+            != "overridden"
+            or len(
+                character_alignment.get("pack", {})
+                .get("value", {})
+                .get("sha256", {})
+                .get("value", "")
+            )
+            != 64
+            or len(character_alignment.get("review_sha256", {}).get("value", ""))
+            != 64
+            or len(character_alignment.get("applied_sha256", {}).get("value", ""))
+            != 64
         ):
             raise DocsError(
-                "compiled Character fixture omitted typed evidence or derivation labels"
+                "compiled Character fixture omitted typed evidence, derivation labels, or approved alignment"
             )
 
         for encoding, output, checked in (
@@ -1848,7 +2146,7 @@ def verify_domain_contract() -> None:
         ]
         if (
             temporal_story.get("version") != 4
-            or temporal_module.get("version") != "1.1.0"
+            or temporal_module.get("version") != "1.2.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
             != [
@@ -2274,7 +2572,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/explainable alignment/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -2372,6 +2670,11 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-temporal-proposal-v1.schema.json",
         "weave-character-temporal-review-v1.schema.json",
         "weave-character-temporal-receipt-v1.schema.json",
+        "weave-character-alignment-pack-v1.schema.json",
+        "weave-character-alignment-config-v1.schema.json",
+        "weave-character-alignment-proposal-v1.schema.json",
+        "weave-character-alignment-review-v1.schema.json",
+        "weave-character-alignment-receipt-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

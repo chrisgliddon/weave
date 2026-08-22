@@ -522,32 +522,79 @@
                 header: (
                     namespace: "org.weave.character.alignment",
                     extension_version: 1,
-                    authority: "org.weave.character.contract",
-                    rationale: "Explicit optional projection authored for the synthetic fixture.",
+                    authority: "org.weave.reviewer.fixture",
+                    rationale: "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
                     state: reviewed,
                     review: accepted,
                     lock: unlocked,
                     freshness: current,
                     lineage: [
+                        "alignment_apply_361b86102edd3c9a",
                         "character_original",
+                        "weave_wayfinder_compass",
                     ],
                     canonical_personality_write_back: forbidden,
                 ),
                 value: (
-                    view_id: "org.weave.alignment.compass",
-                    values: (
-                        kind: object,
-                        value: {
-                            "orientation": (
-                                kind: symbol,
-                                value: "steward",
-                            ),
-                        },
+                    view_id: "org.weave.alignment.wayfinder_compass",
+                    pack: (
+                        id: "org.weave.alignment.wayfinder_compass",
+                        version: "1.0.0",
+                        sha256: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                     ),
+                    values: {
+                        "horizon": (
+                            id: "horizon",
+                            label_id: "seeking",
+                            label: "Seeking",
+                            decision: reviewed,
+                            score_micros: Some(644000),
+                            coverage_micros: 1000000,
+                            explanation: "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                            input_paths: [
+                                "canon.personality.openness.factor",
+                                "canon.personality.openness.inquisitiveness",
+                            ],
+                        ),
+                        "reciprocity": (
+                            id: "reciprocity",
+                            label_id: "mutual",
+                            label: "Mutual",
+                            decision: edited,
+                            score_micros: Some(449000),
+                            coverage_micros: 1000000,
+                            explanation: "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                            input_paths: [
+                                "canon.personality.agreeableness.factor",
+                                "canon.personality.honesty_humility.factor",
+                                "canon.personality.honesty_humility.fairness",
+                            ],
+                        ),
+                        "structure": (
+                            id: "structure",
+                            label_id: "adapting",
+                            label: "Adapting",
+                            decision: overridden,
+                            score_micros: Some(536000),
+                            coverage_micros: 1000000,
+                            explanation: "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                            input_paths: [
+                                "canon.personality.conscientiousness.factor",
+                                "canon.personality.conscientiousness.organization",
+                            ],
+                        ),
+                    },
                     input_paths: [
                         "canon.personality.agreeableness.factor",
+                        "canon.personality.conscientiousness.factor",
+                        "canon.personality.conscientiousness.organization",
                         "canon.personality.honesty_humility.factor",
+                        "canon.personality.honesty_humility.fairness",
+                        "canon.personality.openness.factor",
+                        "canon.personality.openness.inquisitiveness",
                     ],
+                    review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                    applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
                 ),
             ),
         ),
@@ -593,7 +640,7 @@
                     freshness: current,
                     lineage: [
                         "apollo_11_wikidata",
-                        "temporal_review_bd1734621814b9fe",
+                        "temporal_review_a46cac3f4333dacd",
                         "weave_calendar_cues",
                         "weave_calendar_facts",
                         "weave_historical_cues",
@@ -648,7 +695,7 @@
                                 "weave_world_cues",
                                 "weave_world_projection",
                             ],
-                            review_sha256: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
                         ),
                         "cue_7eafd04a34c7f45247e358f5": (
                             id: "cue_7eafd04a34c7f45247e358f5",
@@ -674,7 +721,7 @@
                                 "weave_calendar_cues",
                                 "weave_calendar_facts",
                             ],
-                            review_sha256: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
                         ),
                         "cue_afa4e07801cd5172193f83f1": (
                             id: "cue_afa4e07801cd5172193f83f1",
@@ -700,7 +747,7 @@
                                 "apollo_11_wikidata",
                                 "weave_historical_cues",
                             ],
-                            review_sha256: "bd1734621814b9fe429f41707f82cfb2003831bb3083eb69b6a8d8c6e4b36eef",
+                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
                         ),
                     },
                 ),
@@ -888,7 +935,7 @@
                 lock: unlocked,
                 freshness: current,
                 lineage: [
-                    "temporal_review_bd1734621814b9fe",
+                    "temporal_review_a46cac3f4333dacd",
                     "weave_world_cues",
                     "weave_world_projection",
                 ],
@@ -909,7 +956,7 @@
                 lock: unlocked,
                 freshness: current,
                 lineage: [
-                    "temporal_review_bd1734621814b9fe",
+                    "temporal_review_a46cac3f4333dacd",
                     "weave_calendar_cues",
                     "weave_calendar_facts",
                 ],
@@ -931,7 +978,7 @@
                 freshness: current,
                 lineage: [
                     "apollo_11_wikidata",
-                    "temporal_review_bd1734621814b9fe",
+                    "temporal_review_a46cac3f4333dacd",
                     "weave_historical_cues",
                 ],
                 rationale: Some("Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."),
@@ -1055,6 +1102,16 @@
                 modified: false,
             ),
             (
+                id: "weave_wayfinder_compass",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "wayfinder-compass-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+                modified: false,
+            ),
+            (
                 id: "weave_world_cues",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -1077,7 +1134,15 @@
         ],
         transformations: [
             (
-                id: "temporal_review_bd1734621814b9fe",
+                id: "alignment_apply_361b86102edd3c9a",
+                inputs: [
+                    "character_original",
+                    "weave_wayfinder_compass",
+                ],
+                description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
+            ),
+            (
+                id: "temporal_review_a46cac3f4333dacd",
                 inputs: [
                     "apollo_11_wikidata",
                     "weave_calendar_cues",
@@ -1090,8 +1155,23 @@
             ),
         ],
         claims: {
+            "axes": [
+                "weave_wayfinder_compass",
+            ],
+            "calibrations": [
+                "weave_wayfinder_compass",
+            ],
+            "extensions.org.weave.character.alignment": [
+                "alignment_apply_361b86102edd3c9a",
+            ],
             "extensions.org.weave.character.date_context": [
-                "temporal_review_bd1734621814b9fe",
+                "temporal_review_a46cac3f4333dacd",
+            ],
+            "inputs": [
+                "weave_wayfinder_compass",
+            ],
+            "methodology": [
+                "weave_wayfinder_compass",
             ],
             "profile": [
                 "character_original",
@@ -1115,13 +1195,13 @@
                 "weave_world_projection",
             ],
             "suggestions.date_context_54a72f798cf8211963d263ba": [
-                "temporal_review_bd1734621814b9fe",
+                "temporal_review_a46cac3f4333dacd",
             ],
             "suggestions.date_context_7eafd04a34c7f45247e358f5": [
-                "temporal_review_bd1734621814b9fe",
+                "temporal_review_a46cac3f4333dacd",
             ],
             "suggestions.date_context_afa4e07801cd5172193f83f1": [
-                "temporal_review_bd1734621814b9fe",
+                "temporal_review_a46cac3f4333dacd",
             ],
         },
     ),

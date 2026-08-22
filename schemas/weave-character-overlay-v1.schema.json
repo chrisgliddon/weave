@@ -74,18 +74,61 @@
       ],
       "type": "object"
     },
+    "AlignmentPackRef": {
+      "additionalProperties": false,
+      "description": "Exact alignment-pack coordinate retained by a reviewed public view.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "AlignmentPublicDecision": {
+      "description": "Review path by which an alignment value entered the approved public view.",
+      "enum": [
+        "reviewed",
+        "edited",
+        "overridden"
+      ],
+      "type": "string"
+    },
     "AlignmentView": {
       "additionalProperties": false,
-      "description": "One pluggable alignment view with declared authority and rationale in its header.",
+      "description": "One reviewed, pluggable alignment view with declared authority and rationale in its header.",
       "properties": {
+        "applied_sha256": {
+          "type": "string"
+        },
         "input_paths": {
           "items": {
             "type": "string"
           },
           "type": "array"
         },
+        "pack": {
+          "$ref": "#/$defs/AlignmentPackRef"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
         "values": {
-          "$ref": "#/$defs/DomainValue"
+          "additionalProperties": {
+            "$ref": "#/$defs/ApprovedAlignmentValue"
+          },
+          "description": "Approved public values keyed by stable axis identifier. Review traces stay in receipts.",
+          "type": "object"
         },
         "view_id": {
           "type": "string"
@@ -93,7 +136,59 @@
       },
       "required": [
         "view_id",
+        "pack",
         "values",
+        "input_paths",
+        "review_sha256",
+        "applied_sha256"
+      ],
+      "type": "object"
+    },
+    "ApprovedAlignmentValue": {
+      "additionalProperties": false,
+      "description": "One approved narrative alignment value. It is shorthand, never diagnostic evidence.",
+      "properties": {
+        "coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "decision": {
+          "$ref": "#/$defs/AlignmentPublicDecision"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "label_id": {
+          "type": "string"
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label_id",
+        "label",
+        "decision",
+        "coverage_micros",
+        "explanation",
         "input_paths"
       ],
       "type": "object"

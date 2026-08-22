@@ -5,13 +5,231 @@
   "title": "Ari Vale Synthetic Character",
   "module": {
     "id": "org.weave.character",
-    "version": "=1.1.0"
+    "version": "=1.2.0"
   },
   "dependencies": [],
   "values": {
     "profile": {
       "kind": "object",
       "value": {
+        "alignment": {
+          "kind": "object",
+          "value": {
+            "applied_sha256": {
+              "kind": "string",
+              "value": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6"
+            },
+            "canonical_personality_write_back": {
+              "kind": "bool",
+              "value": false
+            },
+            "input_paths": {
+              "kind": "list",
+              "value": [
+                {
+                  "kind": "string",
+                  "value": "canon.personality.agreeableness.factor"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.conscientiousness.factor"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.conscientiousness.organization"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.honesty_humility.factor"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.honesty_humility.fairness"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.openness.factor"
+                },
+                {
+                  "kind": "string",
+                  "value": "canon.personality.openness.inquisitiveness"
+                }
+              ]
+            },
+            "pack": {
+              "kind": "object",
+              "value": {
+                "id": {
+                  "kind": "string",
+                  "value": "org.weave.alignment.wayfinder_compass"
+                },
+                "sha256": {
+                  "kind": "string",
+                  "value": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442"
+                },
+                "version": {
+                  "kind": "string",
+                  "value": "1.0.0"
+                }
+              }
+            },
+            "review_sha256": {
+              "kind": "string",
+              "value": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55"
+            },
+            "values": {
+              "kind": "object",
+              "value": {
+                "horizon": {
+                  "kind": "object",
+                  "value": {
+                    "coverage_micros": {
+                      "kind": "number",
+                      "value": 1000000.0
+                    },
+                    "decision": {
+                      "kind": "symbol",
+                      "value": "reviewed"
+                    },
+                    "explanation": {
+                      "kind": "string",
+                      "value": "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon."
+                    },
+                    "id": {
+                      "kind": "string",
+                      "value": "horizon"
+                    },
+                    "input_paths": {
+                      "kind": "list",
+                      "value": [
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.openness.factor"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.openness.inquisitiveness"
+                        }
+                      ]
+                    },
+                    "label": {
+                      "kind": "string",
+                      "value": "Seeking"
+                    },
+                    "label_id": {
+                      "kind": "string",
+                      "value": "seeking"
+                    },
+                    "score_micros": {
+                      "kind": "number",
+                      "value": 644000.0
+                    }
+                  }
+                },
+                "reciprocity": {
+                  "kind": "object",
+                  "value": {
+                    "coverage_micros": {
+                      "kind": "number",
+                      "value": 1000000.0
+                    },
+                    "decision": {
+                      "kind": "symbol",
+                      "value": "edited"
+                    },
+                    "explanation": {
+                      "kind": "string",
+                      "value": "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon."
+                    },
+                    "id": {
+                      "kind": "string",
+                      "value": "reciprocity"
+                    },
+                    "input_paths": {
+                      "kind": "list",
+                      "value": [
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.agreeableness.factor"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.honesty_humility.factor"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.honesty_humility.fairness"
+                        }
+                      ]
+                    },
+                    "label": {
+                      "kind": "string",
+                      "value": "Mutual"
+                    },
+                    "label_id": {
+                      "kind": "string",
+                      "value": "mutual"
+                    },
+                    "score_micros": {
+                      "kind": "number",
+                      "value": 449000.0
+                    }
+                  }
+                },
+                "structure": {
+                  "kind": "object",
+                  "value": {
+                    "coverage_micros": {
+                      "kind": "number",
+                      "value": 1000000.0
+                    },
+                    "decision": {
+                      "kind": "symbol",
+                      "value": "overridden"
+                    },
+                    "explanation": {
+                      "kind": "string",
+                      "value": "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon."
+                    },
+                    "id": {
+                      "kind": "string",
+                      "value": "structure"
+                    },
+                    "input_paths": {
+                      "kind": "list",
+                      "value": [
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.conscientiousness.factor"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "canon.personality.conscientiousness.organization"
+                        }
+                      ]
+                    },
+                    "label": {
+                      "kind": "string",
+                      "value": "Adapting"
+                    },
+                    "label_id": {
+                      "kind": "string",
+                      "value": "adapting"
+                    },
+                    "score_micros": {
+                      "kind": "number",
+                      "value": 536000.0
+                    }
+                  }
+                }
+              }
+            },
+            "view_id": {
+              "kind": "string",
+              "value": "org.weave.alignment.wayfinder_compass"
+            }
+          }
+        },
         "date_context": {
           "kind": "object",
           "value": {
@@ -1559,12 +1777,21 @@
                 {
                   "kind": "string",
                   "value": "character_original"
+                },
+                {
+                  "kind": "string",
+                  "value": "weave_wayfinder_compass"
                 }
               ]
             },
             "transformations": {
               "kind": "list",
-              "value": []
+              "value": [
+                {
+                  "kind": "string",
+                  "value": "alignment_apply_361b86102edd3c9a"
+                }
+              ]
             }
           }
         }
@@ -1582,20 +1809,39 @@
         "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
         "attribution": "Original synthetic Weave Character contract fixture.",
         "modified": false
+      },
+      {
+        "id": "weave_wayfinder_compass",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "wayfinder-compass-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+        "modified": false
       }
     ],
     "transformations": [
       {
-        "id": "weave_character_domain_projection_v2",
+        "id": "alignment_apply_361b86102edd3c9a",
         "inputs": [
-          "character_original"
+          "character_original",
+          "weave_wayfinder_compass"
         ],
-        "description": "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract."
+        "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+      },
+      {
+        "id": "weave_character_domain_projection_v3",
+        "inputs": [
+          "character_original",
+          "weave_wayfinder_compass"
+        ],
+        "description": "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract."
       }
     ],
     "claims": {
       "values.profile": [
-        "weave_character_domain_projection_v2"
+        "weave_character_domain_projection_v3"
       ]
     }
   }

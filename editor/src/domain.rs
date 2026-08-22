@@ -1220,7 +1220,13 @@ mod tests {
         assert_eq!(inspection.alias, "character");
         assert_eq!(inspection.id, "org.weave.character");
         assert_eq!(inspection.pack_id, "ari_vale");
-        assert_eq!(inspection.read_only_paths.len(), 6);
+        assert_eq!(inspection.read_only_paths.len(), 7);
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "alignment"].map(str::to_owned)
+                && declaration
+                    .reason
+                    .contains("non-diagnostic read-only shorthand")
+        }));
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "date_context"].map(str::to_owned)
                 && declaration.reason.contains("non-causal read-only context")
@@ -1256,6 +1262,27 @@ mod tests {
             ),
             Some(&DomainValue::Number(0.86))
         );
+        assert_eq!(
+            domain_value_at(
+                &session.active_modules()["character"].effective_values,
+                &["profile", "alignment", "values", "horizon", "label_id"].map(str::to_owned),
+            ),
+            Some(&DomainValue::String("seeking".to_owned()))
+        );
+        assert_eq!(
+            domain_value_at(
+                &session.active_modules()["character"].effective_values,
+                &["profile", "alignment", "values", "reciprocity", "decision"].map(str::to_owned),
+            ),
+            Some(&DomainValue::Symbol("edited".to_owned()))
+        );
+        assert!(
+            domain_value_at(
+                &session.active_modules()["character"].effective_values,
+                &["profile", "alignment", "values", "signal"].map(str::to_owned),
+            )
+            .is_none()
+        );
 
         session
             .set_module_override(
@@ -1282,6 +1309,18 @@ mod tests {
                     "character",
                     &["profile", "ocean", "openness", "score"],
                     DomainValue::Number(0.1),
+                )
+                .is_err()
+        );
+        assert_eq!(session.source(), before_writeback);
+        assert!(session.diagnostics().is_empty());
+
+        assert!(
+            session
+                .set_module_override(
+                    "character",
+                    &["profile", "alignment", "values", "horizon", "label_id"],
+                    DomainValue::String("anchored".to_owned()),
                 )
                 .is_err()
         );

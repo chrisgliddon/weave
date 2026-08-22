@@ -273,6 +273,17 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
     assert_eq!(ModuleManifest::from_ron(MODULE_RON).unwrap(), manifest);
     assert_eq!(manifest.to_json().unwrap(), MODULE_JSON);
     assert_eq!(manifest.to_ron().unwrap(), MODULE_RON);
+    assert_eq!(manifest.version, "1.2.0");
+    assert!(
+        manifest
+            .authoring
+            .read_only_paths
+            .iter()
+            .any(|declaration| {
+                declaration.path == ["profile", "alignment"].map(str::to_owned)
+                    && declaration.reason.contains("non-diagnostic")
+            })
+    );
 
     let pack = character_domain_pack(
         &profile,
@@ -461,6 +472,38 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
             Some(DomainValue::Number(_))
         ));
     }
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &["profile", "alignment", "canonical_personality_write_back",],
+        ),
+        Some(&DomainValue::Bool(false))
+    );
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &["profile", "alignment", "values", "horizon", "decision"],
+        ),
+        Some(&DomainValue::Symbol("reviewed".to_owned()))
+    );
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &["profile", "alignment", "values", "reciprocity", "decision",],
+        ),
+        Some(&DomainValue::Symbol("edited".to_owned()))
+    );
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &["profile", "alignment", "values", "structure", "decision"],
+        ),
+        Some(&DomainValue::Symbol("overridden".to_owned()))
+    );
+    assert!(
+        domain_value_at(&pack.values, &["profile", "alignment", "values", "signal"],).is_none()
+    );
+    assert!(domain_value_at(&pack.values, &["profile", "alignment", "values", "tempo"],).is_none());
 }
 
 #[test]

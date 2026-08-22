@@ -1,0 +1,39 @@
+{
+  "horizon": {
+    "axis_id": "horizon",
+    "action": {
+      "decision": "accept",
+      "rationale": "Accept the proposed fictional shorthand after inspecting its complete fixed-point explanation and non-diagnostic limitations."
+    }
+  },
+  "reciprocity": {
+    "axis_id": "reciprocity",
+    "action": {
+      "decision": "edit",
+      "label_id": "mutual",
+      "rationale": "Select a different declared narrative label because the authored scene context emphasizes exchange rather than stewardship; canonical evidence remains unchanged."
+    }
+  },
+  "signal": {
+    "axis_id": "signal",
+    "action": {
+      "decision": "reject",
+      "rationale": "Do not expose this optional axis to narrative logic for the reference character."
+    }
+  },
+  "structure": {
+    "axis_id": "structure",
+    "action": {
+      "decision": "override",
+      "label_id": "adapting",
+      "rationale": "Deliberately override the computed shorthand for this project while retaining the exact proposal, score, and reviewer rationale in the authoring receipt."
+    }
+  },
+  "tempo": {
+    "axis_id": "tempo",
+    "action": {
+      "decision": "withhold",
+      "rationale": "Keep this complete proposal in the authoring review without publishing it to runtime narrative logic."
+    }
+  }
+}

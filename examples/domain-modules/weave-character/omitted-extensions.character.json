@@ -570,10 +570,44 @@
         "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
         "attribution": "Original synthetic Weave Character contract fixture.",
         "modified": false
+      },
+      {
+        "id": "weave_wayfinder_compass",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "wayfinder-compass-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+        "modified": false
       }
     ],
-    "transformations": [],
+    "transformations": [
+      {
+        "id": "alignment_apply_361b86102edd3c9a",
+        "inputs": [
+          "character_original",
+          "weave_wayfinder_compass"
+        ],
+        "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+      }
+    ],
     "claims": {
+      "axes": [
+        "weave_wayfinder_compass"
+      ],
+      "calibrations": [
+        "weave_wayfinder_compass"
+      ],
+      "extensions.org.weave.character.alignment": [
+        "alignment_apply_361b86102edd3c9a"
+      ],
+      "inputs": [
+        "weave_wayfinder_compass"
+      ],
+      "methodology": [
+        "weave_wayfinder_compass"
+      ],
       "profile": [
         "character_original"
       ]

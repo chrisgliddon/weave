@@ -3,9 +3,11 @@
 This PixiJS v8 example imports the canonical compiled JSON tracer, Weave World reference seed, and
 complete synthetic Weave Character profile plus its reviewed temporal-context story. It decodes
 their tagged domain values and renders them with `Application` and `Text`. It reads the same trait
-variables as the Bevy example, labels OCEAN as derived and lossy, keeps fact lineage separate from
-original fictional-cue lineage, verifies temporal personality write-back is false, and has no
-dependency on the Weave Editor.
+variables as the Bevy example, labels OCEAN as derived and lossy, accepts only reviewed/edited/
+overridden alignment labels with exact pack and review fingerprints, excludes rejected and
+withheld axes, keeps fact lineage separate from original fictional-cue lineage, verifies both
+alignment and temporal personality write-back are false, and has no dependency on the Weave
+Editor.
 
 ```bash
 cd examples/domain-module-pixijs

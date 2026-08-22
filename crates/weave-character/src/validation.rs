@@ -5,14 +5,15 @@ use semver::Version;
 use weave_domain::{DomainValue, Provenance, validate_provenance};
 
 use crate::model::{
-    Attributed, AuthoredNote, BehavioralSignatures, BirthDate, CHARACTER_OVERLAY_FORMAT_VERSION,
-    CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar,
-    CharacterDiagnostic, CharacterDiagnosticCode, CharacterExtension, CharacterOperation,
-    CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterSuggestion,
-    CharacterTemplate, Confidence, DateContext, DateContextPackRef, DiagnosticSeverity,
-    ExpressionData, ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, HexacoTrait,
-    IdentityPresentation, OceanView, OpaqueExtensionData, OpaqueInterpretation, RelationshipEdges,
-    ReviewState, RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceDirection,
+    AlignmentPackRef, AlignmentView, Attributed, AuthoredNote, BehavioralSignatures, BirthDate,
+    CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_PROFILE_FORMAT_VERSION,
+    CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterDiagnostic, CharacterDiagnosticCode,
+    CharacterExtension, CharacterOperation, CharacterOperationAction, CharacterOverlay,
+    CharacterProfile, CharacterSuggestion, CharacterTemplate, Confidence, DateContext,
+    DateContextPackRef, DiagnosticSeverity, ExpressionData, ExtensionHeader, ExtensionWriteBack,
+    Freshness, HexacoProfile, HexacoTrait, IdentityPresentation, OceanView, OpaqueExtensionData,
+    OpaqueInterpretation, RelationshipEdges, ReviewState, RoleProjections, TraitMeasurement,
+    ValueState, VersionedExtension, VoiceDirection,
 };
 
 const MAX_TEXT: usize = 65_536;
@@ -391,18 +392,7 @@ fn validate_extension(
         }
         CharacterExtension::AlignmentView(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_namespaced_id(
-                &format!("extensions.{namespace}.value.view_id"),
-                &record.value.view_id,
-            )?;
-            validate_sorted_paths(
-                &format!("extensions.{namespace}.value.input_paths"),
-                &record.value.input_paths,
-            )?;
-            validate_domain_value(
-                &format!("extensions.{namespace}.value.values"),
-                &record.value.values,
-            )
+            validate_alignment_view(namespace, &record.value, &record.header.lineage)
         }
         CharacterExtension::DateContext(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
@@ -585,6 +575,102 @@ fn validate_relationships(
         validate_namespaced_id(&format!("{path}.kind"), &edge.kind)?;
     }
     Ok(())
+}
+
+fn validate_alignment_view(
+    namespace: &str,
+    value: &AlignmentView,
+    header_lineage: &[String],
+) -> Result<(), CharacterError> {
+    let path = format!("extensions.{namespace}.value");
+    validate_namespaced_id(&format!("{path}.view_id"), &value.view_id)?;
+    validate_alignment_pack_ref(&format!("{path}.pack"), &value.pack)?;
+    if value.view_id != value.pack.id {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.view_id"),
+            "alignment view identity must equal its exact pack identity",
+        ));
+    }
+    validate_sha256(&format!("{path}.review_sha256"), &value.review_sha256)?;
+    validate_sha256(&format!("{path}.applied_sha256"), &value.applied_sha256)?;
+    let transformation_id = format!("alignment_apply_{}", &value.applied_sha256[..16]);
+    if header_lineage.binary_search(&transformation_id).is_err() {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidLineage,
+            format!("{path}.applied_sha256"),
+            "alignment application transformation is absent from extension lineage",
+        ));
+    }
+    if value.values.len() > 4_096 {
+        return Err(invalid_value(
+            format!("{path}.values"),
+            "alignment view contains too many public values",
+        ));
+    }
+    let mut expected_paths = BTreeSet::new();
+    for (id, approved) in &value.values {
+        let value_path = format!("{path}.values.{id}");
+        validate_local_id(&value_path, id)?;
+        if approved.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{value_path}.id"),
+                "approved alignment value identifier must equal its containing map key",
+            ));
+        }
+        validate_local_id(&format!("{value_path}.label_id"), &approved.label_id)?;
+        validate_text(&format!("{value_path}.label"), &approved.label, 1, 256)?;
+        if approved
+            .score_micros
+            .is_some_and(|score| !(-1_000_000..=1_000_000).contains(&score))
+        {
+            return Err(invalid_value(
+                format!("{value_path}.score_micros"),
+                "alignment score must be signed millionths",
+            ));
+        }
+        if approved.coverage_micros > 1_000_000 {
+            return Err(invalid_value(
+                format!("{value_path}.coverage_micros"),
+                "alignment coverage must be from zero through one million",
+            ));
+        }
+        validate_text(
+            &format!("{value_path}.explanation"),
+            &approved.explanation,
+            1,
+            2_048,
+        )?;
+        validate_sorted_paths(&format!("{value_path}.input_paths"), &approved.input_paths)?;
+        if approved
+            .input_paths
+            .iter()
+            .any(|input| !input.starts_with("canon.personality."))
+        {
+            return Err(error(
+                CharacterDiagnosticCode::ForbiddenWriteBack,
+                format!("{value_path}.input_paths"),
+                "alignment views may read only canonical personality evidence",
+            ));
+        }
+        expected_paths.extend(approved.input_paths.iter().cloned());
+    }
+    validate_sorted_paths(&format!("{path}.input_paths"), &value.input_paths)?;
+    if value.input_paths != expected_paths.into_iter().collect::<Vec<_>>() {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.input_paths"),
+            "alignment view inputs must exactly cover approved public values",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_alignment_pack_ref(path: &str, value: &AlignmentPackRef) -> Result<(), CharacterError> {
+    validate_namespaced_id(&format!("{path}.id"), &value.id)?;
+    validate_semver(&format!("{path}.version"), &value.version)?;
+    validate_sha256(&format!("{path}.sha256"), &value.sha256)
 }
 
 fn validate_date_context(

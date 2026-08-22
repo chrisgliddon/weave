@@ -109,13 +109,170 @@ StoryIr(
                 ),
             ),
         ),
+        Instruction(
+            span: Span(
+                start: 454,
+                end: 511,
+                line: 12,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_pack",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "pack",
+                            "id",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 511,
+                end: 581,
+                line: 13,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_pack_version",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "pack",
+                            "version",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 581,
+                end: 649,
+                line: 14,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_pack_sha256",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "pack",
+                            "sha256",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 649,
+                end: 722,
+                line: 15,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_horizon",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "values",
+                            "horizon",
+                            "label",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 722,
+                end: 803,
+                line: 16,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_reciprocity",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "values",
+                            "reciprocity",
+                            "label",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 803,
+                end: 902,
+                line: 17,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "alignment_personality_writeback",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "alignment",
+                            "canonical_personality_write_back",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
     ],
     grammars: {},
     patterns: {},
     modules: {
         "character": DomainModuleIr(
             id: "org.weave.character",
-            version: "1.1.0",
+            version: "1.2.0",
             pack_id: "ari_vale",
             pack_version: "1.0.0",
             exports: {
@@ -124,6 +281,224 @@ StoryIr(
                     value: DomainValueIr(
                         kind: object,
                         value: {
+                            "alignment": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "applied_sha256": DomainValueIr(
+                                        kind: string,
+                                        value: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                                    ),
+                                    "canonical_personality_write_back": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "input_paths": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.agreeableness.factor",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.conscientiousness.factor",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.conscientiousness.organization",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.honesty_humility.factor",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.honesty_humility.fairness",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.openness.factor",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "canon.personality.openness.inquisitiveness",
+                                            ),
+                                        ],
+                                    ),
+                                    "pack": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "org.weave.alignment.wayfinder_compass",
+                                            ),
+                                            "sha256": DomainValueIr(
+                                                kind: string,
+                                                value: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
+                                            ),
+                                            "version": DomainValueIr(
+                                                kind: string,
+                                                value: "1.0.0",
+                                            ),
+                                        },
+                                    ),
+                                    "review_sha256": DomainValueIr(
+                                        kind: string,
+                                        value: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                                    ),
+                                    "values": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "horizon": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "coverage_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 1000000.0,
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "reviewed",
+                                                    ),
+                                                    "explanation": DomainValueIr(
+                                                        kind: string,
+                                                        value: "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "horizon",
+                                                    ),
+                                                    "input_paths": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.openness.factor",
+                                                            ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.openness.inquisitiveness",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "label": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Seeking",
+                                                    ),
+                                                    "label_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "seeking",
+                                                    ),
+                                                    "score_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 644000.0,
+                                                    ),
+                                                },
+                                            ),
+                                            "reciprocity": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "coverage_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 1000000.0,
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "edited",
+                                                    ),
+                                                    "explanation": DomainValueIr(
+                                                        kind: string,
+                                                        value: "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "reciprocity",
+                                                    ),
+                                                    "input_paths": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.agreeableness.factor",
+                                                            ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.honesty_humility.factor",
+                                                            ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.honesty_humility.fairness",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "label": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Mutual",
+                                                    ),
+                                                    "label_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "mutual",
+                                                    ),
+                                                    "score_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 449000.0,
+                                                    ),
+                                                },
+                                            ),
+                                            "structure": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "coverage_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 1000000.0,
+                                                    ),
+                                                    "decision": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "overridden",
+                                                    ),
+                                                    "explanation": DomainValueIr(
+                                                        kind: string,
+                                                        value: "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "structure",
+                                                    ),
+                                                    "input_paths": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.conscientiousness.factor",
+                                                            ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "canon.personality.conscientiousness.organization",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "label": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Adapting",
+                                                    ),
+                                                    "label_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "adapting",
+                                                    ),
+                                                    "score_micros": DomainValueIr(
+                                                        kind: number,
+                                                        value: 536000.0,
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "view_id": DomainValueIr(
+                                        kind: string,
+                                        value: "org.weave.alignment.wayfinder_compass",
+                                    ),
+                                },
+                            ),
                             "date_context": DomainValueIr(
                                 kind: object,
                                 value: {
@@ -1672,11 +2047,20 @@ StoryIr(
                                                 kind: string,
                                                 value: "character_original",
                                             ),
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "weave_wayfinder_compass",
+                                            ),
                                         ],
                                     ),
                                     "transformations": DomainValueIr(
                                         kind: list,
-                                        value: [],
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "alignment_apply_361b86102edd3c9a",
+                                            ),
+                                        ],
                                     ),
                                 },
                             ),
@@ -1705,9 +2089,9 @@ StoryIr(
             content: [
                 Instruction(
                     span: Span(
-                        start: 469,
-                        end: 676,
-                        line: 14,
+                        start: 917,
+                        end: 1458,
+                        line: 20,
                         column: 1,
                     ),
                     kind: InstructionKind(
@@ -1718,18 +2102,15 @@ StoryIr(
                                     condition: Expression(
                                         kind: path,
                                         value: [
-                                            "character",
-                                            "profile",
-                                            "ocean",
-                                            "lossy",
+                                            "alignment_personality_writeback",
                                         ],
                                     ),
                                     body: [
                                         Instruction(
                                             span: Span(
-                                                start: 505,
-                                                end: 617,
-                                                line: 15,
+                                                start: 955,
+                                                end: 1054,
+                                                line: 21,
                                                 column: 5,
                                             ),
                                             kind: InstructionKind(
@@ -1737,43 +2118,8 @@ StoryIr(
                                                 value: Template(
                                                     parts: [
                                                         TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "character_name",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
                                                             kind: text,
-                                                            value: " carries ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "creativity",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " creativity evidence and a derived OCEAN openness view of ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "ocean_openness",
-                                                                ],
-                                                            ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ".",
+                                                            value: "This branch is unreachable because reviewed alignment shorthand cannot become personality evidence.",
                                                         ),
                                                     ],
                                                 ),
@@ -1785,20 +2131,169 @@ StoryIr(
                             fallback: Some([
                                 Instruction(
                                     span: Span(
-                                        start: 630,
-                                        end: 674,
-                                        line: 17,
+                                        start: 1067,
+                                        end: 1456,
+                                        line: 23,
                                         column: 5,
                                     ),
                                     kind: InstructionKind(
-                                        kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "The compatibility projection is unavailable.",
+                                        kind: conditional,
+                                        value: ConditionalIr(
+                                            branches: [
+                                                ConditionalBranchIr(
+                                                    condition: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "character",
+                                                            "profile",
+                                                            "ocean",
+                                                            "lossy",
+                                                        ],
+                                                    ),
+                                                    body: [
+                                                        Instruction(
+                                                            span: Span(
+                                                                start: 1107,
+                                                                end: 1385,
+                                                                line: 24,
+                                                                column: 9,
+                                                            ),
+                                                            kind: InstructionKind(
+                                                                kind: text,
+                                                                value: Template(
+                                                                    parts: [
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "character_name",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: " carries ",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "creativity",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: " creativity evidence, a derived OCEAN openness view of ",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "ocean_openness",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: ", and reviewed ",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "alignment_horizon",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: " / ",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "alignment_reciprocity",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: " narrative alignment labels selected from ",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "alignment_pack",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: "@",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "alignment_pack_version",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: " (",
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: expression,
+                                                                            value: Expression(
+                                                                                kind: path,
+                                                                                value: [
+                                                                                    "alignment_pack_sha256",
+                                                                                ],
+                                                                            ),
+                                                                        ),
+                                                                        TemplatePartIr(
+                                                                            kind: text,
+                                                                            value: ").",
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
                                                 ),
                                             ],
+                                            fallback: Some([
+                                                Instruction(
+                                                    span: Span(
+                                                        start: 1406,
+                                                        end: 1450,
+                                                        line: 26,
+                                                        column: 9,
+                                                    ),
+                                                    kind: InstructionKind(
+                                                        kind: text,
+                                                        value: Template(
+                                                            parts: [
+                                                                TemplatePartIr(
+                                                                    kind: text,
+                                                                    value: "The compatibility projection is unavailable.",
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                ),
+                                            ]),
                                         ),
                                     ),
                                 ),
@@ -1808,9 +2303,9 @@ StoryIr(
                 ),
                 Instruction(
                     span: Span(
-                        start: 677,
-                        end: 683,
-                        line: 19,
+                        start: 1459,
+                        end: 1465,
+                        line: 29,
                         column: 1,
                     ),
                     kind: InstructionKind(

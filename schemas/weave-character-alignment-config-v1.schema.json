@@ -1,0 +1,46 @@
+{
+  "$id": "urn:weave:schema:character-alignment-config:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Project-specific selection and coverage policy, fingerprinted into every proposal.",
+  "properties": {
+    "config_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "minimum_coverage_micros": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "override_locked_view": {
+      "type": "boolean"
+    },
+    "override_rationale": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "selected_axes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "config_format_version",
+    "id",
+    "selected_axes",
+    "minimum_coverage_micros",
+    "override_locked_view"
+  ],
+  "title": "Weave Character Alignment Configuration v1",
+  "type": "object",
+  "x-weave-character-alignment-version": 1
+}

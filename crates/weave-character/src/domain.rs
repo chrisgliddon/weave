@@ -10,14 +10,15 @@ use weave_domain::{
 };
 
 use crate::{
-    AcceptedDateContextCue, Attributed, CharacterError, CharacterExtension, CharacterProfile,
-    Confidence, DateContextCueKind, DateContextDecision, DateContextSensitivity,
-    DateContextUncertainty, DerivedTrait, Freshness, HexacoProfile, LockState, OceanView,
-    ReviewState, TraitBand, TraitMeasurement, ValueState, validate_profile,
+    AcceptedDateContextCue, AlignmentPackRef, AlignmentPublicDecision, ApprovedAlignmentValue,
+    Attributed, CharacterError, CharacterExtension, CharacterProfile, Confidence,
+    DateContextCueKind, DateContextDecision, DateContextSensitivity, DateContextUncertainty,
+    DerivedTrait, Freshness, HexacoProfile, LockState, OceanView, ReviewState, TraitBand,
+    TraitMeasurement, ValueState, validate_profile,
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.1.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.2.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -75,6 +76,18 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         ),
         ("CharacterDateCue".to_owned(), character_date_cue_type()),
         ("CharacterDatePack".to_owned(), character_date_pack_type()),
+        (
+            "CharacterAlignmentView".to_owned(),
+            character_alignment_view_type(),
+        ),
+        (
+            "CharacterAlignmentValue".to_owned(),
+            character_alignment_value_type(),
+        ),
+        (
+            "CharacterAlignmentPack".to_owned(),
+            character_alignment_pack_type(),
+        ),
         ("CharacterIdentity".to_owned(), character_identity_type()),
         ("CharacterProfile".to_owned(), runtime_profile_type()),
         (
@@ -155,6 +168,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         authoring: ModuleAuthoring {
             entity_collections: Vec::new(),
             read_only_paths: [
+                (vec!["profile", "alignment"], "Reviewed alignment values retain exact pack and review fingerprints and remain non-diagnostic read-only shorthand; canonical authoring requires a separate reviewed operation."),
                 (vec!["profile", "date_context"], "Reviewed temporal cues retain exact lineage and remain non-causal read-only context; canonical authoring requires a separate reviewed operation."),
                 (vec!["profile", "hexaco"], "Canonical HEXACO evidence is revised in the profile artifact so dependent views can be recomputed and reviewed."),
                 (vec!["profile", "identity", "id"], "The stable character identifier is not a display label and cannot be rewritten by a story override."),
@@ -308,6 +322,9 @@ pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue
     if let Some(date_context) = date_context_value(profile) {
         fields.insert("date_context".to_owned(), date_context);
     }
+    if let Some(alignment) = alignment_value(profile) {
+        fields.insert("alignment".to_owned(), alignment);
+    }
     DomainValue::Object(fields)
 }
 
@@ -316,7 +333,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v2";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v3";
     if input
         .transformations
         .iter()
@@ -332,7 +349,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -846,9 +863,158 @@ fn character_date_context_type() -> TypeExpression {
     }
 }
 
+fn character_alignment_pack_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact alignment pack identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact lowercase pack content SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(text(1, 256), true, "Exact alignment pack version."),
+            ),
+        ]),
+    }
+}
+
+fn character_alignment_value_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "coverage_micros".to_owned(),
+                field(
+                    number(true, 0.0, 1_000_000.0),
+                    true,
+                    "Exact evidence coverage in integer millionths.",
+                ),
+            ),
+            (
+                "decision".to_owned(),
+                field(
+                    symbol(&["edited", "overridden", "reviewed"]),
+                    true,
+                    "Review path by which this value entered the public view.",
+                ),
+            ),
+            (
+                "explanation".to_owned(),
+                field(
+                    text(1, 2_048),
+                    true,
+                    "Public non-diagnostic narrative explanation.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable alignment axis identifier."),
+            ),
+            (
+                "input_paths".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 512)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted canonical evidence paths actually used by the reviewed value.",
+                ),
+            ),
+            (
+                "label".to_owned(),
+                field(text(1, 256), true, "Pack-declared public narrative label."),
+            ),
+            (
+                "label_id".to_owned(),
+                field(text(1, 128), true, "Stable pack-declared label identifier."),
+            ),
+            (
+                "score_micros".to_owned(),
+                field(
+                    number(true, -1_000_000.0, 1_000_000.0),
+                    false,
+                    "Optional exact signed score retained for the approved shorthand.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_alignment_view_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "applied_sha256".to_owned(),
+                field(text(64, 64), true, "Exact atomic application fingerprint."),
+            ),
+            (
+                "canonical_personality_write_back".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; alignment is never canonical evidence.",
+                ),
+            ),
+            (
+                "input_paths".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 512)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted union of canonical paths used by approved public values.",
+                ),
+            ),
+            (
+                "pack".to_owned(),
+                field(
+                    named("CharacterAlignmentPack"),
+                    true,
+                    "Exact declarative alignment pack coordinate.",
+                ),
+            ),
+            (
+                "review_sha256".to_owned(),
+                field(text(64, 64), true, "Exact complete review fingerprint."),
+            ),
+            (
+                "values".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterAlignmentValue")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Approved alignment values only; rejected and withheld values stay private to the authoring receipt.",
+                ),
+            ),
+            (
+                "view_id".to_owned(),
+                field(text(3, 256), true, "Selected alignment view identity."),
+            ),
+        ]),
+    }
+}
+
 fn runtime_profile_type() -> TypeExpression {
     TypeExpression::Object {
         fields: BTreeMap::from([
+            (
+                "alignment".to_owned(),
+                field(
+                    named("CharacterAlignmentView"),
+                    false,
+                    "Optional reviewed, non-diagnostic narrative alignment shorthand.",
+                ),
+            ),
             (
                 "date_context".to_owned(),
                 field(
@@ -933,6 +1099,107 @@ fn number(integer: bool, minimum: f64, maximum: f64) -> TypeExpression {
 fn symbol(values: &[&str]) -> TypeExpression {
     TypeExpression::Symbol {
         values: values.iter().map(|value| (*value).to_owned()).collect(),
+    }
+}
+
+fn alignment_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::AlignmentView(extension) = profile
+        .extensions
+        .get(crate::ALIGNMENT_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    let value = &extension.value;
+    Some(object([
+        (
+            "applied_sha256",
+            DomainValue::String(value.applied_sha256.clone()),
+        ),
+        ("canonical_personality_write_back", DomainValue::Bool(false)),
+        (
+            "input_paths",
+            DomainValue::List(
+                value
+                    .input_paths
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        ("pack", alignment_pack_value(&value.pack)),
+        (
+            "review_sha256",
+            DomainValue::String(value.review_sha256.clone()),
+        ),
+        (
+            "values",
+            DomainValue::Object(
+                value
+                    .values
+                    .iter()
+                    .map(|(id, value)| (id.clone(), alignment_public_value(value)))
+                    .collect(),
+            ),
+        ),
+        ("view_id", DomainValue::String(value.view_id.clone())),
+    ]))
+}
+
+fn alignment_pack_value(pack: &AlignmentPackRef) -> DomainValue {
+    object([
+        ("id", DomainValue::String(pack.id.clone())),
+        ("sha256", DomainValue::String(pack.sha256.clone())),
+        ("version", DomainValue::String(pack.version.clone())),
+    ])
+}
+
+fn alignment_public_value(value: &ApprovedAlignmentValue) -> DomainValue {
+    let mut fields = BTreeMap::from([
+        (
+            "coverage_micros".to_owned(),
+            DomainValue::Number(f64::from(value.coverage_micros)),
+        ),
+        (
+            "decision".to_owned(),
+            DomainValue::Symbol(alignment_decision(value.decision).to_owned()),
+        ),
+        (
+            "explanation".to_owned(),
+            DomainValue::String(value.explanation.clone()),
+        ),
+        ("id".to_owned(), DomainValue::String(value.id.clone())),
+        (
+            "input_paths".to_owned(),
+            DomainValue::List(
+                value
+                    .input_paths
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        ("label".to_owned(), DomainValue::String(value.label.clone())),
+        (
+            "label_id".to_owned(),
+            DomainValue::String(value.label_id.clone()),
+        ),
+    ]);
+    if let Some(score) = value.score_micros {
+        fields.insert(
+            "score_micros".to_owned(),
+            DomainValue::Number(f64::from(score)),
+        );
+    }
+    DomainValue::Object(fields)
+}
+
+const fn alignment_decision(value: AlignmentPublicDecision) -> &'static str {
+    match value {
+        AlignmentPublicDecision::Reviewed => "reviewed",
+        AlignmentPublicDecision::Edited => "edited",
+        AlignmentPublicDecision::Overridden => "overridden",
     }
 }
 
