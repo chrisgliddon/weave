@@ -47,6 +47,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.birth_date"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -88,6 +89,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.identity.aliases"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -123,6 +125,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.identity.display_name"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -166,6 +169,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.inner_life.keeps_promises"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -207,6 +211,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.agreeableness.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -248,6 +253,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.agreeableness.flexibility"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -289,6 +295,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.agreeableness.forgivingness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -330,6 +337,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.agreeableness.gentleness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -371,6 +379,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.agreeableness.patience"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -412,6 +421,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.conscientiousness.diligence"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -453,6 +463,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.conscientiousness.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -494,6 +505,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.conscientiousness.organization"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -535,6 +547,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.conscientiousness.perfectionism"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -576,6 +589,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.conscientiousness.prudence"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": true,
@@ -617,6 +631,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.emotionality.anxiety"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -658,6 +673,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.emotionality.dependence"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -699,6 +715,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.emotionality.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -740,6 +757,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.emotionality.fearfulness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -781,6 +799,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.emotionality.sentimentality"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -822,6 +841,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.extraversion.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -863,6 +883,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.extraversion.liveliness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -904,6 +925,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.extraversion.sociability"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -944,6 +966,7 @@
         "overlay_id": "org.weave.character.overlay.alignment_authoring",
         "operation_id": "revise_social_boldness"
       },
+      "origin_kind": "authored_override",
       "inherited": false,
       "overridden": true,
       "locked": false,
@@ -985,6 +1008,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.extraversion.social_self_esteem"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1026,6 +1050,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.honesty_humility.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1067,6 +1092,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.honesty_humility.fairness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1108,6 +1134,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.honesty_humility.greed_avoidance"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1149,6 +1176,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.honesty_humility.modesty"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1190,6 +1218,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.honesty_humility.sincerity"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1231,6 +1260,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.openness.aesthetic_appreciation"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1272,6 +1302,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.openness.creativity"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1313,6 +1344,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.openness.factor"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1354,6 +1386,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.openness.inquisitiveness"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1395,6 +1428,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.personality.openness.unconventionality"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1438,6 +1472,7 @@
         "template_version": "1.0.0",
         "source_path": "canon.voice.measured_warmth"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1532,6 +1567,7 @@
         "overlay_id": "org.weave.character.overlay.alignment_authoring",
         "operation_id": "adopt_reviewed_alignment"
       },
+      "origin_kind": "authored_override",
       "inherited": false,
       "overridden": true,
       "locked": false,
@@ -1601,6 +1637,7 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.behavioral_signatures"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1668,6 +1705,7 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.date_context"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1769,79 +1807,53 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.expression"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
       "protected_or_pack_owned": true
     },
     {
-      "path": "extensions.org.weave.character.identity_presentation",
-      "base_value": {
-        "kind": "identity_presentation",
-        "record": {
-          "header": {
-            "authority": "org.weave.character.contract",
-            "canonical_personality_write_back": "forbidden",
-            "extension_version": 1,
-            "freshness": "current",
-            "lineage": [
-              "character_original"
-            ],
-            "lock": "unlocked",
-            "namespace": "org.weave.character.identity_presentation",
-            "rationale": "Explicit optional projection authored for the synthetic fixture.",
-            "review": "accepted",
-            "state": "reviewed"
-          },
-          "value": {
-            "identity_refs": [
-              "org.weave.identity.wayfinder"
-            ],
-            "presentation_refs": [
-              "assets/avatars/ari_vale.png",
-              "assets/palettes/cedar_snow.json"
-            ]
-          }
-        }
-      },
-      "effective_value": {
-        "kind": "identity_presentation",
-        "record": {
-          "header": {
-            "authority": "org.weave.character.contract",
-            "canonical_personality_write_back": "forbidden",
-            "extension_version": 1,
-            "freshness": "current",
-            "lineage": [
-              "character_original"
-            ],
-            "lock": "unlocked",
-            "namespace": "org.weave.character.identity_presentation",
-            "rationale": "Explicit optional projection authored for the synthetic fixture.",
-            "review": "accepted",
-            "state": "reviewed"
-          },
-          "value": {
-            "identity_refs": [
-              "org.weave.identity.wayfinder"
-            ],
-            "presentation_refs": [
-              "assets/avatars/ari_vale.png",
-              "assets/palettes/cedar_snow.json"
-            ]
-          }
-        }
-      },
+      "path": "extensions.org.weave.character.identity_presentation.value.identity_refs",
+      "base_value": [
+        "org.weave.identity.wayfinder"
+      ],
+      "effective_value": [
+        "org.weave.identity.wayfinder"
+      ],
       "origin": {
         "kind": "template",
         "template_id": "org.weave.character.template.alignment_authoring",
         "template_version": "1.0.0",
-        "source_path": "extensions.org.weave.character.identity_presentation"
+        "source_path": "extensions.org.weave.character.identity_presentation.value.identity_refs"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
-      "protected_or_pack_owned": true
+      "protected_or_pack_owned": false
+    },
+    {
+      "path": "extensions.org.weave.character.identity_presentation.value.presentation_refs",
+      "base_value": [
+        "assets/avatars/ari_vale.png",
+        "assets/palettes/cedar_snow.json"
+      ],
+      "effective_value": [
+        "assets/avatars/ari_vale.png",
+        "assets/palettes/cedar_snow.json"
+      ],
+      "origin": {
+        "kind": "template",
+        "template_id": "org.weave.character.template.alignment_authoring",
+        "template_version": "1.0.0",
+        "source_path": "extensions.org.weave.character.identity_presentation.value.presentation_refs"
+      },
+      "origin_kind": "template",
+      "inherited": true,
+      "overridden": false,
+      "locked": false,
+      "protected_or_pack_owned": false
     },
     {
       "path": "extensions.org.weave.character.relationships",
@@ -1911,6 +1923,7 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.relationships"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -1990,6 +2003,7 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.role_projections"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -2065,6 +2079,7 @@
         "template_version": "1.0.0",
         "source_path": "extensions.org.weave.character.tabletop"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,
@@ -2116,6 +2131,7 @@
         "template_version": "1.0.0",
         "source_path": "suggestions.night_market_memory"
       },
+      "origin_kind": "template",
       "inherited": true,
       "overridden": false,
       "locked": false,

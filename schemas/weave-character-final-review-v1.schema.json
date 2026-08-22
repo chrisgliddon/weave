@@ -144,6 +144,27 @@
       ],
       "type": "object"
     },
+    "AppearanceDescriptor": {
+      "additionalProperties": false,
+      "description": "One authored appearance statement with a namespaced category.",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "content"
+      ],
+      "type": "object"
+    },
     "ApprovedAlignmentValue": {
       "additionalProperties": false,
       "description": "One approved narrative alignment value. It is shorthand, never diagnostic evidence.",
@@ -343,7 +364,7 @@
           "description": "How this value entered the record."
         },
         "value": {
-          "$ref": "#/$defs/BirthDate",
+          "$ref": "#/$defs/PronounSet",
           "description": "Typed value."
         }
       },
@@ -359,6 +380,222 @@
       "type": "object"
     },
     "Attributed4": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/PresentationPalette",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed5": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/PresentationAssetReference",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed6": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/PresentationCatalogAssignment",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed7": {
+      "additionalProperties": false,
+      "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "description": "Confidence in the representation, not a claim of objective truth."
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness",
+          "description": "Whether an upstream input changed after this value was produced."
+        },
+        "lineage": {
+          "description": "Sorted source or transformation identifiers from profile provenance.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState",
+          "description": "Whether ordinary synthesis operations may replace the field."
+        },
+        "rationale": {
+          "description": "Required explanation for derived, suggested, reviewed, or overridden values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState",
+          "description": "Editorial review state."
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState",
+          "description": "How this value entered the record."
+        },
+        "value": {
+          "$ref": "#/$defs/BirthDate",
+          "description": "Typed value."
+        }
+      },
+      "required": [
+        "value",
+        "state",
+        "confidence",
+        "review",
+        "lock",
+        "freshness",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Attributed8": {
       "additionalProperties": false,
       "description": "A value together with authority, review, locking, freshness, confidence, and lineage.",
       "properties": {
@@ -629,7 +866,7 @@
         "birth_date": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Attributed3"
+              "$ref": "#/$defs/Attributed7"
             },
             {
               "type": "null"
@@ -640,94 +877,94 @@
           "additionalProperties": false,
           "properties": {
             "aesthetic_appreciation": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "agreeableness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "anxiety": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "conscientiousness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "creativity": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "dependence": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "diligence": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "emotionality": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "extraversion": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "fairness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "fearfulness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "flexibility": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "forgivingness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "gentleness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "greed_avoidance": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "honesty_humility": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "inquisitiveness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "liveliness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "modesty": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "openness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "organization": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "patience": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "perfectionism": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "prudence": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "sentimentality": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "sincerity": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "sociability": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "social_boldness": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "social_self_esteem": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             },
             "unconventionality": {
-              "$ref": "#/$defs/Attributed4"
+              "$ref": "#/$defs/Attributed8"
             }
           },
           "type": "object"
@@ -737,6 +974,16 @@
         },
         "identity": {
           "$ref": "#/$defs/CharacterIdentity"
+        },
+        "identity_presentation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdentityPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "inner_life": {
           "additionalProperties": {
@@ -989,6 +1236,119 @@
       ],
       "type": "string"
     },
+    "IdentityContextKind": {
+      "description": "Closed baseline identity-note categories.",
+      "enum": [
+        "origin",
+        "context"
+      ],
+      "type": "string"
+    },
+    "IdentityContextNote": {
+      "additionalProperties": false,
+      "description": "One authored identity-adjacent note that remains outside personality canon.",
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/Attributed"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/IdentityContextKind"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "content"
+      ],
+      "type": "object"
+    },
+    "IdentityPresentation": {
+      "additionalProperties": false,
+      "description": "Optional identity and project-relative presentation references.",
+      "properties": {
+        "appearance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AppearanceDescriptor"
+          },
+          "description": "Appearance descriptions keyed by stable local identifier.",
+          "type": "object"
+        },
+        "assets": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Attributed5"
+          },
+          "description": "Portable, project-relative asset references keyed by stable local identifier.",
+          "type": "object"
+        },
+        "catalog_assignments": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Attributed6"
+          },
+          "description": "Reviewed catalog allocations keyed by presentation slot.",
+          "type": "object"
+        },
+        "context_notes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/IdentityContextNote"
+          },
+          "description": "Authored origin or context notes keyed by stable local identifier.",
+          "type": "object"
+        },
+        "identity_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "palette": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional named color slots for portable presentation consumers."
+        },
+        "presentation_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pronouns": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional authored language used to refer to the character."
+        },
+        "style_tags": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Attributed2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional sorted style tags. Tags describe presentation only."
+        }
+      },
+      "required": [
+        "identity_refs",
+        "presentation_refs"
+      ],
+      "type": "object"
+    },
     "InnerLifeCategory": {
       "description": "Closed baseline categories; custom taxonomies use a versioned extension.",
       "enum": [
@@ -1088,6 +1448,232 @@
         "lossy",
         "independent_evidence",
         "omitted_factor"
+      ],
+      "type": "object"
+    },
+    "PresentationAssetKind": {
+      "description": "Closed portable asset roles.",
+      "enum": [
+        "avatar",
+        "portrait",
+        "sprite",
+        "model",
+        "illustration"
+      ],
+      "type": "string"
+    },
+    "PresentationAssetReference": {
+      "additionalProperties": false,
+      "description": "One project-relative asset coordinate with optional content fingerprint.",
+      "properties": {
+        "alt_text": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/PresentationAssetKind"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "media_type",
+        "alt_text"
+      ],
+      "type": "object"
+    },
+    "PresentationCatalogAssignment": {
+      "additionalProperties": false,
+      "description": "One reviewed catalog allocation retained with proposal and review fingerprints.",
+      "properties": {
+        "catalog": {
+          "$ref": "#/$defs/PresentationCatalogRef"
+        },
+        "entry_id": {
+          "type": "string"
+        },
+        "proposal_sha256": {
+          "type": "string"
+        },
+        "review_sha256": {
+          "type": "string"
+        },
+        "slot_id": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/PresentationCatalogValue"
+        }
+      },
+      "required": [
+        "slot_id",
+        "catalog",
+        "entry_id",
+        "value",
+        "proposal_sha256",
+        "review_sha256"
+      ],
+      "type": "object"
+    },
+    "PresentationCatalogRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable presentation-catalog coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "PresentationCatalogValue": {
+      "description": "Closed values a presentation catalog may propose. None can modify identity or personality.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "type": "string"
+            },
+            "descriptor": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "appearance",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "category",
+            "descriptor"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "palette_color",
+              "type": "string"
+            },
+            "palette_slot": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "palette_slot",
+            "color"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "style_tag",
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "tag"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "asset": {
+              "$ref": "#/$defs/PresentationAssetReference"
+            },
+            "kind": {
+              "const": "asset",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "asset"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "PresentationPalette": {
+      "additionalProperties": false,
+      "description": "Named portable color slots. Values use canonical hexadecimal sRGB notation.",
+      "properties": {
+        "colors": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "colors"
+      ],
+      "type": "object"
+    },
+    "PronounSet": {
+      "additionalProperties": false,
+      "description": "Explicit grammatical forms without assuming a fixed pronoun vocabulary.",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "possessive_determiner": {
+          "type": "string"
+        },
+        "possessive_pronoun": {
+          "type": "string"
+        },
+        "reflexive": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject",
+        "object",
+        "possessive_determiner",
+        "possessive_pronoun",
+        "reflexive"
       ],
       "type": "object"
     },

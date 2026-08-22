@@ -66,6 +66,42 @@ const ALIGNMENT_REVIEW: &str =
     "examples/domain-modules/weave-character/alignment/review.alignment-review.json";
 const ALIGNMENT_RECEIPT: &str =
     "examples/domain-modules/weave-character/alignment/receipt.alignment-receipt.json";
+const PRESENTATION_INPUT_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/input.character-collection.json";
+const PRESENTATION_INPUT_RON: &str =
+    "examples/domain-modules/weave-character/presentation/input.character-collection.ron";
+const PRESENTATION_CATALOG_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/glasswind.presentation-catalog.json";
+const PRESENTATION_CATALOG_RON: &str =
+    "examples/domain-modules/weave-character/presentation/glasswind.presentation-catalog.ron";
+const PRESENTATION_REQUEST_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/allocation.presentation-request.json";
+const PRESENTATION_REQUEST_RON: &str =
+    "examples/domain-modules/weave-character/presentation/allocation.presentation-request.ron";
+const PRESENTATION_PROPOSAL_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/proposal.presentation-proposal.json";
+const PRESENTATION_PROPOSAL_RON: &str =
+    "examples/domain-modules/weave-character/presentation/proposal.presentation-proposal.ron";
+const PRESENTATION_DECISIONS_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/decisions.presentation-review.json";
+const PRESENTATION_DECISIONS_RON: &str =
+    "examples/domain-modules/weave-character/presentation/decisions.presentation-review.ron";
+const PRESENTATION_REVIEW_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/review.presentation-review.json";
+const PRESENTATION_REVIEW_RON: &str =
+    "examples/domain-modules/weave-character/presentation/review.presentation-review.ron";
+const PRESENTATION_RECEIPT_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/receipt.presentation-receipt.json";
+const PRESENTATION_RECEIPT_RON: &str =
+    "examples/domain-modules/weave-character/presentation/receipt.presentation-receipt.ron";
+const PRESENTATION_APPLIED_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/applied.character-collection.json";
+const PRESENTATION_APPLIED_RON: &str =
+    "examples/domain-modules/weave-character/presentation/applied.character-collection.ron";
+const PRESENTATION_LOCK_REVISION_JSON: &str = "examples/domain-modules/weave-character/presentation/\
+unlock-avatar.presentation-lock-revision.json";
+const PRESENTATION_UNLOCKED_JSON: &str =
+    "examples/domain-modules/weave-character/presentation/unlocked.character-collection.json";
 
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-character"))
@@ -229,6 +265,36 @@ fn validates_and_writes_every_collection_contract_schema_exactly() {
             "alignment-receipt",
             ALIGNMENT_RECEIPT,
             "schemas/weave-character-alignment-receipt-v1.schema.json",
+        ),
+        (
+            "presentation-catalog",
+            PRESENTATION_CATALOG_JSON,
+            "schemas/weave-character-presentation-catalog-v1.schema.json",
+        ),
+        (
+            "presentation-request",
+            PRESENTATION_REQUEST_JSON,
+            "schemas/weave-character-presentation-request-v1.schema.json",
+        ),
+        (
+            "presentation-proposal",
+            PRESENTATION_PROPOSAL_JSON,
+            "schemas/weave-character-presentation-proposal-v1.schema.json",
+        ),
+        (
+            "presentation-review",
+            PRESENTATION_REVIEW_JSON,
+            "schemas/weave-character-presentation-review-v1.schema.json",
+        ),
+        (
+            "presentation-receipt",
+            PRESENTATION_RECEIPT_JSON,
+            "schemas/weave-character-presentation-receipt-v1.schema.json",
+        ),
+        (
+            "presentation-lock-revision",
+            PRESENTATION_LOCK_REVISION_JSON,
+            "schemas/weave-character-presentation-lock-revision-v1.schema.json",
         ),
     ] {
         let validation = run(&["validate", kind, input]);
@@ -732,4 +798,255 @@ fn alignment_dry_run_and_stale_inputs_never_write_partial_receipts() {
     assert!(!stale.status.success());
     assert!(!stale_output.exists());
     assert!(!String::from_utf8_lossy(&stale.stderr).contains("Ari Vale"));
+}
+
+#[test]
+fn presentation_propose_review_and_apply_match_shared_fixture_bytes() {
+    let temporary = tempdir().expect("temporary output directory");
+    let expected_review: serde_json::Value = serde_json::from_slice(
+        &fs::read(repository_root().join(PRESENTATION_REVIEW_JSON)).unwrap(),
+    )
+    .unwrap();
+
+    for (
+        format,
+        collection,
+        catalog,
+        request,
+        decisions,
+        checked_proposal,
+        checked_review,
+        checked_receipt,
+        checked_collection,
+    ) in [
+        (
+            "json",
+            PRESENTATION_INPUT_JSON,
+            PRESENTATION_CATALOG_JSON,
+            PRESENTATION_REQUEST_JSON,
+            PRESENTATION_DECISIONS_JSON,
+            PRESENTATION_PROPOSAL_JSON,
+            PRESENTATION_REVIEW_JSON,
+            PRESENTATION_RECEIPT_JSON,
+            PRESENTATION_APPLIED_JSON,
+        ),
+        (
+            "ron",
+            PRESENTATION_INPUT_RON,
+            PRESENTATION_CATALOG_RON,
+            PRESENTATION_REQUEST_RON,
+            PRESENTATION_DECISIONS_RON,
+            PRESENTATION_PROPOSAL_RON,
+            PRESENTATION_REVIEW_RON,
+            PRESENTATION_RECEIPT_RON,
+            PRESENTATION_APPLIED_RON,
+        ),
+    ] {
+        let proposal = temporary.path().join(format!("proposal.{format}"));
+        let proposed = run(&[
+            "presentation-propose",
+            collection,
+            catalog,
+            request,
+            "--format",
+            format,
+            "--output",
+            proposal.to_str().unwrap(),
+        ]);
+        assert!(
+            proposed.status.success(),
+            "{}",
+            String::from_utf8_lossy(&proposed.stderr)
+        );
+        assert_eq!(
+            fs::read(&proposal).unwrap(),
+            fs::read(repository_root().join(checked_proposal)).unwrap()
+        );
+
+        let review = temporary.path().join(format!("review.{format}"));
+        let reviewed = run(&[
+            "presentation-review",
+            proposal.to_str().unwrap(),
+            decisions,
+            "--reviewer",
+            expected_review["reviewer"].as_str().unwrap(),
+            "--rationale",
+            expected_review["rationale"].as_str().unwrap(),
+            "--format",
+            format,
+            "--output",
+            review.to_str().unwrap(),
+        ]);
+        assert!(
+            reviewed.status.success(),
+            "{}",
+            String::from_utf8_lossy(&reviewed.stderr)
+        );
+        assert_eq!(
+            fs::read(&review).unwrap(),
+            fs::read(repository_root().join(checked_review)).unwrap()
+        );
+
+        let receipt = temporary.path().join(format!("receipt.{format}"));
+        let applied_collection = temporary.path().join(format!("applied.{format}"));
+        let applied = run(&[
+            "presentation-apply",
+            collection,
+            proposal.to_str().unwrap(),
+            review.to_str().unwrap(),
+            "--receipt-output",
+            receipt.to_str().unwrap(),
+            "--collection-output",
+            applied_collection.to_str().unwrap(),
+            "--format",
+            format,
+        ]);
+        assert!(
+            applied.status.success(),
+            "{}",
+            String::from_utf8_lossy(&applied.stderr)
+        );
+        assert_eq!(
+            fs::read(&receipt).unwrap(),
+            fs::read(repository_root().join(checked_receipt)).unwrap()
+        );
+        assert_eq!(
+            fs::read(&applied_collection).unwrap(),
+            fs::read(repository_root().join(checked_collection)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn presentation_dry_run_and_lock_revision_preserve_atomicity() {
+    let temporary = tempdir().expect("temporary output directory");
+    let copied_input = temporary.path().join("input.character-collection.json");
+    fs::copy(
+        repository_root().join(PRESENTATION_INPUT_JSON),
+        &copied_input,
+    )
+    .unwrap();
+    let original = fs::read(&copied_input).unwrap();
+    let receipt = temporary.path().join("dry-run.presentation-receipt.json");
+    let forbidden_collection = temporary.path().join("forbidden.character-collection.json");
+    let dry_run = run(&[
+        "presentation-apply",
+        copied_input.to_str().unwrap(),
+        PRESENTATION_PROPOSAL_JSON,
+        PRESENTATION_REVIEW_JSON,
+        "--dry-run",
+        "--receipt-output",
+        receipt.to_str().unwrap(),
+        "--collection-output",
+        forbidden_collection.to_str().unwrap(),
+    ]);
+    assert!(
+        dry_run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&dry_run.stderr)
+    );
+    assert_eq!(fs::read(&copied_input).unwrap(), original);
+    assert!(!forbidden_collection.exists());
+    assert_eq!(
+        fs::read(&receipt).unwrap(),
+        fs::read(repository_root().join(PRESENTATION_RECEIPT_JSON)).unwrap()
+    );
+
+    let copied_applied = temporary.path().join("applied.character-collection.json");
+    fs::copy(
+        repository_root().join(PRESENTATION_APPLIED_JSON),
+        &copied_applied,
+    )
+    .unwrap();
+    let locked_original = fs::read(&copied_applied).unwrap();
+    let forbidden_lock_output = temporary.path().join("forbidden-lock-output.json");
+    let lock_dry_run = run(&[
+        "presentation-lock",
+        copied_applied.to_str().unwrap(),
+        PRESENTATION_LOCK_REVISION_JSON,
+        "--dry-run",
+        "--output",
+        forbidden_lock_output.to_str().unwrap(),
+    ]);
+    assert!(
+        lock_dry_run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&lock_dry_run.stderr)
+    );
+    assert_eq!(fs::read(&copied_applied).unwrap(), locked_original);
+    assert!(!forbidden_lock_output.exists());
+
+    let unlocked_output = temporary.path().join("unlocked.character-collection.json");
+    let lock_apply = run(&[
+        "presentation-lock",
+        copied_applied.to_str().unwrap(),
+        PRESENTATION_LOCK_REVISION_JSON,
+        "--output",
+        unlocked_output.to_str().unwrap(),
+    ]);
+    assert!(
+        lock_apply.status.success(),
+        "{}",
+        String::from_utf8_lossy(&lock_apply.stderr)
+    );
+    assert_eq!(
+        fs::read(unlocked_output).unwrap(),
+        fs::read(repository_root().join(PRESENTATION_UNLOCKED_JSON)).unwrap()
+    );
+}
+
+#[test]
+fn invalid_presentation_inputs_fail_before_any_output() {
+    let temporary = tempdir().expect("temporary output directory");
+    let attempts = [
+        vec![
+            "presentation-propose",
+            PRESENTATION_INPUT_JSON,
+            PRESENTATION_CATALOG_JSON,
+            "examples/domain-modules/weave-character/invalid/missing-presentation-asset.presentation-request.json",
+        ],
+        vec![
+            "presentation-review",
+            PRESENTATION_PROPOSAL_JSON,
+            "examples/domain-modules/weave-character/invalid/incompatible-presentation-override.json",
+            "--reviewer",
+            "org.weave.reviewer.invalid_fixture",
+            "--rationale",
+            "Exercise the incompatible presentation override boundary.",
+        ],
+        vec![
+            "presentation-apply",
+            PRESENTATION_INPUT_JSON,
+            "examples/domain-modules/weave-character/invalid/stale-presentation-proposal.json",
+            PRESENTATION_REVIEW_JSON,
+            "--receipt-output",
+        ],
+    ];
+    for (index, mut arguments) in attempts.into_iter().enumerate() {
+        let output = temporary.path().join(format!("forbidden-{index}.json"));
+        if arguments.last() == Some(&"--receipt-output") {
+            arguments.push(output.to_str().unwrap());
+        } else {
+            arguments.extend(["--output", output.to_str().unwrap()]);
+        }
+        let result = run(&arguments);
+        assert!(!result.status.success());
+        assert!(!output.exists());
+        assert!(!String::from_utf8_lossy(&result.stderr).contains("Ari Vale"));
+    }
+
+    for (kind, path) in [
+        (
+            "presentation-catalog",
+            "examples/domain-modules/weave-character/invalid/invalid-palette-slot.presentation-catalog.json",
+        ),
+        (
+            "profile",
+            "examples/domain-modules/weave-character/invalid/duplicate-alias.character.json",
+        ),
+    ] {
+        let result = run(&["validate", kind, path]);
+        assert!(!result.status.success());
+        assert!(!String::from_utf8_lossy(&result.stderr).contains("Ari Vale"));
+    }
 }

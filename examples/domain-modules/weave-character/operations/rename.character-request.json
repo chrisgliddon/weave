@@ -1,7 +1,7 @@
 {
   "request_format_version": 1,
   "id": "org.weave.character.operation.rename_ari",
-  "expected_input_sha256": "b9feebdf711e1b9b53b7bf64cbe6e3f49e849a400cb874901304a2bc46fcbfdc",
+  "expected_input_sha256": "241906d3d910765dd767df17e950b84c6fe41832f7fb7bcd4c1df1a3e444fd1a",
   "seed": 4271,
   "scope": {
     "kind": "characters",

@@ -1,7 +1,7 @@
 {
   "proposal_format_version": 1,
   "profile_id": "org.weave.character.ari_vale",
-  "profile_sha256": "29c9df9f1416332caec905b67dc1380c6766494c1f2b1990ae3127e81c42d0e8",
+  "profile_sha256": "f6d063ef60bbfea4350f75ec5e9df11368e0c4f51e9d82c28502fbf7764f7995",
   "birth_date": {
     "precision": "full",
     "calendar": "proleptic_gregorian",

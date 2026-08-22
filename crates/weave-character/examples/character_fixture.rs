@@ -8,8 +8,8 @@ use weave_character::{
     AlignmentCalibrationExpected, AlignmentCalibrationFixture, AlignmentConfig,
     AlignmentInputField, AlignmentPack, AlignmentPackProvider, AlignmentProposal, AlignmentReceipt,
     AlignmentReview, AlignmentReviewAction, AlignmentReviewDecision, AlignmentThreshold,
-    Attributed, AuthoredNote, BehavioralSignature, BehavioralSignatures, BirthDate,
-    CHARACTER_COLLECTION_FORMAT_VERSION, CHARACTER_OPERATION_REQUEST_FORMAT_VERSION,
+    AppearanceDescriptor, Attributed, AuthoredNote, BehavioralSignature, BehavioralSignatures,
+    BirthDate, CHARACTER_COLLECTION_FORMAT_VERSION, CHARACTER_OPERATION_REQUEST_FORMAT_VERSION,
     CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_PROFILE_FORMAT_VERSION,
     CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterCanon, CharacterCollection,
     CharacterCorpusAction, CharacterDerivedViews, CharacterExtension, CharacterIdentity,
@@ -18,10 +18,18 @@ use weave_character::{
     CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness, DateContext,
     DateContextCueKind, DateContextSensitivity, DateContextUncertainty, Emotionality,
     ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion, Freshness, HexacoProfile,
-    HexacoTrait, HonestyHumility, IdentityPresentation, InnerLifeCategory, LockState,
-    NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
-    Openness, PreferencePolarity, RelationshipEdge, RelationshipEdges, ReviewState, RoleProjection,
-    RoleProjections, TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION, TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+    HexacoTrait, HonestyHumility, IdentityContextKind, IdentityContextNote, IdentityPresentation,
+    InnerLifeCategory, LockState, NormalizedExpressionTerm, NormalizedPreference,
+    OpaqueExtensionData, OpaqueInterpretation, Openness,
+    PRESENTATION_ALLOCATION_REQUEST_FORMAT_VERSION, PRESENTATION_CATALOG_FORMAT_VERSION,
+    PRESENTATION_LOCK_REVISION_FORMAT_VERSION, PreferencePolarity, PresentationAllocationMode,
+    PresentationAllocationRequest, PresentationAssetKind, PresentationAssetReference,
+    PresentationCatalog, PresentationCatalogEntry, PresentationCatalogSlot,
+    PresentationCatalogValue, PresentationCatalogValueKind, PresentationLockRevision,
+    PresentationLockTarget, PresentationPalette, PresentationProposal, PresentationReceipt,
+    PresentationReview, PresentationReviewDecision, PronounSet, RelationshipEdge,
+    RelationshipEdges, ReviewState, RoleProjection, RoleProjections,
+    TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION, TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
     TemporalAuthoringCue, TemporalAutoApprovePolicy, TemporalContextConfig, TemporalContextPack,
     TemporalContextProposal, TemporalContextProvider, TemporalContextReceipt,
     TemporalContextRecord, TemporalContextReview, TemporalDate, TemporalEvidenceClass,
@@ -30,16 +38,20 @@ use weave_character::{
     TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState, VersionedExtension,
     VoiceCategory, VoiceDirection, alignment_config_schema, alignment_pack_schema,
     alignment_proposal_schema, alignment_provider_content_fingerprint, alignment_receipt_schema,
-    alignment_review_schema, apply_reviewed_alignment, apply_reviewed_character_proposal,
-    apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
-    character_domain_pack, character_module_manifest, character_operation_request_schema,
-    character_overlay_schema, character_profile_schema, character_progress_schema,
-    character_proposal_schema, character_review_schema, character_synthesis_schema,
-    character_template_schema, collection_fingerprint, create_alignment_review,
-    create_temporal_context_review, propose_alignment, propose_character_operation,
-    propose_temporal_context, recompute_derived, resume_character_operation,
-    review_character_proposal, synthesize_character, template_fingerprint,
-    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
+    alignment_review_schema, apply_presentation_lock_revision, apply_presentation_review,
+    apply_reviewed_alignment, apply_reviewed_character_proposal, apply_reviewed_temporal_context,
+    character_collection_schema, character_diagnostic_schema, character_domain_pack,
+    character_module_manifest, character_operation_request_schema, character_overlay_schema,
+    character_profile_schema, character_progress_schema, character_proposal_schema,
+    character_review_schema, character_synthesis_schema, character_template_schema,
+    collection_fingerprint, create_alignment_review, create_temporal_context_review,
+    presentation_allocation_request_schema, presentation_catalog_ref, presentation_catalog_schema,
+    presentation_lock_revision_schema, presentation_proposal_schema, presentation_receipt_schema,
+    presentation_review_schema, propose_alignment, propose_character_operation,
+    propose_presentation_allocations, propose_temporal_context, recompute_derived,
+    resume_character_operation, review_character_proposal, review_presentation_proposal,
+    synthesize_character, template_fingerprint, temporal_context_config_schema,
+    temporal_context_pack_schema, temporal_context_proposal_schema,
     temporal_context_receipt_schema, temporal_context_review_schema,
     temporal_provider_content_fingerprint,
 };
@@ -70,7 +82,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let schemas = root.join("schemas");
 
     let alignment = alignment_fixture(&complete_profile())?;
-    let profile = alignment.receipt.output_profile.clone();
+    let presentation = presentation_fixture(&alignment.receipt.output_profile)?;
+    let profile = presentation
+        .receipt
+        .output_collection
+        .characters
+        .get("org.weave.character.ari_vale")
+        .cloned()
+        .ok_or("presentation fixture omitted Ari Vale")?;
     let template = CharacterTemplate {
         template_format_version: CHARACTER_TEMPLATE_FORMAT_VERSION,
         id: "org.weave.character.template.glasswind_wayfinder".to_owned(),
@@ -91,7 +110,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "1.0.0",
         "Ari Vale Synthetic Character",
     )?;
-    let collection = character_collection(&profile)?;
+    let collection = presentation.receipt.output_collection.clone();
     let rename_request = rename_request(&collection)?;
     let progress = resume_character_operation(&collection, &rename_request, None, 1)?.progress;
     let rename_proposal = propose_character_operation(&collection, &rename_request)?;
@@ -132,6 +151,69 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &alignment.input_profile,
         write,
     )?;
+
+    let presentation_dir = fixture.join("presentation");
+    write_pair(
+        &presentation_dir,
+        "input.character-collection",
+        &presentation.input_collection,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "glasswind.presentation-catalog",
+        &presentation.catalog,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "allocation.presentation-request",
+        &presentation.request,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "proposal.presentation-proposal",
+        &presentation.proposal,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "decisions.presentation-review",
+        &presentation.review.decisions,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "review.presentation-review",
+        &presentation.review,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "receipt.presentation-receipt",
+        &presentation.receipt,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "applied.character-collection",
+        &presentation.receipt.output_collection,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "unlock-avatar.presentation-lock-revision",
+        &presentation.lock_revision,
+        write,
+    )?;
+    write_pair(
+        &presentation_dir,
+        "unlocked.character-collection",
+        &presentation.unlocked_collection,
+        write,
+    )?;
+    write_pair(&presentation_dir, "ari_vale.character", &profile, write)?;
     write_pair(
         &alignment_dir,
         "wayfinder_compass.alignment-pack",
@@ -294,12 +376,75 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         write,
     )?;
 
+    let mut stale_presentation = serde_json::to_value(&presentation.proposal)?;
+    stale_presentation["input_sha256"] = serde_json::Value::String("0".repeat(64));
+    write_raw_json(
+        &fixture.join("invalid/stale-presentation-proposal.json"),
+        &stale_presentation,
+        write,
+    )?;
+    let mut missing_asset_request = presentation.request.clone();
+    missing_asset_request.available_asset_paths.clear();
+    write_raw_json(
+        &fixture.join("invalid/missing-presentation-asset.presentation-request.json"),
+        &missing_asset_request,
+        write,
+    )?;
+    let mut invalid_palette_catalog = presentation.catalog.clone();
+    let PresentationCatalogValue::PaletteColor { palette_slot, .. } = &mut invalid_palette_catalog
+        .entries
+        .get_mut("amber_accent")
+        .expect("checked palette entry")
+        .value
+    else {
+        return Err("presentation palette fixture changed kind".into());
+    };
+    *palette_slot = "Accent Color".to_owned();
+    write_raw_json(
+        &fixture.join("invalid/invalid-palette-slot.presentation-catalog.json"),
+        &invalid_palette_catalog,
+        write,
+    )?;
+    let mut incompatible_decisions = presentation.review.decisions.clone();
+    incompatible_decisions
+        .get_mut("org.weave.character.ari_vale")
+        .ok_or("presentation decision fixture omitted Ari Vale")?
+        .insert(
+            "avatar".to_owned(),
+            PresentationReviewDecision::Override {
+                value: PresentationCatalogValue::StyleTag {
+                    tag: "incompatible_avatar_style".to_owned(),
+                },
+                lock: LockState::Unlocked,
+                rationale: "Exercise the closed presentation value-kind boundary.".to_owned(),
+            },
+        );
+    write_raw_json(
+        &fixture.join("invalid/incompatible-presentation-override.json"),
+        &incompatible_decisions,
+        write,
+    )?;
+
     let invalid = fixture.join("invalid");
     let mut unknown_profile_version = serde_json::to_value(&profile)?;
     unknown_profile_version["profile_format_version"] = serde_json::Value::from(2);
     write_json_value(
         &invalid.join("unknown-profile-version.character.json"),
         &unknown_profile_version,
+        write,
+    )?;
+
+    let mut duplicate_alias = profile.clone();
+    duplicate_alias
+        .canon
+        .identity
+        .aliases
+        .as_mut()
+        .expect("checked aliases")
+        .value = vec!["Ari".to_owned(), "Ari".to_owned()];
+    write_raw_json(
+        &invalid.join("duplicate-alias.character.json"),
+        &duplicate_alias,
         write,
     )?;
 
@@ -481,10 +626,414 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "weave-character-alignment-receipt-v1.schema.json",
             alignment_receipt_schema()?,
         ),
+        (
+            "weave-character-presentation-catalog-v1.schema.json",
+            presentation_catalog_schema()?,
+        ),
+        (
+            "weave-character-presentation-request-v1.schema.json",
+            presentation_allocation_request_schema()?,
+        ),
+        (
+            "weave-character-presentation-proposal-v1.schema.json",
+            presentation_proposal_schema()?,
+        ),
+        (
+            "weave-character-presentation-review-v1.schema.json",
+            presentation_review_schema()?,
+        ),
+        (
+            "weave-character-presentation-receipt-v1.schema.json",
+            presentation_receipt_schema()?,
+        ),
+        (
+            "weave-character-presentation-lock-revision-v1.schema.json",
+            presentation_lock_revision_schema()?,
+        ),
     ] {
         write_or_check(&schemas.join(name), contents.as_bytes(), write)?;
     }
     Ok(())
+}
+
+struct PresentationFixture {
+    input_collection: CharacterCollection,
+    catalog: PresentationCatalog,
+    request: PresentationAllocationRequest,
+    proposal: PresentationProposal,
+    review: PresentationReview,
+    receipt: PresentationReceipt,
+    lock_revision: PresentationLockRevision,
+    unlocked_collection: CharacterCollection,
+}
+
+fn presentation_fixture(
+    base: &CharacterProfile,
+) -> Result<PresentationFixture, Box<dyn std::error::Error>> {
+    let mut authored_profile = base.clone();
+    let lineage = vec!["character_original".to_owned()];
+    let CharacterExtension::IdentityPresentation(presentation) = authored_profile
+        .extensions
+        .get_mut("org.weave.character.identity_presentation")
+        .ok_or("identity presentation fixture is absent")?
+    else {
+        return Err("identity presentation fixture changed kind".into());
+    };
+    presentation.value.identity_refs = vec!["org.weave.identity.wayfinder".to_owned()];
+    presentation.value.presentation_refs = vec![
+        "presentation/assets/ari-vale-avatar.svg".to_owned(),
+        "presentation/assets/sable-reed-avatar.svg".to_owned(),
+    ];
+    presentation.value.pronouns = Some(authored(
+        PronounSet {
+            subject: "they".to_owned(),
+            object: "them".to_owned(),
+            possessive_determiner: "their".to_owned(),
+            possessive_pronoun: "theirs".to_owned(),
+            reflexive: "themself".to_owned(),
+        },
+        &lineage,
+    ));
+    presentation.value.context_notes = BTreeMap::from([
+        (
+            "glasswind_origin".to_owned(),
+            IdentityContextNote {
+                id: "glasswind_origin".to_owned(),
+                kind: IdentityContextKind::Origin,
+                content: authored(
+                    "Raised among the synthetic Glasswind coast's public wayfinding houses."
+                        .to_owned(),
+                    &lineage,
+                ),
+            },
+        ),
+        (
+            "current_context".to_owned(),
+            IdentityContextNote {
+                id: "current_context".to_owned(),
+                kind: IdentityContextKind::Context,
+                content: authored(
+                    "Carries a folded route card for the next fictional crossing.".to_owned(),
+                    &lineage,
+                ),
+            },
+        ),
+    ]);
+    presentation.value.appearance = BTreeMap::from([(
+        "travel_layers".to_owned(),
+        AppearanceDescriptor {
+            id: "travel_layers".to_owned(),
+            category: "org.weave.appearance.clothing".to_owned(),
+            content: authored(
+                "Layered cedar-green travel cloth with a pale reflective hem.".to_owned(),
+                &lineage,
+            ),
+        },
+    )]);
+    presentation.value.palette = Some(authored(
+        PresentationPalette {
+            colors: BTreeMap::from([
+                ("accent".to_owned(), "#D6A24A".to_owned()),
+                ("background".to_owned(), "#102825".to_owned()),
+                ("foreground".to_owned(), "#D9F4E3".to_owned()),
+            ]),
+        },
+        &lineage,
+    ));
+    presentation.value.style_tags = Some(authored(
+        vec!["cedar_ink".to_owned(), "route_marks".to_owned()],
+        &lineage,
+    ));
+    presentation.value.assets = BTreeMap::from([(
+        "authored_avatar".to_owned(),
+        authored(
+            PresentationAssetReference {
+                id: "authored_avatar".to_owned(),
+                kind: PresentationAssetKind::Avatar,
+                path: "presentation/assets/ari-vale-avatar.svg".to_owned(),
+                media_type: "image/svg+xml".to_owned(),
+                sha256: None,
+                alt_text: "Geometric cedar and gold wayfinder avatar.".to_owned(),
+            },
+            &lineage,
+        ),
+    )]);
+
+    let input_collection = character_collection(&authored_profile)?;
+    let source_id = "weave_glasswind_presentation";
+    let catalog = PresentationCatalog {
+        catalog_format_version: PRESENTATION_CATALOG_FORMAT_VERSION,
+        id: "org.weave.character.presentation.glasswind".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Glasswind Presentation Catalog".to_owned(),
+        description: "Original synthetic appearance, color, style, and avatar choices for deterministic public fixture allocation.".to_owned(),
+        independently_authored: true,
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        slots: BTreeMap::from([
+            (
+                "accent_color".to_owned(),
+                presentation_slot(
+                    "accent_color",
+                    "Accent color",
+                    PresentationCatalogValueKind::PaletteColor,
+                ),
+            ),
+            (
+                "avatar".to_owned(),
+                presentation_slot(
+                    "avatar",
+                    "Avatar",
+                    PresentationCatalogValueKind::Asset,
+                ),
+            ),
+            (
+                "silhouette".to_owned(),
+                presentation_slot(
+                    "silhouette",
+                    "Silhouette",
+                    PresentationCatalogValueKind::Appearance,
+                ),
+            ),
+            (
+                "visual_tone".to_owned(),
+                presentation_slot(
+                    "visual_tone",
+                    "Visual tone",
+                    PresentationCatalogValueKind::StyleTag,
+                ),
+            ),
+        ]),
+        entries: [
+            (
+                "amber_accent",
+                "accent_color",
+                "Amber accent",
+                PresentationCatalogValue::PaletteColor {
+                    palette_slot: "accent".to_owned(),
+                    color: "#D6A24A".to_owned(),
+                },
+            ),
+            (
+                "violet_accent",
+                "accent_color",
+                "Violet accent",
+                PresentationCatalogValue::PaletteColor {
+                    palette_slot: "accent".to_owned(),
+                    color: "#7C5CFF".to_owned(),
+                },
+            ),
+            (
+                "ari_avatar",
+                "avatar",
+                "Ari avatar",
+                PresentationCatalogValue::Asset {
+                    asset: PresentationAssetReference {
+                        id: "ari_avatar".to_owned(),
+                        kind: PresentationAssetKind::Avatar,
+                        path: "presentation/assets/ari-vale-avatar.svg".to_owned(),
+                        media_type: "image/svg+xml".to_owned(),
+                        sha256: None,
+                        alt_text: "Geometric cedar and gold wayfinder avatar.".to_owned(),
+                    },
+                },
+            ),
+            (
+                "sable_avatar",
+                "avatar",
+                "Sable avatar",
+                PresentationCatalogValue::Asset {
+                    asset: PresentationAssetReference {
+                        id: "sable_avatar".to_owned(),
+                        kind: PresentationAssetKind::Avatar,
+                        path: "presentation/assets/sable-reed-avatar.svg".to_owned(),
+                        media_type: "image/svg+xml".to_owned(),
+                        sha256: None,
+                        alt_text: "Geometric blue and silver routekeeper avatar.".to_owned(),
+                    },
+                },
+            ),
+            (
+                "long_coat",
+                "silhouette",
+                "Long coat",
+                PresentationCatalogValue::Appearance {
+                    category: "org.weave.appearance.silhouette".to_owned(),
+                    descriptor: "Long layered travel coat with a narrow shoulder line.".to_owned(),
+                },
+            ),
+            (
+                "short_cape",
+                "silhouette",
+                "Short cape",
+                PresentationCatalogValue::Appearance {
+                    category: "org.weave.appearance.silhouette".to_owned(),
+                    descriptor: "Short route cape over a compact travel silhouette.".to_owned(),
+                },
+            ),
+            (
+                "cedar_ink",
+                "visual_tone",
+                "Cedar ink",
+                PresentationCatalogValue::StyleTag {
+                    tag: "cedar_ink".to_owned(),
+                },
+            ),
+            (
+                "river_glass",
+                "visual_tone",
+                "River glass",
+                PresentationCatalogValue::StyleTag {
+                    tag: "river_glass".to_owned(),
+                },
+            ),
+        ]
+        .into_iter()
+        .map(|(id, slot_id, label, value)| {
+            (
+                id.to_owned(),
+                PresentationCatalogEntry {
+                    id: id.to_owned(),
+                    slot_id: slot_id.to_owned(),
+                    label: label.to_owned(),
+                    value,
+                    eligible_character_ids: Vec::new(),
+                    eligible_id_prefixes: vec!["org.weave.character".to_owned()],
+                    excluded_character_ids: Vec::new(),
+                    capacity: Some(1),
+                },
+            )
+        })
+        .collect(),
+        provenance: Provenance {
+            sources: vec![ProvenanceSource {
+                id: source_id.to_owned(),
+                kind: ProvenanceKind::Original,
+                url: "https://github.com/chrisgliddon/weave".to_owned(),
+                revision: "glasswind-presentation-v1".to_owned(),
+                sha256: None,
+                license: "MIT".to_owned(),
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE"
+                    .to_owned(),
+                attribution: "Original synthetic Glasswind presentation catalog and vector assets."
+                    .to_owned(),
+                modified: false,
+            }],
+            transformations: Vec::new(),
+            claims: BTreeMap::from([
+                ("assets".to_owned(), vec![source_id.to_owned()]),
+                ("entries".to_owned(), vec![source_id.to_owned()]),
+                ("slots".to_owned(), vec![source_id.to_owned()]),
+            ]),
+        },
+    };
+    let request = PresentationAllocationRequest {
+        request_format_version: PRESENTATION_ALLOCATION_REQUEST_FORMAT_VERSION,
+        id: "org.weave.character.presentation.glasswind_allocation".to_owned(),
+        expected_input_sha256: collection_fingerprint(&input_collection)?,
+        catalog: presentation_catalog_ref(&catalog)?,
+        seed: 20_260_822,
+        character_ids: input_collection.characters.keys().cloned().collect(),
+        slot_ids: vec![
+            "accent_color".to_owned(),
+            "avatar".to_owned(),
+            "silhouette".to_owned(),
+            "visual_tone".to_owned(),
+        ],
+        mode: PresentationAllocationMode::FillMissing,
+        available_asset_paths: vec![
+            "presentation/assets/ari-vale-avatar.svg".to_owned(),
+            "presentation/assets/sable-reed-avatar.svg".to_owned(),
+        ],
+    };
+    let proposal = propose_presentation_allocations(&input_collection, &catalog, &request)?;
+    let decisions = proposal
+        .allocations
+        .iter()
+        .map(|(character_id, slots)| {
+            (
+                character_id.clone(),
+                slots
+                    .iter()
+                    .filter(|(_, allocation)| {
+                        allocation.disposition
+                            == weave_character::PresentationAllocationDisposition::Proposed
+                    })
+                    .map(|(slot_id, _)| {
+                        let decision = if character_id == "org.weave.character.sable_reed"
+                            && slot_id == "accent_color"
+                        {
+                            PresentationReviewDecision::Override {
+                                value: PresentationCatalogValue::PaletteColor {
+                                    palette_slot: "accent".to_owned(),
+                                    color: "#7C5CFF".to_owned(),
+                                },
+                                lock: LockState::Locked,
+                                rationale: "Use the explicitly authored violet accent while preserving the balanced proposal in the receipt.".to_owned(),
+                            }
+                        } else {
+                            PresentationReviewDecision::Accept {
+                                lock: if character_id == "org.weave.character.ari_vale"
+                                    && slot_id == "avatar"
+                                {
+                                    LockState::Locked
+                                } else {
+                                    LockState::Unlocked
+                                },
+                                rationale: None,
+                            }
+                        };
+                        (slot_id.clone(), decision)
+                    })
+                    .collect(),
+            )
+        })
+        .collect();
+    let review = review_presentation_proposal(
+        &proposal,
+        "org.weave.reviewer.presentation_fixture",
+        "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+        decisions,
+    )?;
+    let receipt = apply_presentation_review(&input_collection, &proposal, &review)?;
+    let lock_revision = PresentationLockRevision {
+        revision_format_version: PRESENTATION_LOCK_REVISION_FORMAT_VERSION,
+        id: "org.weave.character.presentation.unlock_ari_avatar".to_owned(),
+        expected_input_sha256: collection_fingerprint(&receipt.output_collection)?,
+        targets: vec![PresentationLockTarget {
+            character_id: "org.weave.character.ari_vale".to_owned(),
+            slot_id: "avatar".to_owned(),
+        }],
+        lock: LockState::Unlocked,
+        rationale: "Unlock the reviewed synthetic avatar assignment for a later rebalance."
+            .to_owned(),
+        provenance: catalog.provenance.clone(),
+    };
+    let unlocked_collection =
+        apply_presentation_lock_revision(&receipt.output_collection, &lock_revision)?;
+    Ok(PresentationFixture {
+        input_collection,
+        catalog,
+        request,
+        proposal,
+        review,
+        receipt,
+        lock_revision,
+        unlocked_collection,
+    })
+}
+
+fn presentation_slot(
+    id: &str,
+    label: &str,
+    value_kind: PresentationCatalogValueKind,
+) -> PresentationCatalogSlot {
+    PresentationCatalogSlot {
+        id: id.to_owned(),
+        label: label.to_owned(),
+        description: format!("Original synthetic {label} presentation slot."),
+        value_kind,
+    }
 }
 
 struct AlignmentFixture {
@@ -1737,6 +2286,7 @@ fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
                         "assets/avatars/ari_vale.png".to_owned(),
                         "assets/palettes/cedar_snow.json".to_owned(),
                     ],
+                    ..IdentityPresentation::default()
                 },
             }),
         ),

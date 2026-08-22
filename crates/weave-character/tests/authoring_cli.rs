@@ -2,6 +2,12 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use tempfile::tempdir;
+use weave_character::{
+    CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, CharacterOverlay,
+    CharacterTemplate, CharacterTemplateRef, PresentationReceipt, apply_authoring_revision,
+    create_authoring_draft, new_authoring_workspace, presentation_authoring_revision,
+    template_fingerprint,
+};
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -251,4 +257,85 @@ fn text_authoring_rejects_invalid_source_before_persistence() {
             "invalid fixture unexpectedly passed"
         );
     }
+}
+
+#[test]
+fn presentation_receipt_revision_matches_library_and_text_authoring_bytes() {
+    let temporary = tempdir().unwrap();
+    let receipt_path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "../../examples/domain-modules/weave-character/presentation/receipt.presentation-receipt.json",
+    );
+    let receipt = PresentationReceipt::from_json(
+        &std::fs::read_to_string(&receipt_path).expect("checked presentation receipt"),
+    )
+    .unwrap();
+    let character_id = "org.weave.character.ari_vale";
+    let profile = receipt.proposal.input_collection.characters[character_id].clone();
+    let template = CharacterTemplate {
+        template_format_version: CHARACTER_TEMPLATE_FORMAT_VERSION,
+        id: "org.weave.character.template.presentation_cli".to_owned(),
+        version: "1.0.0".to_owned(),
+        profile: profile.clone(),
+    };
+    let overlay = CharacterOverlay {
+        overlay_format_version: CHARACTER_OVERLAY_FORMAT_VERSION,
+        id: "org.weave.character.overlay.presentation_cli".to_owned(),
+        character_id: character_id.to_owned(),
+        template: Some(CharacterTemplateRef {
+            id: template.id.clone(),
+            version: template.version.clone(),
+            sha256: template_fingerprint(&template).unwrap(),
+        }),
+        operations: Vec::new(),
+        provenance: profile.provenance.clone(),
+    };
+    let workspace = new_authoring_workspace(
+        "org.weave.character.authoring.presentation_cli",
+        profile.provenance.clone(),
+    )
+    .and_then(|workspace| create_authoring_draft(&workspace, Some(template), overlay))
+    .unwrap();
+    let workspace_path = temporary.path().join("workspace.json");
+    std::fs::write(&workspace_path, workspace.to_json().unwrap()).unwrap();
+
+    let revision_id = "org.weave.character.revision.presentation_cli";
+    let rationale = "Adopt the complete reviewed presentation allocation.";
+    let expected_revision = presentation_authoring_revision(
+        &workspace.drafts[character_id],
+        revision_id,
+        rationale,
+        receipt,
+    )
+    .unwrap();
+    let revision_path = temporary.path().join("revision.json");
+    run(&[
+        "presentation-revision",
+        workspace_path.to_str().unwrap(),
+        character_id,
+        receipt_path.to_str().unwrap(),
+        "--id",
+        revision_id,
+        "--rationale",
+        rationale,
+        "--output",
+        revision_path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        std::fs::read_to_string(&revision_path).unwrap(),
+        expected_revision.to_json().unwrap()
+    );
+
+    let expected_workspace = apply_authoring_revision(&workspace, &expected_revision).unwrap();
+    let revised_path = temporary.path().join("revised.json");
+    run(&[
+        "authoring-revise",
+        workspace_path.to_str().unwrap(),
+        revision_path.to_str().unwrap(),
+        "--output",
+        revised_path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        std::fs::read_to_string(revised_path).unwrap(),
+        expected_workspace.to_json().unwrap()
+    );
 }

@@ -10,6 +10,8 @@ Explainable alignment views have separate generated schemas for the [declarative
 
 Guided authoring adds generated schemas for the [workspace](downloads/weave-character-authoring-workspace-v1.schema.json), [revision](downloads/weave-character-authoring-revision-v1.schema.json), [pre-apply preview](downloads/weave-character-authoring-preview-v1.schema.json), [original questionnaire pack](downloads/weave-character-questionnaire-pack-v1.schema.json), [answers](downloads/weave-character-questionnaire-answers-v1.schema.json), [proposal](downloads/weave-character-questionnaire-proposal-v1.schema.json), [review](downloads/weave-character-questionnaire-review-v1.schema.json), [receipt](downloads/weave-character-questionnaire-receipt-v1.schema.json), and [final review](downloads/weave-character-final-review-v1.schema.json).
 
+Typed presentation authoring has generated schemas for the immutable [catalog](downloads/weave-character-presentation-catalog-v1.schema.json), exact [allocation request](downloads/weave-character-presentation-request-v1.schema.json), transparent [proposal](downloads/weave-character-presentation-proposal-v1.schema.json), complete [review](downloads/weave-character-presentation-review-v1.schema.json), replayable [receipt](downloads/weave-character-presentation-receipt-v1.schema.json), and portable [lock revision](downloads/weave-character-presentation-lock-revision-v1.schema.json).
+
 ## Trust and data boundaries
 
 A `CharacterProfile` has four deliberately separate layers:
@@ -167,6 +169,64 @@ Every extension header declares a namespace, positive version, authority, ration
 
 Extension payloads use bounded, finite `DomainValue` trees. Asset paths are project-relative and reject absolute paths, empty segments, dot segments, traversal, and backslashes. Relationship targets, role taxonomies, expression references, and alignment views remain namespaced and independently inspectable.
 
+## Typed identity and presentation authoring
+
+Stable character id, display name, and aliases remain explicit canon. The optional `org.weave.character.identity_presentation` extension holds attributed pronouns; authored `origin` or `context` notes; namespaced appearance descriptors; a named palette; sorted style tags; portable avatar, portrait, sprite, model, or illustration references; and reviewed catalog assignments. Pronoun forms are free authored text rather than a closed identity taxonomy. Every asset uses a safe project-relative path, declared media type, accessible alternative text, and optional SHA-256. Palette values use canonical uppercase `#RRGGBB` or `#RRGGBBAA` sRGB notation.
+
+The same sparse operation vocabulary is serialized in JSON and RON, used by source tooling, and called directly by the editor and CLI. It includes `set_pronouns`, `upsert_identity_context_note`, `upsert_appearance_descriptor`, `set_presentation_palette`, `set_presentation_style_tags`, `upsert_presentation_asset`, and their clear/remove counterparts. Catalog application adds `upsert_presentation_assignment` operations containing the exact catalog id, semantic version, SHA-256, entry, value, proposal hash, review hash, attribution state, and lock. A blank character has no template and only the explicitly authored operations; a template-backed or cloned character retains the immutable template separately and stores only its chosen overrides.
+
+Every inspected effective field has one explicit `origin_kind`:
+
+| Origin | Meaning |
+|---|---|
+| `template` | The value is inherited from the exact original template coordinate |
+| `authored_override` | A sparse author/editor/source operation replaces or adds the value |
+| `accepted_suggestion` | A validated questionnaire or presentation receipt supplied the reviewed value |
+| `template_migration` | The value is inherited from a later explicitly reviewed template release |
+
+Template migration records the prior and new id/version/SHA-256 coordinates, applied draft revision, reviewer, and rationale. Preview rebases a clone, reports the effective field diff and stale downstream views, and retains every sparse override. It never edits the prior template, mutates the workspace, or silently replaces an override.
+
+### Deterministic presentation catalogs
+
+A `PresentationCatalog` is immutable, data-only, independently authored, and licensed under MIT, Apache-2.0, or CC0-1.0 with machine-readable provenance. It declares closed slot value kinds (`appearance`, `palette_color`, `style_tag`, or `asset`), entries, exact eligible character ids and/or stable id prefixes, explicit exclusions, and optional capacities. Eligibility never examines the profile. In particular, the allocator cannot read or modify personality evidence, alignment, birth context, ruleset state, protected identity characteristics, display name, aliases, pronouns, or context prose.
+
+An allocation request pins the input collection SHA-256, catalog id/version/SHA-256, finite sorted character and slot ids, available asset paths, seed, and mode. `fill_missing` retains every existing assignment. `rebalance` reconsiders only reviewed, unlocked assignments; locked assignments and authored or overridden values are retained. For each open slot the allocator filters declared eligibility/exclusion, available asset inventory, and capacity, chooses among the least-used entries, and uses a SHA-256 of the pinned seed and exact coordinates only as a deterministic tie-break. The proposal exposes every candidate's eligibility, exclusion, prior usage, capacity, capacity availability, seed hash, and selected flag, plus the resulting distribution.
+
+Every proposed character/slot pair requires one `accept`, `edit`, `override`, `reject`, or `withhold` decision. An edit must name another eligible, compatible entry in the same catalog. An override must use the slot's closed value kind and records author rationale without pretending to be a catalog entry. Apply independently reproduces the proposal and review, generates sparse operations, and verifies that canon, derived personality, suggestions, and every other extension are byte-semantically unchanged before returning an atomic collection receipt. Propose and review are always dry-runs. `presentation-apply --dry-run` writes the exact reproducible receipt but never a collection; `presentation-lock --dry-run` writes nothing. Lock and unlock revisions pin the current collection hash and exact character/slot targets. A later rebalance cannot move a lock.
+
+Validation fails before application with a stable diagnostic path and redaction-safe message for a missing catalog asset, invalid or duplicate palette slot, noncanonical color, duplicate alias, broken template coordinate, stale input, incomplete review, ineligible edit, incompatible override kind, unsafe asset path, duplicate operation target, or lower-precedence/locked replacement. No rejected value is echoed in the diagnostic.
+
+### Presentation CLI workflow
+
+The checked [Glasswind presentation corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/presentation) is original MIT-licensed synthetic material. Its two SVG avatars, catalog prose, appearance descriptors, palette, style tags, names, decisions, and expected outputs were authored for Weave. These commands reproduce its JSON proposal, review, receipt, and applied collection exactly; using the paired RON inputs with `--format ron` reproduces the RON artifacts.
+
+```bash
+cargo run -p weave-character -- presentation-propose \
+  examples/domain-modules/weave-character/presentation/input.character-collection.json \
+  examples/domain-modules/weave-character/presentation/glasswind.presentation-catalog.json \
+  examples/domain-modules/weave-character/presentation/allocation.presentation-request.json \
+  --output target/proposal.presentation-proposal.json
+
+cargo run -p weave-character -- presentation-review \
+  target/proposal.presentation-proposal.json \
+  examples/domain-modules/weave-character/presentation/decisions.presentation-review.json \
+  --reviewer org.weave.reviewer.presentation_fixture \
+  --rationale "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale." \
+  --output target/review.presentation-review.json
+
+cargo run -p weave-character -- presentation-apply \
+  examples/domain-modules/weave-character/presentation/input.character-collection.json \
+  target/proposal.presentation-proposal.json \
+  target/review.presentation-review.json \
+  --receipt-output target/receipt.presentation-receipt.json \
+  --collection-output target/applied.character-collection.json
+
+cargo run -p weave-character -- presentation-lock \
+  examples/domain-modules/weave-character/presentation/applied.character-collection.json \
+  examples/domain-modules/weave-character/presentation/unlock-avatar.presentation-lock-revision.json \
+  --dry-run
+```
+
 ## Templates, overlays, and deterministic synthesis
 
 A `CharacterTemplate` is an immutable, semantically versioned input containing one valid profile. A `CharacterOverlay` contains an optional exact template reference, the final character id, independent provenance, and sparse typed operations. The full `CharacterSynthesisResult` retains the template and overlay separately, the effective profile, and a field-origin map.
@@ -212,17 +272,19 @@ Every editor control has one persisted source representation:
 | Imported profile field | The same canonical action with `state: imported` | Import mode cannot masquerade as authored input |
 | Behavior questionnaire | Pack + answers + immutable proposal | Suggestions only; no canonical mutation |
 | Confidence/conflict review | Complete questionnaire review | Every facet and triggered conflict is decided |
+| Identity presentation | Sparse typed presentation operations or one reviewed catalog receipt | Cannot read or write personality, alignment, birth, ruleset, or protected identity data |
 | Derived OCEAN | `CharacterProfile.derived.ocean` | Read-only, lossy, visually marked `derived` |
 | Alignment and date context | Existing independently reproducible receipts | Only the receipt-owned extension may change |
 | Inner life and voice | `upsert_inner_life` / `upsert_voice` | Canonical attributed prose |
 | Final review | `CharacterFinalReview` | Exact profile hash, summary, and unresolved diagnostics |
 
-The ordinary revision vocabulary deliberately excludes suggestions and extensions. Unknown fields
-fail strict deserialization; placeholder strings such as `<unknown>` fail validation; broken
-template references fail synthesis; and direct attempts to change derived or pack-owned data return
-`C109` before the candidate workspace exists. Alignment and historical context enter a draft only
-through their complete existing receipts, which are independently reproduced and checked to have
-changed only their owned extension and provenance.
+The ordinary revision vocabulary deliberately excludes suggestions, derived fields, and every
+extension except the author-editable identity-presentation fields above. Unknown fields fail strict
+deserialization; placeholder strings such as `<unknown>` fail validation; broken template
+references fail synthesis; and direct attempts to change derived or pack-owned data return `C109`
+before the candidate workspace exists. Presentation catalogs, alignment, and historical context
+enter a draft only through complete existing receipts, which are independently reproduced and
+checked to have changed only their owned extension and provenance.
 
 ### Original narrative questionnaires
 
@@ -278,7 +340,7 @@ invalidation. If accepted date context exists, a birth or personality change cre
 `date_context_review` invalidation. Those records remain until a fresh exact reviewed receipt is
 adopted. Any edit clears the old final review.
 
-The final review includes stable identity and birth data, every present canonical factor/facet,
+The final review includes stable identity and typed presentation, birth data, every present canonical factor/facet,
 the explicitly derived OCEAN display, approved alignment, accepted date context, inner-life and
 voice records, complete provenance, and stable unresolved diagnostics. `accepted` is invalid while
 any blocking diagnostic remains; `needs_changes` preserves the complete summary. Reviewed export
@@ -289,7 +351,9 @@ requires an accepted final review by default.
 The `weave-character` binary exposes the editor-equivalent verbs `authoring-create`,
 `authoring-list`, `authoring-show`, `authoring-clone`, `authoring-preview`, `authoring-revise`,
 `authoring-validate`, `authoring-review`, `authoring-export`, and `authoring-reopen`. Questionnaire
-propose/review/apply commands produce the same bytes as the Rust/editor functions. Mutating commands
+and presentation propose/review/apply commands produce the same bytes as the Rust/editor functions;
+`presentation-revision` converts a reviewed collection receipt into the exact sparse authoring
+revision for one matching draft. Mutating commands
 validate the complete candidate and use a same-directory atomic replacement.
 
 ```bash
@@ -304,9 +368,10 @@ cargo run -p weave-character -- authoring-revise \
   --output target/lumen.authoring-workspace.json
 ```
 
-The checked JSON/RON corpus covers blank and template creation, clone safety, direct/picker and
-questionnaire convergence, revision, derived invalidation, blocking alignment invalidation,
-template migration, final accept/needs-changes review, export, and reopen.
+The checked JSON/RON corpus covers blank and template creation, clone safety, direct/picker,
+questionnaire, and presentation convergence, revision, derived invalidation, blocking alignment
+invalidation, template migration with retained overrides, final accept/needs-changes review,
+export, and reopen.
 
 ## Collections and reviewed corpus operations
 
@@ -352,6 +417,7 @@ The checked Ari Vale profile also passes through the ordinary domain-module boun
 The runtime projection retains:
 
 - the stable character id, attributed display name, and aliases;
+- optional attributed pronouns, origin/context notes, appearance descriptors, palette slots, style tags, portable assets, and reviewed catalog coordinates with `canonical_personality_write_back: false`;
 - all six factor summaries and all 24 facets with input form, normalized projection score, confidence, state, review, lock, freshness, rationale, and lineage;
 - the exact OCEAN algorithm, input paths, scores, confidence, `lossy: true`, `independent_evidence: false`, and omitted Honesty-Humility marker; and
 - optional approved alignment shorthand with exact pack, review, application, coverage, decision, explanation, and canonical input-path records, `canonical_personality_write_back: false`, and no rejected/withheld values;
@@ -360,14 +426,14 @@ The runtime projection retains:
 
 `projection_score` is the exact normalized score for a `score` input and only the documented compatibility anchor for a retained band input. It never replaces the original profile measurement. Missing factor or facet evidence remains an absent optional path.
 
-The manifest declares `profile.hexaco`, `profile.ocean`, `profile.alignment`, `profile.date_context`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality evidence in the profile artifact, run the validator/projector, and receive a pack whose OCEAN view was recomputed before compilation. A story or editor may still author permitted presentation-facing fields such as the attributed display-name value; that override remains separate in Story IR and cannot change the stable character id.
+The manifest declares `profile.hexaco`, `profile.ocean`, `profile.alignment`, `profile.date_context`, `profile.presentation`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality or presentation evidence in the profile artifact, run the validator/projector, and receive a pack whose OCEAN view was recomputed before compilation. A story may still author a permitted attributed display-name value; that source override remains separate in Story IR and cannot change the stable character id or any reviewed presentation record.
 
-[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) selects the reviewed Character domain pack through ordinary module syntax, then reads the exact alignment pack id, version, hash, typed factor/facet, OCEAN, and approved alignment paths. Raw alignment-pack selection and review occur at the authoring boundary in the shared Character CLI/editor workflow; source selects only the resulting reviewed Character pack, so an unreviewed proposal cannot enter narrative logic. The story compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). The separate [reviewed temporal story](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave) exercises the temporal projection. Adjacent `weave.modules.json` and `weave.lock` files make both builds deterministic and offline. The editor exposes alignment pack/config selection, values, exact “why” traces, review/override, dry-run, atomic apply, stale detection, and refresh alongside the temporal workflow. The finite Bevy consumer loads approved alignment and temporal RON projections into ECS resources, while the PixiJS consumer decodes the JSON projections, excludes rejected/withheld axes, verifies both forbidden write-back markers, and preserves the Apollo 11 fact/cue lineage split without an editor dependency.
+[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) selects the reviewed Character domain pack through ordinary module syntax, then reads typed pronoun, palette, asset, catalog, alignment, factor/facet, and OCEAN paths. Raw presentation/alignment selection and review occur at the authoring boundary in the shared Character CLI/editor workflow; source selects only the resulting reviewed Character pack, so an unreviewed proposal cannot enter narrative logic. The story compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). The separate [reviewed temporal story](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave) exercises the temporal projection. Adjacent `weave.modules.json` and `weave.lock` files make both builds deterministic and offline. The editor exposes presentation catalog constraints, balance traces, review/override, locks, rebalance, dry-run, atomic apply, stale detection, and refresh alongside alignment and temporal workflows. The finite Bevy consumer loads presentation, approved alignment, and temporal RON projections into ECS resources, while the PixiJS consumer decodes the same JSON projections, excludes rejected/withheld axes, verifies all forbidden write-back markers, and preserves the Apollo 11 fact/cue lineage split without an editor dependency.
 
 ```weave
 module character {
     id: "org.weave.character"
-    version: "=1.2.0"
+    version: "=1.3.0"
     pack: "ari_vale@=1.0.0"
 }
 
@@ -377,11 +443,14 @@ VAR alignment_pack = character.profile.alignment.pack.id
 VAR alignment_pack_version = character.profile.alignment.pack.version
 VAR alignment_pack_sha256 = character.profile.alignment.pack.sha256
 VAR alignment_horizon = character.profile.alignment.values.horizon.label
+VAR presentation_subject = character.profile.presentation.pronouns.subject
+VAR presentation_accent = character.profile.presentation.palette.colors.accent
+VAR presentation_avatar = character.profile.presentation.assets.authored_avatar.path
 ```
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The collection fixtures add Sable Reed, a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, conflicting overlays, stale input/review/progress/alignment/temporal lineage, incomplete alignment/temporal reviews, a malformed proposal, a bad relationship, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal lineage, incomplete alignment/temporal reviews, a malformed proposal, a bad relationship, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
@@ -491,4 +560,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale-temporal.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, synthesis, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally reproduces alignment and temporal proposal/review/receipt bytes, checks both dry-run boundaries, verifies approved-only Story IR, recompiles both locked stories, and tests both engine consumers.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generator rebuilds all valid, invalid, schema, template, overlay, synthesis, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally reproduces presentation, alignment, and temporal proposal/review/receipt bytes, checks their dry-run and lock boundaries, verifies approved-only Story IR, recompiles both locked stories, and tests both engine consumers.

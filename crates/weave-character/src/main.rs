@@ -15,11 +15,13 @@ use weave_character::{
     CharacterQuestionnaireFacetDecision, CharacterQuestionnairePack,
     CharacterQuestionnaireProposal, CharacterQuestionnaireReceipt, CharacterQuestionnaireReview,
     CharacterReviewDecision, CharacterScope, CharacterSynthesisResult, CharacterTemplate,
-    HexacoTrait, TemporalContextConfig, TemporalContextPack, TemporalContextProposal,
-    TemporalContextReceipt, TemporalContextReview, TemporalReviewDecision, alignment_config_schema,
-    alignment_pack_schema, alignment_profile_fingerprint, alignment_proposal_schema,
-    alignment_receipt_schema, alignment_review_schema, apply_authoring_revision,
-    apply_character_questionnaire_review, apply_reviewed_alignment,
+    HexacoTrait, PresentationAllocationRequest, PresentationCatalog, PresentationLockRevision,
+    PresentationProposal, PresentationReceipt, PresentationReview, PresentationReviewDecision,
+    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextReceipt,
+    TemporalContextReview, TemporalReviewDecision, alignment_config_schema, alignment_pack_schema,
+    alignment_profile_fingerprint, alignment_proposal_schema, alignment_receipt_schema,
+    alignment_review_schema, apply_authoring_revision, apply_character_questionnaire_review,
+    apply_presentation_lock_revision, apply_presentation_review, apply_reviewed_alignment,
     apply_reviewed_character_proposal, apply_reviewed_temporal_context,
     character_authoring_preview_schema, character_authoring_revision_schema,
     character_authoring_workspace_schema, character_collection_schema, character_diagnostic_schema,
@@ -32,11 +34,14 @@ use weave_character::{
     clone_authoring_draft, collection_fingerprint, create_alignment_review, create_authoring_draft,
     create_character_questionnaire_review, create_temporal_context_review,
     export_authoring_profile, list_authoring_drafts, list_characters, new_authoring_workspace,
-    preview_authoring_revision, propose_alignment, propose_character_operation,
-    propose_character_questionnaire, propose_temporal_context, questionnaire_authoring_revision,
+    presentation_allocation_request_schema, presentation_authoring_revision,
+    presentation_catalog_schema, presentation_lock_revision_schema, presentation_proposal_schema,
+    presentation_receipt_schema, presentation_review_schema, preview_authoring_revision,
+    propose_alignment, propose_character_operation, propose_character_questionnaire,
+    propose_presentation_allocations, propose_temporal_context, questionnaire_authoring_revision,
     resume_character_operation, review_authoring_draft, review_character_proposal,
-    show_authoring_draft, show_character, synthesize_character, temporal_context_config_schema,
-    temporal_context_pack_schema, temporal_context_proposal_schema,
+    review_presentation_proposal, show_authoring_draft, show_character, synthesize_character,
+    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
     temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
 };
 
@@ -367,6 +372,71 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Produce a balanced deterministic presentation-catalog dry-run.
+    PresentationPropose {
+        collection: PathBuf,
+        catalog: PathBuf,
+        request: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create a complete per-allocation review from a decision map.
+    PresentationReview {
+        proposal: PathBuf,
+        decisions: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Replay a reviewed proposal and atomically apply its output collection.
+    PresentationApply {
+        collection: PathBuf,
+        proposal: PathBuf,
+        review: PathBuf,
+        /// Produce the exact receipt without changing the collection file.
+        #[arg(long)]
+        dry_run: bool,
+        /// Receipt destination, always written after successful replay.
+        #[arg(long)]
+        receipt_output: PathBuf,
+        /// Collection destination; defaults to atomically replacing the input.
+        #[arg(long)]
+        collection_output: Option<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
+    /// Deterministically lock or unlock exact presentation assignments.
+    PresentationLock {
+        collection: PathBuf,
+        revision: PathBuf,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        output: Option<PathBuf>,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+    },
+    /// Convert one reviewed presentation receipt into sparse authoring revision source.
+    PresentationRevision {
+        workspace: PathBuf,
+        draft_id: String,
+        receipt: PathBuf,
+        #[arg(long)]
+        id: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Score one exact original narrative-questionnaire pack.
     QuestionnairePropose {
         profile: PathBuf,
@@ -443,6 +513,12 @@ enum DocumentKind {
     AuthoringWorkspace,
     AuthoringRevision,
     AuthoringPreview,
+    PresentationCatalog,
+    PresentationRequest,
+    PresentationProposal,
+    PresentationReview,
+    PresentationReceipt,
+    PresentationLockRevision,
     QuestionnairePack,
     QuestionnaireAnswers,
     QuestionnaireProposal,
@@ -503,6 +579,12 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::AuthoringWorkspace => character_authoring_workspace_schema()?,
                 DocumentKind::AuthoringRevision => character_authoring_revision_schema()?,
                 DocumentKind::AuthoringPreview => character_authoring_preview_schema()?,
+                DocumentKind::PresentationCatalog => presentation_catalog_schema()?,
+                DocumentKind::PresentationRequest => presentation_allocation_request_schema()?,
+                DocumentKind::PresentationProposal => presentation_proposal_schema()?,
+                DocumentKind::PresentationReview => presentation_review_schema()?,
+                DocumentKind::PresentationReceipt => presentation_receipt_schema()?,
+                DocumentKind::PresentationLockRevision => presentation_lock_revision_schema()?,
                 DocumentKind::QuestionnairePack => character_questionnaire_pack_schema()?,
                 DocumentKind::QuestionnaireAnswers => character_questionnaire_answers_schema()?,
                 DocumentKind::QuestionnaireProposal => character_questionnaire_proposal_schema()?,
@@ -588,6 +670,24 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                         "authoring previews are generated receipts without a standalone state validator"
                             .into(),
                     );
+                }
+                DocumentKind::PresentationCatalog => {
+                    parse_presentation_catalog(&input, &source)?;
+                }
+                DocumentKind::PresentationRequest => {
+                    parse_presentation_request(&input, &source)?;
+                }
+                DocumentKind::PresentationProposal => {
+                    parse_presentation_proposal(&input, &source)?;
+                }
+                DocumentKind::PresentationReview => {
+                    parse_presentation_review(&input, &source)?;
+                }
+                DocumentKind::PresentationReceipt => {
+                    parse_presentation_receipt(&input, &source)?;
+                }
+                DocumentKind::PresentationLockRevision => {
+                    parse_presentation_lock_revision(&input, &source)?;
                 }
                 DocumentKind::QuestionnairePack => {
                     parse_questionnaire_pack(&input, &source)?;
@@ -1135,6 +1235,125 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 output.display()
             );
         }
+        Command::PresentationPropose {
+            collection,
+            catalog,
+            request,
+            format,
+            output,
+        } => {
+            let collection = parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let catalog = parse_presentation_catalog(&catalog, &fs::read_to_string(&catalog)?)?;
+            let request = parse_presentation_request(&request, &fs::read_to_string(&request)?)?;
+            let proposal = propose_presentation_allocations(&collection, &catalog, &request)?;
+            let serialized = match format {
+                OutputFormat::Json => proposal.to_json()?,
+                OutputFormat::Ron => proposal.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character presentation proposal {}", output.display());
+        }
+        Command::PresentationReview {
+            proposal,
+            decisions,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal = parse_presentation_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let decisions = read_presentation_decisions(&decisions)?;
+            let review = review_presentation_proposal(&proposal, reviewer, rationale, decisions)?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character presentation review {}", output.display());
+        }
+        Command::PresentationApply {
+            collection,
+            proposal,
+            review,
+            dry_run,
+            receipt_output,
+            collection_output,
+            format,
+        } => {
+            let collection_value =
+                parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let proposal = parse_presentation_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let review = parse_presentation_review(&review, &fs::read_to_string(&review)?)?;
+            let receipt = apply_presentation_review(&collection_value, &proposal, &review)?;
+            let serialized_receipt = match format {
+                OutputFormat::Json => receipt.to_json()?,
+                OutputFormat::Ron => receipt.to_ron()?,
+            };
+            atomic_write(&receipt_output, serialized_receipt.as_bytes())?;
+            if !dry_run {
+                let destination = collection_output.as_deref().unwrap_or(&collection);
+                let collection_format = collection_output
+                    .as_deref()
+                    .map_or_else(|| output_format_for(destination), output_format_for);
+                let serialized_collection = match collection_format {
+                    OutputFormat::Json => receipt.output_collection.to_json()?,
+                    OutputFormat::Ron => receipt.output_collection.to_ron()?,
+                };
+                atomic_write(destination, serialized_collection.as_bytes())?;
+            }
+            println!(
+                "replayed Character presentation receipt {}",
+                receipt_output.display()
+            );
+        }
+        Command::PresentationLock {
+            collection,
+            revision,
+            dry_run,
+            output,
+            format,
+        } => {
+            let collection_value =
+                parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let revision =
+                parse_presentation_lock_revision(&revision, &fs::read_to_string(&revision)?)?;
+            let candidate = apply_presentation_lock_revision(&collection_value, &revision)?;
+            if !dry_run {
+                let destination = output.as_deref().unwrap_or(&collection);
+                let format = format.unwrap_or_else(|| output_format_for(destination));
+                let serialized = match format {
+                    OutputFormat::Json => candidate.to_json()?,
+                    OutputFormat::Ron => candidate.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!(
+                    "applied Character presentation lock revision {}",
+                    destination.display()
+                );
+            } else {
+                println!("validated Character presentation lock revision dry-run");
+            }
+        }
+        Command::PresentationRevision {
+            workspace,
+            draft_id,
+            receipt,
+            id,
+            rationale,
+            format,
+            output,
+        } => {
+            let workspace = read_authoring_workspace(&workspace)?;
+            let draft = show_authoring_draft(&workspace, &draft_id)?;
+            let receipt = parse_presentation_receipt(&receipt, &fs::read_to_string(&receipt)?)?;
+            let revision = presentation_authoring_revision(draft, id, rationale, receipt)?;
+            let serialized = match format {
+                OutputFormat::Json => revision.to_json()?,
+                OutputFormat::Ron => revision.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote presentation authoring revision {}", output.display());
+        }
         Command::QuestionnairePropose {
             profile,
             pack,
@@ -1470,6 +1689,72 @@ fn parse_questionnaire_pack(
     }
 }
 
+fn parse_presentation_catalog(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationCatalog, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationCatalog::from_ron(source)
+    } else {
+        PresentationCatalog::from_json(source)
+    }
+}
+
+fn parse_presentation_request(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationAllocationRequest, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationAllocationRequest::from_ron(source)
+    } else {
+        PresentationAllocationRequest::from_json(source)
+    }
+}
+
+fn parse_presentation_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationProposal, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationProposal::from_ron(source)
+    } else {
+        PresentationProposal::from_json(source)
+    }
+}
+
+fn parse_presentation_review(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationReview, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationReview::from_ron(source)
+    } else {
+        PresentationReview::from_json(source)
+    }
+}
+
+fn parse_presentation_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationReceipt, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationReceipt::from_ron(source)
+    } else {
+        PresentationReceipt::from_json(source)
+    }
+}
+
+fn parse_presentation_lock_revision(
+    path: &Path,
+    source: &str,
+) -> Result<PresentationLockRevision, weave_character::CharacterError> {
+    if is_ron(path) {
+        PresentationLockRevision::from_ron(source)
+    } else {
+        PresentationLockRevision::from_json(source)
+    }
+}
+
 fn parse_questionnaire_answers(
     path: &Path,
     source: &str,
@@ -1598,6 +1883,21 @@ fn read_alignment_decisions(
     } else {
         weave_domain::parse_strict_json(&source)
             .map_err(|_| "invalid alignment decision JSON".into())
+    }
+}
+
+fn read_presentation_decisions(
+    path: &Path,
+) -> Result<
+    BTreeMap<String, BTreeMap<String, PresentationReviewDecision>>,
+    Box<dyn std::error::Error>,
+> {
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid presentation decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid presentation decision JSON".into())
     }
 }
 

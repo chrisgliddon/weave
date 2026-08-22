@@ -67,7 +67,7 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(from_ron, first.story);
     let character = &from_ron.modules["character"];
     assert_eq!(character.id, "org.weave.character");
-    assert_eq!(character.version, "1.2.0");
+    assert_eq!(character.version, "1.3.0");
     assert_eq!(character.pack_id, "ari_vale");
     assert_eq!(
         character.value(&["profile", "identity", "id"]),

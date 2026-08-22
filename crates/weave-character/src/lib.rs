@@ -10,6 +10,7 @@ mod authoring;
 mod domain;
 mod model;
 mod operations;
+mod presentation;
 mod synthesis;
 mod temporal;
 mod validation;
@@ -27,6 +28,7 @@ pub use domain::{
 };
 pub use model::*;
 pub use operations::*;
+pub use presentation::*;
 pub use synthesis::{synthesize_character, template_fingerprint, validate_synthesis_result};
 pub use temporal::*;
 pub use validation::{
@@ -36,6 +38,10 @@ pub use validation::{
 
 /// Stable identity reserved for the public Weave Character domain module.
 pub const CHARACTER_MODULE_ID: &str = "org.weave.character";
+
+/// Stable namespace for optional identity and presentation data.
+pub const IDENTITY_PRESENTATION_EXTENSION_NAMESPACE: &str =
+    "org.weave.character.identity_presentation";
 
 const PROFILE_SCHEMA_ID: &str = "urn:weave:schema:character-profile:1";
 const TEMPLATE_SCHEMA_ID: &str = "urn:weave:schema:character-template:1";

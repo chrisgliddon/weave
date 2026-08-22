@@ -25,10 +25,11 @@ use crate::{
     CharacterDiagnosticCode, CharacterExtension, CharacterIdentity, CharacterOperation,
     CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterTemplate,
     CharacterTemplateRef, Confidence, DATE_CONTEXT_EXTENSION_NAMESPACE, DateContext,
-    DiagnosticSeverity, Freshness, HexacoTrait, LockState, OceanView, ReviewState, SynthesisOrigin,
-    TemporalContextReceipt, TraitMeasurement, ValueState, synthesize_character,
-    template_fingerprint, validate_alignment_receipt, validate_overlay, validate_profile,
-    validate_template, validate_temporal_context_receipt,
+    DiagnosticSeverity, Freshness, HexacoTrait, IdentityPresentation, LockState, OceanView,
+    PresentationReceipt, ReviewState, SynthesisOrigin, TemporalContextReceipt, TraitMeasurement,
+    ValueState, synthesize_character, template_fingerprint, validate_alignment_receipt,
+    validate_overlay, validate_presentation_receipt, validate_profile, validate_template,
+    validate_temporal_context_receipt,
 };
 
 /// Current guided-authoring workspace format.
@@ -113,6 +114,12 @@ pub struct CharacterAuthoringDraft {
     /// Immutable questionnaire applications retained in chronological order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub questionnaire_receipts: Vec<CharacterQuestionnaireReceipt>,
+    /// Reviewed presentation-catalog applications retained in chronological id order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub presentation_receipts: Vec<PresentationReceipt>,
+    /// Applied template releases retained so inherited field origins remain inspectable.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub template_migrations: Vec<AppliedCharacterTemplateMigration>,
     /// Blocking projection/context work created by an accepted canonical revision.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub unresolved_invalidations: BTreeMap<String, CharacterAuthoringInvalidation>,
@@ -141,6 +148,7 @@ pub enum CharacterAuthoringInputMode {
     DirectFacets,
     ConcisePicker,
     Questionnaire,
+    PresentationCatalog,
     ImportedProfile,
     ReviewedEnrichment,
     TemplateMigration,
@@ -161,6 +169,8 @@ pub struct CharacterAuthoringRevision {
     pub changes: Vec<CharacterAuthoringChange>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub questionnaire_receipt: Option<Box<CharacterQuestionnaireReceipt>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub presentation_receipt: Option<Box<PresentationReceipt>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub enrichment: Option<Box<CharacterReviewedEnrichment>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -183,6 +193,17 @@ pub struct CharacterAuthoringChange {
 pub struct ReviewedCharacterTemplateMigration {
     pub prior_template_sha256: String,
     pub template: CharacterTemplate,
+    pub reviewer: String,
+    pub rationale: String,
+}
+
+/// One applied immutable template transition retained after its review artifact is consumed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AppliedCharacterTemplateMigration {
+    pub prior_template: CharacterTemplateRef,
+    pub template: CharacterTemplateRef,
+    pub applied_draft_revision: u64,
     pub reviewer: String,
     pub rationale: String,
 }
@@ -230,10 +251,21 @@ pub struct CharacterAuthoringFieldView {
     pub effective_value: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub origin: Option<SynthesisOrigin>,
+    pub origin_kind: CharacterAuthoringFieldOriginKind,
     pub inherited: bool,
     pub overridden: bool,
     pub locked: bool,
     pub protected_or_pack_owned: bool,
+}
+
+/// Human-reviewable origin of one effective field.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CharacterAuthoringFieldOriginKind {
+    Template,
+    AuthoredOverride,
+    AcceptedSuggestion,
+    TemplateMigration,
 }
 
 /// One effective field difference in a revision or migration preview.
@@ -530,6 +562,8 @@ pub struct CharacterFinalReviewSummary {
     pub profile_id: String,
     pub identity: CharacterIdentity,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identity_presentation: Option<IdentityPresentation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub birth_date: Option<Attributed<BirthDate>>,
     pub canonical_traits: BTreeMap<HexacoTrait, Attributed<TraitMeasurement>>,
     pub derived_ocean: CharacterDerivedViews,
@@ -783,6 +817,8 @@ pub fn create_authoring_draft(
         template,
         overlay,
         questionnaire_receipts: Vec::new(),
+        presentation_receipts: Vec::new(),
+        template_migrations: Vec::new(),
         unresolved_invalidations: BTreeMap::new(),
         final_review: None,
     };
@@ -839,6 +875,8 @@ pub fn clone_authoring_draft(
         template: source.template.clone(),
         overlay,
         questionnaire_receipts: Vec::new(),
+        presentation_receipts: Vec::new(),
+        template_migrations: Vec::new(),
         unresolved_invalidations: BTreeMap::new(),
         final_review: None,
     };
@@ -945,12 +983,13 @@ pub fn validate_authoring_revision(
     })?;
 
     let special_count = usize::from(revision.questionnaire_receipt.is_some())
+        + usize::from(revision.presentation_receipt.is_some())
         + usize::from(revision.enrichment.is_some())
         + usize::from(revision.template_migration.is_some());
     if special_count > 1 {
         return Err(authoring_invalid(
             "revision",
-            "one revision cannot combine questionnaire, enrichment, and template migration",
+            "one revision cannot combine questionnaire, presentation, enrichment, and template migration",
         ));
     }
     match revision.input_mode {
@@ -959,6 +998,14 @@ pub fn validate_authoring_revision(
                 return Err(authoring_invalid(
                     "input_mode",
                     "questionnaire revision requires one receipt and no handwritten changes",
+                ));
+            }
+        }
+        CharacterAuthoringInputMode::PresentationCatalog => {
+            if revision.presentation_receipt.is_none() || !revision.changes.is_empty() {
+                return Err(authoring_invalid(
+                    "input_mode",
+                    "presentation-catalog revision requires one receipt and no handwritten changes",
                 ));
             }
         }
@@ -1010,6 +1057,9 @@ pub fn validate_authoring_revision(
     if let Some(receipt) = &revision.questionnaire_receipt {
         validate_questionnaire_receipt(receipt)?;
     }
+    if let Some(receipt) = &revision.presentation_receipt {
+        validate_presentation_receipt(receipt)?;
+    }
     if let Some(enrichment) = &revision.enrichment {
         validate_reviewed_enrichment(enrichment)?;
     }
@@ -1054,6 +1104,72 @@ fn validate_authoring_draft(draft: &CharacterAuthoringDraft) -> Result<(), crate
         }
         prior_receipt_id = Some(&receipt.id);
     }
+    let mut prior_presentation_receipt_id: Option<&str> = None;
+    for (index, receipt) in draft.presentation_receipts.iter().enumerate() {
+        validate_presentation_receipt(receipt)?;
+        if prior_presentation_receipt_id.is_some_and(|prior| prior >= receipt.id.as_str()) {
+            return Err(authoring_invalid(
+                format!("draft.presentation_receipts[{index}]"),
+                "presentation receipt ids must be unique and sorted",
+            ));
+        }
+        prior_presentation_receipt_id = Some(&receipt.id);
+    }
+    let mut prior_migration: Option<&AppliedCharacterTemplateMigration> = None;
+    for (index, migration) in draft.template_migrations.iter().enumerate() {
+        validate_template_ref(
+            &format!("draft.template_migrations[{index}].prior_template"),
+            &migration.prior_template,
+        )?;
+        validate_template_ref(
+            &format!("draft.template_migrations[{index}].template"),
+            &migration.template,
+        )?;
+        if migration.prior_template.id != migration.template.id
+            || migration.prior_template.version == migration.template.version
+        {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("draft.template_migrations[{index}]"),
+                "template history requires distinct releases of one stable template id",
+            ));
+        }
+        validate_text(
+            &format!("draft.template_migrations[{index}].reviewer"),
+            &migration.reviewer,
+            1,
+            512,
+        )?;
+        validate_text(
+            &format!("draft.template_migrations[{index}].rationale"),
+            &migration.rationale,
+            1,
+            2_048,
+        )?;
+        if migration.applied_draft_revision == 0
+            || migration.applied_draft_revision > draft.revision
+            || prior_migration.is_some_and(|prior| {
+                prior.applied_draft_revision >= migration.applied_draft_revision
+                    || prior.template != migration.prior_template
+            })
+        {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("draft.template_migrations[{index}].applied_draft_revision"),
+                "template history must form one chronological release chain",
+            ));
+        }
+        prior_migration = Some(migration);
+    }
+    if let Some(last) = draft.template_migrations.last()
+        && draft.overlay.template.as_ref() != Some(&last.template)
+    {
+        return Err(error(
+            CharacterDiagnosticCode::StaleInput,
+            "draft.template_migrations",
+            "template history does not end at the selected template release",
+        ));
+    }
     for (id, invalidation) in &draft.unresolved_invalidations {
         validate_local_id("draft.unresolved_invalidations.id", id)?;
         if invalidation.id != *id || invalidation.resolved_in_candidate {
@@ -1069,6 +1185,15 @@ fn validate_authoring_draft(draft: &CharacterAuthoringDraft) -> Result<(), crate
         validate_final_review_for_draft(review, draft, &result.effective_profile)?;
     }
     Ok(())
+}
+
+fn validate_template_ref(
+    path: &str,
+    template: &CharacterTemplateRef,
+) -> Result<(), crate::CharacterError> {
+    validate_namespaced_id(&format!("{path}.id"), &template.id)?;
+    validate_semver(&format!("{path}.version"), &template.version)?;
+    validate_sha256(&format!("{path}.sha256"), &template.sha256)
 }
 
 fn synthesize_draft(
@@ -1130,6 +1255,48 @@ fn validate_authoring_action(
             }
             validate_import_mode(path, value.state, mode)
         }
+        CharacterOperationAction::SetPronouns { value } => {
+            for form in [
+                &value.value.subject,
+                &value.value.object,
+                &value.value.possessive_determiner,
+                &value.value.possessive_pronoun,
+                &value.value.reflexive,
+            ] {
+                reject_placeholder(&format!("{path}.action.value"), form)?;
+            }
+            validate_import_mode(path, value.state, mode)
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => {
+            reject_placeholder(
+                &format!("{path}.action.record.content"),
+                &record.content.value,
+            )?;
+            validate_import_mode(path, record.content.state, mode)
+        }
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => {
+            reject_placeholder(
+                &format!("{path}.action.record.content"),
+                &record.content.value,
+            )?;
+            validate_import_mode(path, record.content.state, mode)
+        }
+        CharacterOperationAction::SetPresentationPalette { value } => {
+            validate_import_mode(path, value.state, mode)
+        }
+        CharacterOperationAction::SetPresentationStyleTags { value } => {
+            for tag in &value.value {
+                reject_placeholder(&format!("{path}.action.value"), tag)?;
+            }
+            validate_import_mode(path, value.state, mode)
+        }
+        CharacterOperationAction::UpsertPresentationAsset { value } => {
+            reject_placeholder(&format!("{path}.action.value.path"), &value.value.path)?;
+            validate_import_mode(path, value.state, mode)
+        }
+        CharacterOperationAction::UpsertPresentationAssignment { value } => {
+            validate_import_mode(path, value.state, mode)
+        }
         CharacterOperationAction::SetBirthDate { value } => {
             validate_import_mode(path, value.state, mode)
         }
@@ -1162,6 +1329,13 @@ fn validate_authoring_action(
             validate_import_mode(path, record.content.state, mode)
         }
         CharacterOperationAction::ClearAliases
+        | CharacterOperationAction::ClearPronouns
+        | CharacterOperationAction::RemoveIdentityContextNote { .. }
+        | CharacterOperationAction::RemoveAppearanceDescriptor { .. }
+        | CharacterOperationAction::ClearPresentationPalette
+        | CharacterOperationAction::ClearPresentationStyleTags
+        | CharacterOperationAction::RemovePresentationAsset { .. }
+        | CharacterOperationAction::RemovePresentationAssignment { .. }
         | CharacterOperationAction::ClearBirthDate
         | CharacterOperationAction::ClearHexacoTrait { .. }
         | CharacterOperationAction::RemoveInnerLife { .. }
@@ -2206,6 +2380,7 @@ pub fn inspect_authoring_fields(
     validate_authoring_draft(draft)?;
     let result = synthesize_draft(draft)?;
     build_field_views(
+        draft,
         draft.template.as_ref().map(|template| &template.profile),
         &result.effective_profile,
         &result.origins,
@@ -2285,6 +2460,72 @@ pub fn preview_authoring_revision(
             .questionnaire_receipts
             .sort_by(|left, right| left.id.cmp(&right.id));
         expected_enrichment_output = Some(receipt.output_profile.clone());
+    } else if let Some(receipt) = &revision.presentation_receipt {
+        let input = receipt
+            .proposal
+            .input_collection
+            .characters
+            .get(&draft.id)
+            .ok_or_else(|| {
+                error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    "presentation_receipt.proposal.input_collection",
+                    "presentation receipt does not include this authoring draft",
+                )
+            })?;
+        if input != before_profile {
+            return Err(error(
+                CharacterDiagnosticCode::StaleInput,
+                "presentation_receipt.proposal.input_collection",
+                "presentation receipt does not target the current effective profile",
+            ));
+        }
+        let output = receipt
+            .output_collection
+            .characters
+            .get(&draft.id)
+            .ok_or_else(|| {
+                error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    "presentation_receipt.output_collection",
+                    "presentation receipt output omits this authoring draft",
+                )
+            })?;
+        let operations = receipt.operations.get(&draft.id).ok_or_else(|| {
+            error(
+                CharacterDiagnosticCode::InvalidReference,
+                "presentation_receipt.operations",
+                "presentation receipt contains no accepted operation for this authoring draft",
+            )
+        })?;
+        candidate.overlay.provenance = merge_provenance(
+            &candidate.overlay.provenance,
+            &receipt.proposal.catalog.provenance,
+        )?;
+        for operation in operations {
+            upsert_template_relative_operation(
+                &mut candidate,
+                operation.id.clone(),
+                operation.rationale.clone(),
+                operation.action.clone(),
+            )?;
+        }
+        if candidate
+            .presentation_receipts
+            .iter()
+            .any(|existing| existing.id == receipt.id)
+        {
+            return Err(error(
+                CharacterDiagnosticCode::ConflictingOverlay,
+                "presentation_receipt.id",
+                "presentation receipt was already recorded by this draft",
+            ));
+        }
+        candidate.presentation_receipts.push((**receipt).clone());
+        candidate
+            .presentation_receipts
+            .sort_by(|left, right| left.id.cmp(&right.id));
+        expected_enrichment_output = Some(output.clone());
     } else if let Some(enrichment) = &revision.enrichment {
         let (input, output, namespace, operation_id) = enrichment_profiles(enrichment)?;
         if input != before_profile {
@@ -2350,6 +2591,7 @@ pub fn preview_authoring_revision(
     let changes = profile_field_changes(before_profile, &after_result.effective_profile)?;
     if changes.is_empty()
         && revision.questionnaire_receipt.is_none()
+        && revision.presentation_receipt.is_none()
         && revision.enrichment.is_none()
         && revision.template_migration.is_none()
     {
@@ -2394,6 +2636,7 @@ pub fn preview_authoring_revision(
         input_draft_revision: draft.revision,
         revision_id: revision.id.clone(),
         base_fields: build_field_views(
+            &candidate,
             candidate
                 .template
                 .as_ref()
@@ -2455,8 +2698,49 @@ pub fn questionnaire_authoring_revision(
         changes: Vec::new(),
         provenance: receipt.proposal.pack.provenance.clone(),
         questionnaire_receipt: Some(Box::new(receipt)),
+        presentation_receipt: None,
         enrichment: None,
         template_migration: None,
+    };
+    validate_authoring_revision(&revision)?;
+    Ok(revision)
+}
+
+/// Build the canonical authoring revision that adopts this draft's reviewed catalog operations.
+pub fn presentation_authoring_revision(
+    draft: &CharacterAuthoringDraft,
+    id: impl Into<String>,
+    rationale: impl Into<String>,
+    receipt: PresentationReceipt,
+) -> Result<CharacterAuthoringRevision, crate::CharacterError> {
+    validate_authoring_draft(draft)?;
+    validate_presentation_receipt(&receipt)?;
+    if !receipt
+        .proposal
+        .input_collection
+        .characters
+        .contains_key(&draft.id)
+        || !receipt.operations.contains_key(&draft.id)
+    {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            "presentation_receipt",
+            "presentation receipt contains no accepted allocation for this draft",
+        ));
+    }
+    let revision = CharacterAuthoringRevision {
+        revision_format_version: CHARACTER_AUTHORING_REVISION_FORMAT_VERSION,
+        id: id.into(),
+        draft_id: draft.id.clone(),
+        expected_draft_revision: draft.revision,
+        input_mode: CharacterAuthoringInputMode::PresentationCatalog,
+        rationale: rationale.into(),
+        changes: Vec::new(),
+        questionnaire_receipt: None,
+        presentation_receipt: Some(Box::new(receipt.clone())),
+        enrichment: None,
+        template_migration: None,
+        provenance: receipt.proposal.catalog.provenance.clone(),
     };
     validate_authoring_revision(&revision)?;
     Ok(revision)
@@ -2482,6 +2766,7 @@ pub fn enrichment_authoring_revision(
         rationale: rationale.into(),
         changes: Vec::new(),
         questionnaire_receipt: None,
+        presentation_receipt: None,
         enrichment: Some(Box::new(enrichment)),
         template_migration: None,
         provenance,
@@ -2557,6 +2842,13 @@ fn apply_template_migration(
             "template migration requires a different release of the same stable template id",
         ));
     }
+    let prior_template = draft.overlay.template.clone().ok_or_else(|| {
+        error(
+            CharacterDiagnosticCode::InvalidReference,
+            "template_migration",
+            "template-backed draft is missing its exact template coordinate",
+        )
+    })?;
     draft.template = Some(migration.template.clone());
     let template = draft.template.as_ref().expect("template just assigned");
     draft.overlay.template = Some(CharacterTemplateRef {
@@ -2564,6 +2856,22 @@ fn apply_template_migration(
         version: template.version.clone(),
         sha256: template_fingerprint(template)?,
     });
+    let selected_template = draft
+        .overlay
+        .template
+        .clone()
+        .expect("template coordinate just assigned");
+    draft
+        .template_migrations
+        .push(AppliedCharacterTemplateMigration {
+            prior_template,
+            template: selected_template,
+            applied_draft_revision: draft.revision.checked_add(1).ok_or_else(|| {
+                authoring_invalid("draft.revision", "authoring draft revision overflowed")
+            })?,
+            reviewer: migration.reviewer.clone(),
+            rationale: migration.rationale.clone(),
+        });
     let actions = draft
         .overlay
         .operations
@@ -2761,6 +3069,7 @@ fn derive_authoring_invalidations(
 }
 
 fn build_field_views(
+    draft: &CharacterAuthoringDraft,
     base: Option<&CharacterProfile>,
     effective: &CharacterProfile,
     origins: &BTreeMap<String, SynthesisOrigin>,
@@ -2780,10 +3089,16 @@ fn build_field_views(
                 .flatten();
             let effective_value = field_json_value(effective, &path)?;
             let origin = origins.get(&path).cloned();
+            let origin_kind = authoring_field_origin_kind(draft, origin.as_ref());
             let inherited = matches!(origin, Some(SynthesisOrigin::Template { .. }));
             let overridden = matches!(origin, Some(SynthesisOrigin::Overlay { .. }));
             let locked = effective_value.as_ref().is_some_and(json_value_locked);
-            let protected_or_pack_owned = path.starts_with("extensions.")
+            let editable_presentation_prefix = format!(
+                "extensions.{}.value.",
+                crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+            );
+            let protected_or_pack_owned = (path.starts_with("extensions.")
+                && !path.starts_with(&editable_presentation_prefix))
                 || path.starts_with("suggestions.")
                 || path.starts_with("derived.");
             Ok(CharacterAuthoringFieldView {
@@ -2791,6 +3106,7 @@ fn build_field_views(
                 base_value,
                 effective_value,
                 origin,
+                origin_kind,
                 inherited,
                 overridden,
                 locked,
@@ -2798,6 +3114,61 @@ fn build_field_views(
             })
         })
         .collect()
+}
+
+fn authoring_field_origin_kind(
+    draft: &CharacterAuthoringDraft,
+    origin: Option<&SynthesisOrigin>,
+) -> CharacterAuthoringFieldOriginKind {
+    match origin {
+        Some(SynthesisOrigin::Template { .. }) if !draft.template_migrations.is_empty() => {
+            CharacterAuthoringFieldOriginKind::TemplateMigration
+        }
+        Some(SynthesisOrigin::Template { .. }) => CharacterAuthoringFieldOriginKind::Template,
+        Some(SynthesisOrigin::Overlay { operation_id, .. }) => draft
+            .overlay
+            .operations
+            .iter()
+            .find(|operation| operation.id == *operation_id)
+            .map_or(
+                CharacterAuthoringFieldOriginKind::AuthoredOverride,
+                |operation| {
+                    if accepted_suggestion_operation(draft, operation) {
+                        CharacterAuthoringFieldOriginKind::AcceptedSuggestion
+                    } else {
+                        CharacterAuthoringFieldOriginKind::AuthoredOverride
+                    }
+                },
+            ),
+        None => CharacterAuthoringFieldOriginKind::AuthoredOverride,
+    }
+}
+
+fn accepted_suggestion_operation(
+    draft: &CharacterAuthoringDraft,
+    operation: &CharacterOperation,
+) -> bool {
+    let reviewed_value = match &operation.action {
+        CharacterOperationAction::SetHexacoTrait { value, .. } => {
+            value.state == ValueState::Reviewed
+        }
+        CharacterOperationAction::UpsertPresentationAssignment { value } => {
+            value.state == ValueState::Reviewed
+        }
+        _ => false,
+    };
+    reviewed_value
+        && (draft
+            .questionnaire_receipts
+            .iter()
+            .flat_map(|receipt| &receipt.operations)
+            .any(|receipt_operation| receipt_operation == operation)
+            || draft
+                .presentation_receipts
+                .iter()
+                .filter_map(|receipt| receipt.operations.get(&draft.id))
+                .flatten()
+                .any(|receipt_operation| receipt_operation == operation))
 }
 
 fn profile_field_changes(
@@ -2831,7 +3202,20 @@ fn field_json_value(
 ) -> Result<Option<serde_json::Value>, crate::CharacterError> {
     let mut value = serde_json::to_value(profile).map_err(|_| encoding_error())?;
     crate::sort_json_keys(&mut value);
-    let segments = if let Some(id) = path.strip_prefix("extensions.") {
+    let presentation_prefix = format!(
+        "extensions.{}.value.",
+        crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+    );
+    let segments = if let Some(suffix) = path.strip_prefix(&presentation_prefix) {
+        let mut segments = vec![
+            "extensions",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+            "record",
+            "value",
+        ];
+        segments.extend(suffix.split('.'));
+        segments
+    } else if let Some(id) = path.strip_prefix("extensions.") {
         vec!["extensions", id]
     } else if let Some(id) = path.strip_prefix("suggestions.") {
         vec!["suggestions", id]
@@ -2893,6 +3277,13 @@ fn final_review_summary(
             CharacterExtension::DateContext(record) => Some(record.value.clone()),
             _ => None,
         });
+    let identity_presentation = profile
+        .extensions
+        .get(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)
+        .and_then(|extension| match extension {
+            CharacterExtension::IdentityPresentation(record) => Some(record.value.clone()),
+            _ => None,
+        });
     let unresolved_diagnostics = draft
         .unresolved_invalidations
         .values()
@@ -2906,6 +3297,7 @@ fn final_review_summary(
     Ok(CharacterFinalReviewSummary {
         profile_id: profile.id.clone(),
         identity: profile.canon.identity.clone(),
+        identity_presentation,
         birth_date: profile.canon.birth_date.clone(),
         canonical_traits,
         derived_ocean: profile.derived.clone(),

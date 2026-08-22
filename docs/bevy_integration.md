@@ -67,6 +67,8 @@ cargo run -p weave-example-bevy-dialogue -- --smoke-test
 
 Compiled module values are ordinary `StoryIr` data; a Bevy host does not need the editor or an artifact registry at runtime. The finite domain example deserializes the canonical tracer and composed World RON, reads typed exports through `DomainModuleIr::value`, and inserts derived records as Bevy resources. Its World system combines the authored beacon rule and harbor environment with the composed biome/climate to select beacon-escort behavior and a `cedar-snow` presentation token, reports them from `Startup`, and exits after one update:
 
+The same finite process reads the Character module's attributed pronoun subject, palette accent, project-relative avatar, exact presentation catalog id/hash, reviewed visual tone, lock, and forbidden personality-write-back marker into a Bevy resource. These are ordinary immutable `StoryIr` values; Bevy performs no catalog allocation, editor lookup, or personality inference at runtime.
+
 ```sh
 cargo run -p weave-example-domain-module-bevy
 ```

@@ -273,7 +273,7 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
     assert_eq!(ModuleManifest::from_ron(MODULE_RON).unwrap(), manifest);
     assert_eq!(manifest.to_json().unwrap(), MODULE_JSON);
     assert_eq!(manifest.to_ron().unwrap(), MODULE_RON);
-    assert_eq!(manifest.version, "1.2.0");
+    assert_eq!(manifest.version, "1.3.0");
     assert!(
         manifest
             .authoring

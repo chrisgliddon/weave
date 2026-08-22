@@ -757,13 +757,243 @@
           "state": "reviewed"
         },
         "value": {
+          "appearance": {
+            "travel_layers": {
+              "category": "org.weave.appearance.clothing",
+              "content": {
+                "confidence": "high",
+                "freshness": "current",
+                "lineage": [
+                  "character_original"
+                ],
+                "lock": "unlocked",
+                "review": "not_required",
+                "state": "authored",
+                "value": "Layered cedar-green travel cloth with a pale reflective hem."
+              },
+              "id": "travel_layers"
+            }
+          },
+          "assets": {
+            "authored_avatar": {
+              "confidence": "high",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ],
+              "lock": "unlocked",
+              "review": "not_required",
+              "state": "authored",
+              "value": {
+                "alt_text": "Geometric cedar and gold wayfinder avatar.",
+                "id": "authored_avatar",
+                "kind": "avatar",
+                "media_type": "image/svg+xml",
+                "path": "presentation/assets/ari-vale-avatar.svg"
+              }
+            }
+          },
+          "catalog_assignments": {
+            "accent_color": {
+              "confidence": "high",
+              "freshness": "current",
+              "lineage": [
+                "weave_glasswind_presentation"
+              ],
+              "lock": "unlocked",
+              "rationale": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+              "review": "accepted",
+              "state": "reviewed",
+              "value": {
+                "catalog": {
+                  "id": "org.weave.character.presentation.glasswind",
+                  "sha256": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                  "version": "1.0.0"
+                },
+                "entry_id": "amber_accent",
+                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "slot_id": "accent_color",
+                "value": {
+                  "color": "#D6A24A",
+                  "kind": "palette_color",
+                  "palette_slot": "accent"
+                }
+              }
+            },
+            "avatar": {
+              "confidence": "high",
+              "freshness": "current",
+              "lineage": [
+                "weave_glasswind_presentation"
+              ],
+              "lock": "locked",
+              "rationale": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+              "review": "accepted",
+              "state": "reviewed",
+              "value": {
+                "catalog": {
+                  "id": "org.weave.character.presentation.glasswind",
+                  "sha256": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                  "version": "1.0.0"
+                },
+                "entry_id": "ari_avatar",
+                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "slot_id": "avatar",
+                "value": {
+                  "asset": {
+                    "alt_text": "Geometric cedar and gold wayfinder avatar.",
+                    "id": "ari_avatar",
+                    "kind": "avatar",
+                    "media_type": "image/svg+xml",
+                    "path": "presentation/assets/ari-vale-avatar.svg"
+                  },
+                  "kind": "asset"
+                }
+              }
+            },
+            "silhouette": {
+              "confidence": "high",
+              "freshness": "current",
+              "lineage": [
+                "weave_glasswind_presentation"
+              ],
+              "lock": "unlocked",
+              "rationale": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+              "review": "accepted",
+              "state": "reviewed",
+              "value": {
+                "catalog": {
+                  "id": "org.weave.character.presentation.glasswind",
+                  "sha256": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                  "version": "1.0.0"
+                },
+                "entry_id": "long_coat",
+                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "slot_id": "silhouette",
+                "value": {
+                  "category": "org.weave.appearance.silhouette",
+                  "descriptor": "Long layered travel coat with a narrow shoulder line.",
+                  "kind": "appearance"
+                }
+              }
+            },
+            "visual_tone": {
+              "confidence": "high",
+              "freshness": "current",
+              "lineage": [
+                "weave_glasswind_presentation"
+              ],
+              "lock": "unlocked",
+              "rationale": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+              "review": "accepted",
+              "state": "reviewed",
+              "value": {
+                "catalog": {
+                  "id": "org.weave.character.presentation.glasswind",
+                  "sha256": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                  "version": "1.0.0"
+                },
+                "entry_id": "river_glass",
+                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "slot_id": "visual_tone",
+                "value": {
+                  "kind": "style_tag",
+                  "tag": "river_glass"
+                }
+              }
+            }
+          },
+          "context_notes": {
+            "current_context": {
+              "content": {
+                "confidence": "high",
+                "freshness": "current",
+                "lineage": [
+                  "character_original"
+                ],
+                "lock": "unlocked",
+                "review": "not_required",
+                "state": "authored",
+                "value": "Carries a folded route card for the next fictional crossing."
+              },
+              "id": "current_context",
+              "kind": "context"
+            },
+            "glasswind_origin": {
+              "content": {
+                "confidence": "high",
+                "freshness": "current",
+                "lineage": [
+                  "character_original"
+                ],
+                "lock": "unlocked",
+                "review": "not_required",
+                "state": "authored",
+                "value": "Raised among the synthetic Glasswind coast's public wayfinding houses."
+              },
+              "id": "glasswind_origin",
+              "kind": "origin"
+            }
+          },
           "identity_refs": [
             "org.weave.identity.wayfinder"
           ],
+          "palette": {
+            "confidence": "high",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "lock": "unlocked",
+            "review": "not_required",
+            "state": "authored",
+            "value": {
+              "colors": {
+                "accent": "#D6A24A",
+                "background": "#102825",
+                "foreground": "#D9F4E3"
+              }
+            }
+          },
           "presentation_refs": [
-            "assets/avatars/ari_vale.png",
-            "assets/palettes/cedar_snow.json"
-          ]
+            "presentation/assets/ari-vale-avatar.svg",
+            "presentation/assets/sable-reed-avatar.svg"
+          ],
+          "pronouns": {
+            "confidence": "high",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "lock": "unlocked",
+            "review": "not_required",
+            "state": "authored",
+            "value": {
+              "object": "them",
+              "possessive_determiner": "their",
+              "possessive_pronoun": "theirs",
+              "reflexive": "themself",
+              "subject": "they"
+            }
+          },
+          "style_tags": {
+            "confidence": "high",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ],
+            "lock": "unlocked",
+            "review": "not_required",
+            "state": "authored",
+            "value": [
+              "cedar_ink",
+              "route_marks"
+            ]
+          }
         }
       }
     },
@@ -866,11 +1096,17 @@
   "profile_format_version": 2,
   "provenance": {
     "claims": {
+      "assets": [
+        "weave_glasswind_presentation"
+      ],
       "axes": [
         "weave_wayfinder_compass"
       ],
       "calibrations": [
         "weave_wayfinder_compass"
+      ],
+      "entries": [
+        "weave_glasswind_presentation"
       ],
       "extensions.org.weave.character.alignment": [
         "alignment_apply_361b86102edd3c9a"
@@ -883,6 +1119,9 @@
       ],
       "profile": [
         "character_original"
+      ],
+      "slots": [
+        "weave_glasswind_presentation"
       ]
     },
     "sources": [
@@ -894,6 +1133,16 @@
         "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
         "modified": false,
         "revision": "character-contract-v1",
+        "url": "https://github.com/chrisgliddon/weave"
+      },
+      {
+        "attribution": "Original synthetic Glasswind presentation catalog and vector assets.",
+        "id": "weave_glasswind_presentation",
+        "kind": "original",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "modified": false,
+        "revision": "glasswind-presentation-v1",
         "url": "https://github.com/chrisgliddon/weave"
       },
       {

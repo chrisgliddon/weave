@@ -572,6 +572,16 @@
                 modified: false,
             ),
             (
+                id: "weave_glasswind_presentation",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "glasswind-presentation-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Glasswind presentation catalog and vector assets.",
+                modified: false,
+            ),
+            (
                 id: "weave_wayfinder_compass",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -593,11 +603,17 @@
             ),
         ],
         claims: {
+            "assets": [
+                "weave_glasswind_presentation",
+            ],
             "axes": [
                 "weave_wayfinder_compass",
             ],
             "calibrations": [
                 "weave_wayfinder_compass",
+            ],
+            "entries": [
+                "weave_glasswind_presentation",
             ],
             "extensions.org.weave.character.alignment": [
                 "alignment_apply_361b86102edd3c9a",
@@ -610,6 +626,9 @@
             ],
             "profile": [
                 "character_original",
+            ],
+            "slots": [
+                "weave_glasswind_presentation",
             ],
         },
     ),

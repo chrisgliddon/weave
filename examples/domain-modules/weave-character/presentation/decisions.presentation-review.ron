@@ -1,0 +1,44 @@
+{
+    "org.weave.character.ari_vale": {
+        "accent_color": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+        "avatar": (
+            decision: "accept",
+            lock: locked,
+        ),
+        "silhouette": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+        "visual_tone": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+    },
+    "org.weave.character.sable_reed": {
+        "accent_color": (
+            decision: "override",
+            value: (
+                kind: "palette_color",
+                palette_slot: "accent",
+                color: "#7C5CFF",
+            ),
+            lock: locked,
+            rationale: "Use the explicitly authored violet accent while preserving the balanced proposal in the receipt.",
+        ),
+        "avatar": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+        "silhouette": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+        "visual_tone": (
+            decision: "accept",
+            lock: unlocked,
+        ),
+    },
+}

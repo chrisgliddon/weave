@@ -588,6 +588,7 @@ def verify_domain_contract() -> None:
     character_project = character_fixture / "weave.modules.json"
     character_authoring = character_fixture / "authoring"
     character_operations = character_fixture / "operations"
+    character_presentation = character_fixture / "presentation"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
@@ -607,6 +608,64 @@ def verify_domain_contract() -> None:
     )
     renamed_character_collection_ron = (
         character_operations / "renamed.character-collection.ron"
+    )
+    presentation_input_json = (
+        character_presentation / "input.character-collection.json"
+    )
+    presentation_input_ron = character_presentation / "input.character-collection.ron"
+    presentation_catalog_json = (
+        character_presentation / "glasswind.presentation-catalog.json"
+    )
+    presentation_catalog_ron = (
+        character_presentation / "glasswind.presentation-catalog.ron"
+    )
+    presentation_request_json = (
+        character_presentation / "allocation.presentation-request.json"
+    )
+    presentation_request_ron = (
+        character_presentation / "allocation.presentation-request.ron"
+    )
+    presentation_proposal_json = (
+        character_presentation / "proposal.presentation-proposal.json"
+    )
+    presentation_proposal_ron = (
+        character_presentation / "proposal.presentation-proposal.ron"
+    )
+    presentation_decisions_json = (
+        character_presentation / "decisions.presentation-review.json"
+    )
+    presentation_decisions_ron = (
+        character_presentation / "decisions.presentation-review.ron"
+    )
+    presentation_review_json = (
+        character_presentation / "review.presentation-review.json"
+    )
+    presentation_review_ron = (
+        character_presentation / "review.presentation-review.ron"
+    )
+    presentation_receipt_json = (
+        character_presentation / "receipt.presentation-receipt.json"
+    )
+    presentation_receipt_ron = (
+        character_presentation / "receipt.presentation-receipt.ron"
+    )
+    presentation_applied_json = (
+        character_presentation / "applied.character-collection.json"
+    )
+    presentation_applied_ron = (
+        character_presentation / "applied.character-collection.ron"
+    )
+    presentation_lock_revision_json = (
+        character_presentation / "unlock-avatar.presentation-lock-revision.json"
+    )
+    presentation_lock_revision_ron = (
+        character_presentation / "unlock-avatar.presentation-lock-revision.ron"
+    )
+    presentation_unlocked_json = (
+        character_presentation / "unlocked.character-collection.json"
+    )
+    presentation_unlocked_ron = (
+        character_presentation / "unlocked.character-collection.ron"
     )
     character_alignment = character_fixture / "alignment"
     alignment_profile_json = character_alignment / "input.character.json"
@@ -898,6 +957,20 @@ def verify_domain_contract() -> None:
         generated_alignment_receipt_schema = (
             workspace / "weave-character-alignment-receipt-v1.schema.json"
         )
+        generated_presentation_schemas = {
+            "presentation-catalog": workspace
+            / "weave-character-presentation-catalog-v1.schema.json",
+            "presentation-request": workspace
+            / "weave-character-presentation-request-v1.schema.json",
+            "presentation-proposal": workspace
+            / "weave-character-presentation-proposal-v1.schema.json",
+            "presentation-review": workspace
+            / "weave-character-presentation-review-v1.schema.json",
+            "presentation-receipt": workspace
+            / "weave-character-presentation-receipt-v1.schema.json",
+            "presentation-lock-revision": workspace
+            / "weave-character-presentation-lock-revision-v1.schema.json",
+        }
         generated_authoring_schemas = {
             "authoring-workspace": workspace
             / "weave-character-authoring-workspace-v1.schema.json",
@@ -1003,6 +1076,33 @@ def verify_domain_contract() -> None:
         generated_alignment_review_ron = workspace / "review.alignment-review.ron"
         generated_alignment_receipt_json = workspace / "receipt.alignment-receipt.json"
         generated_alignment_receipt_ron = workspace / "receipt.alignment-receipt.ron"
+        generated_presentation_proposal_json = (
+            workspace / "proposal.presentation-proposal.json"
+        )
+        generated_presentation_proposal_ron = (
+            workspace / "proposal.presentation-proposal.ron"
+        )
+        generated_presentation_review_json = (
+            workspace / "review.presentation-review.json"
+        )
+        generated_presentation_review_ron = (
+            workspace / "review.presentation-review.ron"
+        )
+        generated_presentation_receipt_json = (
+            workspace / "receipt.presentation-receipt.json"
+        )
+        generated_presentation_receipt_ron = (
+            workspace / "receipt.presentation-receipt.ron"
+        )
+        generated_presentation_applied_json = (
+            workspace / "applied.character-collection.json"
+        )
+        generated_presentation_applied_ron = (
+            workspace / "applied.character-collection.ron"
+        )
+        generated_presentation_unlocked_json = (
+            workspace / "unlocked.character-collection.json"
+        )
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -1059,6 +1159,11 @@ def verify_domain_contract() -> None:
                 capture=True,
             )
         for kind, output in generated_authoring_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
+        for kind, output in generated_presentation_schemas.items():
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
@@ -1185,6 +1290,12 @@ def verify_domain_contract() -> None:
             checked = ROOT / "schemas" / generated.name
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in authoring schema is stale: {checked.name}")
+        for generated in generated_presentation_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(
+                    f"checked-in presentation schema is stale: {checked.name}"
+                )
 
         for kind, source in (
             (
@@ -1273,6 +1384,24 @@ def verify_domain_contract() -> None:
             ("review", character_review_ron),
             ("progress", character_progress_json),
             ("progress", character_progress_ron),
+            ("collection", presentation_input_json),
+            ("collection", presentation_input_ron),
+            ("collection", presentation_applied_json),
+            ("collection", presentation_applied_ron),
+            ("collection", presentation_unlocked_json),
+            ("collection", presentation_unlocked_ron),
+            ("presentation-catalog", presentation_catalog_json),
+            ("presentation-catalog", presentation_catalog_ron),
+            ("presentation-request", presentation_request_json),
+            ("presentation-request", presentation_request_ron),
+            ("presentation-proposal", presentation_proposal_json),
+            ("presentation-proposal", presentation_proposal_ron),
+            ("presentation-review", presentation_review_json),
+            ("presentation-review", presentation_review_ron),
+            ("presentation-receipt", presentation_receipt_json),
+            ("presentation-receipt", presentation_receipt_ron),
+            ("presentation-lock-revision", presentation_lock_revision_json),
+            ("presentation-lock-revision", presentation_lock_revision_ron),
             ("profile", temporal_profile_json),
             ("profile", temporal_profile_ron),
             ("profile", temporal_enriched_json),
@@ -1486,6 +1615,224 @@ def verify_domain_contract() -> None:
         )
         if dry_run_output.exists():
             raise DocsError("Character apply dry-run wrote a collection")
+
+        presentation_encodings = (
+            (
+                "json",
+                presentation_input_json,
+                presentation_catalog_json,
+                presentation_request_json,
+                presentation_proposal_json,
+                generated_presentation_proposal_json,
+                presentation_decisions_json,
+                presentation_review_json,
+                generated_presentation_review_json,
+                presentation_receipt_json,
+                generated_presentation_receipt_json,
+                presentation_applied_json,
+                generated_presentation_applied_json,
+            ),
+            (
+                "ron",
+                presentation_input_ron,
+                presentation_catalog_ron,
+                presentation_request_ron,
+                presentation_proposal_ron,
+                generated_presentation_proposal_ron,
+                presentation_decisions_ron,
+                presentation_review_ron,
+                generated_presentation_review_ron,
+                presentation_receipt_ron,
+                generated_presentation_receipt_ron,
+                presentation_applied_ron,
+                generated_presentation_applied_ron,
+            ),
+        )
+        for (
+            encoding,
+            collection,
+            catalog,
+            request,
+            checked_proposal,
+            generated_proposal,
+            decisions,
+            checked_review,
+            generated_review,
+            checked_receipt,
+            generated_receipt,
+            checked_applied,
+            generated_applied,
+        ) in presentation_encodings:
+            run(
+                [
+                    str(character_tool),
+                    "presentation-propose",
+                    str(collection.relative_to(ROOT)),
+                    str(catalog.relative_to(ROOT)),
+                    str(request.relative_to(ROOT)),
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_proposal),
+                ],
+                capture=True,
+            )
+            if generated_proposal.read_bytes() != checked_proposal.read_bytes():
+                raise DocsError(
+                    f"canonical presentation proposal is stale: {checked_proposal.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "presentation-review",
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(decisions.relative_to(ROOT)),
+                    "--reviewer",
+                    "org.weave.reviewer.presentation_fixture",
+                    "--rationale",
+                    "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(generated_review),
+                ],
+                capture=True,
+            )
+            if generated_review.read_bytes() != checked_review.read_bytes():
+                raise DocsError(
+                    f"canonical presentation review is stale: {checked_review.name}"
+                )
+            run(
+                [
+                    str(character_tool),
+                    "presentation-apply",
+                    str(collection.relative_to(ROOT)),
+                    str(checked_proposal.relative_to(ROOT)),
+                    str(checked_review.relative_to(ROOT)),
+                    "--receipt-output",
+                    str(generated_receipt),
+                    "--collection-output",
+                    str(generated_applied),
+                    "--format",
+                    encoding,
+                ],
+                capture=True,
+            )
+            if generated_receipt.read_bytes() != checked_receipt.read_bytes():
+                raise DocsError(
+                    f"canonical presentation receipt is stale: {checked_receipt.name}"
+                )
+            if generated_applied.read_bytes() != checked_applied.read_bytes():
+                raise DocsError(
+                    f"canonical presentation apply is stale: {checked_applied.name}"
+                )
+
+        presentation_dry_run_receipt = workspace / "dry-run.presentation-receipt.json"
+        presentation_dry_run_collection = (
+            workspace / "forbidden-presentation-dry-run-collection.json"
+        )
+        run(
+            [
+                str(character_tool),
+                "presentation-apply",
+                str(presentation_input_json.relative_to(ROOT)),
+                str(presentation_proposal_json.relative_to(ROOT)),
+                str(presentation_review_json.relative_to(ROOT)),
+                "--dry-run",
+                "--receipt-output",
+                str(presentation_dry_run_receipt),
+                "--collection-output",
+                str(presentation_dry_run_collection),
+            ],
+            capture=True,
+        )
+        if presentation_dry_run_collection.exists():
+            raise DocsError("presentation dry-run wrote a collection")
+        if presentation_dry_run_receipt.read_bytes() != presentation_receipt_json.read_bytes():
+            raise DocsError("presentation dry-run receipt differs from checked replay")
+
+        run(
+            [
+                str(character_tool),
+                "presentation-lock",
+                str(presentation_applied_json.relative_to(ROOT)),
+                str(presentation_lock_revision_json.relative_to(ROOT)),
+                "--output",
+                str(generated_presentation_unlocked_json),
+            ],
+            capture=True,
+        )
+        if (
+            generated_presentation_unlocked_json.read_bytes()
+            != presentation_unlocked_json.read_bytes()
+        ):
+            raise DocsError("canonical presentation unlock result is stale")
+        forbidden_lock_output = workspace / "forbidden-presentation-lock-output.json"
+        run(
+            [
+                str(character_tool),
+                "presentation-lock",
+                str(presentation_applied_json.relative_to(ROOT)),
+                str(presentation_lock_revision_json.relative_to(ROOT)),
+                "--dry-run",
+                "--output",
+                str(forbidden_lock_output),
+            ],
+            capture=True,
+        )
+        if forbidden_lock_output.exists():
+            raise DocsError("presentation lock dry-run wrote a collection")
+
+        presentation_proposal = json.loads(
+            presentation_proposal_json.read_text(encoding="utf-8")
+        )
+        presentation_receipt = json.loads(
+            presentation_receipt_json.read_text(encoding="utf-8")
+        )
+        presentation_input = json.loads(
+            presentation_input_json.read_text(encoding="utf-8")
+        )
+        presentation_output = presentation_receipt.get("output_collection", {})
+        for character_id, before in presentation_input.get("characters", {}).items():
+            after = presentation_output.get("characters", {}).get(character_id, {})
+            before_other_extensions = {
+                key: value
+                for key, value in before.get("extensions", {}).items()
+                if key != "org.weave.character.identity_presentation"
+            }
+            after_other_extensions = {
+                key: value
+                for key, value in after.get("extensions", {}).items()
+                if key != "org.weave.character.identity_presentation"
+            }
+            if (
+                before.get("canon") != after.get("canon")
+                or before.get("derived") != after.get("derived")
+                or before.get("suggestions") != after.get("suggestions")
+                or before_other_extensions != after_other_extensions
+            ):
+                raise DocsError(
+                    "presentation allocation changed personality or another owned field"
+                )
+        allocations = [
+            allocation
+            for slots in presentation_proposal.get("allocations", {}).values()
+            for allocation in slots.values()
+        ]
+        if (
+            presentation_proposal.get("request", {}).get("seed") != 20_260_822
+            or not allocations
+            or any(not allocation.get("trace") for allocation in allocations)
+            or any(
+                sum(bool(candidate.get("selected")) for candidate in allocation["trace"])
+                != 1
+                for allocation in allocations
+                if allocation.get("disposition") == "proposed"
+            )
+        ):
+            raise DocsError(
+                "presentation fixture omitted its pinned seed or transparent constraints"
+            )
 
         alignment_encodings = (
             (
@@ -2152,9 +2499,18 @@ def verify_domain_contract() -> None:
         character_alignment_values = (
             character_alignment.get("values", {}).get("value", {})
         )
+        character_presentation_value = (
+            character_profile.get("presentation", {}).get("value", {})
+        )
+        character_presentation_avatar = (
+            character_presentation_value.get("catalog_assignments", {})
+            .get("value", {})
+            .get("avatar", {})
+            .get("value", {})
+        )
         if (
             character_story.get("version") != 4
-            or character_module.get("version") != "1.2.0"
+            or character_module.get("version") != "1.3.0"
             or character_profile.get("identity", {})
             .get("value", {})
             .get("id", {})
@@ -2211,9 +2567,41 @@ def verify_domain_contract() -> None:
             != 64
             or len(character_alignment.get("applied_sha256", {}).get("value", ""))
             != 64
+            or character_presentation_value.get(
+                "canonical_personality_write_back", {}
+            ).get("value")
+            is not False
+            or character_presentation_value.get("pronouns", {})
+            .get("value", {})
+            .get("subject", {})
+            .get("value")
+            != "they"
+            or character_presentation_value.get("palette", {})
+            .get("value", {})
+            .get("colors", {})
+            .get("value", {})
+            .get("accent", {})
+            .get("value")
+            != "#D6A24A"
+            or character_presentation_value.get("assets", {})
+            .get("value", {})
+            .get("authored_avatar", {})
+            .get("value", {})
+            .get("path", {})
+            .get("value")
+            != "presentation/assets/ari-vale-avatar.svg"
+            or character_presentation_avatar.get("lock", {}).get("value")
+            != "locked"
+            or len(
+                character_presentation_avatar.get("catalog", {})
+                .get("value", {})
+                .get("sha256", {})
+                .get("value", "")
+            )
+            != 64
         ):
             raise DocsError(
-                "compiled Character fixture omitted typed evidence, derivation labels, or approved alignment"
+                "compiled Character fixture omitted typed presentation, evidence, derivation labels, or approved alignment"
             )
 
         for encoding, output, checked in (
@@ -2286,7 +2674,7 @@ def verify_domain_contract() -> None:
         ]
         if (
             temporal_story.get("version") != 4
-            or temporal_module.get("version") != "1.2.0"
+            or temporal_module.get("version") != "1.3.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
             != [
@@ -2712,7 +3100,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/explainable alignment/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/presentation catalogs/explainable alignment/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -2995,6 +3383,12 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-alignment-proposal-v1.schema.json",
         "weave-character-alignment-review-v1.schema.json",
         "weave-character-alignment-receipt-v1.schema.json",
+        "weave-character-presentation-catalog-v1.schema.json",
+        "weave-character-presentation-request-v1.schema.json",
+        "weave-character-presentation-proposal-v1.schema.json",
+        "weave-character-presentation-review-v1.schema.json",
+        "weave-character-presentation-receipt-v1.schema.json",
+        "weave-character-presentation-lock-revision-v1.schema.json",
         "weave-character-authoring-workspace-v1.schema.json",
         "weave-character-authoring-revision-v1.schema.json",
         "weave-character-authoring-preview-v1.schema.json",

@@ -1,0 +1,39 @@
+{
+  "revision_format_version": 1,
+  "id": "org.weave.character.presentation.unlock_ari_avatar",
+  "expected_input_sha256": "241906d3d910765dd767df17e950b84c6fe41832f7fb7bcd4c1df1a3e444fd1a",
+  "targets": [
+    {
+      "character_id": "org.weave.character.ari_vale",
+      "slot_id": "avatar"
+    }
+  ],
+  "lock": "unlocked",
+  "rationale": "Unlock the reviewed synthetic avatar assignment for a later rebalance.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_glasswind_presentation",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-presentation-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic Glasswind presentation catalog and vector assets.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "assets": [
+        "weave_glasswind_presentation"
+      ],
+      "entries": [
+        "weave_glasswind_presentation"
+      ],
+      "slots": [
+        "weave_glasswind_presentation"
+      ]
+    }
+  }
+}

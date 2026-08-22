@@ -6,6 +6,7 @@ import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
 import {
   alignmentCharacterPresentation,
   characterPresentation,
+  identityCharacterPresentation,
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
@@ -116,6 +117,34 @@ test("reads the complete portable Character profile", async () => {
     oceanIsLossy: true,
     oceanIsIndependentEvidence: false,
   });
+});
+
+test("reads typed identity presentation and reviewed catalog coordinates", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const presentation = identityCharacterPresentation(story);
+  assert.equal(presentation.pronounSubject, "they");
+  assert.equal(presentation.accent, "#D6A24A");
+  assert.equal(presentation.avatarPath, "presentation/assets/ari-vale-avatar.svg");
+  assert.equal(presentation.avatarAltText, "Geometric cedar and gold wayfinder avatar.");
+  assert.equal(presentation.visualTone, "river_glass");
+  assert.equal(presentation.catalog.id, "org.weave.character.presentation.glasswind");
+  assert.equal(presentation.catalog.version, "1.0.0");
+  assert.match(presentation.catalog.sha256, /^[0-9a-f]{64}$/);
+  assert.match(presentation.proposalSha256, /^[0-9a-f]{64}$/);
+  assert.match(presentation.reviewSha256, /^[0-9a-f]{64}$/);
+  assert.equal(presentation.avatarLocked, true);
+  assert.equal(presentation.canonicalPersonalityWriteBack, false);
+});
+
+test("rejects unsafe Character presentation assets without disclosing the path", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const rejected = "../private-avatar.svg";
+  story.modules.character.exports.profile.value.value.presentation.value.assets.value.authored_avatar.value.path.value =
+    rejected;
+  assert.throws(
+    () => identityCharacterPresentation(story),
+    (error) => error instanceof TypeError && !error.message.includes(rejected),
+  );
 });
 
 test("reads only approved alignment values with exact portable fingerprints", async () => {

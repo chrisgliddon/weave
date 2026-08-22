@@ -47,6 +47,52 @@ export function characterPresentation(story) {
   };
 }
 
+export function identityCharacterPresentation(story) {
+  const presentation = readModuleExport(story, "character", ["profile", "presentation"]);
+  const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  const isHash = (value) => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+  const avatar = presentation?.assets?.authored_avatar;
+  const avatarAssignment = presentation?.catalog_assignments?.avatar;
+  const toneAssignment = presentation?.catalog_assignments?.visual_tone;
+  if (
+    !isObject(presentation) ||
+    presentation.canonical_personality_write_back !== false ||
+    typeof presentation.pronouns?.subject !== "string" ||
+    typeof presentation.palette?.colors?.accent !== "string" ||
+    !/^#[0-9A-F]{6}([0-9A-F]{2})?$/.test(presentation.palette.colors.accent) ||
+    typeof avatar?.path !== "string" ||
+    avatar.path.startsWith("/") ||
+    avatar.path.includes("\\") ||
+    avatar.path
+      .split("/")
+      .some((segment) => segment === "" || segment === ".." || segment === ".") ||
+    avatar?.kind !== "avatar" ||
+    !isObject(avatarAssignment) ||
+    typeof avatarAssignment.catalog?.id !== "string" ||
+    !isHash(avatarAssignment.catalog?.sha256) ||
+    !isHash(avatarAssignment.proposal_sha256) ||
+    !isHash(avatarAssignment.review_sha256) ||
+    avatarAssignment.value?.kind !== "asset" ||
+    !isObject(toneAssignment) ||
+    toneAssignment.value?.kind !== "style_tag" ||
+    typeof toneAssignment.value?.tag !== "string"
+  ) {
+    throw new TypeError("invalid Character identity presentation");
+  }
+  return {
+    pronounSubject: presentation.pronouns.subject,
+    accent: presentation.palette.colors.accent,
+    avatarPath: avatar.path,
+    avatarAltText: avatar.alt_text,
+    visualTone: toneAssignment.value.tag,
+    catalog: avatarAssignment.catalog,
+    proposalSha256: avatarAssignment.proposal_sha256,
+    reviewSha256: avatarAssignment.review_sha256,
+    avatarLocked: avatarAssignment.lock === "locked",
+    canonicalPersonalityWriteBack: presentation.canonical_personality_write_back,
+  };
+}
+
 export function alignmentCharacterPresentation(story) {
   const alignment = readModuleExport(story, "character", ["profile", "alignment"]);
   const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);

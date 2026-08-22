@@ -477,6 +477,7 @@ fn write_invalidation_fixture(
             },
         }],
         questionnaire_receipt: None,
+        presentation_receipt: None,
         enrichment: None,
         template_migration: None,
         provenance: original_provenance(
@@ -548,6 +549,7 @@ fn write_migration_fixture(
             .to_owned(),
         changes: Vec::new(),
         questionnaire_receipt: None,
+        presentation_receipt: None,
         enrichment: None,
         template_migration: Some(Box::new(
             weave_character::ReviewedCharacterTemplateMigration {
@@ -672,6 +674,7 @@ fn write_invalid_fixtures(
             },
         }],
         questionnaire_receipt: None,
+        presentation_receipt: None,
         enrichment: None,
         template_migration: None,
         provenance: created.drafts["org.weave.character.lumen_reed"]

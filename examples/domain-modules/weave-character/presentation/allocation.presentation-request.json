@@ -1,0 +1,26 @@
+{
+  "request_format_version": 1,
+  "id": "org.weave.character.presentation.glasswind_allocation",
+  "expected_input_sha256": "ff19b4c4ce41846e13a1a1bd1b76537d6cb5f3b9b368c5bfba6c333885d53c66",
+  "catalog": {
+    "id": "org.weave.character.presentation.glasswind",
+    "version": "1.0.0",
+    "sha256": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+  },
+  "seed": 20260822,
+  "character_ids": [
+    "org.weave.character.ari_vale",
+    "org.weave.character.sable_reed"
+  ],
+  "slot_ids": [
+    "accent_color",
+    "avatar",
+    "silhouette",
+    "visual_tone"
+  ],
+  "mode": "fill_missing",
+  "available_asset_paths": [
+    "presentation/assets/ari-vale-avatar.svg",
+    "presentation/assets/sable-reed-avatar.svg"
+  ]
+}

@@ -1090,6 +1090,15 @@
               ]
             }
           },
+          "identity_presentation": {
+            "identity_refs": [
+              "org.weave.identity.wayfinder"
+            ],
+            "presentation_refs": [
+              "assets/avatars/ari_vale.png",
+              "assets/palettes/cedar_snow.json"
+            ]
+          },
           "birth_date": {
             "value": {
               "precision": "full",

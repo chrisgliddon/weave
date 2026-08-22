@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.2.0"
+    version: "=1.3.0"
     pack: "ari_vale@=1.0.0"
     override profile.identity.display_name.value: "Ari Vale, Wayfinder"
 }
@@ -15,13 +15,24 @@ VAR alignment_pack_sha256 = character.profile.alignment.pack.sha256
 VAR alignment_horizon = character.profile.alignment.values.horizon.label
 VAR alignment_reciprocity = character.profile.alignment.values.reciprocity.label
 VAR alignment_personality_writeback = character.profile.alignment.canonical_personality_write_back
+VAR presentation_subject = character.profile.presentation.pronouns.subject
+VAR presentation_accent = character.profile.presentation.palette.colors.accent
+VAR presentation_avatar = character.profile.presentation.assets.authored_avatar.path
+VAR presentation_catalog = character.profile.presentation.catalog_assignments.avatar.catalog.id
+VAR presentation_catalog_sha256 = character.profile.presentation.catalog_assignments.avatar.catalog.sha256
+VAR presentation_personality_writeback = character.profile.presentation.canonical_personality_write_back
 
 === start ===
+{presentation_personality_writeback:
+    This branch is unreachable because presentation cannot become personality evidence.
+- else:
+    Presentation remains separate from personality evidence.
+}
 {alignment_personality_writeback:
     This branch is unreachable because reviewed alignment shorthand cannot become personality evidence.
 - else:
     {character.profile.ocean.lossy:
-        {character_name} carries {creativity} creativity evidence, a derived OCEAN openness view of {ocean_openness}, and reviewed {alignment_horizon} / {alignment_reciprocity} narrative alignment labels selected from {alignment_pack}@{alignment_pack_version} ({alignment_pack_sha256}).
+        {character_name} uses {presentation_subject} pronouns, accent {presentation_accent}, avatar {presentation_avatar}, and reviewed presentation catalog {presentation_catalog} ({presentation_catalog_sha256}); the same profile carries {creativity} creativity evidence, a derived OCEAN openness view of {ocean_openness}, and reviewed {alignment_horizon} / {alignment_reciprocity} narrative alignment labels selected from {alignment_pack}@{alignment_pack_version} ({alignment_pack_sha256}).
     - else:
         The compatibility projection is unavailable.
     }

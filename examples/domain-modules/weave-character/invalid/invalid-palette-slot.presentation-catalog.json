@@ -1,0 +1,184 @@
+{
+  "catalog_format_version": 1,
+  "id": "org.weave.character.presentation.glasswind",
+  "version": "1.0.0",
+  "title": "Glasswind Presentation Catalog",
+  "description": "Original synthetic appearance, color, style, and avatar choices for deterministic public fixture allocation.",
+  "independently_authored": true,
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "slots": {
+    "accent_color": {
+      "id": "accent_color",
+      "label": "Accent color",
+      "description": "Original synthetic Accent color presentation slot.",
+      "value_kind": "palette_color"
+    },
+    "avatar": {
+      "id": "avatar",
+      "label": "Avatar",
+      "description": "Original synthetic Avatar presentation slot.",
+      "value_kind": "asset"
+    },
+    "silhouette": {
+      "id": "silhouette",
+      "label": "Silhouette",
+      "description": "Original synthetic Silhouette presentation slot.",
+      "value_kind": "appearance"
+    },
+    "visual_tone": {
+      "id": "visual_tone",
+      "label": "Visual tone",
+      "description": "Original synthetic Visual tone presentation slot.",
+      "value_kind": "style_tag"
+    }
+  },
+  "entries": {
+    "amber_accent": {
+      "id": "amber_accent",
+      "slot_id": "accent_color",
+      "label": "Amber accent",
+      "value": {
+        "kind": "palette_color",
+        "palette_slot": "Accent Color",
+        "color": "#D6A24A"
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "ari_avatar": {
+      "id": "ari_avatar",
+      "slot_id": "avatar",
+      "label": "Ari avatar",
+      "value": {
+        "kind": "asset",
+        "asset": {
+          "id": "ari_avatar",
+          "kind": "avatar",
+          "path": "presentation/assets/ari-vale-avatar.svg",
+          "media_type": "image/svg+xml",
+          "alt_text": "Geometric cedar and gold wayfinder avatar."
+        }
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "cedar_ink": {
+      "id": "cedar_ink",
+      "slot_id": "visual_tone",
+      "label": "Cedar ink",
+      "value": {
+        "kind": "style_tag",
+        "tag": "cedar_ink"
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "long_coat": {
+      "id": "long_coat",
+      "slot_id": "silhouette",
+      "label": "Long coat",
+      "value": {
+        "kind": "appearance",
+        "category": "org.weave.appearance.silhouette",
+        "descriptor": "Long layered travel coat with a narrow shoulder line."
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "river_glass": {
+      "id": "river_glass",
+      "slot_id": "visual_tone",
+      "label": "River glass",
+      "value": {
+        "kind": "style_tag",
+        "tag": "river_glass"
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "sable_avatar": {
+      "id": "sable_avatar",
+      "slot_id": "avatar",
+      "label": "Sable avatar",
+      "value": {
+        "kind": "asset",
+        "asset": {
+          "id": "sable_avatar",
+          "kind": "avatar",
+          "path": "presentation/assets/sable-reed-avatar.svg",
+          "media_type": "image/svg+xml",
+          "alt_text": "Geometric blue and silver routekeeper avatar."
+        }
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "short_cape": {
+      "id": "short_cape",
+      "slot_id": "silhouette",
+      "label": "Short cape",
+      "value": {
+        "kind": "appearance",
+        "category": "org.weave.appearance.silhouette",
+        "descriptor": "Short route cape over a compact travel silhouette."
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    },
+    "violet_accent": {
+      "id": "violet_accent",
+      "slot_id": "accent_color",
+      "label": "Violet accent",
+      "value": {
+        "kind": "palette_color",
+        "palette_slot": "accent",
+        "color": "#7C5CFF"
+      },
+      "eligible_id_prefixes": [
+        "org.weave.character"
+      ],
+      "capacity": 1
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_glasswind_presentation",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-presentation-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic Glasswind presentation catalog and vector assets.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "assets": [
+        "weave_glasswind_presentation"
+      ],
+      "entries": [
+        "weave_glasswind_presentation"
+      ],
+      "slots": [
+        "weave_glasswind_presentation"
+      ]
+    }
+  }
+}

@@ -11,6 +11,7 @@ import temporalCharacterStory from "../../domain-modules/weave-character/context
 import {
   alignmentCharacterPresentation,
   characterPresentation,
+  identityCharacterPresentation,
   temporalCharacterPresentation,
 } from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
@@ -33,6 +34,7 @@ try {
   );
   const composedWorld = composedWorldPresentation(composedWorldStory);
   const character = characterPresentation(characterStory);
+  const identityPresentation = identityCharacterPresentation(characterStory);
   const alignmentCharacter = alignmentCharacterPresentation(characterStory);
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
 
@@ -48,7 +50,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · creativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${temporalCharacter.cues.length} reviewed temporal cues · personality write-back ${temporalCharacter.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,

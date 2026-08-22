@@ -4,16 +4,16 @@ use weave_character::{
     ALIGNMENT_EXTENSION_NAMESPACE, ALL_HEXACO_FACETS, AlignmentReceipt, Attributed,
     CHARACTER_AUTHORING_REVISION_FORMAT_VERSION, CHARACTER_OVERLAY_FORMAT_VERSION,
     CHARACTER_QUESTIONNAIRE_ANSWERS_FORMAT_VERSION, CHARACTER_QUESTIONNAIRE_PACK_FORMAT_VERSION,
-    CHARACTER_TEMPLATE_FORMAT_VERSION, CharacterAuthoringChange, CharacterAuthoringInputMode,
-    CharacterAuthoringPreview, CharacterAuthoringRevision, CharacterAuthoringWorkspace,
-    CharacterFinalReviewDecision, CharacterOperation, CharacterOperationAction, CharacterOverlay,
-    CharacterQuestionnaireAnswers, CharacterQuestionnaireComparison,
-    CharacterQuestionnaireConflictDecision, CharacterQuestionnaireConflictPredicate,
-    CharacterQuestionnaireConflictRule, CharacterQuestionnaireFacetDecision,
-    CharacterQuestionnaireItem, CharacterQuestionnairePack, CharacterQuestionnairePackRef,
-    CharacterReviewedEnrichment, CharacterTemplate, CharacterTemplateRef, Confidence, Freshness,
-    HexacoTrait, LockState, ReviewState, TraitBand, TraitMeasurement, ValueState,
-    apply_authoring_revision, apply_character_questionnaire_review,
+    CHARACTER_TEMPLATE_FORMAT_VERSION, CharacterAuthoringChange, CharacterAuthoringFieldOriginKind,
+    CharacterAuthoringInputMode, CharacterAuthoringPreview, CharacterAuthoringRevision,
+    CharacterAuthoringWorkspace, CharacterFinalReviewDecision, CharacterOperation,
+    CharacterOperationAction, CharacterOverlay, CharacterQuestionnaireAnswers,
+    CharacterQuestionnaireComparison, CharacterQuestionnaireConflictDecision,
+    CharacterQuestionnaireConflictPredicate, CharacterQuestionnaireConflictRule,
+    CharacterQuestionnaireFacetDecision, CharacterQuestionnaireItem, CharacterQuestionnairePack,
+    CharacterQuestionnairePackRef, CharacterReviewedEnrichment, CharacterTemplate,
+    CharacterTemplateRef, Confidence, Freshness, HexacoTrait, LockState, ReviewState, TraitBand,
+    TraitMeasurement, ValueState, apply_authoring_revision, apply_character_questionnaire_review,
     character_authoring_workspace_schema, clone_authoring_draft, create_authoring_draft,
     create_character_questionnaire_review, effective_authoring_profile,
     enrichment_authoring_revision, export_authoring_profile, inspect_authoring_fields,
@@ -248,6 +248,12 @@ fn questionnaire_workspace_flow_round_trips_and_exports_reviewed_canon() {
             .any(|item| item.id == "derived_ocean" && item.resolved_in_candidate)
     );
     let workspace = apply_authoring_revision(&workspace, &revision).unwrap();
+    let fields =
+        inspect_authoring_fields(&workspace.drafts["org.weave.character.lumen_reed"]).unwrap();
+    assert!(fields.iter().any(|field| {
+        field.path.ends_with(".prudence")
+            && field.origin_kind == CharacterAuthoringFieldOriginKind::AcceptedSuggestion
+    }));
     let workspace = review_authoring_draft(
         &workspace,
         "org.weave.character.lumen_reed",
@@ -328,6 +334,7 @@ fn direct_picker_and_protected_edits_share_one_fail_closed_revision_path() {
             },
         }],
         questionnaire_receipt: None,
+        presentation_receipt: None,
         enrichment: None,
         template_migration: None,
         provenance: draft.overlay.provenance.clone(),
@@ -335,7 +342,10 @@ fn direct_picker_and_protected_edits_share_one_fail_closed_revision_path() {
     let workspace = apply_authoring_revision(&workspace, &revision).unwrap();
     let fields = inspect_authoring_fields(&workspace.drafts[&draft.id]).unwrap();
     assert!(fields.iter().any(|field| {
-        field.path.ends_with(".prudence") && field.overridden && !field.inherited
+        field.path.ends_with(".prudence")
+            && field.overridden
+            && !field.inherited
+            && field.origin_kind == CharacterAuthoringFieldOriginKind::AuthoredOverride
     }));
 
     let mut protected = revision.clone();
@@ -443,6 +453,11 @@ fn template_clone_retains_base_and_effective_inspection() {
         inspect_authoring_fields(&workspace.drafts["org.weave.character.ari_vale_clone"]).unwrap();
     assert!(fields.iter().all(|field| !field.overridden));
     assert!(fields.iter().any(|field| field.inherited));
+    assert!(
+        fields
+            .iter()
+            .all(|field| field.origin_kind == CharacterAuthoringFieldOriginKind::Template)
+    );
 }
 
 #[test]
@@ -497,6 +512,15 @@ fn checked_golden_projects_cover_migration_invalidation_review_export_and_reopen
     )
     .unwrap();
     assert!(!migration.migration_effects.is_empty());
+    assert_eq!(migration.candidate_draft.template_migrations.len(), 1);
+    assert!(migration.base_fields.iter().any(|field| {
+        field.inherited && field.origin_kind == CharacterAuthoringFieldOriginKind::TemplateMigration
+    }));
+    assert!(migration.base_fields.iter().any(|field| {
+        field.path == "canon.identity.display_name"
+            && field.overridden
+            && field.origin_kind == CharacterAuthoringFieldOriginKind::AuthoredOverride
+    }));
     let invalidation: CharacterAuthoringPreview = weave_domain::parse_strict_json(
         &std::fs::read_to_string(root.join("invalidation.authoring-preview.json")).unwrap(),
     )

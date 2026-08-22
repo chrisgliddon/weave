@@ -5,9 +5,10 @@ complete synthetic Weave Character profile plus its reviewed temporal-context st
 their tagged domain values and renders them with `Application` and `Text`. It reads the same trait
 variables as the Bevy example, labels OCEAN as derived and lossy, accepts only reviewed/edited/
 overridden alignment labels with exact pack and review fingerprints, excludes rejected and
-withheld axes, keeps fact lineage separate from original fictional-cue lineage, verifies both
-alignment and temporal personality write-back are false, and has no dependency on the Weave
-Editor.
+withheld axes, and validates attributed pronouns, palette colors, safe asset paths, catalog
+coordinates, assignment value kinds, and presentation locks. It keeps fact lineage separate from
+original fictional-cue lineage, verifies presentation, alignment, and temporal personality
+write-back are false, and has no dependency on the Weave Editor.
 
 ```bash
 cd examples/domain-module-pixijs

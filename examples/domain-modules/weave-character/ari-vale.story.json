@@ -265,6 +265,167 @@
           "allowed_states": []
         }
       }
+    },
+    {
+      "span": {
+        "start": 902,
+        "end": 977,
+        "line": 18,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_subject",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "pronouns",
+              "subject"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 977,
+        "end": 1056,
+        "line": 19,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_accent",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "palette",
+              "colors",
+              "accent"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 1056,
+        "end": 1141,
+        "line": 20,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_avatar",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "assets",
+              "authored_avatar",
+              "path"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 1141,
+        "end": 1237,
+        "line": 21,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_catalog",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "catalog_assignments",
+              "avatar",
+              "catalog",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 1237,
+        "end": 1344,
+        "line": 22,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_catalog_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "catalog_assignments",
+              "avatar",
+              "catalog",
+              "sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 1344,
+        "end": 1449,
+        "line": 23,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "presentation_personality_writeback",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "presentation",
+              "canonical_personality_write_back"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
     }
   ],
   "grammars": {},
@@ -272,7 +433,7 @@
   "modules": {
     "character": {
       "id": "org.weave.character",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "pack_id": "ari_vale",
       "pack_version": "1.0.0",
       "exports": {
@@ -2033,6 +2194,781 @@
                   }
                 }
               },
+              "presentation": {
+                "kind": "object",
+                "value": {
+                  "appearance": {
+                    "kind": "object",
+                    "value": {
+                      "travel_layers": {
+                        "kind": "object",
+                        "value": {
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.appearance.clothing"
+                          },
+                          "content": {
+                            "kind": "object",
+                            "value": {
+                              "confidence": {
+                                "kind": "symbol",
+                                "value": "high"
+                              },
+                              "freshness": {
+                                "kind": "symbol",
+                                "value": "current"
+                              },
+                              "lineage": {
+                                "kind": "list",
+                                "value": [
+                                  {
+                                    "kind": "string",
+                                    "value": "character_original"
+                                  }
+                                ]
+                              },
+                              "lock": {
+                                "kind": "symbol",
+                                "value": "unlocked"
+                              },
+                              "review": {
+                                "kind": "symbol",
+                                "value": "not_required"
+                              },
+                              "state": {
+                                "kind": "symbol",
+                                "value": "authored"
+                              },
+                              "value": {
+                                "kind": "string",
+                                "value": "Layered cedar-green travel cloth with a pale reflective hem."
+                              }
+                            }
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "travel_layers"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "assets": {
+                    "kind": "object",
+                    "value": {
+                      "authored_avatar": {
+                        "kind": "object",
+                        "value": {
+                          "alt_text": {
+                            "kind": "string",
+                            "value": "Geometric cedar and gold wayfinder avatar."
+                          },
+                          "confidence": {
+                            "kind": "symbol",
+                            "value": "high"
+                          },
+                          "freshness": {
+                            "kind": "symbol",
+                            "value": "current"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "authored_avatar"
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "avatar"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "media_type": {
+                            "kind": "string",
+                            "value": "image/svg+xml"
+                          },
+                          "path": {
+                            "kind": "string",
+                            "value": "presentation/assets/ari-vale-avatar.svg"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "canonical_personality_write_back": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "catalog_assignments": {
+                    "kind": "object",
+                    "value": {
+                      "accent_color": {
+                        "kind": "object",
+                        "value": {
+                          "catalog": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.character.presentation.glasswind"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "confidence": {
+                            "kind": "symbol",
+                            "value": "high"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "amber_accent"
+                          },
+                          "freshness": {
+                            "kind": "symbol",
+                            "value": "current"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_glasswind_presentation"
+                              }
+                            ]
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                          },
+                          "slot_id": {
+                            "kind": "string",
+                            "value": "accent_color"
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "value": {
+                            "kind": "object",
+                            "value": {
+                              "color": {
+                                "kind": "string",
+                                "value": "#D6A24A"
+                              },
+                              "kind": {
+                                "kind": "symbol",
+                                "value": "palette_color"
+                              },
+                              "palette_slot": {
+                                "kind": "string",
+                                "value": "accent"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "avatar": {
+                        "kind": "object",
+                        "value": {
+                          "catalog": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.character.presentation.glasswind"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "confidence": {
+                            "kind": "symbol",
+                            "value": "high"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "ari_avatar"
+                          },
+                          "freshness": {
+                            "kind": "symbol",
+                            "value": "current"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_glasswind_presentation"
+                              }
+                            ]
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "locked"
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                          },
+                          "slot_id": {
+                            "kind": "string",
+                            "value": "avatar"
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "value": {
+                            "kind": "object",
+                            "value": {
+                              "asset": {
+                                "kind": "object",
+                                "value": {
+                                  "alt_text": {
+                                    "kind": "string",
+                                    "value": "Geometric cedar and gold wayfinder avatar."
+                                  },
+                                  "id": {
+                                    "kind": "string",
+                                    "value": "ari_avatar"
+                                  },
+                                  "kind": {
+                                    "kind": "symbol",
+                                    "value": "avatar"
+                                  },
+                                  "media_type": {
+                                    "kind": "string",
+                                    "value": "image/svg+xml"
+                                  },
+                                  "path": {
+                                    "kind": "string",
+                                    "value": "presentation/assets/ari-vale-avatar.svg"
+                                  }
+                                }
+                              },
+                              "kind": {
+                                "kind": "symbol",
+                                "value": "asset"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "silhouette": {
+                        "kind": "object",
+                        "value": {
+                          "catalog": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.character.presentation.glasswind"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "confidence": {
+                            "kind": "symbol",
+                            "value": "high"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "long_coat"
+                          },
+                          "freshness": {
+                            "kind": "symbol",
+                            "value": "current"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_glasswind_presentation"
+                              }
+                            ]
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                          },
+                          "slot_id": {
+                            "kind": "string",
+                            "value": "silhouette"
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "value": {
+                            "kind": "object",
+                            "value": {
+                              "appearance_category": {
+                                "kind": "string",
+                                "value": "org.weave.appearance.silhouette"
+                              },
+                              "descriptor": {
+                                "kind": "string",
+                                "value": "Long layered travel coat with a narrow shoulder line."
+                              },
+                              "kind": {
+                                "kind": "symbol",
+                                "value": "appearance"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "visual_tone": {
+                        "kind": "object",
+                        "value": {
+                          "catalog": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.character.presentation.glasswind"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "confidence": {
+                            "kind": "symbol",
+                            "value": "high"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "river_glass"
+                          },
+                          "freshness": {
+                            "kind": "symbol",
+                            "value": "current"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_glasswind_presentation"
+                              }
+                            ]
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                          },
+                          "slot_id": {
+                            "kind": "string",
+                            "value": "visual_tone"
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "value": {
+                            "kind": "object",
+                            "value": {
+                              "kind": {
+                                "kind": "symbol",
+                                "value": "style_tag"
+                              },
+                              "tag": {
+                                "kind": "string",
+                                "value": "river_glass"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "context_notes": {
+                    "kind": "object",
+                    "value": {
+                      "current_context": {
+                        "kind": "object",
+                        "value": {
+                          "content": {
+                            "kind": "object",
+                            "value": {
+                              "confidence": {
+                                "kind": "symbol",
+                                "value": "high"
+                              },
+                              "freshness": {
+                                "kind": "symbol",
+                                "value": "current"
+                              },
+                              "lineage": {
+                                "kind": "list",
+                                "value": [
+                                  {
+                                    "kind": "string",
+                                    "value": "character_original"
+                                  }
+                                ]
+                              },
+                              "lock": {
+                                "kind": "symbol",
+                                "value": "unlocked"
+                              },
+                              "review": {
+                                "kind": "symbol",
+                                "value": "not_required"
+                              },
+                              "state": {
+                                "kind": "symbol",
+                                "value": "authored"
+                              },
+                              "value": {
+                                "kind": "string",
+                                "value": "Carries a folded route card for the next fictional crossing."
+                              }
+                            }
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "current_context"
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "context"
+                          }
+                        }
+                      },
+                      "glasswind_origin": {
+                        "kind": "object",
+                        "value": {
+                          "content": {
+                            "kind": "object",
+                            "value": {
+                              "confidence": {
+                                "kind": "symbol",
+                                "value": "high"
+                              },
+                              "freshness": {
+                                "kind": "symbol",
+                                "value": "current"
+                              },
+                              "lineage": {
+                                "kind": "list",
+                                "value": [
+                                  {
+                                    "kind": "string",
+                                    "value": "character_original"
+                                  }
+                                ]
+                              },
+                              "lock": {
+                                "kind": "symbol",
+                                "value": "unlocked"
+                              },
+                              "review": {
+                                "kind": "symbol",
+                                "value": "not_required"
+                              },
+                              "state": {
+                                "kind": "symbol",
+                                "value": "authored"
+                              },
+                              "value": {
+                                "kind": "string",
+                                "value": "Raised among the synthetic Glasswind coast's public wayfinding houses."
+                              }
+                            }
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "glasswind_origin"
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "origin"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "identity_refs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "org.weave.identity.wayfinder"
+                      }
+                    ]
+                  },
+                  "palette": {
+                    "kind": "object",
+                    "value": {
+                      "colors": {
+                        "kind": "object",
+                        "value": {
+                          "accent": {
+                            "kind": "string",
+                            "value": "#D6A24A"
+                          },
+                          "background": {
+                            "kind": "string",
+                            "value": "#102825"
+                          },
+                          "foreground": {
+                            "kind": "string",
+                            "value": "#D9F4E3"
+                          }
+                        }
+                      },
+                      "confidence": {
+                        "kind": "symbol",
+                        "value": "high"
+                      },
+                      "freshness": {
+                        "kind": "symbol",
+                        "value": "current"
+                      },
+                      "lineage": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "string",
+                            "value": "character_original"
+                          }
+                        ]
+                      },
+                      "lock": {
+                        "kind": "symbol",
+                        "value": "unlocked"
+                      },
+                      "review": {
+                        "kind": "symbol",
+                        "value": "not_required"
+                      },
+                      "state": {
+                        "kind": "symbol",
+                        "value": "authored"
+                      }
+                    }
+                  },
+                  "presentation_refs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "presentation/assets/ari-vale-avatar.svg"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "presentation/assets/sable-reed-avatar.svg"
+                      }
+                    ]
+                  },
+                  "pronouns": {
+                    "kind": "object",
+                    "value": {
+                      "confidence": {
+                        "kind": "symbol",
+                        "value": "high"
+                      },
+                      "freshness": {
+                        "kind": "symbol",
+                        "value": "current"
+                      },
+                      "lineage": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "string",
+                            "value": "character_original"
+                          }
+                        ]
+                      },
+                      "lock": {
+                        "kind": "symbol",
+                        "value": "unlocked"
+                      },
+                      "object": {
+                        "kind": "string",
+                        "value": "them"
+                      },
+                      "possessive_determiner": {
+                        "kind": "string",
+                        "value": "their"
+                      },
+                      "possessive_pronoun": {
+                        "kind": "string",
+                        "value": "theirs"
+                      },
+                      "reflexive": {
+                        "kind": "string",
+                        "value": "themself"
+                      },
+                      "review": {
+                        "kind": "symbol",
+                        "value": "not_required"
+                      },
+                      "state": {
+                        "kind": "symbol",
+                        "value": "authored"
+                      },
+                      "subject": {
+                        "kind": "string",
+                        "value": "they"
+                      }
+                    }
+                  },
+                  "style_tags": {
+                    "kind": "object",
+                    "value": {
+                      "confidence": {
+                        "kind": "symbol",
+                        "value": "high"
+                      },
+                      "freshness": {
+                        "kind": "symbol",
+                        "value": "current"
+                      },
+                      "lineage": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "string",
+                            "value": "character_original"
+                          }
+                        ]
+                      },
+                      "lock": {
+                        "kind": "symbol",
+                        "value": "unlocked"
+                      },
+                      "review": {
+                        "kind": "symbol",
+                        "value": "not_required"
+                      },
+                      "state": {
+                        "kind": "symbol",
+                        "value": "authored"
+                      },
+                      "tags": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "string",
+                            "value": "cedar_ink"
+                          },
+                          {
+                            "kind": "string",
+                            "value": "route_marks"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
               "profile_format_version": {
                 "kind": "number",
                 "value": 1.0
@@ -2046,6 +2982,10 @@
                       {
                         "kind": "string",
                         "value": "character_original"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "weave_glasswind_presentation"
                       },
                       {
                         "kind": "string",
@@ -2089,9 +3029,74 @@
       "content": [
         {
           "span": {
-            "start": 917,
-            "end": 1458,
-            "line": 20,
+            "start": 1464,
+            "end": 1659,
+            "line": 26,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "path",
+                    "value": [
+                      "presentation_personality_writeback"
+                    ]
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 1505,
+                        "end": 1588,
+                        "line": 27,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "This branch is unreachable because presentation cannot become personality evidence."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 1601,
+                    "end": 1657,
+                    "line": 29,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "Presentation remains separate from personality evidence."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1660,
+            "end": 2406,
+            "line": 31,
             "column": 1
           },
           "kind": {
@@ -2108,9 +3113,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 955,
-                        "end": 1054,
-                        "line": 21,
+                        "start": 1698,
+                        "end": 1797,
+                        "line": 32,
                         "column": 5
                       },
                       "kind": {
@@ -2131,9 +3136,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 1067,
-                    "end": 1456,
-                    "line": 23,
+                    "start": 1810,
+                    "end": 2404,
+                    "line": 34,
                     "column": 5
                   },
                   "kind": {
@@ -2153,9 +3158,9 @@
                           "body": [
                             {
                               "span": {
-                                "start": 1107,
-                                "end": 1385,
-                                "line": 24,
+                                "start": 1850,
+                                "end": 2333,
+                                "line": 35,
                                 "column": 9
                               },
                               "kind": {
@@ -2173,7 +3178,72 @@
                                     },
                                     {
                                       "kind": "text",
-                                      "value": " carries "
+                                      "value": " uses "
+                                    },
+                                    {
+                                      "kind": "expression",
+                                      "value": {
+                                        "kind": "path",
+                                        "value": [
+                                          "presentation_subject"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "text",
+                                      "value": " pronouns, accent "
+                                    },
+                                    {
+                                      "kind": "expression",
+                                      "value": {
+                                        "kind": "path",
+                                        "value": [
+                                          "presentation_accent"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "text",
+                                      "value": ", avatar "
+                                    },
+                                    {
+                                      "kind": "expression",
+                                      "value": {
+                                        "kind": "path",
+                                        "value": [
+                                          "presentation_avatar"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "text",
+                                      "value": ", and reviewed presentation catalog "
+                                    },
+                                    {
+                                      "kind": "expression",
+                                      "value": {
+                                        "kind": "path",
+                                        "value": [
+                                          "presentation_catalog"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "text",
+                                      "value": " ("
+                                    },
+                                    {
+                                      "kind": "expression",
+                                      "value": {
+                                        "kind": "path",
+                                        "value": [
+                                          "presentation_catalog_sha256"
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "text",
+                                      "value": "); the same profile carries "
                                     },
                                     {
                                       "kind": "expression",
@@ -2276,9 +3346,9 @@
                       "fallback": [
                         {
                           "span": {
-                            "start": 1406,
-                            "end": 1450,
-                            "line": 26,
+                            "start": 2354,
+                            "end": 2398,
+                            "line": 37,
                             "column": 9
                           },
                           "kind": {
@@ -2303,9 +3373,9 @@
         },
         {
           "span": {
-            "start": 1459,
-            "end": 1465,
-            "line": 29,
+            "start": 2407,
+            "end": 2413,
+            "line": 40,
             "column": 1
           },
           "kind": {

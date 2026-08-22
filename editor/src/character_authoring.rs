@@ -11,8 +11,9 @@ use weave_character::{
 };
 
 /// Stable focus order shared by visual and text-equivalent authoring surfaces.
-pub const CHARACTER_AUTHORING_CONTROLS: [CharacterAuthoringControl; 13] = [
+pub const CHARACTER_AUTHORING_CONTROLS: [CharacterAuthoringControl; 14] = [
     CharacterAuthoringControl::Identity,
+    CharacterAuthoringControl::Presentation,
     CharacterAuthoringControl::BirthDate,
     CharacterAuthoringControl::DirectFacets,
     CharacterAuthoringControl::Questionnaire,
@@ -31,6 +32,7 @@ pub const CHARACTER_AUTHORING_CONTROLS: [CharacterAuthoringControl; 13] = [
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CharacterAuthoringControl {
     Identity,
+    Presentation,
     BirthDate,
     DirectFacets,
     Questionnaire,
@@ -50,6 +52,7 @@ impl CharacterAuthoringControl {
     pub const fn label(self) -> &'static str {
         match self {
             Self::Identity => "Identity",
+            Self::Presentation => "Pronouns, appearance, palette, and assets",
             Self::BirthDate => "Birth date",
             Self::DirectFacets => "Direct HEXACO facets",
             Self::Questionnaire => "Narrative questionnaire",
@@ -69,6 +72,9 @@ impl CharacterAuthoringControl {
     pub const fn source_representation(self) -> &'static str {
         match self {
             Self::Identity => "CharacterOverlay.operations.set_display_name/set_aliases",
+            Self::Presentation => {
+                "CharacterOverlay.operations presentation actions + PresentationReceipt"
+            }
             Self::BirthDate => "CharacterOverlay.operations.set_birth_date",
             Self::DirectFacets => "CharacterOverlay.operations.set_hexaco_trait",
             Self::Questionnaire => "CharacterQuestionnaireProposal",

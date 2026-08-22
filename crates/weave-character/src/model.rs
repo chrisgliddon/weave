@@ -465,6 +465,9 @@ pub struct CharacterSuggestion {
 }
 
 /// One versioned optional extension.
+// These are persisted authoring records rather than a hot-path queue. Keeping variants direct
+// preserves a symmetric public pattern-matching API and a stable serialized contract.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(
     rename_all = "snake_case",
@@ -517,11 +520,141 @@ pub enum ExtensionWriteBack {
 }
 
 /// Optional identity and project-relative presentation references.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct IdentityPresentation {
     pub identity_refs: Vec<String>,
     pub presentation_refs: Vec<String>,
+    /// Optional authored language used to refer to the character.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pronouns: Option<Attributed<PronounSet>>,
+    /// Authored origin or context notes keyed by stable local identifier.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub context_notes: BTreeMap<String, IdentityContextNote>,
+    /// Appearance descriptions keyed by stable local identifier.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub appearance: BTreeMap<String, AppearanceDescriptor>,
+    /// Optional named color slots for portable presentation consumers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub palette: Option<Attributed<PresentationPalette>>,
+    /// Optional sorted style tags. Tags describe presentation only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_tags: Option<Attributed<Vec<String>>>,
+    /// Portable, project-relative asset references keyed by stable local identifier.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub assets: BTreeMap<String, Attributed<PresentationAssetReference>>,
+    /// Reviewed catalog allocations keyed by presentation slot.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub catalog_assignments: BTreeMap<String, Attributed<PresentationCatalogAssignment>>,
+}
+
+/// Explicit grammatical forms without assuming a fixed pronoun vocabulary.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PronounSet {
+    pub subject: String,
+    pub object: String,
+    pub possessive_determiner: String,
+    pub possessive_pronoun: String,
+    pub reflexive: String,
+}
+
+/// One authored identity-adjacent note that remains outside personality canon.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityContextNote {
+    pub id: String,
+    pub kind: IdentityContextKind,
+    pub content: Attributed<String>,
+}
+
+/// Closed baseline identity-note categories.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum IdentityContextKind {
+    Origin,
+    Context,
+}
+
+/// One authored appearance statement with a namespaced category.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AppearanceDescriptor {
+    pub id: String,
+    pub category: String,
+    pub content: Attributed<String>,
+}
+
+/// Named portable color slots. Values use canonical hexadecimal sRGB notation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PresentationPalette {
+    pub colors: BTreeMap<String, String>,
+}
+
+/// Closed portable asset roles.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PresentationAssetKind {
+    Avatar,
+    Portrait,
+    Sprite,
+    Model,
+    Illustration,
+}
+
+/// One project-relative asset coordinate with optional content fingerprint.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PresentationAssetReference {
+    pub id: String,
+    pub kind: PresentationAssetKind,
+    pub path: String,
+    pub media_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+    pub alt_text: String,
+}
+
+/// Exact immutable presentation-catalog coordinate.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PresentationCatalogRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// Closed values a presentation catalog may propose. None can modify identity or personality.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
+pub enum PresentationCatalogValue {
+    Appearance {
+        category: String,
+        descriptor: String,
+    },
+    PaletteColor {
+        palette_slot: String,
+        color: String,
+    },
+    StyleTag {
+        tag: String,
+    },
+    Asset {
+        asset: PresentationAssetReference,
+    },
+}
+
+/// One reviewed catalog allocation retained with proposal and review fingerprints.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PresentationCatalogAssignment {
+    pub slot_id: String,
+    pub catalog: PresentationCatalogRef,
+    pub entry_id: String,
+    pub value: PresentationCatalogValue,
+    pub proposal_sha256: String,
+    pub review_sha256: String,
 }
 
 /// Normalized expression and preference records plus behavioral-signature links.
@@ -818,6 +951,9 @@ pub struct CharacterOperation {
 }
 
 /// Closed v1 operation vocabulary shared by source tooling, editor actions, CLI, RON, and JSON.
+// Operation documents are infrequent review artifacts; direct variants keep the public API and
+// serde shape uniform across all actions.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "action", deny_unknown_fields)]
 pub enum CharacterOperationAction {
@@ -828,6 +964,42 @@ pub enum CharacterOperationAction {
         value: Attributed<Vec<String>>,
     },
     ClearAliases,
+    SetPronouns {
+        value: Attributed<PronounSet>,
+    },
+    ClearPronouns,
+    UpsertIdentityContextNote {
+        record: IdentityContextNote,
+    },
+    RemoveIdentityContextNote {
+        id: String,
+    },
+    UpsertAppearanceDescriptor {
+        record: AppearanceDescriptor,
+    },
+    RemoveAppearanceDescriptor {
+        id: String,
+    },
+    SetPresentationPalette {
+        value: Attributed<PresentationPalette>,
+    },
+    ClearPresentationPalette,
+    SetPresentationStyleTags {
+        value: Attributed<Vec<String>>,
+    },
+    ClearPresentationStyleTags,
+    UpsertPresentationAsset {
+        value: Attributed<PresentationAssetReference>,
+    },
+    RemovePresentationAsset {
+        id: String,
+    },
+    UpsertPresentationAssignment {
+        value: Attributed<PresentationCatalogAssignment>,
+    },
+    RemovePresentationAssignment {
+        slot_id: String,
+    },
     SetBirthDate {
         value: Attributed<BirthDate>,
     },

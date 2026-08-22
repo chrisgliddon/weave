@@ -13,12 +13,14 @@ use crate::{
     AcceptedDateContextCue, AlignmentPackRef, AlignmentPublicDecision, ApprovedAlignmentValue,
     Attributed, CharacterError, CharacterExtension, CharacterProfile, Confidence,
     DateContextCueKind, DateContextDecision, DateContextSensitivity, DateContextUncertainty,
-    DerivedTrait, Freshness, HexacoProfile, LockState, OceanView, ReviewState, TraitBand,
-    TraitMeasurement, ValueState, validate_profile,
+    DerivedTrait, Freshness, HexacoProfile, IdentityContextKind, IdentityPresentation, LockState,
+    OceanView, PresentationAssetKind, PresentationAssetReference, PresentationCatalogAssignment,
+    PresentationCatalogRef, PresentationCatalogValue, ReviewState, TraitBand, TraitMeasurement,
+    ValueState, validate_profile,
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.2.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.3.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -89,6 +91,50 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             character_alignment_pack_type(),
         ),
         ("CharacterIdentity".to_owned(), character_identity_type()),
+        (
+            "CharacterIdentityPresentation".to_owned(),
+            character_identity_presentation_type(),
+        ),
+        (
+            "CharacterPresentationPronouns".to_owned(),
+            character_presentation_pronouns_type(),
+        ),
+        (
+            "CharacterPresentationText".to_owned(),
+            character_presentation_text_type(),
+        ),
+        (
+            "CharacterAppearanceDescriptor".to_owned(),
+            character_appearance_descriptor_type(),
+        ),
+        (
+            "CharacterPresentationPalette".to_owned(),
+            character_presentation_palette_type(),
+        ),
+        (
+            "CharacterPresentationStyleTags".to_owned(),
+            character_presentation_style_tags_type(),
+        ),
+        (
+            "CharacterPresentationAsset".to_owned(),
+            character_presentation_asset_type(true),
+        ),
+        (
+            "CharacterPresentationAssetValue".to_owned(),
+            character_presentation_asset_type(false),
+        ),
+        (
+            "CharacterPresentationCatalog".to_owned(),
+            character_presentation_catalog_type(),
+        ),
+        (
+            "CharacterPresentationCatalogValue".to_owned(),
+            character_presentation_catalog_value_type(),
+        ),
+        (
+            "CharacterPresentationAssignment".to_owned(),
+            character_presentation_assignment_type(),
+        ),
         ("CharacterProfile".to_owned(), runtime_profile_type()),
         (
             "CharacterProvenance".to_owned(),
@@ -136,7 +182,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         version: CHARACTER_DOMAIN_MODULE_VERSION.to_owned(),
         namespace: "character".to_owned(),
         title: "Weave Character".to_owned(),
-        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence and a visibly lossy derived OCEAN view.".to_owned(),
+        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
         authors: vec![ModuleAuthor {
             name: "Weave Contributors".to_owned(),
             url: Some("https://github.com/chrisgliddon/weave".to_owned()),
@@ -173,6 +219,8 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
                 (vec!["profile", "hexaco"], "Canonical HEXACO evidence is revised in the profile artifact so dependent views can be recomputed and reviewed."),
                 (vec!["profile", "identity", "id"], "The stable character identifier is not a display label and cannot be rewritten by a story override."),
                 (vec!["profile", "ocean"], "OCEAN is a lossy derived compatibility view and cannot be authored as independent evidence."),
+                (vec!["profile", "presentation", "canonical_personality_write_back"], "Presentation has no write path into canonical personality evidence."),
+                (vec!["profile", "presentation", "catalog_assignments"], "Reviewed catalog assignments retain exact proposal, review, catalog, and lock metadata; revise them through the presentation review workflow."),
                 (vec!["profile", "profile_format_version"], "The profile contract version is fixed by the selected pack."),
                 (vec!["profile", "provenance"], "Pack provenance is immutable and cannot be replaced by story source."),
             ]
@@ -325,6 +373,9 @@ pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue
     if let Some(alignment) = alignment_value(profile) {
         fields.insert("alignment".to_owned(), alignment);
     }
+    if let Some(presentation) = identity_presentation_value(profile) {
+        fields.insert("presentation".to_owned(), presentation);
+    }
     DomainValue::Object(fields)
 }
 
@@ -333,7 +384,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v3";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v4";
     if input
         .transformations
         .iter()
@@ -349,7 +400,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -665,6 +716,379 @@ fn character_identity_type() -> TypeExpression {
                     text(3, 256),
                     true,
                     "Stable namespaced character identifier.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_presentation_pronouns_type() -> TypeExpression {
+    let mut fields = evidence_metadata_fields(None);
+    for (id, description) in [
+        ("object", "Object pronoun form."),
+        ("possessive_determiner", "Possessive determiner form."),
+        ("possessive_pronoun", "Possessive pronoun form."),
+        ("reflexive", "Reflexive pronoun form."),
+        ("subject", "Subject pronoun form."),
+    ] {
+        fields.insert(id.to_owned(), field(text(1, 64), true, description));
+    }
+    TypeExpression::Object { fields }
+}
+
+fn character_presentation_text_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "content".to_owned(),
+                field(
+                    named("AttributedText"),
+                    true,
+                    "Authored identity-adjacent note content.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable local note identifier."),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&["context", "origin"]),
+                    true,
+                    "Authored note category.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_appearance_descriptor_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "category".to_owned(),
+                field(text(3, 256), true, "Namespaced appearance category."),
+            ),
+            (
+                "content".to_owned(),
+                field(
+                    named("AttributedText"),
+                    true,
+                    "Authored appearance description.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(
+                    text(1, 128),
+                    true,
+                    "Stable local appearance-record identifier.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_presentation_palette_type() -> TypeExpression {
+    let mut fields = evidence_metadata_fields(None);
+    fields.insert(
+        "colors".to_owned(),
+        field(
+            TypeExpression::Map {
+                values: Box::new(text(7, 9)),
+                min_entries: 1,
+                max_entries: 64,
+            },
+            true,
+            "Named canonical hexadecimal sRGB color slots.",
+        ),
+    );
+    TypeExpression::Object { fields }
+}
+
+fn character_presentation_style_tags_type() -> TypeExpression {
+    let mut fields = evidence_metadata_fields(None);
+    fields.insert(
+        "tags".to_owned(),
+        field(
+            TypeExpression::List {
+                items: Box::new(text(1, 128)),
+                min_items: 0,
+                max_items: 4_096,
+            },
+            true,
+            "Sorted presentation-only style tags.",
+        ),
+    );
+    TypeExpression::Object { fields }
+}
+
+fn character_presentation_asset_type(attributed: bool) -> TypeExpression {
+    let mut fields = if attributed {
+        evidence_metadata_fields(None)
+    } else {
+        BTreeMap::new()
+    };
+    fields.extend([
+        (
+            "alt_text".to_owned(),
+            field(text(1, 512), true, "Portable asset alternative text."),
+        ),
+        (
+            "id".to_owned(),
+            field(text(1, 128), true, "Stable local asset identifier."),
+        ),
+        (
+            "kind".to_owned(),
+            field(
+                symbol(&["avatar", "illustration", "model", "portrait", "sprite"]),
+                true,
+                "Portable asset role.",
+            ),
+        ),
+        (
+            "media_type".to_owned(),
+            field(text(3, 128), true, "Portable media type."),
+        ),
+        (
+            "path".to_owned(),
+            field(text(1, 2_048), true, "Safe project-relative asset path."),
+        ),
+        (
+            "sha256".to_owned(),
+            field(text(64, 64), false, "Optional exact asset content SHA-256."),
+        ),
+    ]);
+    TypeExpression::Object { fields }
+}
+
+fn character_presentation_catalog_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact presentation catalog identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact catalog content SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(text(1, 256), true, "Exact catalog semantic version."),
+            ),
+        ]),
+    }
+}
+
+fn character_presentation_catalog_value_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "appearance_category".to_owned(),
+                field(
+                    text(3, 256),
+                    false,
+                    "Appearance category when kind is appearance.",
+                ),
+            ),
+            (
+                "asset".to_owned(),
+                field(
+                    named("CharacterPresentationAssetValue"),
+                    false,
+                    "Portable asset coordinate when kind is asset.",
+                ),
+            ),
+            (
+                "color".to_owned(),
+                field(
+                    text(7, 9),
+                    false,
+                    "Canonical color when kind is palette_color.",
+                ),
+            ),
+            (
+                "descriptor".to_owned(),
+                field(
+                    text(1, 2_048),
+                    false,
+                    "Description when kind is appearance.",
+                ),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&["appearance", "asset", "palette_color", "style_tag"]),
+                    true,
+                    "Closed presentation catalog value kind.",
+                ),
+            ),
+            (
+                "palette_slot".to_owned(),
+                field(
+                    text(1, 128),
+                    false,
+                    "Named slot when kind is palette_color.",
+                ),
+            ),
+            (
+                "tag".to_owned(),
+                field(text(1, 128), false, "Style tag when kind is style_tag."),
+            ),
+        ]),
+    }
+}
+
+fn character_presentation_assignment_type() -> TypeExpression {
+    let mut fields = evidence_metadata_fields(None);
+    fields.extend([
+        (
+            "catalog".to_owned(),
+            field(
+                named("CharacterPresentationCatalog"),
+                true,
+                "Exact immutable catalog coordinate.",
+            ),
+        ),
+        (
+            "entry_id".to_owned(),
+            field(
+                text(1, 128),
+                true,
+                "Reviewed catalog entry or author_override.",
+            ),
+        ),
+        (
+            "proposal_sha256".to_owned(),
+            field(text(64, 64), true, "Exact allocation proposal fingerprint."),
+        ),
+        (
+            "review_sha256".to_owned(),
+            field(text(64, 64), true, "Exact complete review fingerprint."),
+        ),
+        (
+            "slot_id".to_owned(),
+            field(text(1, 128), true, "Stable presentation slot identifier."),
+        ),
+        (
+            "value".to_owned(),
+            field(
+                named("CharacterPresentationCatalogValue"),
+                true,
+                "Reviewed presentation-only value.",
+            ),
+        ),
+    ]);
+    TypeExpression::Object { fields }
+}
+
+fn character_identity_presentation_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "appearance".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterAppearanceDescriptor")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Authored appearance descriptors keyed by stable local id.",
+                ),
+            ),
+            (
+                "assets".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterPresentationAsset")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Portable attributed asset references.",
+                ),
+            ),
+            (
+                "canonical_personality_write_back".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; presentation cannot modify canonical personality evidence.",
+                ),
+            ),
+            (
+                "catalog_assignments".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterPresentationAssignment")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Reviewed deterministic catalog assignments.",
+                ),
+            ),
+            (
+                "context_notes".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterPresentationText")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Authored origin and context notes.",
+                ),
+            ),
+            (
+                "identity_refs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(3, 256)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted optional identity references.",
+                ),
+            ),
+            (
+                "palette".to_owned(),
+                field(
+                    named("CharacterPresentationPalette"),
+                    false,
+                    "Optional attributed color palette.",
+                ),
+            ),
+            (
+                "presentation_refs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 2_048)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted project-relative presentation references.",
+                ),
+            ),
+            (
+                "pronouns".to_owned(),
+                field(
+                    named("CharacterPresentationPronouns"),
+                    false,
+                    "Optional authored pronoun forms.",
+                ),
+            ),
+            (
+                "style_tags".to_owned(),
+                field(
+                    named("CharacterPresentationStyleTags"),
+                    false,
+                    "Optional attributed presentation style tags.",
                 ),
             ),
         ]),
@@ -1056,6 +1480,14 @@ fn runtime_profile_type() -> TypeExpression {
                 ),
             ),
             (
+                "presentation".to_owned(),
+                field(
+                    named("CharacterIdentityPresentation"),
+                    false,
+                    "Optional typed identity-adjacent and visual presentation data with no canonical personality write-back.",
+                ),
+            ),
+            (
                 "provenance".to_owned(),
                 field(
                     named("CharacterProvenance"),
@@ -1099,6 +1531,304 @@ fn number(integer: bool, minimum: f64, maximum: f64) -> TypeExpression {
 fn symbol(values: &[&str]) -> TypeExpression {
     TypeExpression::Symbol {
         values: values.iter().map(|value| (*value).to_owned()).collect(),
+    }
+}
+
+fn identity_presentation_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::IdentityPresentation(extension) = profile
+        .extensions
+        .get(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    Some(presentation_value(&extension.value))
+}
+
+fn presentation_value(value: &IdentityPresentation) -> DomainValue {
+    let mut fields = BTreeMap::from([
+        (
+            "appearance".to_owned(),
+            DomainValue::Object(
+                value
+                    .appearance
+                    .iter()
+                    .map(|(id, record)| {
+                        (
+                            id.clone(),
+                            object([
+                                ("category", DomainValue::String(record.category.clone())),
+                                ("content", attributed_text_value(&record.content)),
+                                ("id", DomainValue::String(record.id.clone())),
+                            ]),
+                        )
+                    })
+                    .collect(),
+            ),
+        ),
+        (
+            "assets".to_owned(),
+            DomainValue::Object(
+                value
+                    .assets
+                    .iter()
+                    .map(|(id, asset)| (id.clone(), attributed_asset_value(asset)))
+                    .collect(),
+            ),
+        ),
+        (
+            "canonical_personality_write_back".to_owned(),
+            DomainValue::Bool(false),
+        ),
+        (
+            "catalog_assignments".to_owned(),
+            DomainValue::Object(
+                value
+                    .catalog_assignments
+                    .iter()
+                    .map(|(id, assignment)| (id.clone(), presentation_assignment_value(assignment)))
+                    .collect(),
+            ),
+        ),
+        (
+            "context_notes".to_owned(),
+            DomainValue::Object(
+                value
+                    .context_notes
+                    .iter()
+                    .map(|(id, record)| {
+                        (
+                            id.clone(),
+                            object([
+                                ("content", attributed_text_value(&record.content)),
+                                (
+                                    "kind",
+                                    DomainValue::Symbol(
+                                        identity_context_kind(record.kind).to_owned(),
+                                    ),
+                                ),
+                                ("id", DomainValue::String(record.id.clone())),
+                            ]),
+                        )
+                    })
+                    .collect(),
+            ),
+        ),
+        (
+            "identity_refs".to_owned(),
+            DomainValue::List(
+                value
+                    .identity_refs
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        (
+            "presentation_refs".to_owned(),
+            DomainValue::List(
+                value
+                    .presentation_refs
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+    ]);
+    if let Some(pronouns) = &value.pronouns {
+        let mut pronoun_fields = evidence_metadata_value(pronouns);
+        pronoun_fields.extend([
+            (
+                "object".to_owned(),
+                DomainValue::String(pronouns.value.object.clone()),
+            ),
+            (
+                "possessive_determiner".to_owned(),
+                DomainValue::String(pronouns.value.possessive_determiner.clone()),
+            ),
+            (
+                "possessive_pronoun".to_owned(),
+                DomainValue::String(pronouns.value.possessive_pronoun.clone()),
+            ),
+            (
+                "reflexive".to_owned(),
+                DomainValue::String(pronouns.value.reflexive.clone()),
+            ),
+            (
+                "subject".to_owned(),
+                DomainValue::String(pronouns.value.subject.clone()),
+            ),
+        ]);
+        fields.insert("pronouns".to_owned(), DomainValue::Object(pronoun_fields));
+    }
+    if let Some(palette) = &value.palette {
+        let mut palette_fields = evidence_metadata_value(palette);
+        palette_fields.insert(
+            "colors".to_owned(),
+            DomainValue::Object(
+                palette
+                    .value
+                    .colors
+                    .iter()
+                    .map(|(slot, color)| (slot.clone(), DomainValue::String(color.clone())))
+                    .collect(),
+            ),
+        );
+        fields.insert("palette".to_owned(), DomainValue::Object(palette_fields));
+    }
+    if let Some(tags) = &value.style_tags {
+        let mut tag_fields = evidence_metadata_value(tags);
+        tag_fields.insert(
+            "tags".to_owned(),
+            DomainValue::List(
+                tags.value
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        );
+        fields.insert("style_tags".to_owned(), DomainValue::Object(tag_fields));
+    }
+    DomainValue::Object(fields)
+}
+
+fn attributed_asset_value(value: &Attributed<PresentationAssetReference>) -> DomainValue {
+    let mut fields = evidence_metadata_value(value);
+    fields.extend(presentation_asset_fields(&value.value));
+    DomainValue::Object(fields)
+}
+
+fn presentation_asset_value(value: &PresentationAssetReference) -> DomainValue {
+    DomainValue::Object(presentation_asset_fields(value))
+}
+
+fn presentation_asset_fields(value: &PresentationAssetReference) -> BTreeMap<String, DomainValue> {
+    let mut fields = BTreeMap::from([
+        (
+            "alt_text".to_owned(),
+            DomainValue::String(value.alt_text.clone()),
+        ),
+        ("id".to_owned(), DomainValue::String(value.id.clone())),
+        (
+            "kind".to_owned(),
+            DomainValue::Symbol(presentation_asset_kind(value.kind).to_owned()),
+        ),
+        (
+            "media_type".to_owned(),
+            DomainValue::String(value.media_type.clone()),
+        ),
+        ("path".to_owned(), DomainValue::String(value.path.clone())),
+    ]);
+    if let Some(sha256) = &value.sha256 {
+        fields.insert("sha256".to_owned(), DomainValue::String(sha256.clone()));
+    }
+    fields
+}
+
+fn presentation_assignment_value(value: &Attributed<PresentationCatalogAssignment>) -> DomainValue {
+    let mut fields = evidence_metadata_value(value);
+    fields.extend([
+        (
+            "catalog".to_owned(),
+            presentation_catalog_ref_value(&value.value.catalog),
+        ),
+        (
+            "entry_id".to_owned(),
+            DomainValue::String(value.value.entry_id.clone()),
+        ),
+        (
+            "proposal_sha256".to_owned(),
+            DomainValue::String(value.value.proposal_sha256.clone()),
+        ),
+        (
+            "review_sha256".to_owned(),
+            DomainValue::String(value.value.review_sha256.clone()),
+        ),
+        (
+            "slot_id".to_owned(),
+            DomainValue::String(value.value.slot_id.clone()),
+        ),
+        (
+            "value".to_owned(),
+            presentation_catalog_value(&value.value.value),
+        ),
+    ]);
+    DomainValue::Object(fields)
+}
+
+fn presentation_catalog_ref_value(value: &PresentationCatalogRef) -> DomainValue {
+    object([
+        ("id", DomainValue::String(value.id.clone())),
+        ("sha256", DomainValue::String(value.sha256.clone())),
+        ("version", DomainValue::String(value.version.clone())),
+    ])
+}
+
+fn presentation_catalog_value(value: &PresentationCatalogValue) -> DomainValue {
+    let mut fields = BTreeMap::new();
+    match value {
+        PresentationCatalogValue::Appearance {
+            category,
+            descriptor,
+        } => {
+            fields.insert(
+                "appearance_category".to_owned(),
+                DomainValue::String(category.clone()),
+            );
+            fields.insert(
+                "descriptor".to_owned(),
+                DomainValue::String(descriptor.clone()),
+            );
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("appearance".to_owned()),
+            );
+        }
+        PresentationCatalogValue::PaletteColor {
+            palette_slot,
+            color,
+        } => {
+            fields.insert("color".to_owned(), DomainValue::String(color.clone()));
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("palette_color".to_owned()),
+            );
+            fields.insert(
+                "palette_slot".to_owned(),
+                DomainValue::String(palette_slot.clone()),
+            );
+        }
+        PresentationCatalogValue::StyleTag { tag } => {
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("style_tag".to_owned()),
+            );
+            fields.insert("tag".to_owned(), DomainValue::String(tag.clone()));
+        }
+        PresentationCatalogValue::Asset { asset } => {
+            fields.insert("asset".to_owned(), presentation_asset_value(asset));
+            fields.insert("kind".to_owned(), DomainValue::Symbol("asset".to_owned()));
+        }
+    }
+    DomainValue::Object(fields)
+}
+
+const fn identity_context_kind(value: IdentityContextKind) -> &'static str {
+    match value {
+        IdentityContextKind::Origin => "origin",
+        IdentityContextKind::Context => "context",
+    }
+}
+
+const fn presentation_asset_kind(value: PresentationAssetKind) -> &'static str {
+    match value {
+        PresentationAssetKind::Avatar => "avatar",
+        PresentationAssetKind::Portrait => "portrait",
+        PresentationAssetKind::Sprite => "sprite",
+        PresentationAssetKind::Model => "model",
+        PresentationAssetKind::Illustration => "illustration",
     }
 }
 

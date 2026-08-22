@@ -17,8 +17,9 @@ The canonical pairs are:
 - `operations/renamed.character-collection.{json,ron}`: the exact atomically applicable result.
 - `context/`: three offline temporal packs, deterministic ranking configuration, complete proposal/review/receipt pairs, enriched output, and a separately locked runtime projection with fact/cue lineage split.
 - `alignment/`: an original pluggable alignment pack, exact project selection, complete five-action review, independently reproducible receipt, and approved-only output profile.
+- `presentation/`: attributed identity presentation, an original catalog and SVG assets, deterministic balanced allocation, complete review, explicit override, lock/unlock, and atomic output.
 
-The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate overlay targets, stale template/review/progress/alignment/temporal lineage, incomplete alignment and temporal reviews, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
+The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate aliases and overlay targets, missing presentation assets, invalid palette slots, incompatible presentation overrides, stale template/review/progress/presentation/alignment/temporal lineage, incomplete alignment and temporal reviews, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
 
 Rebuild or check every fixture and schema from the repository root:
 
@@ -48,6 +49,12 @@ cargo run -p weave-character -- context-propose \
   --config examples/domain-modules/weave-character/context/ranking.temporal-config.json \
   --seed 19690720 \
   --output target/proposal.temporal-proposal.json
+
+cargo run -p weave-character -- presentation-propose \
+  examples/domain-modules/weave-character/presentation/input.character-collection.json \
+  examples/domain-modules/weave-character/presentation/glasswind.presentation-catalog.json \
+  examples/domain-modules/weave-character/presentation/allocation.presentation-request.json \
+  --output target/proposal.presentation-proposal.json
 
 cargo run -p weave-character -- collection-propose \
   examples/domain-modules/weave-character/operations/collection.character-collection.json \
@@ -79,4 +86,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale.story.json
 ```
 
-See the [alignment fixture guide](alignment/README.md) and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.
+See the [presentation fixture guide](presentation/README.md), [alignment fixture guide](alignment/README.md), and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, typed presentation, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.

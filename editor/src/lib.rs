@@ -4,6 +4,7 @@ pub mod alignment;
 pub mod app;
 pub mod character;
 pub mod character_authoring;
+pub mod character_presentation;
 pub mod domain;
 pub mod graph;
 pub mod graph_view;
@@ -26,6 +27,7 @@ pub use character_authoring::{
     CHARACTER_AUTHORING_CONTROLS, CharacterAuthoringAccessibility, CharacterAuthoringControl,
     CharacterAuthoringKey, CharacterAuthoringKeyboardAction, CharacterAuthoringSession,
 };
+pub use character_presentation::CharacterPresentationSession;
 pub use domain::{
     DomainError, DomainSession, ModuleExportInspection, ModuleInspection,
     builtin_pattern_definitions,

@@ -9,7 +9,8 @@ use crate::model::{
     CharacterCanon, CharacterDerivedViews, CharacterDiagnosticCode, CharacterExtension,
     CharacterIdentity, CharacterOperation, CharacterOperationAction, CharacterOverlay,
     CharacterProfile, CharacterSynthesisResult, CharacterTemplate, CharacterTemplateRef,
-    HexacoProfile, LockState, SynthesisOrigin, ValueState,
+    ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, IdentityPresentation, LockState,
+    ReviewState, SynthesisOrigin, ValueState, VersionedExtension,
 };
 use crate::validation::{
     ALL_HEXACO_TRAITS, CharacterError, derive_ocean, error, operation_target, recompute_derived,
@@ -207,6 +208,70 @@ fn apply_operation(
         CharacterOperationAction::ClearAliases => {
             profile.canon.identity.aliases = None;
         }
+        CharacterOperationAction::SetPronouns { value } => {
+            identity_presentation_mut(profile)?.pronouns = Some(value.clone());
+        }
+        CharacterOperationAction::ClearPronouns => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.pronouns = None;
+            }
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => {
+            identity_presentation_mut(profile)?
+                .context_notes
+                .insert(record.id.clone(), record.clone());
+        }
+        CharacterOperationAction::RemoveIdentityContextNote { id } => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.context_notes.remove(id);
+            }
+        }
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => {
+            identity_presentation_mut(profile)?
+                .appearance
+                .insert(record.id.clone(), record.clone());
+        }
+        CharacterOperationAction::RemoveAppearanceDescriptor { id } => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.appearance.remove(id);
+            }
+        }
+        CharacterOperationAction::SetPresentationPalette { value } => {
+            identity_presentation_mut(profile)?.palette = Some(value.clone());
+        }
+        CharacterOperationAction::ClearPresentationPalette => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.palette = None;
+            }
+        }
+        CharacterOperationAction::SetPresentationStyleTags { value } => {
+            identity_presentation_mut(profile)?.style_tags = Some(value.clone());
+        }
+        CharacterOperationAction::ClearPresentationStyleTags => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.style_tags = None;
+            }
+        }
+        CharacterOperationAction::UpsertPresentationAsset { value } => {
+            identity_presentation_mut(profile)?
+                .assets
+                .insert(value.value.id.clone(), value.clone());
+        }
+        CharacterOperationAction::RemovePresentationAsset { id } => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.assets.remove(id);
+            }
+        }
+        CharacterOperationAction::UpsertPresentationAssignment { value } => {
+            identity_presentation_mut(profile)?
+                .catalog_assignments
+                .insert(value.value.slot_id.clone(), value.clone());
+        }
+        CharacterOperationAction::RemovePresentationAssignment { slot_id } => {
+            if let Some(presentation) = existing_identity_presentation_mut(profile)? {
+                presentation.catalog_assignments.remove(slot_id);
+            }
+        }
         CharacterOperationAction::SetBirthDate { value } => {
             profile.canon.birth_date = Some(value.clone());
         }
@@ -264,6 +329,75 @@ fn apply_operation(
         origins.remove(&target);
     }
     Ok(())
+}
+
+fn identity_presentation_mut(
+    profile: &mut CharacterProfile,
+) -> Result<&mut IdentityPresentation, CharacterError> {
+    if !profile
+        .extensions
+        .contains_key(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)
+    {
+        let mut lineage = profile
+            .provenance
+            .sources
+            .iter()
+            .map(|source| source.id.clone())
+            .chain(
+                profile
+                    .provenance
+                    .transformations
+                    .iter()
+                    .map(|transformation| transformation.id.clone()),
+            )
+            .collect::<Vec<_>>();
+        lineage.sort();
+        lineage.dedup();
+        profile.extensions.insert(
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE.to_owned(),
+            CharacterExtension::IdentityPresentation(VersionedExtension {
+                header: ExtensionHeader {
+                    namespace: crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE.to_owned(),
+                    extension_version: 1,
+                    authority: "weave-character sparse presentation authoring".to_owned(),
+                    rationale:
+                        "Typed identity presentation fields remain separate from character canon."
+                            .to_owned(),
+                    state: ValueState::Authored,
+                    review: ReviewState::NotRequired,
+                    lock: LockState::Unlocked,
+                    freshness: Freshness::Current,
+                    lineage,
+                    canonical_personality_write_back: ExtensionWriteBack::Forbidden,
+                },
+                value: IdentityPresentation::default(),
+            }),
+        );
+    }
+    existing_identity_presentation_mut(profile)?.ok_or_else(|| {
+        error(
+            CharacterDiagnosticCode::InvalidReference,
+            "extensions.org.weave.character.identity_presentation",
+            "identity presentation namespace has an incompatible extension kind",
+        )
+    })
+}
+
+fn existing_identity_presentation_mut(
+    profile: &mut CharacterProfile,
+) -> Result<Option<&mut IdentityPresentation>, CharacterError> {
+    match profile
+        .extensions
+        .get_mut(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)
+    {
+        Some(CharacterExtension::IdentityPresentation(record)) => Ok(Some(&mut record.value)),
+        Some(_) => Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            "extensions.org.weave.character.identity_presentation",
+            "identity presentation namespace has an incompatible extension kind",
+        )),
+        None => Ok(None),
+    }
 }
 
 fn validate_expected_prior(
@@ -338,6 +472,68 @@ fn existing_authority(
         CharacterOperationAction::SetAliases { .. } | CharacterOperationAction::ClearAliases => {
             profile.canon.identity.aliases.as_ref().map(authority)
         }
+        CharacterOperationAction::SetPronouns { .. } | CharacterOperationAction::ClearPronouns => {
+            presentation_authority(
+                profile,
+                identity_presentation(profile).and_then(|value| value.pronouns.as_ref()),
+            )
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => presentation_authority(
+            profile,
+            identity_presentation(profile)
+                .and_then(|value| value.context_notes.get(&record.id))
+                .map(|record| &record.content),
+        ),
+        CharacterOperationAction::RemoveIdentityContextNote { id } => presentation_authority(
+            profile,
+            identity_presentation(profile)
+                .and_then(|value| value.context_notes.get(id))
+                .map(|record| &record.content),
+        ),
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => presentation_authority(
+            profile,
+            identity_presentation(profile)
+                .and_then(|value| value.appearance.get(&record.id))
+                .map(|record| &record.content),
+        ),
+        CharacterOperationAction::RemoveAppearanceDescriptor { id } => presentation_authority(
+            profile,
+            identity_presentation(profile)
+                .and_then(|value| value.appearance.get(id))
+                .map(|record| &record.content),
+        ),
+        CharacterOperationAction::SetPresentationPalette { .. }
+        | CharacterOperationAction::ClearPresentationPalette => presentation_authority(
+            profile,
+            identity_presentation(profile).and_then(|value| value.palette.as_ref()),
+        ),
+        CharacterOperationAction::SetPresentationStyleTags { .. }
+        | CharacterOperationAction::ClearPresentationStyleTags => presentation_authority(
+            profile,
+            identity_presentation(profile).and_then(|value| value.style_tags.as_ref()),
+        ),
+        CharacterOperationAction::UpsertPresentationAsset { value } => presentation_authority(
+            profile,
+            identity_presentation(profile)
+                .and_then(|presentation| presentation.assets.get(&value.value.id)),
+        ),
+        CharacterOperationAction::RemovePresentationAsset { id } => presentation_authority(
+            profile,
+            identity_presentation(profile).and_then(|value| value.assets.get(id)),
+        ),
+        CharacterOperationAction::UpsertPresentationAssignment { value } => presentation_authority(
+            profile,
+            identity_presentation(profile).and_then(|presentation| {
+                presentation.catalog_assignments.get(&value.value.slot_id)
+            }),
+        ),
+        CharacterOperationAction::RemovePresentationAssignment { slot_id } => {
+            presentation_authority(
+                profile,
+                identity_presentation(profile)
+                    .and_then(|value| value.catalog_assignments.get(slot_id)),
+            )
+        }
         CharacterOperationAction::SetBirthDate { .. }
         | CharacterOperationAction::ClearBirthDate => {
             profile.canon.birth_date.as_ref().map(authority)
@@ -385,6 +581,17 @@ fn incoming_authority(action: &CharacterOperationAction) -> Option<(LockState, V
     match action {
         CharacterOperationAction::SetDisplayName { value } => Some(authority(value)),
         CharacterOperationAction::SetAliases { value } => Some(authority(value)),
+        CharacterOperationAction::SetPronouns { value } => Some(authority(value)),
+        CharacterOperationAction::UpsertIdentityContextNote { record } => {
+            Some(authority(&record.content))
+        }
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => {
+            Some(authority(&record.content))
+        }
+        CharacterOperationAction::SetPresentationPalette { value } => Some(authority(value)),
+        CharacterOperationAction::SetPresentationStyleTags { value } => Some(authority(value)),
+        CharacterOperationAction::UpsertPresentationAsset { value } => Some(authority(value)),
+        CharacterOperationAction::UpsertPresentationAssignment { value } => Some(authority(value)),
         CharacterOperationAction::SetBirthDate { value } => Some(authority(value)),
         CharacterOperationAction::SetHexacoTrait { value, .. } => Some(authority(value)),
         CharacterOperationAction::UpsertInnerLife { record } => Some(authority(&record.content)),
@@ -396,6 +603,13 @@ fn incoming_authority(action: &CharacterOperationAction) -> Option<(LockState, V
             Some(extension_authority(extension))
         }
         CharacterOperationAction::ClearAliases
+        | CharacterOperationAction::ClearPronouns
+        | CharacterOperationAction::RemoveIdentityContextNote { .. }
+        | CharacterOperationAction::RemoveAppearanceDescriptor { .. }
+        | CharacterOperationAction::ClearPresentationPalette
+        | CharacterOperationAction::ClearPresentationStyleTags
+        | CharacterOperationAction::RemovePresentationAsset { .. }
+        | CharacterOperationAction::RemovePresentationAssignment { .. }
         | CharacterOperationAction::ClearBirthDate
         | CharacterOperationAction::ClearHexacoTrait { .. }
         | CharacterOperationAction::RemoveInnerLife { .. }
@@ -403,6 +617,38 @@ fn incoming_authority(action: &CharacterOperationAction) -> Option<(LockState, V
         | CharacterOperationAction::RemoveSuggestion { .. }
         | CharacterOperationAction::RemoveExtension { .. } => None,
     }
+}
+
+fn identity_presentation(profile: &CharacterProfile) -> Option<&IdentityPresentation> {
+    match profile
+        .extensions
+        .get(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)
+    {
+        Some(CharacterExtension::IdentityPresentation(record)) => Some(&record.value),
+        _ => None,
+    }
+}
+
+fn presentation_authority<T>(
+    profile: &CharacterProfile,
+    value: Option<&Attributed<T>>,
+) -> Option<(LockState, ValueState)> {
+    value.map(authority).or_else(|| {
+        let CharacterExtension::IdentityPresentation(record) = profile
+            .extensions
+            .get(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)?
+        else {
+            return None;
+        };
+        (record.header.lock == LockState::Locked).then(|| {
+            extension_authority(
+                profile
+                    .extensions
+                    .get(crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE)
+                    .expect("presentation extension just matched"),
+            )
+        })
+    })
 }
 
 fn authority<T>(value: &Attributed<T>) -> (LockState, ValueState) {
@@ -434,6 +680,44 @@ pub(crate) fn current_value_hash(
         CharacterOperationAction::SetAliases { .. } | CharacterOperationAction::ClearAliases => {
             hash_optional(profile.canon.identity.aliases.as_ref())
         }
+        CharacterOperationAction::SetPronouns { .. } | CharacterOperationAction::ClearPronouns => {
+            hash_optional(identity_presentation(profile).and_then(|value| value.pronouns.as_ref()))
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => hash_optional(
+            identity_presentation(profile).and_then(|value| value.context_notes.get(&record.id)),
+        ),
+        CharacterOperationAction::RemoveIdentityContextNote { id } => hash_optional(
+            identity_presentation(profile).and_then(|value| value.context_notes.get(id)),
+        ),
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => hash_optional(
+            identity_presentation(profile).and_then(|value| value.appearance.get(&record.id)),
+        ),
+        CharacterOperationAction::RemoveAppearanceDescriptor { id } => {
+            hash_optional(identity_presentation(profile).and_then(|value| value.appearance.get(id)))
+        }
+        CharacterOperationAction::SetPresentationPalette { .. }
+        | CharacterOperationAction::ClearPresentationPalette => {
+            hash_optional(identity_presentation(profile).and_then(|value| value.palette.as_ref()))
+        }
+        CharacterOperationAction::SetPresentationStyleTags { .. }
+        | CharacterOperationAction::ClearPresentationStyleTags => hash_optional(
+            identity_presentation(profile).and_then(|value| value.style_tags.as_ref()),
+        ),
+        CharacterOperationAction::UpsertPresentationAsset { value } => hash_optional(
+            identity_presentation(profile)
+                .and_then(|presentation| presentation.assets.get(&value.value.id)),
+        ),
+        CharacterOperationAction::RemovePresentationAsset { id } => {
+            hash_optional(identity_presentation(profile).and_then(|value| value.assets.get(id)))
+        }
+        CharacterOperationAction::UpsertPresentationAssignment { value } => {
+            hash_optional(identity_presentation(profile).and_then(|presentation| {
+                presentation.catalog_assignments.get(&value.value.slot_id)
+            }))
+        }
+        CharacterOperationAction::RemovePresentationAssignment { slot_id } => hash_optional(
+            identity_presentation(profile).and_then(|value| value.catalog_assignments.get(slot_id)),
+        ),
         CharacterOperationAction::SetBirthDate { .. }
         | CharacterOperationAction::ClearBirthDate => {
             hash_optional(profile.canon.birth_date.as_ref())
@@ -587,8 +871,56 @@ pub(crate) fn profile_field_paths(profile: &CharacterProfile) -> Vec<String> {
         profile
             .extensions
             .keys()
+            .filter(|namespace| {
+                namespace.as_str() != crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+            })
             .map(|namespace| format!("extensions.{namespace}")),
     );
+    if let Some(presentation) = identity_presentation(profile) {
+        let root = format!(
+            "extensions.{}.value",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        );
+        if !presentation.identity_refs.is_empty() {
+            paths.push(format!("{root}.identity_refs"));
+        }
+        if !presentation.presentation_refs.is_empty() {
+            paths.push(format!("{root}.presentation_refs"));
+        }
+        if presentation.pronouns.is_some() {
+            paths.push(format!("{root}.pronouns"));
+        }
+        paths.extend(
+            presentation
+                .context_notes
+                .keys()
+                .map(|id| format!("{root}.context_notes.{id}")),
+        );
+        paths.extend(
+            presentation
+                .appearance
+                .keys()
+                .map(|id| format!("{root}.appearance.{id}")),
+        );
+        if presentation.palette.is_some() {
+            paths.push(format!("{root}.palette"));
+        }
+        if presentation.style_tags.is_some() {
+            paths.push(format!("{root}.style_tags"));
+        }
+        paths.extend(
+            presentation
+                .assets
+                .keys()
+                .map(|id| format!("{root}.assets.{id}")),
+        );
+        paths.extend(
+            presentation
+                .catalog_assignments
+                .keys()
+                .map(|id| format!("{root}.catalog_assignments.{id}")),
+        );
+    }
     paths.extend(
         profile
             .suggestions

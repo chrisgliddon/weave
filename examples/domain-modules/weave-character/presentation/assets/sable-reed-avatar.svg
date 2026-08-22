@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Sable Reed geometric avatar</title>
+  <desc id="desc">A midnight-blue circle with a violet river curve and silver route points.</desc>
+  <circle cx="64" cy="64" r="60" fill="#15233D"/>
+  <path d="M18 42 C40 18 54 106 110 72" fill="none" stroke="#7C5CFF" stroke-width="11" stroke-linecap="round"/>
+  <g fill="#E5ECF8">
+    <circle cx="31" cy="38" r="7"/>
+    <circle cx="66" cy="68" r="7"/>
+    <circle cx="102" cy="75" r="7"/>
+  </g>
+</svg>

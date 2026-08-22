@@ -640,7 +640,7 @@
                     freshness: current,
                     lineage: [
                         "apollo_11_wikidata",
-                        "temporal_review_a46cac3f4333dacd",
+                        "temporal_review_c6654f203fed5adb",
                         "weave_calendar_cues",
                         "weave_calendar_facts",
                         "weave_historical_cues",
@@ -695,7 +695,7 @@
                                 "weave_world_cues",
                                 "weave_world_projection",
                             ],
-                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
+                            review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
                         ),
                         "cue_7eafd04a34c7f45247e358f5": (
                             id: "cue_7eafd04a34c7f45247e358f5",
@@ -721,7 +721,7 @@
                                 "weave_calendar_cues",
                                 "weave_calendar_facts",
                             ],
-                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
+                            review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
                         ),
                         "cue_afa4e07801cd5172193f83f1": (
                             id: "cue_afa4e07801cd5172193f83f1",
@@ -747,7 +747,7 @@
                                 "apollo_11_wikidata",
                                 "weave_historical_cues",
                             ],
-                            review_sha256: "a46cac3f4333dacd9823ef4be593beec3251c513e4bbf459a7c9292f1db36651",
+                            review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
                         ),
                     },
                 ),
@@ -819,9 +819,239 @@
                         "org.weave.identity.wayfinder",
                     ],
                     presentation_refs: [
-                        "assets/avatars/ari_vale.png",
-                        "assets/palettes/cedar_snow.json",
+                        "presentation/assets/ari-vale-avatar.svg",
+                        "presentation/assets/sable-reed-avatar.svg",
                     ],
+                    pronouns: Some((
+                        value: (
+                            subject: "they",
+                            object: "them",
+                            possessive_determiner: "their",
+                            possessive_pronoun: "theirs",
+                            reflexive: "themself",
+                        ),
+                        state: authored,
+                        confidence: high,
+                        review: not_required,
+                        lock: unlocked,
+                        freshness: current,
+                        lineage: [
+                            "character_original",
+                        ],
+                    )),
+                    context_notes: {
+                        "current_context": (
+                            id: "current_context",
+                            kind: context,
+                            content: (
+                                value: "Carries a folded route card for the next fictional crossing.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                        "glasswind_origin": (
+                            id: "glasswind_origin",
+                            kind: origin,
+                            content: (
+                                value: "Raised among the synthetic Glasswind coast\'s public wayfinding houses.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                    appearance: {
+                        "travel_layers": (
+                            id: "travel_layers",
+                            category: "org.weave.appearance.clothing",
+                            content: (
+                                value: "Layered cedar-green travel cloth with a pale reflective hem.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                    palette: Some((
+                        value: (
+                            colors: {
+                                "accent": "#D6A24A",
+                                "background": "#102825",
+                                "foreground": "#D9F4E3",
+                            },
+                        ),
+                        state: authored,
+                        confidence: high,
+                        review: not_required,
+                        lock: unlocked,
+                        freshness: current,
+                        lineage: [
+                            "character_original",
+                        ],
+                    )),
+                    style_tags: Some((
+                        value: [
+                            "cedar_ink",
+                            "route_marks",
+                        ],
+                        state: authored,
+                        confidence: high,
+                        review: not_required,
+                        lock: unlocked,
+                        freshness: current,
+                        lineage: [
+                            "character_original",
+                        ],
+                    )),
+                    assets: {
+                        "authored_avatar": (
+                            value: (
+                                id: "authored_avatar",
+                                kind: avatar,
+                                path: "presentation/assets/ari-vale-avatar.svg",
+                                media_type: "image/svg+xml",
+                                alt_text: "Geometric cedar and gold wayfinder avatar.",
+                            ),
+                            state: authored,
+                            confidence: high,
+                            review: not_required,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                        ),
+                    },
+                    catalog_assignments: {
+                        "accent_color": (
+                            value: (
+                                slot_id: "accent_color",
+                                catalog: (
+                                    id: "org.weave.character.presentation.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                                ),
+                                entry_id: "amber_accent",
+                                value: (
+                                    kind: "palette_color",
+                                    palette_slot: "accent",
+                                    color: "#D6A24A",
+                                ),
+                                proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                            ),
+                            state: reviewed,
+                            confidence: high,
+                            review: accepted,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "weave_glasswind_presentation",
+                            ],
+                            rationale: Some("Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."),
+                        ),
+                        "avatar": (
+                            value: (
+                                slot_id: "avatar",
+                                catalog: (
+                                    id: "org.weave.character.presentation.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                                ),
+                                entry_id: "ari_avatar",
+                                value: (
+                                    kind: "asset",
+                                    asset: (
+                                        id: "ari_avatar",
+                                        kind: avatar,
+                                        path: "presentation/assets/ari-vale-avatar.svg",
+                                        media_type: "image/svg+xml",
+                                        alt_text: "Geometric cedar and gold wayfinder avatar.",
+                                    ),
+                                ),
+                                proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                            ),
+                            state: reviewed,
+                            confidence: high,
+                            review: accepted,
+                            lock: locked,
+                            freshness: current,
+                            lineage: [
+                                "weave_glasswind_presentation",
+                            ],
+                            rationale: Some("Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."),
+                        ),
+                        "silhouette": (
+                            value: (
+                                slot_id: "silhouette",
+                                catalog: (
+                                    id: "org.weave.character.presentation.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                                ),
+                                entry_id: "long_coat",
+                                value: (
+                                    kind: "appearance",
+                                    category: "org.weave.appearance.silhouette",
+                                    descriptor: "Long layered travel coat with a narrow shoulder line.",
+                                ),
+                                proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                            ),
+                            state: reviewed,
+                            confidence: high,
+                            review: accepted,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "weave_glasswind_presentation",
+                            ],
+                            rationale: Some("Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."),
+                        ),
+                        "visual_tone": (
+                            value: (
+                                slot_id: "visual_tone",
+                                catalog: (
+                                    id: "org.weave.character.presentation.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+                                ),
+                                entry_id: "river_glass",
+                                value: (
+                                    kind: "style_tag",
+                                    tag: "river_glass",
+                                ),
+                                proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                            ),
+                            state: reviewed,
+                            confidence: high,
+                            review: accepted,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "weave_glasswind_presentation",
+                            ],
+                            rationale: Some("Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale."),
+                        ),
+                    },
                 ),
             ),
         ),
@@ -935,7 +1165,7 @@
                 lock: unlocked,
                 freshness: current,
                 lineage: [
-                    "temporal_review_a46cac3f4333dacd",
+                    "temporal_review_c6654f203fed5adb",
                     "weave_world_cues",
                     "weave_world_projection",
                 ],
@@ -956,7 +1186,7 @@
                 lock: unlocked,
                 freshness: current,
                 lineage: [
-                    "temporal_review_a46cac3f4333dacd",
+                    "temporal_review_c6654f203fed5adb",
                     "weave_calendar_cues",
                     "weave_calendar_facts",
                 ],
@@ -978,7 +1208,7 @@
                 freshness: current,
                 lineage: [
                     "apollo_11_wikidata",
-                    "temporal_review_a46cac3f4333dacd",
+                    "temporal_review_c6654f203fed5adb",
                     "weave_historical_cues",
                 ],
                 rationale: Some("Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."),
@@ -1092,6 +1322,16 @@
                 modified: false,
             ),
             (
+                id: "weave_glasswind_presentation",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "glasswind-presentation-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Glasswind presentation catalog and vector assets.",
+                modified: false,
+            ),
+            (
                 id: "weave_historical_cues",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -1142,7 +1382,7 @@
                 description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
             ),
             (
-                id: "temporal_review_a46cac3f4333dacd",
+                id: "temporal_review_c6654f203fed5adb",
                 inputs: [
                     "apollo_11_wikidata",
                     "weave_calendar_cues",
@@ -1155,17 +1395,23 @@
             ),
         ],
         claims: {
+            "assets": [
+                "weave_glasswind_presentation",
+            ],
             "axes": [
                 "weave_wayfinder_compass",
             ],
             "calibrations": [
                 "weave_wayfinder_compass",
             ],
+            "entries": [
+                "weave_glasswind_presentation",
+            ],
             "extensions.org.weave.character.alignment": [
                 "alignment_apply_361b86102edd3c9a",
             ],
             "extensions.org.weave.character.date_context": [
-                "temporal_review_a46cac3f4333dacd",
+                "temporal_review_c6654f203fed5adb",
             ],
             "inputs": [
                 "weave_wayfinder_compass",
@@ -1194,14 +1440,17 @@
             "records.world_coastal_fog_cycle.fact": [
                 "weave_world_projection",
             ],
+            "slots": [
+                "weave_glasswind_presentation",
+            ],
             "suggestions.date_context_54a72f798cf8211963d263ba": [
-                "temporal_review_a46cac3f4333dacd",
+                "temporal_review_c6654f203fed5adb",
             ],
             "suggestions.date_context_7eafd04a34c7f45247e358f5": [
-                "temporal_review_a46cac3f4333dacd",
+                "temporal_review_c6654f203fed5adb",
             ],
             "suggestions.date_context_afa4e07801cd5172193f83f1": [
-                "temporal_review_a46cac3f4333dacd",
+                "temporal_review_c6654f203fed5adb",
             ],
         },
     ),

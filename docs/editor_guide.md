@@ -31,6 +31,8 @@ The editor loads the adjacent `weave.modules.json` through the public `weave-dom
 
 Watching is bounded to the open project and its approved project-relative artifacts. A fully validated module update swaps into all editor surfaces and rebuilds preview. A malformed, incompatible, or tampered update is reported while the last valid catalog, graph, and preview remain active. The editor never searches the machine or network for a module named in source.
 
+`CharacterPresentationSession` opens an exact collection, immutable presentation catalog, and pinned allocation request through the shared Character contract. Its proposal view exposes eligibility, exclusions, capacities, balance counts, seed hashes, retained assignments, and missing assets. Complete accept/edit/override/reject/withhold review supports dry-run and atomic apply. Lock/unlock revisions and a `rebalance` request use the same contract; a dry-run preserves the selected collection and a commit clears stale previews. The editor never derives eligibility from personality, alignment, birth, ruleset, pronoun, name, or protected identity fields.
+
 ## Guided Character authoring
 
 `CharacterAuthoringSession` opens the same versioned workspace used by the
@@ -38,15 +40,17 @@ Watching is bounded to the open project and its approved project-relative artifa
 export, and reopen therefore call the same contract functions and produce the same JSON/RON bytes.
 An editor failure leaves the complete prior workspace selected and unchanged.
 
-The focus order is stable: identity, birth date, direct facets, questionnaire, confidence review,
-derived OCEAN, alignment, date context, inner life, voice, conflicts, final review, and export.
+The focus order is stable: identity, presentation, birth date, direct facets, questionnaire,
+confidence review, derived OCEAN, alignment, date context, inner life, voice, conflicts, final
+review, and export.
 Tab and Shift+Tab move through every control, Home/End jump to its bounds, and Enter or Space
 activates the focused control. Each accessibility record exposes a tab role, human label, position,
 total, keyboard hint, and the exact source representation. The OCEAN panel is explicitly read-only
 and derived.
 
-Before apply, the revision panel shows template base versus effective values, inherited and
-overridden ownership, locks, protected or pack-owned paths, field differences, template migration
+Before apply, the revision panel shows template base versus effective values, explicit
+template/authored-override/accepted-suggestion/template-migration origins, locks, protected or
+pack-owned paths, field differences, template migration
 effects, the recomputed derived view, and blocking alignment/date-context invalidations. A final
 accepted review is unavailable while blocking diagnostics remain. See the [Character guide](character_module.md#guided-authoring-and-conflict-review) and the checked [authoring corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/authoring).
 

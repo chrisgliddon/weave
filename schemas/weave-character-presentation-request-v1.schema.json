@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "PresentationAllocationMode": {
+      "description": "Whether existing unlocked reviewed allocations are retained or reconsidered.",
+      "enum": [
+        "fill_missing",
+        "rebalance"
+      ],
+      "type": "string"
+    },
+    "PresentationCatalogRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable presentation-catalog coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-presentation-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact dry-run inputs. Every host supplies the same finite asset inventory.",
+  "properties": {
+    "available_asset_paths": {
+      "description": "Sorted project-relative paths known to exist at the authoring boundary.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "catalog": {
+      "$ref": "#/$defs/PresentationCatalogRef"
+    },
+    "character_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expected_input_sha256": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/PresentationAllocationMode"
+    },
+    "request_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "slot_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "request_format_version",
+    "id",
+    "expected_input_sha256",
+    "catalog",
+    "seed",
+    "character_ids",
+    "slot_ids",
+    "mode"
+  ],
+  "title": "Weave Character Presentation Allocation Request v1",
+  "type": "object",
+  "x-weave-character-presentation-version": 1
+}

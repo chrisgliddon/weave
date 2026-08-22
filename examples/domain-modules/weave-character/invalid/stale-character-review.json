@@ -1,6 +1,6 @@
 {
   "review_format_version": 1,
-  "proposal_sha256": "d52731b6b29c1e3259a45ecca6e68639154208273300917957f96caeabb33ce4",
+  "proposal_sha256": "2ca516a7402e6670a6ed65d74a6fc56420276a4a4e4bb1ed64a27a4a58abfb0c",
   "input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
   "decision": "accepted",
   "reviewer": "org.weave.reviewer.fixture",

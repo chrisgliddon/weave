@@ -5,15 +5,18 @@ use semver::Version;
 use weave_domain::{DomainValue, Provenance, validate_provenance};
 
 use crate::model::{
-    AlignmentPackRef, AlignmentView, Attributed, AuthoredNote, BehavioralSignatures, BirthDate,
-    CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_PROFILE_FORMAT_VERSION,
-    CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterDiagnostic, CharacterDiagnosticCode,
-    CharacterExtension, CharacterOperation, CharacterOperationAction, CharacterOverlay,
-    CharacterProfile, CharacterSuggestion, CharacterTemplate, Confidence, DateContext,
-    DateContextPackRef, DiagnosticSeverity, ExpressionData, ExtensionHeader, ExtensionWriteBack,
-    Freshness, HexacoProfile, HexacoTrait, IdentityPresentation, OceanView, OpaqueExtensionData,
-    OpaqueInterpretation, RelationshipEdges, ReviewState, RoleProjections, TraitMeasurement,
-    ValueState, VersionedExtension, VoiceDirection,
+    AlignmentPackRef, AlignmentView, AppearanceDescriptor, Attributed, AuthoredNote,
+    BehavioralSignatures, BirthDate, CHARACTER_OVERLAY_FORMAT_VERSION,
+    CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar,
+    CharacterDiagnostic, CharacterDiagnosticCode, CharacterExtension, CharacterOperation,
+    CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterSuggestion,
+    CharacterTemplate, Confidence, DateContext, DateContextPackRef, DiagnosticSeverity,
+    ExpressionData, ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, HexacoTrait,
+    IdentityContextNote, IdentityPresentation, OceanView, OpaqueExtensionData,
+    OpaqueInterpretation, PresentationAssetReference, PresentationCatalogAssignment,
+    PresentationCatalogRef, PresentationCatalogValue, PresentationPalette, PronounSet,
+    RelationshipEdges, ReviewState, RoleProjections, TraitMeasurement, ValueState,
+    VersionedExtension, VoiceDirection,
 };
 
 const MAX_TEXT: usize = 65_536;
@@ -372,7 +375,7 @@ fn validate_extension(
     match extension {
         CharacterExtension::IdentityPresentation(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_identity_presentation(namespace, &record.value)
+            validate_identity_presentation(namespace, &record.value, lineage)
         }
         CharacterExtension::Expression(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
@@ -454,6 +457,7 @@ fn validate_extension_header(
 fn validate_identity_presentation(
     namespace: &str,
     value: &IdentityPresentation,
+    lineage: &BTreeSet<&str>,
 ) -> Result<(), CharacterError> {
     validate_sorted_namespaced_refs(
         &format!("extensions.{namespace}.value.identity_refs"),
@@ -462,7 +466,255 @@ fn validate_identity_presentation(
     validate_sorted_relative_paths(
         &format!("extensions.{namespace}.value.presentation_refs"),
         &value.presentation_refs,
-    )
+    )?;
+    let root = format!("extensions.{namespace}.value");
+    if let Some(pronouns) = &value.pronouns {
+        validate_attributed(
+            &format!("{root}.pronouns"),
+            pronouns,
+            lineage,
+            CanonicalPolicy::Presentation,
+        )?;
+        validate_pronouns(&format!("{root}.pronouns.value"), &pronouns.value)?;
+    }
+    validate_identity_context_notes(
+        &format!("{root}.context_notes"),
+        &value.context_notes,
+        lineage,
+    )?;
+    validate_appearance_descriptors(&format!("{root}.appearance"), &value.appearance, lineage)?;
+    if let Some(palette) = &value.palette {
+        validate_attributed(
+            &format!("{root}.palette"),
+            palette,
+            lineage,
+            CanonicalPolicy::Presentation,
+        )?;
+        validate_presentation_palette(&format!("{root}.palette.value"), &palette.value)?;
+    }
+    if let Some(tags) = &value.style_tags {
+        validate_attributed(
+            &format!("{root}.style_tags"),
+            tags,
+            lineage,
+            CanonicalPolicy::Presentation,
+        )?;
+        validate_sorted_local_ids(&format!("{root}.style_tags.value"), &tags.value)?;
+    }
+    if value.assets.len() > 4_096 {
+        return Err(invalid_value(
+            format!("{root}.assets"),
+            "too many presentation assets",
+        ));
+    }
+    for (id, asset) in &value.assets {
+        let path = format!("{root}.assets.{id}");
+        validate_local_id(&path, id)?;
+        validate_attributed(&path, asset, lineage, CanonicalPolicy::Presentation)?;
+        if asset.value.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.value.id"),
+                "asset identifier must equal its containing map key",
+            ));
+        }
+        validate_presentation_asset_reference(&format!("{path}.value"), &asset.value)?;
+    }
+    if value.catalog_assignments.len() > 4_096 {
+        return Err(invalid_value(
+            format!("{root}.catalog_assignments"),
+            "too many presentation assignments",
+        ));
+    }
+    for (slot_id, assignment) in &value.catalog_assignments {
+        let path = format!("{root}.catalog_assignments.{slot_id}");
+        validate_local_id(&path, slot_id)?;
+        validate_attributed(&path, assignment, lineage, CanonicalPolicy::Presentation)?;
+        if assignment.value.slot_id != *slot_id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.value.slot_id"),
+                "assignment slot must equal its containing map key",
+            ));
+        }
+        validate_presentation_catalog_assignment(&format!("{path}.value"), &assignment.value)?;
+    }
+    Ok(())
+}
+
+fn validate_pronouns(path: &str, value: &PronounSet) -> Result<(), CharacterError> {
+    for (field, form) in [
+        ("subject", &value.subject),
+        ("object", &value.object),
+        ("possessive_determiner", &value.possessive_determiner),
+        ("possessive_pronoun", &value.possessive_pronoun),
+        ("reflexive", &value.reflexive),
+    ] {
+        validate_text(&format!("{path}.{field}"), form, 1, 64)?;
+    }
+    Ok(())
+}
+
+fn validate_identity_context_notes(
+    root: &str,
+    records: &BTreeMap<String, IdentityContextNote>,
+    lineage: &BTreeSet<&str>,
+) -> Result<(), CharacterError> {
+    if records.len() > 4_096 {
+        return Err(invalid_value(root, "too many identity context notes"));
+    }
+    for (id, record) in records {
+        let path = format!("{root}.{id}");
+        validate_local_id(&path, id)?;
+        if record.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.id"),
+                "identity context note id must equal its containing map key",
+            ));
+        }
+        validate_attributed_text(
+            &format!("{path}.content"),
+            &record.content,
+            lineage,
+            CanonicalPolicy::Presentation,
+            1,
+            8_192,
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_appearance_descriptors(
+    root: &str,
+    records: &BTreeMap<String, AppearanceDescriptor>,
+    lineage: &BTreeSet<&str>,
+) -> Result<(), CharacterError> {
+    if records.len() > 4_096 {
+        return Err(invalid_value(root, "too many appearance descriptors"));
+    }
+    for (id, record) in records {
+        let path = format!("{root}.{id}");
+        validate_local_id(&path, id)?;
+        if record.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.id"),
+                "appearance descriptor id must equal its containing map key",
+            ));
+        }
+        validate_namespaced_id(&format!("{path}.category"), &record.category)?;
+        validate_attributed_text(
+            &format!("{path}.content"),
+            &record.content,
+            lineage,
+            CanonicalPolicy::Presentation,
+            1,
+            2_048,
+        )?;
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_presentation_palette(
+    path: &str,
+    value: &PresentationPalette,
+) -> Result<(), CharacterError> {
+    if value.colors.is_empty() || value.colors.len() > 64 {
+        return Err(invalid_value(
+            format!("{path}.colors"),
+            "a palette requires one through 64 named color slots",
+        ));
+    }
+    for (slot, color) in &value.colors {
+        validate_local_id(&format!("{path}.colors.{slot}"), slot)?;
+        validate_presentation_color(&format!("{path}.colors.{slot}"), color)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_presentation_color(path: &str, value: &str) -> Result<(), CharacterError> {
+    if !matches!(value.len(), 7 | 9)
+        || !value.starts_with('#')
+        || !value[1..]
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_lowercase())
+    {
+        return Err(invalid_value(
+            path,
+            "colors use canonical uppercase #RRGGBB or #RRGGBBAA notation",
+        ));
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_presentation_asset_reference(
+    path: &str,
+    value: &PresentationAssetReference,
+) -> Result<(), CharacterError> {
+    validate_local_id(&format!("{path}.id"), &value.id)?;
+    validate_relative_path(&format!("{path}.path"), &value.path)?;
+    validate_text(&format!("{path}.media_type"), &value.media_type, 3, 128)?;
+    if value.media_type.contains(char::is_whitespace) || value.media_type.matches('/').count() != 1
+    {
+        return Err(invalid_value(
+            format!("{path}.media_type"),
+            "asset media type must be one portable type/subtype token",
+        ));
+    }
+    if let Some(sha256) = &value.sha256 {
+        validate_sha256(&format!("{path}.sha256"), sha256)?;
+    }
+    validate_text(&format!("{path}.alt_text"), &value.alt_text, 1, 512)
+}
+
+pub(crate) fn validate_presentation_catalog_ref(
+    path: &str,
+    value: &PresentationCatalogRef,
+) -> Result<(), CharacterError> {
+    validate_namespaced_id(&format!("{path}.id"), &value.id)?;
+    validate_semver(&format!("{path}.version"), &value.version)?;
+    validate_sha256(&format!("{path}.sha256"), &value.sha256)
+}
+
+pub(crate) fn validate_presentation_catalog_value(
+    path: &str,
+    value: &PresentationCatalogValue,
+) -> Result<(), CharacterError> {
+    match value {
+        PresentationCatalogValue::Appearance {
+            category,
+            descriptor,
+        } => {
+            validate_namespaced_id(&format!("{path}.category"), category)?;
+            validate_text(&format!("{path}.descriptor"), descriptor, 1, 2_048)
+        }
+        PresentationCatalogValue::PaletteColor {
+            palette_slot,
+            color,
+        } => {
+            validate_local_id(&format!("{path}.palette_slot"), palette_slot)?;
+            validate_presentation_color(&format!("{path}.color"), color)
+        }
+        PresentationCatalogValue::StyleTag { tag } => {
+            validate_local_id(&format!("{path}.tag"), tag)
+        }
+        PresentationCatalogValue::Asset { asset } => {
+            validate_presentation_asset_reference(&format!("{path}.asset"), asset)
+        }
+    }
+}
+
+fn validate_presentation_catalog_assignment(
+    path: &str,
+    value: &PresentationCatalogAssignment,
+) -> Result<(), CharacterError> {
+    validate_local_id(&format!("{path}.slot_id"), &value.slot_id)?;
+    validate_presentation_catalog_ref(&format!("{path}.catalog"), &value.catalog)?;
+    validate_local_id(&format!("{path}.entry_id"), &value.entry_id)?;
+    validate_presentation_catalog_value(&format!("{path}.value"), &value.value)?;
+    validate_sha256(&format!("{path}.proposal_sha256"), &value.proposal_sha256)?;
+    validate_sha256(&format!("{path}.review_sha256"), &value.review_sha256)
 }
 
 fn validate_expression(namespace: &str, value: &ExpressionData) -> Result<(), CharacterError> {
@@ -873,6 +1125,71 @@ fn validate_operation(
             )?;
             validate_sorted_texts(&format!("{path}.action.value.value"), &value.value, 1, 256)
         }
+        CharacterOperationAction::SetPronouns { value } => {
+            validate_attributed(
+                &format!("{path}.action.value"),
+                value,
+                lineage,
+                CanonicalPolicy::Presentation,
+            )?;
+            validate_pronouns(&format!("{path}.action.value.value"), &value.value)
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => {
+            validate_identity_context_notes(
+                &format!("{path}.action.record"),
+                &BTreeMap::from([(record.id.clone(), record.clone())]),
+                lineage,
+            )
+        }
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => {
+            validate_appearance_descriptors(
+                &format!("{path}.action.record"),
+                &BTreeMap::from([(record.id.clone(), record.clone())]),
+                lineage,
+            )
+        }
+        CharacterOperationAction::SetPresentationPalette { value } => {
+            validate_attributed(
+                &format!("{path}.action.value"),
+                value,
+                lineage,
+                CanonicalPolicy::Presentation,
+            )?;
+            validate_presentation_palette(&format!("{path}.action.value.value"), &value.value)
+        }
+        CharacterOperationAction::SetPresentationStyleTags { value } => {
+            validate_attributed(
+                &format!("{path}.action.value"),
+                value,
+                lineage,
+                CanonicalPolicy::Presentation,
+            )?;
+            validate_sorted_local_ids(&format!("{path}.action.value.value"), &value.value)
+        }
+        CharacterOperationAction::UpsertPresentationAsset { value } => {
+            validate_attributed(
+                &format!("{path}.action.value"),
+                value,
+                lineage,
+                CanonicalPolicy::Presentation,
+            )?;
+            validate_presentation_asset_reference(
+                &format!("{path}.action.value.value"),
+                &value.value,
+            )
+        }
+        CharacterOperationAction::UpsertPresentationAssignment { value } => {
+            validate_attributed(
+                &format!("{path}.action.value"),
+                value,
+                lineage,
+                CanonicalPolicy::Presentation,
+            )?;
+            validate_presentation_catalog_assignment(
+                &format!("{path}.action.value.value"),
+                &value.value,
+            )
+        }
         CharacterOperationAction::SetBirthDate { value } => {
             validate_attributed(
                 &format!("{path}.action.value"),
@@ -919,13 +1236,22 @@ fn validate_operation(
         } => validate_extension(namespace, extension, character_id, lineage),
         CharacterOperationAction::RemoveInnerLife { id }
         | CharacterOperationAction::RemoveVoice { id }
-        | CharacterOperationAction::RemoveSuggestion { id } => {
+        | CharacterOperationAction::RemoveSuggestion { id }
+        | CharacterOperationAction::RemoveIdentityContextNote { id }
+        | CharacterOperationAction::RemoveAppearanceDescriptor { id }
+        | CharacterOperationAction::RemovePresentationAsset { id } => {
             validate_local_id(&format!("{path}.action.id"), id)
+        }
+        CharacterOperationAction::RemovePresentationAssignment { slot_id } => {
+            validate_local_id(&format!("{path}.action.slot_id"), slot_id)
         }
         CharacterOperationAction::RemoveExtension { namespace } => {
             validate_namespaced_id(&format!("{path}.action.namespace"), namespace)
         }
         CharacterOperationAction::ClearAliases
+        | CharacterOperationAction::ClearPronouns
+        | CharacterOperationAction::ClearPresentationPalette
+        | CharacterOperationAction::ClearPresentationStyleTags
         | CharacterOperationAction::ClearBirthDate
         | CharacterOperationAction::ClearHexacoTrait { .. } => Ok(()),
     }
@@ -938,6 +1264,58 @@ pub(crate) fn operation_target(action: &CharacterOperationAction) -> String {
         CharacterOperationAction::SetAliases { .. } | CharacterOperationAction::ClearAliases => {
             "canon.identity.aliases".to_owned()
         }
+        CharacterOperationAction::SetPronouns { .. } | CharacterOperationAction::ClearPronouns => {
+            format!(
+                "extensions.{}.value.pronouns",
+                crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+            )
+        }
+        CharacterOperationAction::UpsertIdentityContextNote { record } => format!(
+            "extensions.{}.value.context_notes.{}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+            record.id
+        ),
+        CharacterOperationAction::RemoveIdentityContextNote { id } => format!(
+            "extensions.{}.value.context_notes.{id}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
+        CharacterOperationAction::UpsertAppearanceDescriptor { record } => format!(
+            "extensions.{}.value.appearance.{}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+            record.id
+        ),
+        CharacterOperationAction::RemoveAppearanceDescriptor { id } => format!(
+            "extensions.{}.value.appearance.{id}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
+        CharacterOperationAction::SetPresentationPalette { .. }
+        | CharacterOperationAction::ClearPresentationPalette => format!(
+            "extensions.{}.value.palette",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
+        CharacterOperationAction::SetPresentationStyleTags { .. }
+        | CharacterOperationAction::ClearPresentationStyleTags => format!(
+            "extensions.{}.value.style_tags",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
+        CharacterOperationAction::UpsertPresentationAsset { value } => format!(
+            "extensions.{}.value.assets.{}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+            value.value.id
+        ),
+        CharacterOperationAction::RemovePresentationAsset { id } => format!(
+            "extensions.{}.value.assets.{id}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
+        CharacterOperationAction::UpsertPresentationAssignment { value } => format!(
+            "extensions.{}.value.catalog_assignments.{}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+            value.value.slot_id
+        ),
+        CharacterOperationAction::RemovePresentationAssignment { slot_id } => format!(
+            "extensions.{}.value.catalog_assignments.{slot_id}",
+            crate::IDENTITY_PRESENTATION_EXTENSION_NAMESPACE
+        ),
         CharacterOperationAction::SetBirthDate { .. }
         | CharacterOperationAction::ClearBirthDate => "canon.birth_date".to_owned(),
         CharacterOperationAction::SetHexacoTrait { trait_id, .. }
@@ -988,12 +1366,12 @@ fn validate_attributed<T>(
         policy == CanonicalPolicy::Extension,
     )?;
     match policy {
-        CanonicalPolicy::Canon | CanonicalPolicy::Personality => {
+        CanonicalPolicy::Canon | CanonicalPolicy::Personality | CanonicalPolicy::Presentation => {
             if matches!(value.state, ValueState::Derived | ValueState::Suggested) {
                 return Err(error(
                     CharacterDiagnosticCode::ForbiddenWriteBack,
                     format!("{path}.state"),
-                    "derived and suggested values cannot enter character canon directly",
+                    "derived and suggested values cannot enter authored Character fields directly",
                 ));
             }
             if value.freshness != Freshness::Current {
@@ -1232,22 +1610,24 @@ fn validate_sorted_paths(path: &str, values: &[String]) -> Result<(), CharacterE
 }
 
 fn validate_sorted_relative_paths(path: &str, values: &[String]) -> Result<(), CharacterError> {
-    validate_sorted(values, path, |value| {
-        if value.is_empty()
-            || value.starts_with('/')
-            || value.contains('\\')
-            || value
-                .split('/')
-                .any(|segment| segment.is_empty() || segment == "." || segment == "..")
-        {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                path,
-                "presentation references must be safe project-relative paths",
-            ));
-        }
-        Ok(())
-    })
+    validate_sorted(values, path, |value| validate_relative_path(path, value))
+}
+
+pub(crate) fn validate_relative_path(path: &str, value: &str) -> Result<(), CharacterError> {
+    if value.is_empty()
+        || value.starts_with('/')
+        || value.contains('\\')
+        || value
+            .split('/')
+            .any(|segment| segment.is_empty() || segment == "." || segment == "..")
+    {
+        return Err(error(
+            CharacterDiagnosticCode::InvalidReference,
+            path,
+            "presentation references must be safe project-relative paths",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_sorted(
@@ -1395,6 +1775,7 @@ pub(crate) fn error(
 enum CanonicalPolicy {
     Canon,
     Personality,
+    Presentation,
     Suggestion,
     Extension,
 }

@@ -62,6 +62,13 @@ struct CharacterReading {
     creativity: f64,
     ocean_openness: f64,
     ocean_is_lossy: bool,
+    pronoun_subject: String,
+    palette_accent: String,
+    avatar_path: String,
+    catalog_id: String,
+    catalog_sha256: String,
+    visual_tone: String,
+    presentation_personality_write_back: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -317,7 +324,82 @@ fn character_reading(story: &StoryIr) -> Result<CharacterReading, io::Error> {
             &["profile", "ocean", "lossy"],
             "Character OCEAN lossiness marker is invalid",
         )?,
+        pronoun_subject: string(
+            &["profile", "presentation", "pronouns", "subject"],
+            "Character presentation pronoun subject is invalid",
+        )?,
+        palette_accent: string(
+            &["profile", "presentation", "palette", "colors", "accent"],
+            "Character presentation accent is invalid",
+        )?,
+        avatar_path: safe_relative_asset_path(string(
+            &[
+                "profile",
+                "presentation",
+                "assets",
+                "authored_avatar",
+                "path",
+            ],
+            "Character presentation avatar path is invalid",
+        )?)?,
+        catalog_id: string(
+            &[
+                "profile",
+                "presentation",
+                "catalog_assignments",
+                "avatar",
+                "catalog",
+                "id",
+            ],
+            "Character presentation catalog id is invalid",
+        )?,
+        catalog_sha256: string(
+            &[
+                "profile",
+                "presentation",
+                "catalog_assignments",
+                "avatar",
+                "catalog",
+                "sha256",
+            ],
+            "Character presentation catalog hash is invalid",
+        )?,
+        visual_tone: string(
+            &[
+                "profile",
+                "presentation",
+                "catalog_assignments",
+                "visual_tone",
+                "value",
+                "tag",
+            ],
+            "Character presentation visual tone is invalid",
+        )?,
+        presentation_personality_write_back: boolean(
+            &[
+                "profile",
+                "presentation",
+                "canonical_personality_write_back",
+            ],
+            "Character presentation write-back marker is invalid",
+        )?,
     })
+}
+
+fn safe_relative_asset_path(value: String) -> Result<String, io::Error> {
+    if value.is_empty()
+        || value.starts_with('/')
+        || value.contains('\\')
+        || value
+            .split('/')
+            .any(|segment| segment.is_empty() || segment == "." || segment == "..")
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Character presentation avatar path is invalid",
+        ));
+    }
+    Ok(value)
 }
 
 fn temporal_character_reading(story: &StoryIr) -> Result<TemporalCharacterReading, io::Error> {
@@ -573,12 +655,19 @@ fn report_composed_world(reading: Res<ComposedWorldReading>) {
 
 fn report_character(reading: Res<CharacterReading>) {
     println!(
-        "Bevy read {} ({}): creativity {:.2}, derived OCEAN openness {:.2}, lossy={}",
+        "Bevy read {} ({}): creativity {:.2}, derived OCEAN openness {:.2}, lossy={}, {} pronouns, {} accent, avatar {}, {} tone from {} ({}), presentation write-back={}",
         reading.display_name,
         reading.id,
         reading.creativity,
         reading.ocean_openness,
         reading.ocean_is_lossy,
+        reading.pronoun_subject,
+        reading.palette_accent,
+        reading.avatar_path,
+        reading.visual_tone,
+        reading.catalog_id,
+        reading.catalog_sha256,
+        reading.presentation_personality_write_back,
     );
 }
 
@@ -734,8 +823,24 @@ mod tests {
                 creativity: 0.86,
                 ocean_openness: 0.83,
                 ocean_is_lossy: true,
+                pronoun_subject: "they".to_owned(),
+                palette_accent: "#D6A24A".to_owned(),
+                avatar_path: "presentation/assets/ari-vale-avatar.svg".to_owned(),
+                catalog_id: "org.weave.character.presentation.glasswind".to_owned(),
+                catalog_sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa"
+                    .to_owned(),
+                visual_tone: "river_glass".to_owned(),
+                presentation_personality_write_back: false,
             }
         );
+    }
+
+    #[test]
+    fn rejects_unsafe_character_asset_paths_without_disclosing_them() {
+        let rejected = "../private-avatar.svg";
+        let error = safe_relative_asset_path(rejected.to_owned()).expect_err("unsafe path");
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert!(!error.to_string().contains(rejected));
     }
 
     #[test]

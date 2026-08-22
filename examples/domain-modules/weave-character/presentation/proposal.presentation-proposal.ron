@@ -1,0 +1,2651 @@
+(
+    proposal_format_version: 1,
+    id: "org.weave.character.presentation.glasswind_allocation.proposal",
+    input_collection: (
+        collection_format_version: 1,
+        id: "org.weave.character.collection.glasswind",
+        revision: 1,
+        characters: {
+            "org.weave.character.ari_vale": (
+                profile_format_version: 1,
+                id: "org.weave.character.ari_vale",
+                canon: (
+                    identity: (
+                        display_name: (
+                            value: "Ari Vale",
+                            state: authored,
+                            confidence: high,
+                            review: not_required,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                        ),
+                        aliases: Some((
+                            value: [
+                                "Ari",
+                                "Vale",
+                            ],
+                            state: authored,
+                            confidence: high,
+                            review: not_required,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                        )),
+                    ),
+                    birth_date: Some((
+                        value: (
+                            precision: "full",
+                            calendar: proleptic_gregorian,
+                            year: 998,
+                            month: 3,
+                            day: 14,
+                        ),
+                        state: authored,
+                        confidence: high,
+                        review: not_required,
+                        lock: unlocked,
+                        freshness: current,
+                        lineage: [
+                            "character_original",
+                        ],
+                    )),
+                    personality: (
+                        honesty_humility: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.72,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sincerity: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.76,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            fairness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.81,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            greed_avoidance: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.66,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            modesty: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.65,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        emotionality: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.57,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            fearfulness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.42,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            anxiety: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.58,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            dependence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.49,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sentimentality: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.79,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        extraversion: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.68,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            social_self_esteem: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.73,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            social_boldness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.61,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sociability: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.64,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            liveliness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.74,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        agreeableness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.63,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            forgivingness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.55,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            gentleness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.71,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            flexibility: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.59,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            patience: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.67,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        conscientiousness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.78,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            organization: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.75,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            diligence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.84,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            perfectionism: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.69,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            prudence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.82,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: locked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        openness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.83,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            aesthetic_appreciation: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.88,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            inquisitiveness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.81,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            creativity: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.86,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            unconventionality: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.77,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                    ),
+                    inner_life: {
+                        "keeps_promises": (
+                            id: "keeps_promises",
+                            category: value,
+                            content: (
+                                value: "Promises become paths Ari can follow through uncertainty.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                    voice: {
+                        "measured_warmth": (
+                            id: "measured_warmth",
+                            category: cadence,
+                            content: (
+                                value: "Short observations followed by one generous question.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                extensions: {
+                    "org.weave.character.alignment": (
+                        kind: alignment_view,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.alignment",
+                                extension_version: 1,
+                                authority: "org.weave.reviewer.fixture",
+                                rationale: "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "alignment_apply_361b86102edd3c9a",
+                                    "character_original",
+                                    "weave_wayfinder_compass",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                view_id: "org.weave.alignment.wayfinder_compass",
+                                pack: (
+                                    id: "org.weave.alignment.wayfinder_compass",
+                                    version: "1.0.0",
+                                    sha256: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
+                                ),
+                                values: {
+                                    "horizon": (
+                                        id: "horizon",
+                                        label_id: "seeking",
+                                        label: "Seeking",
+                                        decision: reviewed,
+                                        score_micros: Some(644000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.openness.factor",
+                                            "canon.personality.openness.inquisitiveness",
+                                        ],
+                                    ),
+                                    "reciprocity": (
+                                        id: "reciprocity",
+                                        label_id: "mutual",
+                                        label: "Mutual",
+                                        decision: edited,
+                                        score_micros: Some(449000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.agreeableness.factor",
+                                            "canon.personality.honesty_humility.factor",
+                                            "canon.personality.honesty_humility.fairness",
+                                        ],
+                                    ),
+                                    "structure": (
+                                        id: "structure",
+                                        label_id: "adapting",
+                                        label: "Adapting",
+                                        decision: overridden,
+                                        score_micros: Some(536000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.conscientiousness.factor",
+                                            "canon.personality.conscientiousness.organization",
+                                        ],
+                                    ),
+                                },
+                                input_paths: [
+                                    "canon.personality.agreeableness.factor",
+                                    "canon.personality.conscientiousness.factor",
+                                    "canon.personality.conscientiousness.organization",
+                                    "canon.personality.honesty_humility.factor",
+                                    "canon.personality.honesty_humility.fairness",
+                                    "canon.personality.openness.factor",
+                                    "canon.personality.openness.inquisitiveness",
+                                ],
+                                review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                                applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.behavioral_signatures": (
+                        kind: behavioral_signatures,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.behavioral_signatures",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                signatures: {
+                                    "maps_before_moving": (
+                                        id: "maps_before_moving",
+                                        cue: "Sketches a route before committing the group.",
+                                        strength: 0.8,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.date_context": (
+                        kind: date_context,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.date_context",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                context_pack: "org.weave.context.synthetic_calendar",
+                                context_version: "1.0.0",
+                                context_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                accepted_record_ids: [
+                                    "early_rains",
+                                ],
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.expression": (
+                        kind: expression,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.expression",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                lexicon: {
+                                    "waymark": (
+                                        id: "waymark",
+                                        category: "org.weave.expression.navigation",
+                                        normalized: "waymark",
+                                        strength: 0.8,
+                                    ),
+                                },
+                                preferences: {
+                                    "clear_questions": (
+                                        id: "clear_questions",
+                                        category: "org.weave.preference.communication",
+                                        target: "clear questions",
+                                        polarity: prefer,
+                                        strength: 0.9,
+                                    ),
+                                },
+                                behavioral_signature_refs: [
+                                    "org.weave.signature.maps_before_moving",
+                                ],
+                                source_pack_refs: [
+                                    "org.weave.expression.glasswind",
+                                ],
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.identity_presentation": (
+                        kind: identity_presentation,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.identity_presentation",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                identity_refs: [
+                                    "org.weave.identity.wayfinder",
+                                ],
+                                presentation_refs: [
+                                    "presentation/assets/ari-vale-avatar.svg",
+                                    "presentation/assets/sable-reed-avatar.svg",
+                                ],
+                                pronouns: Some((
+                                    value: (
+                                        subject: "they",
+                                        object: "them",
+                                        possessive_determiner: "their",
+                                        possessive_pronoun: "theirs",
+                                        reflexive: "themself",
+                                    ),
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                context_notes: {
+                                    "current_context": (
+                                        id: "current_context",
+                                        kind: context,
+                                        content: (
+                                            value: "Carries a folded route card for the next fictional crossing.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                    "glasswind_origin": (
+                                        id: "glasswind_origin",
+                                        kind: origin,
+                                        content: (
+                                            value: "Raised among the synthetic Glasswind coast\'s public wayfinding houses.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                },
+                                appearance: {
+                                    "travel_layers": (
+                                        id: "travel_layers",
+                                        category: "org.weave.appearance.clothing",
+                                        content: (
+                                            value: "Layered cedar-green travel cloth with a pale reflective hem.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                },
+                                palette: Some((
+                                    value: (
+                                        colors: {
+                                            "accent": "#D6A24A",
+                                            "background": "#102825",
+                                            "foreground": "#D9F4E3",
+                                        },
+                                    ),
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                style_tags: Some((
+                                    value: [
+                                        "cedar_ink",
+                                        "route_marks",
+                                    ],
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                assets: {
+                                    "authored_avatar": (
+                                        value: (
+                                            id: "authored_avatar",
+                                            kind: avatar,
+                                            path: "presentation/assets/ari-vale-avatar.svg",
+                                            media_type: "image/svg+xml",
+                                            alt_text: "Geometric cedar and gold wayfinder avatar.",
+                                        ),
+                                        state: authored,
+                                        confidence: high,
+                                        review: not_required,
+                                        lock: unlocked,
+                                        freshness: current,
+                                        lineage: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.relationships": (
+                        kind: relationships,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.relationships",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                edges: {
+                                    "mentor_sable": (
+                                        id: "mentor_sable",
+                                        source_character_id: "org.weave.character.ari_vale",
+                                        target_character_id: "org.weave.character.sable_reed",
+                                        kind: "org.weave.relationship.mentor",
+                                        confidence: high,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.role_projections": (
+                        kind: role_projections,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.role_projections",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                roles: {
+                                    "route_steward": (
+                                        id: "route_steward",
+                                        taxonomy: "org.weave.roles.glasswind",
+                                        role: "Route steward",
+                                        rationale: "Accepted as a narrative role, not a personality fact.",
+                                        input_paths: [
+                                            "canon.personality.conscientiousness.factor",
+                                            "canon.personality.openness.factor",
+                                        ],
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.tabletop": (
+                        kind: tabletop,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.tabletop",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                interpretation: preserved_inactive,
+                                payload: (
+                                    kind: object,
+                                    value: {
+                                        "ruleset_ref": (
+                                            kind: string,
+                                            value: "org.weave.rules.synthetic@1",
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ),
+                },
+                suggestions: {
+                    "night_market_memory": (
+                        id: "night_market_memory",
+                        target_path: "canon.inner_life.night_market_memory",
+                        proposal: (
+                            value: (
+                                kind: string,
+                                value: "A remembered lantern exchange may create a useful tension.",
+                            ),
+                            state: suggested,
+                            confidence: low,
+                            review: pending,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                            rationale: Some("Optional synthetic authoring prompt."),
+                        ),
+                    ),
+                },
+                derived: (
+                    ocean: (
+                        algorithm: "weave_hexaco_to_ocean_compatibility",
+                        algorithm_version: 1,
+                        lossy: true,
+                        independent_evidence: false,
+                        openness: Some((
+                            score: 0.83,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.openness.factor",
+                            ],
+                        )),
+                        conscientiousness: Some((
+                            score: 0.78,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.conscientiousness.factor",
+                            ],
+                        )),
+                        extraversion: Some((
+                            score: 0.68,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.extraversion.factor",
+                            ],
+                        )),
+                        agreeableness: Some((
+                            score: 0.63,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.agreeableness.factor",
+                            ],
+                        )),
+                        neuroticism: Some((
+                            score: 0.57,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.emotionality.factor",
+                            ],
+                        )),
+                        omitted_factor: honesty_humility,
+                    ),
+                ),
+                provenance: (
+                    sources: [
+                        (
+                            id: "character_original",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "character-contract-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original synthetic Weave Character contract fixture.",
+                            modified: false,
+                        ),
+                        (
+                            id: "weave_wayfinder_compass",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "wayfinder-compass-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+                            modified: false,
+                        ),
+                    ],
+                    transformations: [
+                        (
+                            id: "alignment_apply_361b86102edd3c9a",
+                            inputs: [
+                                "character_original",
+                                "weave_wayfinder_compass",
+                            ],
+                            description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
+                        ),
+                    ],
+                    claims: {
+                        "axes": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "calibrations": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "extensions.org.weave.character.alignment": [
+                            "alignment_apply_361b86102edd3c9a",
+                        ],
+                        "inputs": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "methodology": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "profile": [
+                            "character_original",
+                        ],
+                    },
+                ),
+            ),
+            "org.weave.character.sable_reed": (
+                profile_format_version: 1,
+                id: "org.weave.character.sable_reed",
+                canon: (
+                    identity: (
+                        display_name: (
+                            value: "Sable Reed",
+                            state: authored,
+                            confidence: high,
+                            review: not_required,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                        ),
+                        aliases: Some((
+                            value: [
+                                "Ari",
+                                "Vale",
+                            ],
+                            state: authored,
+                            confidence: high,
+                            review: not_required,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                        )),
+                    ),
+                    birth_date: Some((
+                        value: (
+                            precision: "full",
+                            calendar: proleptic_gregorian,
+                            year: 998,
+                            month: 3,
+                            day: 14,
+                        ),
+                        state: authored,
+                        confidence: high,
+                        review: not_required,
+                        lock: unlocked,
+                        freshness: current,
+                        lineage: [
+                            "character_original",
+                        ],
+                    )),
+                    personality: (
+                        honesty_humility: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.72,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sincerity: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.76,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            fairness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.81,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            greed_avoidance: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.66,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            modesty: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.65,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        emotionality: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.57,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            fearfulness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.42,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            anxiety: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.58,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            dependence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.49,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sentimentality: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.79,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        extraversion: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.68,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            social_self_esteem: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.73,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            social_boldness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.61,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            sociability: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.64,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            liveliness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.74,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        agreeableness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.63,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            forgivingness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.55,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            gentleness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.71,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            flexibility: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.59,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            patience: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.67,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        conscientiousness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.78,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            organization: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.75,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            diligence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.84,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            perfectionism: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.69,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            prudence: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.82,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: locked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                        openness: (
+                            factor: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.83,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            aesthetic_appreciation: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.88,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            inquisitiveness: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.81,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            creativity: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.86,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                            unconventionality: Some((
+                                value: (
+                                    form: "score",
+                                    score: 0.77,
+                                ),
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            )),
+                        ),
+                    ),
+                    inner_life: {
+                        "keeps_promises": (
+                            id: "keeps_promises",
+                            category: value,
+                            content: (
+                                value: "Promises become paths Ari can follow through uncertainty.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                    voice: {
+                        "measured_warmth": (
+                            id: "measured_warmth",
+                            category: cadence,
+                            content: (
+                                value: "Short observations followed by one generous question.",
+                                state: authored,
+                                confidence: high,
+                                review: not_required,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                extensions: {
+                    "org.weave.character.alignment": (
+                        kind: alignment_view,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.alignment",
+                                extension_version: 1,
+                                authority: "org.weave.reviewer.fixture",
+                                rationale: "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "alignment_apply_361b86102edd3c9a",
+                                    "character_original",
+                                    "weave_wayfinder_compass",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                view_id: "org.weave.alignment.wayfinder_compass",
+                                pack: (
+                                    id: "org.weave.alignment.wayfinder_compass",
+                                    version: "1.0.0",
+                                    sha256: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
+                                ),
+                                values: {
+                                    "horizon": (
+                                        id: "horizon",
+                                        label_id: "seeking",
+                                        label: "Seeking",
+                                        decision: reviewed,
+                                        score_micros: Some(644000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character balances continuity with unfamiliar possibilities in the current story. Leans toward unfamiliar possibilities in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.openness.factor",
+                                            "canon.personality.openness.inquisitiveness",
+                                        ],
+                                    ),
+                                    "reciprocity": (
+                                        id: "reciprocity",
+                                        label_id: "mutual",
+                                        label: "Mutual",
+                                        decision: edited,
+                                        score_micros: Some(449000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character frames exchange, mutual obligation, and care in the current story. Frames exchange as reciprocal in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.agreeableness.factor",
+                                            "canon.personality.honesty_humility.factor",
+                                            "canon.personality.honesty_humility.fairness",
+                                        ],
+                                    ),
+                                    "structure": (
+                                        id: "structure",
+                                        label_id: "adapting",
+                                        label: "Adapting",
+                                        decision: overridden,
+                                        score_micros: Some(536000),
+                                        coverage_micros: 1000000,
+                                        explanation: "How a fictional character balances improvisation and prior structure in the current story. Moves between prior structure and improvisation in the current fictional situation. This reviewed value is fictional narrative shorthand, not a diagnosis or authority over canon.",
+                                        input_paths: [
+                                            "canon.personality.conscientiousness.factor",
+                                            "canon.personality.conscientiousness.organization",
+                                        ],
+                                    ),
+                                },
+                                input_paths: [
+                                    "canon.personality.agreeableness.factor",
+                                    "canon.personality.conscientiousness.factor",
+                                    "canon.personality.conscientiousness.organization",
+                                    "canon.personality.honesty_humility.factor",
+                                    "canon.personality.honesty_humility.fairness",
+                                    "canon.personality.openness.factor",
+                                    "canon.personality.openness.inquisitiveness",
+                                ],
+                                review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                                applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.behavioral_signatures": (
+                        kind: behavioral_signatures,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.behavioral_signatures",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                signatures: {
+                                    "maps_before_moving": (
+                                        id: "maps_before_moving",
+                                        cue: "Sketches a route before committing the group.",
+                                        strength: 0.8,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.date_context": (
+                        kind: date_context,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.date_context",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                context_pack: "org.weave.context.synthetic_calendar",
+                                context_version: "1.0.0",
+                                context_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                accepted_record_ids: [
+                                    "early_rains",
+                                ],
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.expression": (
+                        kind: expression,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.expression",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                lexicon: {
+                                    "waymark": (
+                                        id: "waymark",
+                                        category: "org.weave.expression.navigation",
+                                        normalized: "waymark",
+                                        strength: 0.8,
+                                    ),
+                                },
+                                preferences: {
+                                    "clear_questions": (
+                                        id: "clear_questions",
+                                        category: "org.weave.preference.communication",
+                                        target: "clear questions",
+                                        polarity: prefer,
+                                        strength: 0.9,
+                                    ),
+                                },
+                                behavioral_signature_refs: [
+                                    "org.weave.signature.maps_before_moving",
+                                ],
+                                source_pack_refs: [
+                                    "org.weave.expression.glasswind",
+                                ],
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.identity_presentation": (
+                        kind: identity_presentation,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.identity_presentation",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                identity_refs: [
+                                    "org.weave.identity.wayfinder",
+                                ],
+                                presentation_refs: [
+                                    "presentation/assets/ari-vale-avatar.svg",
+                                    "presentation/assets/sable-reed-avatar.svg",
+                                ],
+                                pronouns: Some((
+                                    value: (
+                                        subject: "they",
+                                        object: "them",
+                                        possessive_determiner: "their",
+                                        possessive_pronoun: "theirs",
+                                        reflexive: "themself",
+                                    ),
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                context_notes: {
+                                    "current_context": (
+                                        id: "current_context",
+                                        kind: context,
+                                        content: (
+                                            value: "Carries a folded route card for the next fictional crossing.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                    "glasswind_origin": (
+                                        id: "glasswind_origin",
+                                        kind: origin,
+                                        content: (
+                                            value: "Raised among the synthetic Glasswind coast\'s public wayfinding houses.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                },
+                                appearance: {
+                                    "travel_layers": (
+                                        id: "travel_layers",
+                                        category: "org.weave.appearance.clothing",
+                                        content: (
+                                            value: "Layered cedar-green travel cloth with a pale reflective hem.",
+                                            state: authored,
+                                            confidence: high,
+                                            review: not_required,
+                                            lock: unlocked,
+                                            freshness: current,
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                        ),
+                                    ),
+                                },
+                                palette: Some((
+                                    value: (
+                                        colors: {
+                                            "accent": "#D6A24A",
+                                            "background": "#102825",
+                                            "foreground": "#D9F4E3",
+                                        },
+                                    ),
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                style_tags: Some((
+                                    value: [
+                                        "cedar_ink",
+                                        "route_marks",
+                                    ],
+                                    state: authored,
+                                    confidence: high,
+                                    review: not_required,
+                                    lock: unlocked,
+                                    freshness: current,
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                )),
+                                assets: {
+                                    "authored_avatar": (
+                                        value: (
+                                            id: "authored_avatar",
+                                            kind: avatar,
+                                            path: "presentation/assets/ari-vale-avatar.svg",
+                                            media_type: "image/svg+xml",
+                                            alt_text: "Geometric cedar and gold wayfinder avatar.",
+                                        ),
+                                        state: authored,
+                                        confidence: high,
+                                        review: not_required,
+                                        lock: unlocked,
+                                        freshness: current,
+                                        lineage: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.relationships": (
+                        kind: relationships,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.relationships",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                edges: {
+                                    "mentor_sable": (
+                                        id: "mentor_sable",
+                                        source_character_id: "org.weave.character.sable_reed",
+                                        target_character_id: "org.weave.character.ari_vale",
+                                        kind: "org.weave.relationship.mentor",
+                                        confidence: high,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.role_projections": (
+                        kind: role_projections,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.role_projections",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                roles: {
+                                    "route_steward": (
+                                        id: "route_steward",
+                                        taxonomy: "org.weave.roles.glasswind",
+                                        role: "Route steward",
+                                        rationale: "Accepted as a narrative role, not a personality fact.",
+                                        input_paths: [
+                                            "canon.personality.conscientiousness.factor",
+                                            "canon.personality.openness.factor",
+                                        ],
+                                    ),
+                                },
+                            ),
+                        ),
+                    ),
+                    "org.weave.character.tabletop": (
+                        kind: tabletop,
+                        record: (
+                            header: (
+                                namespace: "org.weave.character.tabletop",
+                                extension_version: 1,
+                                authority: "org.weave.character.contract",
+                                rationale: "Explicit optional projection authored for the synthetic fixture.",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                freshness: current,
+                                lineage: [
+                                    "character_original",
+                                ],
+                                canonical_personality_write_back: forbidden,
+                            ),
+                            value: (
+                                interpretation: preserved_inactive,
+                                payload: (
+                                    kind: object,
+                                    value: {
+                                        "ruleset_ref": (
+                                            kind: string,
+                                            value: "org.weave.rules.synthetic@1",
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ),
+                },
+                suggestions: {
+                    "night_market_memory": (
+                        id: "night_market_memory",
+                        target_path: "canon.inner_life.night_market_memory",
+                        proposal: (
+                            value: (
+                                kind: string,
+                                value: "A remembered lantern exchange may create a useful tension.",
+                            ),
+                            state: suggested,
+                            confidence: low,
+                            review: pending,
+                            lock: unlocked,
+                            freshness: current,
+                            lineage: [
+                                "character_original",
+                            ],
+                            rationale: Some("Optional synthetic authoring prompt."),
+                        ),
+                    ),
+                },
+                derived: (
+                    ocean: (
+                        algorithm: "weave_hexaco_to_ocean_compatibility",
+                        algorithm_version: 1,
+                        lossy: true,
+                        independent_evidence: false,
+                        openness: Some((
+                            score: 0.83,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.openness.factor",
+                            ],
+                        )),
+                        conscientiousness: Some((
+                            score: 0.78,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.conscientiousness.factor",
+                            ],
+                        )),
+                        extraversion: Some((
+                            score: 0.68,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.extraversion.factor",
+                            ],
+                        )),
+                        agreeableness: Some((
+                            score: 0.63,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.agreeableness.factor",
+                            ],
+                        )),
+                        neuroticism: Some((
+                            score: 0.57,
+                            confidence: high,
+                            input_paths: [
+                                "canon.personality.emotionality.factor",
+                            ],
+                        )),
+                        omitted_factor: honesty_humility,
+                    ),
+                ),
+                provenance: (
+                    sources: [
+                        (
+                            id: "character_original",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "character-contract-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original synthetic Weave Character contract fixture.",
+                            modified: false,
+                        ),
+                        (
+                            id: "weave_wayfinder_compass",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "wayfinder-compass-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+                            modified: false,
+                        ),
+                    ],
+                    transformations: [
+                        (
+                            id: "alignment_apply_361b86102edd3c9a",
+                            inputs: [
+                                "character_original",
+                                "weave_wayfinder_compass",
+                            ],
+                            description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
+                        ),
+                    ],
+                    claims: {
+                        "axes": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "calibrations": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "extensions.org.weave.character.alignment": [
+                            "alignment_apply_361b86102edd3c9a",
+                        ],
+                        "inputs": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "methodology": [
+                            "weave_wayfinder_compass",
+                        ],
+                        "profile": [
+                            "character_original",
+                        ],
+                    },
+                ),
+            ),
+        },
+    ),
+    input_sha256: "ff19b4c4ce41846e13a1a1bd1b76537d6cb5f3b9b368c5bfba6c333885d53c66",
+    catalog: (
+        catalog_format_version: 1,
+        id: "org.weave.character.presentation.glasswind",
+        version: "1.0.0",
+        title: "Glasswind Presentation Catalog",
+        description: "Original synthetic appearance, color, style, and avatar choices for deterministic public fixture allocation.",
+        independently_authored: true,
+        license: "MIT",
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        slots: {
+            "accent_color": (
+                id: "accent_color",
+                label: "Accent color",
+                description: "Original synthetic Accent color presentation slot.",
+                value_kind: palette_color,
+            ),
+            "avatar": (
+                id: "avatar",
+                label: "Avatar",
+                description: "Original synthetic Avatar presentation slot.",
+                value_kind: asset,
+            ),
+            "silhouette": (
+                id: "silhouette",
+                label: "Silhouette",
+                description: "Original synthetic Silhouette presentation slot.",
+                value_kind: appearance,
+            ),
+            "visual_tone": (
+                id: "visual_tone",
+                label: "Visual tone",
+                description: "Original synthetic Visual tone presentation slot.",
+                value_kind: style_tag,
+            ),
+        },
+        entries: {
+            "amber_accent": (
+                id: "amber_accent",
+                slot_id: "accent_color",
+                label: "Amber accent",
+                value: (
+                    kind: "palette_color",
+                    palette_slot: "accent",
+                    color: "#D6A24A",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "ari_avatar": (
+                id: "ari_avatar",
+                slot_id: "avatar",
+                label: "Ari avatar",
+                value: (
+                    kind: "asset",
+                    asset: (
+                        id: "ari_avatar",
+                        kind: avatar,
+                        path: "presentation/assets/ari-vale-avatar.svg",
+                        media_type: "image/svg+xml",
+                        alt_text: "Geometric cedar and gold wayfinder avatar.",
+                    ),
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "cedar_ink": (
+                id: "cedar_ink",
+                slot_id: "visual_tone",
+                label: "Cedar ink",
+                value: (
+                    kind: "style_tag",
+                    tag: "cedar_ink",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "long_coat": (
+                id: "long_coat",
+                slot_id: "silhouette",
+                label: "Long coat",
+                value: (
+                    kind: "appearance",
+                    category: "org.weave.appearance.silhouette",
+                    descriptor: "Long layered travel coat with a narrow shoulder line.",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "river_glass": (
+                id: "river_glass",
+                slot_id: "visual_tone",
+                label: "River glass",
+                value: (
+                    kind: "style_tag",
+                    tag: "river_glass",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "sable_avatar": (
+                id: "sable_avatar",
+                slot_id: "avatar",
+                label: "Sable avatar",
+                value: (
+                    kind: "asset",
+                    asset: (
+                        id: "sable_avatar",
+                        kind: avatar,
+                        path: "presentation/assets/sable-reed-avatar.svg",
+                        media_type: "image/svg+xml",
+                        alt_text: "Geometric blue and silver routekeeper avatar.",
+                    ),
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "short_cape": (
+                id: "short_cape",
+                slot_id: "silhouette",
+                label: "Short cape",
+                value: (
+                    kind: "appearance",
+                    category: "org.weave.appearance.silhouette",
+                    descriptor: "Short route cape over a compact travel silhouette.",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+            "violet_accent": (
+                id: "violet_accent",
+                slot_id: "accent_color",
+                label: "Violet accent",
+                value: (
+                    kind: "palette_color",
+                    palette_slot: "accent",
+                    color: "#7C5CFF",
+                ),
+                eligible_id_prefixes: [
+                    "org.weave.character",
+                ],
+                capacity: Some(1),
+            ),
+        },
+        provenance: (
+            sources: [
+                (
+                    id: "weave_glasswind_presentation",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "glasswind-presentation-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original synthetic Glasswind presentation catalog and vector assets.",
+                    modified: false,
+                ),
+            ],
+            transformations: [],
+            claims: {
+                "assets": [
+                    "weave_glasswind_presentation",
+                ],
+                "entries": [
+                    "weave_glasswind_presentation",
+                ],
+                "slots": [
+                    "weave_glasswind_presentation",
+                ],
+            },
+        ),
+    ),
+    catalog_ref: (
+        id: "org.weave.character.presentation.glasswind",
+        version: "1.0.0",
+        sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+    ),
+    request: (
+        request_format_version: 1,
+        id: "org.weave.character.presentation.glasswind_allocation",
+        expected_input_sha256: "ff19b4c4ce41846e13a1a1bd1b76537d6cb5f3b9b368c5bfba6c333885d53c66",
+        catalog: (
+            id: "org.weave.character.presentation.glasswind",
+            version: "1.0.0",
+            sha256: "b1fdbb422b359dea37ebe00ee6ac68485410b13f4ff92e7c146012e4a6cb0cfa",
+        ),
+        seed: 20260822,
+        character_ids: [
+            "org.weave.character.ari_vale",
+            "org.weave.character.sable_reed",
+        ],
+        slot_ids: [
+            "accent_color",
+            "avatar",
+            "silhouette",
+            "visual_tone",
+        ],
+        mode: fill_missing,
+        available_asset_paths: [
+            "presentation/assets/ari-vale-avatar.svg",
+            "presentation/assets/sable-reed-avatar.svg",
+        ],
+    ),
+    request_sha256: "793d3bcc746ec4c472a7b61e85f3b6ba38f7ee32f972490c6b95a455022f8260",
+    allocations: {
+        "org.weave.character.ari_vale": {
+            "accent_color": (
+                character_id: "org.weave.character.ari_vale",
+                slot_id: "accent_color",
+                disposition: proposed,
+                proposed_entry_id: Some("amber_accent"),
+                proposed_value: Some((
+                    kind: "palette_color",
+                    palette_slot: "accent",
+                    color: "#D6A24A",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "amber_accent",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "2006e64c8b93154168d641eb529e7f4b1dbd4102403a948963574f04e986f080",
+                        selected: true,
+                    ),
+                    (
+                        entry_id: "violet_accent",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 1,
+                        capacity: Some(1),
+                        capacity_available: false,
+                        seeded_sha256: "304f0501019716389c9b13577be9b38de5681854814bae7d603ffff55c1dc817",
+                        selected: false,
+                    ),
+                ],
+            ),
+            "avatar": (
+                character_id: "org.weave.character.ari_vale",
+                slot_id: "avatar",
+                disposition: proposed,
+                proposed_entry_id: Some("ari_avatar"),
+                proposed_value: Some((
+                    kind: "asset",
+                    asset: (
+                        id: "ari_avatar",
+                        kind: avatar,
+                        path: "presentation/assets/ari-vale-avatar.svg",
+                        media_type: "image/svg+xml",
+                        alt_text: "Geometric cedar and gold wayfinder avatar.",
+                    ),
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "ari_avatar",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "d8b948796c165398dbd37780469c36eb89301604a2b0583adb93657212ed173b",
+                        selected: true,
+                    ),
+                    (
+                        entry_id: "sable_avatar",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "f04dd1188e5270c2022df5d779b1c4a2829f5a248631a5ea6438c4e7d0773788",
+                        selected: false,
+                    ),
+                ],
+            ),
+            "silhouette": (
+                character_id: "org.weave.character.ari_vale",
+                slot_id: "silhouette",
+                disposition: proposed,
+                proposed_entry_id: Some("long_coat"),
+                proposed_value: Some((
+                    kind: "appearance",
+                    category: "org.weave.appearance.silhouette",
+                    descriptor: "Long layered travel coat with a narrow shoulder line.",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "long_coat",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "f831432b826d399adb623e738b2125d834548d8b474377069b29e822e24f5efb",
+                        selected: true,
+                    ),
+                    (
+                        entry_id: "short_cape",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 1,
+                        capacity: Some(1),
+                        capacity_available: false,
+                        seeded_sha256: "93b47978f21413ca8449bfdf8f86d8380a6ba061242e4d2e0834d63199e47df0",
+                        selected: false,
+                    ),
+                ],
+            ),
+            "visual_tone": (
+                character_id: "org.weave.character.ari_vale",
+                slot_id: "visual_tone",
+                disposition: proposed,
+                proposed_entry_id: Some("river_glass"),
+                proposed_value: Some((
+                    kind: "style_tag",
+                    tag: "river_glass",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "cedar_ink",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "233250f824bb39a3d346a97e7407da2a6d4c10d1d7ea43f08773ce990bfdc807",
+                        selected: false,
+                    ),
+                    (
+                        entry_id: "river_glass",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "0db7916d21eaa63bd93dbfad609e0461a08f33f762f9f722b4de808882affd6c",
+                        selected: true,
+                    ),
+                ],
+            ),
+        },
+        "org.weave.character.sable_reed": {
+            "accent_color": (
+                character_id: "org.weave.character.sable_reed",
+                slot_id: "accent_color",
+                disposition: proposed,
+                proposed_entry_id: Some("violet_accent"),
+                proposed_value: Some((
+                    kind: "palette_color",
+                    palette_slot: "accent",
+                    color: "#7C5CFF",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "amber_accent",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "a65f0492258743a69562da23f4579cf3c7a0c5fc751dc311666d843c9e2fc005",
+                        selected: false,
+                    ),
+                    (
+                        entry_id: "violet_accent",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "5a014191584308f4c2c8ac40cdc9ffa1662ad320ff3413dfc2019356360c15f3",
+                        selected: true,
+                    ),
+                ],
+            ),
+            "avatar": (
+                character_id: "org.weave.character.sable_reed",
+                slot_id: "avatar",
+                disposition: proposed,
+                proposed_entry_id: Some("sable_avatar"),
+                proposed_value: Some((
+                    kind: "asset",
+                    asset: (
+                        id: "sable_avatar",
+                        kind: avatar,
+                        path: "presentation/assets/sable-reed-avatar.svg",
+                        media_type: "image/svg+xml",
+                        alt_text: "Geometric blue and silver routekeeper avatar.",
+                    ),
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "ari_avatar",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 1,
+                        capacity: Some(1),
+                        capacity_available: false,
+                        seeded_sha256: "7fc577eebbf8af69a09ebf49e34541c96e6089df004398b549b44c9256e403f0",
+                        selected: false,
+                    ),
+                    (
+                        entry_id: "sable_avatar",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "96ff01b8bea756c6618d2cde905e67599b3f6025caba6e9d3f51c46d3fb9dc91",
+                        selected: true,
+                    ),
+                ],
+            ),
+            "silhouette": (
+                character_id: "org.weave.character.sable_reed",
+                slot_id: "silhouette",
+                disposition: proposed,
+                proposed_entry_id: Some("short_cape"),
+                proposed_value: Some((
+                    kind: "appearance",
+                    category: "org.weave.appearance.silhouette",
+                    descriptor: "Short route cape over a compact travel silhouette.",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "long_coat",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "539a708005820984177ae885c8ed5002393928d3efeffb5420caa13b838ca026",
+                        selected: false,
+                    ),
+                    (
+                        entry_id: "short_cape",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "32a2fc95c5f14fa253b92c6b93b0e363ee1c73694e5a98950a7eaf77d89b0491",
+                        selected: true,
+                    ),
+                ],
+            ),
+            "visual_tone": (
+                character_id: "org.weave.character.sable_reed",
+                slot_id: "visual_tone",
+                disposition: proposed,
+                proposed_entry_id: Some("cedar_ink"),
+                proposed_value: Some((
+                    kind: "style_tag",
+                    tag: "cedar_ink",
+                )),
+                rationale: "Selected the least-used eligible entry; seed hash and entry id break ties deterministically.",
+                trace: [
+                    (
+                        entry_id: "cedar_ink",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 0,
+                        capacity: Some(1),
+                        capacity_available: true,
+                        seeded_sha256: "2442450e04c52c143d62eaa2d5f272449b47c01d9c14dc292a543a1f7385f3f8",
+                        selected: true,
+                    ),
+                    (
+                        entry_id: "river_glass",
+                        explicitly_eligible: true,
+                        explicitly_excluded: false,
+                        used_before: 1,
+                        capacity: Some(1),
+                        capacity_available: false,
+                        seeded_sha256: "0980a3f2ad01d5cbe16794f0e68b79985edb3f4d1923d204b3cdcfc10227c788",
+                        selected: false,
+                    ),
+                ],
+            ),
+        },
+    },
+    distribution: (
+        counts: {
+            "accent_color": {
+                "amber_accent": 1,
+                "violet_accent": 1,
+            },
+            "avatar": {
+                "ari_avatar": 1,
+                "sable_avatar": 1,
+            },
+            "silhouette": {
+                "long_coat": 1,
+                "short_cape": 1,
+            },
+            "visual_tone": {
+                "cedar_ink": 1,
+                "river_glass": 1,
+            },
+        },
+        unavailable: {},
+    ),
+)
