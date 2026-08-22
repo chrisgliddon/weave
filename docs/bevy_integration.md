@@ -51,8 +51,14 @@ Queue a selection with `commands.weave_choose(index)`. `WeaveStory::variables` e
 
 Hot reload restores story state when pattern IR is unchanged. If a pattern definition or draw configuration changes, the runtime is rebuilt from the configured seed instead; this prevents old element identities or semantic objects from leaking into the reloaded story. `StoryReloaded` is emitted after either valid path.
 
-The complete finite, headless example runs with:
+Launch the complete interactive example game with:
 
 ```sh
 cargo run -p weave-example-bevy-dialogue
+```
+
+The window displays delivered dialogue, dynamic choices, observable variables, `PatternDrawn` results, story-event history, and `StoryReloaded` status. Edit `examples/bevy-dialogue/assets/dialogue.weave` while it runs to exercise Bevy's file watcher. The same integration has a deterministic window-free smoke mode:
+
+```sh
+cargo run -p weave-example-bevy-dialogue -- --smoke-test
 ```

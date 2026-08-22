@@ -12,11 +12,13 @@ pattern omens {
 }
 
 VAR omen = omens.spread.day.draw()
+VAR cups = 0
 
 === start ===
 #tavern.welcome#.
 The dawn omen is {omen.dawn.name}: {omen.dawn.meaning}.
 * [Order tea]
+    SET cups = cups + 1
     The innkeeper pours a steaming cup.
     -> END
 + [Leave]

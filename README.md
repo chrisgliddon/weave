@@ -285,7 +285,7 @@ weave/
 ├── examples/                # Runnable language, pattern, and integration stories
 │   ├── stories/             # Basic grammar and branching source files
 │   ├── standalone-runtime/  # Compiler + runtime example
-│   ├── bevy-dialogue/       # Headless Bevy asset/event example
+│   ├── bevy-dialogue/       # Interactive Bevy dialogue game + smoke test
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── docs/
@@ -353,7 +353,7 @@ fn on_story_failed(failure: On<StoryFailed>) {
 }
 ```
 
-`PatternDrawn` owns its semantic payload and is emitted once per element, in spread position order, before the line or choice boundary that used the draw. See [the Bevy integration guide](docs/bevy_integration.md) and run the finite headless example with `cargo run -p weave-example-bevy-dialogue`.
+`PatternDrawn` owns its semantic payload and is emitted once per element, in spread position order, before the line or choice boundary that used the draw. See [the Bevy integration guide](docs/bevy_integration.md), launch the example game with `cargo run -p weave-example-bevy-dialogue`, or run its window-free gate with `cargo run -p weave-example-bevy-dialogue -- --smoke-test`.
 
 ### Using Weave Without Bevy (Standalone Runtime)
 
@@ -478,7 +478,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Language server (LSP) for text editors
 - [x] Syntax highlighting grammars (tree-sitter)
 - [x] Documentation site
-- [ ] Example game integration
+- [x] Example game integration
 - [ ] Community pattern system library
 
 ### Phase 5 — Pluggable Domain Modules

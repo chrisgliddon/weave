@@ -252,9 +252,13 @@ def compile_examples() -> None:
 def run_finite_examples() -> None:
     """Exercise the two non-interactive example programs advertised by the site."""
 
-    for package in ("weave-example-standalone", "weave-example-bevy-dialogue"):
+    examples = (
+        ("weave-example-standalone", []),
+        ("weave-example-bevy-dialogue", ["--", "--smoke-test"]),
+    )
+    for package, arguments in examples:
         run(
-            ["cargo", "run", "--locked", "--quiet", "-p", package],
+            ["cargo", "run", "--locked", "--quiet", "-p", package, *arguments],
             capture=True,
             environment=cargo_environment(),
         )
