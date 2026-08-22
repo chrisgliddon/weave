@@ -6,7 +6,7 @@ use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Document, parse_document};
 use weave_domain::{
-    DomainCatalog, DomainValue, ExportSource, ResolvedDomainModule, TypeExpression,
+    DomainCatalog, DomainValue, ExportSource, Provenance, ResolvedDomainModule, TypeExpression,
 };
 use weave_patterns::{
     PatternDefinition, elder_futhark_definition, i_ching_definition, tarot_definition,
@@ -55,6 +55,14 @@ pub struct ModuleInspection {
     pub pack_id: String,
     /// Exact selected pack release.
     pub pack_version: String,
+    /// SPDX expression covering the module-authored schema.
+    pub license: String,
+    /// Public location of the module license text.
+    pub license_url: String,
+    /// Module schema authorship and source lineage.
+    pub manifest_provenance: Provenance,
+    /// Selected pack value lineage, including public-source hashes and transformations.
+    pub pack_provenance: Provenance,
     /// Sorted schema and value records.
     pub exports: Vec<ModuleExportInspection>,
 }
@@ -182,6 +190,10 @@ impl DomainSession {
                 version: resolved.manifest.version.clone(),
                 pack_id: resolved.pack.id.clone(),
                 pack_version: resolved.pack.version.clone(),
+                license: resolved.manifest.license.clone(),
+                license_url: resolved.manifest.license_url.clone(),
+                manifest_provenance: resolved.manifest.provenance.clone(),
+                pack_provenance: resolved.pack.provenance.clone(),
                 exports: resolved
                     .manifest
                     .exports
@@ -238,6 +250,18 @@ mod tests {
         ))
         .expect("canonical pack");
         DomainCatalog::from_artifacts([manifest], [pack]).expect("catalog")
+    }
+
+    fn world_catalog() -> DomainCatalog {
+        let manifest = weave_domain::ModuleManifest::from_json(include_str!(
+            "../../examples/domain-modules/weave-world/module.weave-module.json"
+        ))
+        .expect("canonical world manifest");
+        let pack = weave_domain::DomainPack::from_json(include_str!(
+            "../../examples/domain-modules/weave-world/pack.weave-domain.json"
+        ))
+        .expect("canonical world pack");
+        DomainCatalog::from_artifacts([manifest], [pack]).expect("world catalog")
     }
 
     #[test]
@@ -317,6 +341,72 @@ mod tests {
             .expect("formatted text compiles")
             .story
             .modules
+        );
+    }
+
+    #[test]
+    fn world_preset_values_and_provenance_survive_editor_round_trip() {
+        let source =
+            include_str!("../../examples/domain-modules/weave-world/reference-place.weave");
+        let catalog = world_catalog();
+        let mut session = DomainSession::with_domain_catalog(11, catalog.clone());
+        session
+            .compile_source(source, Some("reference-place.weave".to_owned()))
+            .expect("editor selects world preset");
+
+        let inspections = session.module_inspections();
+        let world = &inspections[0];
+        assert_eq!(world.alias, "world");
+        assert_eq!(world.id, "org.weave.world");
+        assert_eq!(world.pack_id, "aotearoa_new_zealand");
+        assert_eq!(world.license, "MIT");
+        assert!(
+            world
+                .pack_provenance
+                .sources
+                .iter()
+                .any(|source| source.id == "niwa_temperature" && source.sha256.is_some())
+        );
+        assert!(
+            world
+                .pack_provenance
+                .claims
+                .contains_key("values.seed.climate")
+        );
+        let seed = world
+            .exports
+            .iter()
+            .find(|export| export.name == "seed")
+            .and_then(|export| export.value.as_ref())
+            .expect("typed world seed is inspectable");
+        let DomainValue::Object(seed) = seed else {
+            panic!("world seed must remain an object");
+        };
+        assert_eq!(
+            seed.get("primary_biome"),
+            Some(&DomainValue::Symbol(
+                "temperate_broadleaf_and_mixed_forest".to_owned()
+            ))
+        );
+
+        let mut buffer = TextBuffer::with_domain_catalog(source, catalog);
+        buffer.format().expect("world declaration formats");
+        assert!(
+            buffer
+                .source()
+                .contains("pack: \"aotearoa_new_zealand@=1.0.0\"")
+        );
+        let formatted = weave_compiler::compile_with_modules(
+            buffer.source(),
+            &CompileOptions {
+                source_name: Some("reference-place.weave".to_owned()),
+            },
+            &world_catalog(),
+        )
+        .expect("formatted world source compiles");
+        assert_eq!(
+            session.last_valid_story().expect("world story").modules,
+            formatted.story.modules
         );
     }
 }

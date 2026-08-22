@@ -142,7 +142,7 @@ The compiler never runs an embedded migration or silently edits source, packs, o
 
 Every manifest and pack declares at least one public or original source. Public and derived sources require an HTTPS URL, immutable revision, SHA-256, SPDX expression, license URL, attribution, and modification flag. Original repository fixtures may use an authored revision without an upstream hash. Transformations name sorted inputs and independently describe what changed. Provenance claims map manifest or pack paths to those source or transformation identifiers.
 
-The synthetic fixture is original MIT-licensed material created for this contract. It does not model a real place, person, game, or setting and uses no external dataset. Domain-specific modules must carry equivalent machine-readable provenance for every bundled corpus or derived value.
+The synthetic fixture is original MIT-licensed material created for this contract. It does not model a real place, person, game, or setting and uses no external dataset. Domain-specific modules must carry equivalent machine-readable provenance for every bundled corpus or derived value. The [Weave World reference-seed guide](world_module.md) shows that boundary with hashed public sources, field-level transformation claims, editor inspection, and portable consumers.
 
 ## Failure behavior and diagnostics
 

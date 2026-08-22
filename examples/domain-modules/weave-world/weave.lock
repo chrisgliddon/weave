@@ -1,0 +1,21 @@
+{
+  "lock_version": 1,
+  "modules": [
+    {
+      "id": "org.weave.world",
+      "version": "1.0.0",
+      "sha256": "ff27fa31b90d60ac06fef0b42380434e7a08b231a768321ece4224a02e94598a",
+      "dependencies": []
+    }
+  ],
+  "packs": [
+    {
+      "module_id": "org.weave.world",
+      "module_version": "1.0.0",
+      "pack_id": "aotearoa_new_zealand",
+      "version": "1.0.0",
+      "sha256": "57c6d87b32eefdba8d95ffa9616a6c492f6c14e511ac46b8882508774f802c33",
+      "dependencies": []
+    }
+  ]
+}

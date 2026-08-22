@@ -14,6 +14,7 @@
 - [Community pattern packages](community_patterns.md)
 - [Pluggable domain modules](domain_modules.md)
   - [Build a third-party domain module](domain_module_tutorial.md)
+  - [Weave World reference seeds](world_module.md)
 - [Weave Editor](editor_guide.md)
 
 # Integration

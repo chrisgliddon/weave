@@ -824,4 +824,32 @@ mod tests {
                 .contains("Reloaded constellation")
         );
     }
+
+    #[test]
+    fn editor_project_discovers_and_selects_the_adjacent_world_preset() {
+        let source_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../examples/domain-modules/weave-world/reference-place.weave");
+        let project = ProjectSession::open(source_path).expect("open world fixture");
+        let compiled = compile_with_modules(
+            project.source(),
+            &CompileOptions::default(),
+            project.domain_catalog(),
+        )
+        .expect("compile editor world project");
+
+        assert_eq!(
+            compiled.domain_modules["world"].manifest.id,
+            "org.weave.world"
+        );
+        assert_eq!(
+            compiled.domain_modules["world"].pack.id,
+            "aotearoa_new_zealand"
+        );
+        assert!(
+            project
+                .domain_files()
+                .iter()
+                .any(|path| path.ends_with("pack.weave-domain.json"))
+        );
+    }
 }

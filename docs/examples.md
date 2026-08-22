@@ -10,6 +10,7 @@ Every `.weave` source below is compiled by the documentation gate. The finite Ru
 | Community package | Validation, publication, installation, version resolution, and runtime embedding | `cargo run -p weave-patterns --bin weave-pattern -- validate patterns/community/ember-omens/package.weave-pattern.json` |
 | Domain-module tracer | Explicit activation, typed paths, deterministic RON/JSON lowering, and runtime branching | `cargo run -p weave-compiler -- examples/domain-modules/contract/tracer.weave --module-manifest examples/domain-modules/contract/module.weave-module.json --module-pack examples/domain-modules/contract/pack.weave-domain.json --output target/tracer.story.ron` |
 | Third-party module tutorial | Public manifest/pack authoring, adjacent discovery, exact locking, and compatible ranges | `cargo run -p weave-compiler -- examples/domain-modules/third-party-tutorial/story.weave --locked --format json --output target/lantern-weather.story.json` |
+| Weave World reference seed | Exact reference-place shorthand, typed environmental values, public provenance, and equivalent RON/JSON | `cargo run -p weave-compiler -- examples/domain-modules/weave-world/reference-place.weave --locked --format json --output target/reference-place.story.json` |
 | Standalone Rust | Compiler-to-runtime flow without an engine | `cargo run -p weave-example-standalone` |
 | Bevy dialogue game | Interactive dialogue, choices, observable state, hot reload, and pattern-event UI | `cargo run -p weave-example-bevy-dialogue` |
 | Bevy domain consumer | Portable module RON loaded into a Bevy resource without editor dependencies | `cargo run -p weave-example-domain-module-bevy` |
@@ -36,4 +37,4 @@ cargo run -p weave-example-bevy-dialogue -- --smoke-test
 
 The [community package guide](community_patterns.md) provides the complete commands for publishing and installing Ember Omens, then compiling its package-backed example story.
 
-The [domain-module guide](domain_modules.md) explains the shared manifest, packaging, activation, editor reload, compiled IR, and consumer boundaries. The [third-party tutorial](domain_module_tutorial.md) builds a complete original module with public tools only.
+The [domain-module guide](domain_modules.md) explains the shared manifest, packaging, activation, editor reload, compiled IR, and consumer boundaries. The [third-party tutorial](domain_module_tutorial.md) builds a complete original module with public tools only, while the [Weave World guide](world_module.md) follows one openly licensed reference-place seed through every portable boundary.

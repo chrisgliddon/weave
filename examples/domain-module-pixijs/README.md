@@ -1,7 +1,7 @@
 # Domain module in PixiJS
 
-This PixiJS v8 example imports the canonical compiled JSON tracer, decodes its tagged domain
-values, and renders the selected synthetic observation with `Application` and `Text`. It reads the
+This PixiJS v8 example imports the canonical compiled JSON tracer and Weave World reference seed,
+decodes their tagged domain values, and renders both with `Application` and `Text`. It reads the
 same values as the Bevy example and has no dependency on the Weave Editor.
 
 ```bash

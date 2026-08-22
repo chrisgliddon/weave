@@ -313,7 +313,31 @@ fn activation_fields<'a>(
 fn domain_diagnostic(error: &DomainError, span: weave_core::Span) -> Diagnostic {
     Diagnostic::error(domain_error_code(error), error.to_string())
         .with_span(span)
-        .with_help("check the activation and explicit domain artifacts supplied to this build")
+        .with_help(domain_error_help(error))
+}
+
+fn domain_error_help(error: &DomainError) -> &'static str {
+    match error {
+        DomainError::ModuleNotInstalled => {
+            "install the selected module or correct the activation `id`"
+        }
+        DomainError::ModuleVersionNotInstalled => {
+            "install a matching module release or update the activation `version` requirement"
+        }
+        DomainError::PackNotInstalled => {
+            "install the selected preset pack or correct the `pack_id` before `@`"
+        }
+        DomainError::PackVersionNotInstalled => {
+            "install a matching preset release or update the version requirement after `@`"
+        }
+        DomainError::IncompatibleModule { .. } => {
+            "select a preset release whose module range includes the activated module release"
+        }
+        DomainError::DuplicateManifestArtifact | DomainError::DuplicatePackArtifact => {
+            "remove the duplicate coordinate so every selected release resolves to one artifact"
+        }
+        _ => "check the activation and explicit domain artifacts supplied to this build",
+    }
 }
 
 fn domain_error_code(error: &DomainError) -> &'static str {

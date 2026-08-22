@@ -65,10 +65,10 @@ pub enum DomainError {
     #[error("no installed domain pack version satisfies the activation")]
     PackVersionNotInstalled,
     /// A catalog contains the same module identity and version twice.
-    #[error("duplicate domain module artifact")]
+    #[error("duplicate domain module artifact makes the selection ambiguous")]
     DuplicateManifestArtifact,
     /// A catalog contains the same module, pack, and version coordinate twice.
-    #[error("duplicate domain pack artifact")]
+    #[error("duplicate domain pack artifact makes the selection ambiguous")]
     DuplicatePackArtifact,
     /// Module contract version is unsupported.
     #[error("unsupported domain contract version {found}; expected {expected}")]

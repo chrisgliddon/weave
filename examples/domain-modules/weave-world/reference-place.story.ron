@@ -1,0 +1,385 @@
+StoryIr(
+    version: 3,
+    source_name: Some("examples/domain-modules/weave-world/reference-place.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 106,
+                end: 160,
+                line: 7,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "reference_name",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "world",
+                            "seed",
+                            "identity",
+                            "display_name",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 160,
+                end: 208,
+                line: 8,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "reference_climate",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "world",
+                            "seed",
+                            "climate",
+                            "band",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "world": DomainModuleIr(
+            id: "org.weave.world",
+            version: "1.0.0",
+            pack_id: "aotearoa_new_zealand",
+            pack_version: "1.0.0",
+            exports: {
+                "seed": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "attribution": DomainValueIr(
+                                kind: string,
+                                value: "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain.",
+                            ),
+                            "biomes": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "montane_grassland_and_shrubland",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_broadleaf_and_mixed_forest",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_grassland_savanna_and_shrubland",
+                                    ),
+                                ],
+                            ),
+                            "climate": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "band": DomainValueIr(
+                                        kind: symbol,
+                                        value: "temperate_oceanic",
+                                    ),
+                                    "confidence": DomainValueIr(
+                                        kind: symbol,
+                                        value: "representative_not_exhaustive",
+                                    ),
+                                    "reference_period": DomainValueIr(
+                                        kind: string,
+                                        value: "1991-2020",
+                                    ),
+                                    "selected_station_annual_mean_temperature_c": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "maximum": DomainValueIr(
+                                                kind: number,
+                                                value: 16.0,
+                                            ),
+                                            "minimum": DomainValueIr(
+                                                kind: number,
+                                                value: 8.8,
+                                            ),
+                                        },
+                                    ),
+                                    "selected_station_annual_precipitation_mm": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "maximum": DomainValueIr(
+                                                kind: number,
+                                                value: 6545.1,
+                                            ),
+                                            "minimum": DomainValueIr(
+                                                kind: number,
+                                                value: 365.1,
+                                            ),
+                                        },
+                                    ),
+                                    "spatial_resolution": DomainValueIr(
+                                        kind: symbol,
+                                        value: "country_scale_selected_stations",
+                                    ),
+                                },
+                            ),
+                            "identity": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "culture_included": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "display_name": DomainValueIr(
+                                        kind: string,
+                                        value: "Aotearoa New Zealand",
+                                    ),
+                                    "preset": DomainValueIr(
+                                        kind: string,
+                                        value: "aotearoa_new_zealand",
+                                    ),
+                                    "reference_code": DomainValueIr(
+                                        kind: string,
+                                        value: "NZL",
+                                    ),
+                                    "reference_kind": DomainValueIr(
+                                        kind: symbol,
+                                        value: "country",
+                                    ),
+                                },
+                            ),
+                            "primary_biome": DomainValueIr(
+                                kind: symbol,
+                                value: "temperate_broadleaf_and_mixed_forest",
+                            ),
+                            "seasonality": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "coolest_month": DomainValueIr(
+                                        kind: symbol,
+                                        value: "july",
+                                    ),
+                                    "hemisphere": DomainValueIr(
+                                        kind: symbol,
+                                        value: "southern",
+                                    ),
+                                    "warmest_months": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "january",
+                                            ),
+                                            DomainValueIr(
+                                                kind: symbol,
+                                                value: "february",
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            "terrain": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "coastal",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "island",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "mountain",
+                                    ),
+                                ],
+                            ),
+                            "water": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "coastal": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                    "island_system": DomainValueIr(
+                                        kind: bool,
+                                        value: true,
+                                    ),
+                                    "setting": DomainValueIr(
+                                        kind: symbol,
+                                        value: "oceanic_islands",
+                                    ),
+                                },
+                            ),
+                            "weather_tendencies": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "alpine_cooling",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "regional_rainfall_contrast",
+                                    ),
+                                    DomainValueIr(
+                                        kind: symbol,
+                                        value: "seasonal_temperature_cycle",
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 223,
+                        end: 426,
+                        line: 11,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: binary,
+                                        value: binary(
+                                            left: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "reference_climate",
+                                                ],
+                                            ),
+                                            operator: equal,
+                                            right: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "temperate_oceanic",
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 268,
+                                                end: 369,
+                                                line: 12,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "reference_name",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " seeds a ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "world",
+                                                                    "seed",
+                                                                    "primary_biome",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " world with an ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "world",
+                                                                    "seed",
+                                                                    "water",
+                                                                    "setting",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " setting.",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 382,
+                                        end: 424,
+                                        line: 14,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "The reference-place preset is unavailable.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 427,
+                        end: 433,
+                        line: 16,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

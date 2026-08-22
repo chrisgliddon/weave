@@ -1,0 +1,471 @@
+{
+  "contract_version": 1,
+  "pack_format_version": 1,
+  "id": "org.weave.world",
+  "version": "1.0.0",
+  "namespace": "world",
+  "title": "Weave World",
+  "summary": "Typed environmental reference seeds for fictional world authoring.",
+  "authors": [
+    {
+      "name": "Weave Contributors",
+      "url": "https://github.com/chrisgliddon/weave"
+    }
+  ],
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "capabilities": [
+    {
+      "id": "data",
+      "version": 1
+    },
+    {
+      "id": "editor_schema",
+      "version": 1
+    }
+  ],
+  "dependencies": [],
+  "types": {
+    "Biome": {
+      "kind": "symbol",
+      "values": [
+        "boreal_forest_taiga",
+        "deserts_and_xeric_shrublands",
+        "flooded_grasslands_and_savannas",
+        "mangroves",
+        "mediterranean_forests_woodlands_and_scrub",
+        "montane_grassland_and_shrubland",
+        "temperate_broadleaf_and_mixed_forest",
+        "temperate_conifer_forest",
+        "temperate_grassland_savanna_and_shrubland",
+        "tropical_and_subtropical_coniferous_forest",
+        "tropical_and_subtropical_dry_broadleaf_forest",
+        "tropical_and_subtropical_grassland_savanna_and_shrubland",
+        "tropical_and_subtropical_moist_broadleaf_forest",
+        "tundra"
+      ]
+    },
+    "ClimateBand": {
+      "kind": "symbol",
+      "values": [
+        "alpine",
+        "arid",
+        "humid_continental",
+        "polar",
+        "subtropical",
+        "temperate_oceanic",
+        "tropical_oceanic"
+      ]
+    },
+    "ClimateSummary": {
+      "kind": "object",
+      "fields": {
+        "band": {
+          "type": {
+            "kind": "named",
+            "name": "ClimateBand"
+          },
+          "required": true,
+          "description": "A broad narrative climate classification."
+        },
+        "confidence": {
+          "type": {
+            "kind": "named",
+            "name": "Confidence"
+          },
+          "required": true,
+          "description": "How precisely this summary represents the reference area."
+        },
+        "reference_period": {
+          "type": {
+            "kind": "string",
+            "min_length": 9,
+            "max_length": 9
+          },
+          "required": true,
+          "description": "The climatological normal period in YYYY-YYYY form."
+        },
+        "selected_station_annual_mean_temperature_c": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": true,
+          "description": "Minimum and maximum annual mean air temperature across selected in-scope stations, in degrees Celsius."
+        },
+        "selected_station_annual_precipitation_mm": {
+          "type": {
+            "kind": "named",
+            "name": "NumericRange"
+          },
+          "required": true,
+          "description": "Minimum and maximum annual precipitation across selected in-scope stations, in millimetres."
+        },
+        "spatial_resolution": {
+          "type": {
+            "kind": "named",
+            "name": "SpatialResolution"
+          },
+          "required": true,
+          "description": "The geographic resolution represented by the normalized values."
+        }
+      }
+    },
+    "Confidence": {
+      "kind": "symbol",
+      "values": [
+        "high",
+        "low",
+        "moderate",
+        "representative_not_exhaustive",
+        "unknown"
+      ]
+    },
+    "Hemisphere": {
+      "kind": "symbol",
+      "values": [
+        "equatorial",
+        "northern",
+        "southern"
+      ]
+    },
+    "Month": {
+      "kind": "symbol",
+      "values": [
+        "april",
+        "august",
+        "december",
+        "february",
+        "january",
+        "july",
+        "june",
+        "march",
+        "may",
+        "november",
+        "october",
+        "september"
+      ]
+    },
+    "NumericRange": {
+      "kind": "object",
+      "fields": {
+        "maximum": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": -100.0,
+            "maximum": 10000.0
+          },
+          "required": true,
+          "description": "Inclusive upper endpoint."
+        },
+        "minimum": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": -100.0,
+            "maximum": 10000.0
+          },
+          "required": true,
+          "description": "Inclusive lower endpoint."
+        }
+      }
+    },
+    "ReferenceKind": {
+      "kind": "symbol",
+      "values": [
+        "country",
+        "ecosystem",
+        "island_group",
+        "region",
+        "subregion"
+      ]
+    },
+    "ReferencePreset": {
+      "kind": "string",
+      "min_length": 1,
+      "max_length": 128
+    },
+    "Seasonality": {
+      "kind": "object",
+      "fields": {
+        "coolest_month": {
+          "type": {
+            "kind": "named",
+            "name": "Month"
+          },
+          "required": true,
+          "description": "Coolest month in the normalized station average."
+        },
+        "hemisphere": {
+          "type": {
+            "kind": "named",
+            "name": "Hemisphere"
+          },
+          "required": true,
+          "description": "Hemisphere used to interpret the seasonal cycle."
+        },
+        "warmest_months": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "Month"
+            },
+            "min_items": 1,
+            "max_items": 3
+          },
+          "required": true,
+          "description": "Warmest months in the normalized station average."
+        }
+      }
+    },
+    "SpatialResolution": {
+      "kind": "symbol",
+      "values": [
+        "country_scale_selected_stations",
+        "ecosystem_scale",
+        "region_scale",
+        "subregion_scale"
+      ]
+    },
+    "Terrain": {
+      "kind": "symbol",
+      "values": [
+        "atoll",
+        "coastal",
+        "island",
+        "mountain",
+        "plain",
+        "volcanic"
+      ]
+    },
+    "WaterContext": {
+      "kind": "object",
+      "fields": {
+        "coastal": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Whether coast is a defining country-scale feature."
+        },
+        "island_system": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Whether the reference is represented as an island system."
+        },
+        "setting": {
+          "type": {
+            "kind": "named",
+            "name": "WaterSetting"
+          },
+          "required": true,
+          "description": "Broad water setting for narrative conditions."
+        }
+      }
+    },
+    "WaterSetting": {
+      "kind": "symbol",
+      "values": [
+        "freshwater_dominated",
+        "oceanic_archipelago",
+        "oceanic_atolls",
+        "oceanic_islands",
+        "river_delta",
+        "semi_enclosed_sea_coast"
+      ]
+    },
+    "WeatherTendency": {
+      "kind": "symbol",
+      "values": [
+        "alpine_cooling",
+        "coastal_moderation",
+        "cyclone_exposure",
+        "dry_season",
+        "freeze_thaw",
+        "monsoon_cycle",
+        "regional_rainfall_contrast",
+        "seasonal_temperature_cycle",
+        "snow_season",
+        "tropical_rainfall"
+      ]
+    },
+    "WorldIdentity": {
+      "kind": "object",
+      "fields": {
+        "culture_included": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Always false for the environmental-only reference preset."
+        },
+        "display_name": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Human-readable reference name."
+        },
+        "preset": {
+          "type": {
+            "kind": "named",
+            "name": "ReferencePreset"
+          },
+          "required": true,
+          "description": "Stable reference-place shorthand selected by the pack."
+        },
+        "reference_code": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 3
+          },
+          "required": true,
+          "description": "Stable three-letter country reference code."
+        },
+        "reference_kind": {
+          "type": {
+            "kind": "named",
+            "name": "ReferenceKind"
+          },
+          "required": true,
+          "description": "Geographic scope represented by the seed."
+        }
+      }
+    },
+    "WorldSeed": {
+      "kind": "object",
+      "fields": {
+        "attribution": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Compact attribution retained in portable runtime exports."
+        },
+        "biomes": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "Biome"
+            },
+            "min_items": 1,
+            "max_items": 8
+          },
+          "required": true,
+          "description": "Representative terrestrial biome classes intersecting the reference area."
+        },
+        "climate": {
+          "type": {
+            "kind": "named",
+            "name": "ClimateSummary"
+          },
+          "required": true,
+          "description": "Normalized representative climate facts."
+        },
+        "identity": {
+          "type": {
+            "kind": "named",
+            "name": "WorldIdentity"
+          },
+          "required": true,
+          "description": "Stable environmental reference identity."
+        },
+        "primary_biome": {
+          "type": {
+            "kind": "named",
+            "name": "Biome"
+          },
+          "required": true,
+          "description": "One broad biome suitable for concise narrative conditions."
+        },
+        "seasonality": {
+          "type": {
+            "kind": "named",
+            "name": "Seasonality"
+          },
+          "required": true,
+          "description": "Representative annual temperature cycle."
+        },
+        "terrain": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "Terrain"
+            },
+            "min_items": 1,
+            "max_items": 8
+          },
+          "required": true,
+          "description": "Country-scale terrain tendencies."
+        },
+        "water": {
+          "type": {
+            "kind": "named",
+            "name": "WaterContext"
+          },
+          "required": true,
+          "description": "Country-scale coastal and island context."
+        },
+        "weather_tendencies": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "WeatherTendency"
+            },
+            "min_items": 1,
+            "max_items": 8
+          },
+          "required": true,
+          "description": "Evidence-backed tendencies for narrative variation, not a forecast."
+        }
+      }
+    }
+  },
+  "exports": {
+    "seed": {
+      "type": {
+        "kind": "named",
+        "name": "WorldSeed"
+      },
+      "required": true,
+      "source": "pack",
+      "description": "The deterministic environmental world seed selected by the active reference-place pack."
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_world_module",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "world-contract-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Weave World schema authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "exports.seed": [
+        "weave_world_module"
+      ],
+      "types.WorldSeed": [
+        "weave_world_module"
+      ]
+    }
+  }
+}

@@ -34,6 +34,7 @@ REQUIRED_CHAPTERS = {
     "community_patterns.md",
     "domain_modules.md",
     "domain_module_tutorial.md",
+    "world_module.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -263,10 +264,11 @@ def compile_examples() -> None:
     compiler = compiler_binary()
     domain_tracer = ROOT / "examples/domain-modules/contract/tracer.weave"
     domain_tutorial = ROOT / "examples/domain-modules/third-party-tutorial/story.weave"
+    domain_world = ROOT / "examples/domain-modules/weave-world/reference-place.weave"
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
-        if source not in {domain_tracer, domain_tutorial}
+        if source not in {domain_tracer, domain_tutorial, domain_world}
     ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
     sources.append(readme_fixture)
@@ -414,6 +416,10 @@ def verify_domain_contract() -> None:
     pack_json = fixture / "pack.weave-domain.json"
     pack_ron = fixture / "pack.weave-domain.ron"
     tracer = fixture / "tracer.weave"
+    world_fixture = ROOT / "examples" / "domain-modules" / "weave-world"
+    world_manifest = world_fixture / "module.weave-module.json"
+    world_pack = world_fixture / "pack.weave-domain.json"
+    world_source = world_fixture / "reference-place.weave"
 
     run(
         [
@@ -422,6 +428,16 @@ def verify_domain_contract() -> None:
             str(manifest_json.relative_to(ROOT)),
             "--pack",
             str(pack_json.relative_to(ROOT)),
+        ],
+        capture=True,
+    )
+    run(
+        [
+            str(domain_tool),
+            "validate",
+            str(world_manifest.relative_to(ROOT)),
+            "--pack",
+            str(world_pack.relative_to(ROOT)),
         ],
         capture=True,
     )
@@ -447,8 +463,12 @@ def verify_domain_contract() -> None:
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
         normalized_pack_ron = workspace / "pack.weave-domain.ron"
+        normalized_world_manifest_json = workspace / "world-module.weave-module.json"
+        normalized_world_pack_json = workspace / "world-pack.weave-domain.json"
         compiled_tracer_ron = workspace / "tracer.story.ron"
         compiled_tracer_json = workspace / "tracer.story.json"
+        compiled_world_ron = workspace / "reference-place.story.ron"
+        compiled_world_json = workspace / "reference-place.story.json"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -482,6 +502,8 @@ def verify_domain_contract() -> None:
             ("manifest", manifest_json, "ron", normalized_manifest_ron),
             ("pack", pack_json, "json", normalized_pack_json),
             ("pack", pack_json, "ron", normalized_pack_ron),
+            ("manifest", world_manifest, "json", normalized_world_manifest_json),
+            ("pack", world_pack, "json", normalized_world_pack_json),
         )
         for kind, source, encoding, output in normalization_jobs:
             run(
@@ -502,6 +524,8 @@ def verify_domain_contract() -> None:
             (normalized_manifest_ron, manifest_ron),
             (normalized_pack_json, pack_json),
             (normalized_pack_ron, pack_ron),
+            (normalized_world_manifest_json, world_manifest),
+            (normalized_world_pack_json, world_pack),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"canonical domain fixture is stale: {checked.name}")
@@ -541,6 +565,57 @@ def verify_domain_contract() -> None:
             != "twilight"
         ):
             raise DocsError("compiled domain tracer omitted its selected module data")
+
+        run(
+            [
+                str(domain_tool),
+                "validate-project",
+                str((world_fixture / "weave.modules.json").relative_to(ROOT)),
+            ],
+            capture=True,
+        )
+        for encoding, output in (
+            ("ron", compiled_world_ron),
+            ("json", compiled_world_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(world_source.relative_to(ROOT)),
+                    "--locked",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+        for generated, checked in (
+            (compiled_world_ron, world_fixture / "reference-place.story.ron"),
+            (compiled_world_json, world_fixture / "reference-place.story.json"),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"compiled Weave World fixture is stale: {checked.name}")
+        world_story = json.loads(compiled_world_json.read_text(encoding="utf-8"))
+        world_seed = (
+            world_story.get("modules", {})
+            .get("world", {})
+            .get("exports", {})
+            .get("seed", {})
+            .get("value", {})
+            .get("value", {})
+        )
+        if (
+            world_story.get("version") != 3
+            or world_seed.get("primary_biome", {}).get("value")
+            != "temperate_broadleaf_and_mixed_forest"
+            or world_seed.get("identity", {})
+            .get("value", {})
+            .get("culture_included", {})
+            .get("value")
+            is not False
+        ):
+            raise DocsError("compiled Weave World fixture omitted its environmental seed")
 
         publication = workspace / "publication"
         registry = workspace / "registry"
@@ -626,7 +701,7 @@ def verify_domain_contract() -> None:
             raise DocsError("third-party tutorial module data was not embedded")
 
     print(
-        "verified domain module schemas, packaging, locks, tutorial, and tracer",
+        "verified domain module schemas, packaging, locks, tutorial, tracer, and Weave World seed",
         flush=True,
     )
 

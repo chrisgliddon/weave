@@ -1,0 +1,16 @@
+module world {
+    id: "org.weave.world"
+    version: "=1.0.0"
+    pack: "aotearoa_new_zealand@=1.0.0"
+}
+
+VAR reference_name = world.seed.identity.display_name
+VAR reference_climate = world.seed.climate.band
+
+=== start ===
+{reference_climate == temperate_oceanic:
+    {reference_name} seeds a {world.seed.primary_biome} world with an {world.seed.water.setting} setting.
+- else:
+    The reference-place preset is unavailable.
+}
+-> END
