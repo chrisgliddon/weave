@@ -2,7 +2,7 @@
 
 Domain modules add typed world, character, ruleset, and other authoring data without adding domain-specific branches throughout Weave. Contract version `1` is host-independent and declarative: the same manifest and pack models are consumed by source tooling, the compiler, runtime hosts, the editor, Bevy, and browser applications.
 
-The public Rust authority is `weave-domain`. Download the generated [module-manifest schema](downloads/domain-module-manifest-v1.schema.json) and [domain-pack schema](downloads/domain-pack-v1.schema.json), or inspect the equivalent [JSON and RON fixtures](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/contract).
+The public Rust authority is `weave-domain`. Download the generated [module-manifest schema](downloads/domain-module-manifest-v1.schema.json), [domain-pack schema](downloads/domain-pack-v1.schema.json), [project schema](downloads/domain-project-v1.schema.json), [lock schema](downloads/domain-lock-v1.schema.json), and [registry-index schema](downloads/domain-registry-index-v1.schema.json). The [third-party tutorial](domain_module_tutorial.md) builds and packages a module from scratch.
 
 ## Trust and ownership boundary
 
@@ -28,15 +28,17 @@ modules/
 └── org.weave.synthetic_constellation/
     └── 1.0.0/
         ├── module.weave-module.json
+        ├── module.weave-module.json.sha256
         └── packs/
             └── glasswing_sky/
                 └── 1.0.0/
-                    └── pack.weave-domain.json
+                    ├── pack.weave-domain.json
+                    └── pack.weave-domain.json.sha256
 ```
 
-RON artifacts use the same names with a `.ron` suffix. One version directory may contain either canonical encoding or both equivalent encodings; when both exist they must decode to equal values. Installed artifacts are immutable. Publication adds SHA-256 sidecars, and a project lock records exact module and pack versions, artifact hashes, and dependency edges.
+Authored project references may use canonical JSON or RON. Publication and installation normalize them to canonical JSON with SHA-256 sidecars. Installed artifacts are immutable, and a project lock records exact module and pack versions, artifact hashes, and dependency edges.
 
-Discovery is never ambient. A compiler or editor searches only explicitly configured project and registry roots, never the current user's entire machine, network, environment, or unrelated package-manager state. Project requirements select semantic-version ranges; the resolver chooses the highest compatible installed release, sorts candidates by module identity and semantic version, verifies its checksum, and writes the exact selection to `weave.lock`. `--locked` compilation rejects any selection or hash change.
+Discovery is never ambient. A compiler or editor searches only the adjacent `weave.modules.json`, an explicit `--module-project`, or explicit `--module-registry` roots—never the current user's entire machine, network, environment, or unrelated package-manager state. Project paths are sorted, project-relative, and confined beneath the project root. Project requirements select semantic-version ranges; the resolver chooses the highest compatible installed release, sorts candidates by module identity and semantic version, verifies its checksum, and writes the exact selection to `weave.lock`. `--locked` compilation rejects any selection or hash change.
 
 ## Source installation and activation
 
@@ -62,7 +64,18 @@ The observed sign is {constellation.observation.label}.
 
 An alias occupies a distinct top-level namespace but still cannot collide with a story variable, grammar, pattern, knot, or another active alias. Transitive dependencies are addressed internally by full module identity and do not become source-visible unless the story activates them explicitly.
 
-`weavec` accepts only artifacts named explicitly on the command line at this boundary:
+For a project, put a closed discovery file beside the story:
+
+```json
+{
+  "schema_version": 1,
+  "registries": [],
+  "manifests": ["module.weave-module.json"],
+  "packs": ["pack.weave-domain.json"]
+}
+```
+
+`weavec` discovers that adjacent file automatically. `--module-project FILE` selects another project file, `--module-registry DIRECTORY` selects installed registries directly, and the original explicit artifact flags remain available for one-off builds:
 
 ```bash
 cargo run -p weave-compiler -- \
@@ -73,7 +86,7 @@ cargo run -p weave-compiler -- \
   --output target/tracer.story.json
 ```
 
-The compiler resolves the source requirements against that in-memory catalog, validates the selected pack, type-checks module paths, and embeds only the selected immutable values and state seeds in Story IR. It does not discover files, contact a registry, or execute package code.
+The compiler resolves the complete dependency closure against that bounded catalog, validates every selected pack, type-checks module paths, and embeds only source-activated immutable values and state seeds in Story IR. A normal project build writes `weave.lock`; a `--locked` build requires an exact match. It does not contact a network registry or execute package code.
 
 ## End-to-end synthetic tracer
 
@@ -151,6 +164,9 @@ Generate the checked schemas:
 ```bash
 cargo run -p weave-domain --bin weave-module -- schema manifest --output manifest.schema.json
 cargo run -p weave-domain --bin weave-module -- schema pack --output pack.schema.json
+cargo run -p weave-domain --bin weave-module -- schema project --output project.schema.json
+cargo run -p weave-domain --bin weave-module -- schema lock --output lock.schema.json
+cargo run -p weave-domain --bin weave-module -- schema registry --output registry.schema.json
 ```
 
 Validate the canonical fixture and compare encodings:
@@ -163,6 +179,11 @@ cargo run -p weave-domain --bin weave-module -- validate \
 cargo run -p weave-domain --bin weave-module -- normalize manifest \
   examples/domain-modules/contract/module.weave-module.json \
   --format ron --output module.weave-module.ron
+
+cargo run -p weave-domain --bin weave-module -- publish \
+  examples/domain-modules/contract/module.weave-module.json \
+  --pack examples/domain-modules/contract/pack.weave-domain.json \
+  --output target/domain-publication
 ```
 
-The documentation build regenerates both schemas, normalizes JSON to RON and RON to JSON, recompiles the tracer in both formats, compares every canonical artifact byte for byte, runs the finite Bevy consumer, and tests and bundles the PixiJS consumer.
+The documentation build regenerates all five schemas, normalizes JSON to RON and RON to JSON, exercises publication, installation, project discovery, locking, and the third-party tutorial, recompiles the tracer in both formats, runs the finite Bevy consumer, and tests and bundles the PixiJS consumer.

@@ -171,7 +171,7 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
-Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed exports, canonical RON/JSON packs, semantic-version negotiation, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates explicitly supplied artifacts; the compiler type-checks their paths and embeds selected values in IR 3. The original synthetic tracer is consumed unchanged by finite [Bevy](examples/domain-module-bevy) and [PixiJS](examples/domain-module-pixijs) examples without loading third-party code or depending on the editor.
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed selected values in IR 3. Build one with the [third-party tutorial](docs/domain_module_tutorial.md). The original synthetic tracer is consumed unchanged by finite [Bevy](examples/domain-module-bevy) and [PixiJS](examples/domain-module-pixijs) examples without loading third-party code or depending on the editor.
 
 ---
 
@@ -231,7 +231,7 @@ cargo install mdbook --version 0.5.4 --locked
 python3 scripts/build-docs.py
 ```
 
-The build compiles every example story, verifies the domain tracer's RON and JSON, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks the browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
+The build compiles every ordinary example story, verifies domain schemas, packaging, locks, the third-party tutorial, and tracer RON/JSON, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
 
 ### RON Output (excerpt)
 

@@ -1,0 +1,155 @@
+{
+  "$defs": {
+    "LockedModule": {
+      "additionalProperties": false,
+      "description": "One exact selected manifest and its integrity digest.",
+      "properties": {
+        "dependencies": {
+          "description": "Exact dependencies in deterministic identity order.",
+          "items": {
+            "$ref": "#/$defs/LockedModuleDependency"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Stable module identity.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 of the canonical manifest artifact.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact selected version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "dependencies"
+      ],
+      "type": "object"
+    },
+    "LockedModuleDependency": {
+      "additionalProperties": false,
+      "description": "One exact manifest dependency recorded in a lock.",
+      "properties": {
+        "id": {
+          "description": "Stable dependency identity.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact selected version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "LockedPack": {
+      "additionalProperties": false,
+      "description": "One exact selected data pack and its integrity digest.",
+      "properties": {
+        "dependencies": {
+          "description": "Exact dependencies in deterministic coordinate order.",
+          "items": {
+            "$ref": "#/$defs/LockedPackDependency"
+          },
+          "type": "array"
+        },
+        "module_id": {
+          "description": "Stable owning module identity.",
+          "type": "string"
+        },
+        "module_version": {
+          "description": "Exact selected module version used to validate this pack.",
+          "type": "string"
+        },
+        "pack_id": {
+          "description": "Stable pack identity.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 of the canonical pack artifact.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact selected pack version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "module_id",
+        "module_version",
+        "pack_id",
+        "version",
+        "sha256",
+        "dependencies"
+      ],
+      "type": "object"
+    },
+    "LockedPackDependency": {
+      "additionalProperties": false,
+      "description": "One exact pack dependency recorded in a lock.",
+      "properties": {
+        "module_id": {
+          "description": "Stable owning module identity.",
+          "type": "string"
+        },
+        "pack_id": {
+          "description": "Stable pack identity within the module.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact selected pack version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "module_id",
+        "pack_id",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:domain-lock:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Reproducible exact domain selection for one project build.",
+  "properties": {
+    "lock_version": {
+      "const": 1,
+      "description": "Lock-file schema version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "modules": {
+      "description": "Selected modules in dependency order.",
+      "items": {
+        "$ref": "#/$defs/LockedModule"
+      },
+      "type": "array"
+    },
+    "packs": {
+      "description": "Selected packs in dependency order.",
+      "items": {
+        "$ref": "#/$defs/LockedPack"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "lock_version",
+    "modules",
+    "packs"
+  ],
+  "title": "Weave Domain Lock v1",
+  "type": "object"
+}

@@ -7,6 +7,7 @@ use gpui::{
     UniformListScrollHandle, Window, div, prelude::*, px, rgb, rgba, uniform_list,
 };
 use weave_core::Span;
+use weave_domain::DomainCatalog;
 
 use crate::text_editor::{SyntaxKind, SyntaxToken, TextBuffer};
 use crate::theme::DARK_THEME;
@@ -69,6 +70,13 @@ impl TextSurface {
         self.buffer.load(source);
         self.after_edit();
         self.message = "Source loaded from disk".to_owned();
+        cx.notify();
+    }
+
+    /// Replace the explicit domain catalog used for inline compiler diagnostics.
+    pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog, cx: &mut Context<Self>) {
+        self.buffer.set_domain_catalog(domain_catalog);
+        self.after_edit();
         cx.notify();
     }
 

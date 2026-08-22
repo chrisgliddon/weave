@@ -5,8 +5,9 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand, ValueEnum};
 use semver::Version;
 use weave_domain::{
-    DomainPack, ModuleManifest, domain_pack_schema, module_manifest_schema, validate_manifest,
-    validate_pack,
+    DomainPack, DomainRegistry, ModuleManifest, domain_lock_schema, domain_pack_schema,
+    domain_project_schema, domain_registry_index_schema, load_domain_project,
+    module_manifest_schema, validate_manifest, validate_pack,
 };
 
 #[derive(Debug, Parser)]
@@ -34,7 +35,7 @@ enum Command {
     Normalize {
         /// Contract artifact to normalize.
         #[arg(value_enum)]
-        kind: ArtifactKind,
+        kind: NormalizableArtifactKind,
         /// JSON or RON source file.
         input: PathBuf,
         /// Canonical output encoding.
@@ -55,10 +56,76 @@ enum Command {
         #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
         weave_version: String,
     },
+    /// Validate and stage one immutable release in portable registry layout.
+    Publish {
+        /// Module manifest in JSON or RON.
+        manifest: PathBuf,
+        /// Data packs owned by the manifest.
+        #[arg(long)]
+        pack: Vec<PathBuf>,
+        /// Empty or existing publication directory.
+        #[arg(long, value_name = "DIRECTORY")]
+        output: PathBuf,
+        /// Weave semantic version to negotiate.
+        #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
+        weave_version: String,
+    },
+    /// Install one immutable release in a local registry.
+    Install {
+        /// Module manifest in JSON or RON.
+        manifest: PathBuf,
+        /// Data packs owned by the manifest.
+        #[arg(long)]
+        pack: Vec<PathBuf>,
+        /// Local registry directory.
+        #[arg(long, value_name = "DIRECTORY")]
+        registry: PathBuf,
+        /// Weave semantic version to negotiate.
+        #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
+        weave_version: String,
+    },
+    /// Print the canonical JSON index for an installed registry.
+    List {
+        /// Local registry directory.
+        #[arg(long, value_name = "DIRECTORY")]
+        registry: PathBuf,
+        /// Weave semantic version to negotiate.
+        #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
+        weave_version: String,
+    },
+    /// Write the canonical portable index for an installed registry.
+    Index {
+        /// Local registry directory.
+        #[arg(long, value_name = "DIRECTORY")]
+        registry: PathBuf,
+        /// Destination JSON file.
+        #[arg(long)]
+        output: PathBuf,
+        /// Weave semantic version to negotiate.
+        #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
+        weave_version: String,
+    },
+    /// Validate a project configuration and every artifact it discovers.
+    ValidateProject {
+        /// `weave.modules.json` project configuration.
+        project: PathBuf,
+        /// Weave semantic version to negotiate.
+        #[arg(long, default_value = env!("CARGO_PKG_VERSION"))]
+        weave_version: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum ArtifactKind {
+    Manifest,
+    Pack,
+    Project,
+    Lock,
+    Registry,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum NormalizableArtifactKind {
     Manifest,
     Pack,
 }
@@ -82,6 +149,9 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
             let schema = match kind {
                 ArtifactKind::Manifest => module_manifest_schema()?,
                 ArtifactKind::Pack => domain_pack_schema()?,
+                ArtifactKind::Project => domain_project_schema()?,
+                ArtifactKind::Lock => domain_lock_schema()?,
+                ArtifactKind::Registry => domain_registry_index_schema()?,
             };
             write_atomic(&output, schema.as_bytes())?;
         }
@@ -93,14 +163,14 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
         } => {
             let source = fs::read_to_string(&input)?;
             let normalized = match kind {
-                ArtifactKind::Manifest => {
+                NormalizableArtifactKind::Manifest => {
                     let value = parse_manifest(&input, &source)?;
                     match format {
                         OutputFormat::Json => value.to_json()?,
                         OutputFormat::Ron => value.to_ron()?,
                     }
                 }
-                ArtifactKind::Pack => {
+                NormalizableArtifactKind::Pack => {
                     let value = parse_pack(&input, &source)?;
                     match format {
                         OutputFormat::Json => value.to_json()?,
@@ -131,6 +201,76 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 pack.len()
             );
         }
+        Command::Publish {
+            manifest,
+            pack,
+            output,
+            weave_version,
+        } => {
+            install_release("published", &output, &manifest, &pack, &weave_version)?;
+        }
+        Command::Install {
+            manifest,
+            pack,
+            registry,
+            weave_version,
+        } => {
+            install_release("installed", &registry, &manifest, &pack, &weave_version)?;
+        }
+        Command::List {
+            registry,
+            weave_version,
+        } => {
+            let current = Version::parse(&weave_version)?;
+            let snapshot = DomainRegistry::new(registry).discover(&current)?;
+            print!("{}", snapshot.index.to_json()?);
+        }
+        Command::Index {
+            registry,
+            output,
+            weave_version,
+        } => {
+            let current = Version::parse(&weave_version)?;
+            let snapshot = DomainRegistry::new(registry).discover(&current)?;
+            write_atomic(&output, snapshot.index.to_json()?.as_bytes())?;
+        }
+        Command::ValidateProject {
+            project,
+            weave_version,
+        } => {
+            let current = Version::parse(&weave_version)?;
+            let project = load_domain_project(project, &current)?;
+            println!(
+                "valid domain project ({} module release(s), {} pack release(s))",
+                project.catalog().manifests().count(),
+                project.catalog().packs().count()
+            );
+        }
+    }
+    Ok(())
+}
+
+fn install_release(
+    verb: &str,
+    registry: &Path,
+    manifest: &Path,
+    packs: &[PathBuf],
+    weave_version: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let current = Version::parse(weave_version)?;
+    let installed = DomainRegistry::new(registry).install(manifest, packs, &current)?;
+    println!(
+        "{verb} domain module {}@{} sha256={} ({} pack(s))",
+        installed.module_id,
+        installed.module_version,
+        installed.manifest_sha256,
+        installed.packs.len()
+    );
+    for pack in installed.packs {
+        println!(
+            "{verb} domain pack {}@{} sha256={}",
+            pack.id, pack.version, pack.sha256
+        );
     }
     Ok(())
 }

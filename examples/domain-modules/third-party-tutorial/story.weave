@@ -1,0 +1,13 @@
+module weather {
+    id: "dev.weave.lantern_weather"
+    version: "^1.0"
+    pack: "harbor_evening@^1.0"
+}
+
+=== start ===
+{weather.condition == rain:
+    Rain beads on the lantern glass. It is {weather.temperature_c} degrees outside.
+- else:
+    The lantern shines through a quiet evening.
+}
+-> END

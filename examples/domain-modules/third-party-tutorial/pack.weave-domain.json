@@ -1,0 +1,44 @@
+{
+  "pack_format_version": 1,
+  "id": "harbor_evening",
+  "version": "1.0.0",
+  "title": "Harbor Evening",
+  "module": {
+    "id": "dev.weave.lantern_weather",
+    "version": "^1.0"
+  },
+  "dependencies": [],
+  "values": {
+    "condition": {
+      "kind": "symbol",
+      "value": "rain"
+    },
+    "temperature_c": {
+      "kind": "number",
+      "value": 12.5
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "tutorial_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "domain-tutorial-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original fictional tutorial data authored for Weave.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "values.condition": [
+        "tutorial_original"
+      ],
+      "values.temperature_c": [
+        "tutorial_original"
+      ]
+    }
+  }
+}

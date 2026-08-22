@@ -1,8 +1,9 @@
 use semver::Version;
 use weave_domain::{
     DOMAIN_CONTRACT_VERSION, DomainCatalog, DomainError, DomainPack, DomainValue, ModuleDependency,
-    ModuleManifest, ProvenanceKind, domain_pack_schema, module_manifest_schema,
-    resolve_module_order, validate_manifest, validate_pack,
+    ModuleManifest, ProvenanceKind, domain_lock_schema, domain_pack_schema, domain_project_schema,
+    domain_registry_index_schema, module_manifest_schema, resolve_module_order, validate_manifest,
+    validate_pack,
 };
 
 const MANIFEST_JSON: &str =
@@ -56,6 +57,18 @@ fn checked_schemas_are_generated_from_the_contract_types() {
     assert_eq!(
         domain_pack_schema().expect("pack schema"),
         include_str!("../../../schemas/domain-pack-v1.schema.json")
+    );
+    assert_eq!(
+        domain_project_schema().expect("project schema"),
+        include_str!("../../../schemas/domain-project-v1.schema.json")
+    );
+    assert_eq!(
+        domain_lock_schema().expect("lock schema"),
+        include_str!("../../../schemas/domain-lock-v1.schema.json")
+    );
+    assert_eq!(
+        domain_registry_index_schema().expect("registry index schema"),
+        include_str!("../../../schemas/domain-registry-index-v1.schema.json")
     );
 }
 

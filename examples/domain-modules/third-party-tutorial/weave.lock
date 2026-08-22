@@ -1,0 +1,21 @@
+{
+  "lock_version": 1,
+  "modules": [
+    {
+      "id": "dev.weave.lantern_weather",
+      "version": "1.0.0",
+      "sha256": "1a16be4458383ab80bb821d930268b57e78c98b72c0c53950185e44a1723eb20",
+      "dependencies": []
+    }
+  ],
+  "packs": [
+    {
+      "module_id": "dev.weave.lantern_weather",
+      "module_version": "1.0.0",
+      "pack_id": "harbor_evening",
+      "version": "1.0.0",
+      "sha256": "3d409c95adfc78092dee05b15f23cee80da067bfd5cf7881a26f2ef39b878a3f",
+      "dependencies": []
+    }
+  ]
+}

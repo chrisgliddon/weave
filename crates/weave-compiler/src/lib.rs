@@ -6,8 +6,8 @@ use std::fmt;
 
 use semver::Version;
 use weave_domain::{
-    DomainCatalog, DomainError, DomainValue, ExportSource, ResolvedDomainModule,
-    resolve_module_order,
+    DomainCatalog, DomainError, DomainValue, ExportSource, ResolvedDomainGraph,
+    ResolvedDomainModule,
 };
 
 use weave_core::ast::{
@@ -49,6 +49,8 @@ pub struct CompiledStory {
     pub diagnostics: Vec<Diagnostic>,
     /// Exact validated artifacts selected for editor and build inspection.
     pub domain_modules: BTreeMap<String, ResolvedDomainModule>,
+    /// Complete exact dependency closure, ordered for deterministic locking and loading.
+    pub domain_graph: ResolvedDomainGraph,
 }
 
 /// One or more source diagnostics that prevented compilation.
@@ -144,7 +146,7 @@ pub fn compile_with_extensions(
             (name.clone(), PatternSignature::new(spreads))
         })
         .collect::<BTreeMap<_, _>>();
-    let domain_modules = resolve_domain_activations(&document, domain_catalog)?;
+    let (domain_modules, domain_graph) = resolve_domain_activations(&document, domain_catalog)?;
     let module_signatures = domain_modules
         .iter()
         .map(|(alias, resolved)| {
@@ -184,13 +186,14 @@ pub fn compile_with_extensions(
         story,
         diagnostics,
         domain_modules,
+        domain_graph,
     })
 }
 
 fn resolve_domain_activations(
     document: &Document,
     catalog: &DomainCatalog,
-) -> Result<BTreeMap<String, ResolvedDomainModule>, CompileError> {
+) -> Result<(BTreeMap<String, ResolvedDomainModule>, ResolvedDomainGraph), CompileError> {
     let current_weave = Version::parse(env!("CARGO_PKG_VERSION")).map_err(|_| CompileError {
         diagnostics: vec![Diagnostic::error(
             "D109",
@@ -234,26 +237,22 @@ fn resolve_domain_activations(
         }
     }
 
-    if diagnostics.is_empty() && !resolved.is_empty() {
-        let manifests = resolved
-            .values()
-            .map(|module| module.manifest.clone())
-            .collect::<Vec<_>>();
-        if let Err(error) = resolve_module_order(&manifests, &current_weave) {
-            let span = document.modules().next().map(|module| module.span);
-            let mut diagnostic = Diagnostic::error(domain_error_code(&error), error.to_string());
-            if let Some(span) = span {
-                diagnostic = diagnostic.with_span(span);
-            }
-            diagnostics.push(diagnostic);
-        }
+    if !diagnostics.is_empty() {
+        return Err(CompileError { diagnostics });
     }
 
-    if diagnostics.is_empty() {
-        Ok(resolved)
-    } else {
-        Err(CompileError { diagnostics })
-    }
+    let graph = catalog
+        .resolve_graph(resolved.values(), &current_weave)
+        .map_err(|error| {
+            let mut diagnostic = Diagnostic::error(domain_error_code(&error), error.to_string());
+            if let Some(span) = document.modules().next().map(|module| module.span) {
+                diagnostic = diagnostic.with_span(span);
+            }
+            CompileError {
+                diagnostics: vec![diagnostic],
+            }
+        })?;
+    Ok((resolved, graph))
 }
 
 fn activation_fields<'a>(

@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "DomainManifestSummary": {
+      "additionalProperties": false,
+      "description": "Discovery-safe manifest metadata for a local or hosted registry index.",
+      "properties": {
+        "artifact": {
+          "description": "Slash-separated artifact path relative to the registry root.",
+          "type": "string"
+        },
+        "authors": {
+          "description": "Author display names.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Stable module identity.",
+          "type": "string"
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 of the canonical artifact.",
+          "type": "string"
+        },
+        "summary": {
+          "description": "Concise purpose.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact release.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title",
+        "summary",
+        "authors",
+        "license",
+        "sha256",
+        "artifact"
+      ],
+      "type": "object"
+    },
+    "DomainPackSummary": {
+      "additionalProperties": false,
+      "description": "Discovery-safe data-pack metadata for a local or hosted registry index.",
+      "properties": {
+        "artifact": {
+          "description": "Slash-separated artifact path relative to the registry root.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable pack identity.",
+          "type": "string"
+        },
+        "licenses": {
+          "description": "SPDX expressions declared by the pack's provenance sources.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "module_id": {
+          "description": "Stable owning module identity.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 of the canonical artifact.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact release.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "module_id",
+        "id",
+        "version",
+        "title",
+        "licenses",
+        "sha256",
+        "artifact"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:domain-registry-index:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Portable deterministic registry listing.",
+  "properties": {
+    "modules": {
+      "description": "Installed manifests in identity/version order.",
+      "items": {
+        "$ref": "#/$defs/DomainManifestSummary"
+      },
+      "type": "array"
+    },
+    "packs": {
+      "description": "Installed packs in module/id/version order.",
+      "items": {
+        "$ref": "#/$defs/DomainPackSummary"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "description": "Registry-index schema version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "modules",
+    "packs"
+  ],
+  "title": "Weave Domain Registry Index v1",
+  "type": "object"
+}

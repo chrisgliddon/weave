@@ -3,9 +3,10 @@
 use std::time::{Duration, Instant};
 
 use gpui::{AnyElement, Context, EventEmitter, Window, div, prelude::*, px, rgb};
-use weave_compiler::{CompileOptions, compile};
+use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Span};
+use weave_domain::DomainCatalog;
 use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, Story, StoryEvent, Value};
 
@@ -106,6 +107,7 @@ pub struct PreviewSession {
     transcript: Vec<PreviewTranscript>,
     pattern_draws: Vec<DrawResult>,
     issue: Option<PreviewIssue>,
+    domain_catalog: DomainCatalog,
 }
 
 impl PreviewSession {
@@ -121,6 +123,7 @@ impl PreviewSession {
             transcript: Vec::new(),
             pattern_draws: Vec::new(),
             issue: None,
+            domain_catalog: DomainCatalog::new(),
         }
     }
 
@@ -128,6 +131,11 @@ impl PreviewSession {
         let mut session = Self::empty(seed);
         session.install_story(story, revision);
         session
+    }
+
+    /// Replace the explicit catalog used by subsequent preview compiles.
+    pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog) {
+        self.domain_catalog = domain_catalog;
     }
 
     #[must_use]
@@ -196,7 +204,11 @@ impl PreviewSession {
         source_name: Option<String>,
         revision: u64,
     ) -> bool {
-        match compile(source, &CompileOptions { source_name }) {
+        match compile_with_modules(
+            source,
+            &CompileOptions { source_name },
+            &self.domain_catalog,
+        ) {
             Ok(compiled) => {
                 self.install_story(compiled.story, revision);
                 true
@@ -417,6 +429,11 @@ impl PreviewSurface {
     #[must_use]
     pub const fn session(&self) -> &PreviewSession {
         &self.session
+    }
+
+    pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog, cx: &mut Context<Self>) {
+        self.session.set_domain_catalog(domain_catalog);
+        cx.notify();
     }
 
     pub fn schedule_compile(
@@ -832,7 +849,8 @@ Done.
 "#;
 
     fn session(seed: u64) -> PreviewSession {
-        let compiled = compile(STORY, &CompileOptions::default()).expect("story compiles");
+        let compiled =
+            weave_compiler::compile(STORY, &CompileOptions::default()).expect("story compiles");
         PreviewSession::from_story(compiled.story, seed, 1)
     }
 

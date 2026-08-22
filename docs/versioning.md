@@ -16,6 +16,9 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | Community registry index | `1` | `weave_patterns::COMMUNITY_REGISTRY_INDEX_VERSION` |
 | Domain module contract | `1` | `weave_domain::DOMAIN_CONTRACT_VERSION` |
 | Domain pack format | `1` | `weave_domain::DOMAIN_PACK_FORMAT_VERSION` |
+| Domain project file | `1` | `weave_domain::DOMAIN_PROJECT_FORMAT_VERSION` |
+| Domain lock file | `1` | `weave_domain::DOMAIN_LOCK_FORMAT_VERSION` |
+| Domain registry index | `1` | `weave_domain::DOMAIN_REGISTRY_INDEX_VERSION` |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |
 | Tree-sitter package | `0.1.0` | [`tree_sitter.md`](tree_sitter.md) |

@@ -1,0 +1,44 @@
+{
+  "$id": "urn:weave:schema:domain-project:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Closed project configuration for explicit local artifact discovery.",
+  "properties": {
+    "manifests": {
+      "default": [],
+      "description": "Project-relative manifest references in sorted order.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "packs": {
+      "default": [],
+      "description": "Project-relative pack references in sorted order.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "registries": {
+      "default": [],
+      "description": "Project-relative registry roots in sorted order.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "description": "Project-file schema version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version"
+  ],
+  "title": "Weave Domain Project v1",
+  "type": "object"
+}

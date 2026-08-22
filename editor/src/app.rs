@@ -289,6 +289,23 @@ impl EditorShell {
                 }
                 cx.notify();
             }
+            Ok(Some(ExternalChange::DomainReloaded)) => {
+                self.install_project_domain_catalog(cx);
+                let compiled = self.compile_current_source(cx);
+                let previewed = self.compile_preview_now(cx);
+                if compiled && previewed {
+                    self.state.status = crate::state::StatusMessage::Info(
+                        "Reloaded domain modules and rebuilt the project".to_owned(),
+                    );
+                }
+                cx.notify();
+            }
+            Ok(Some(ExternalChange::DomainRejected(message))) => {
+                self.state.report_error(format!(
+                    "Domain module reload was rejected; keeping the last valid catalog: {message}"
+                ));
+                cx.notify();
+            }
             Ok(Some(ExternalChange::Conflict(_))) => {
                 self.state.report_error(
                     "The project changed on disk; choose a conflict action in Project",
@@ -575,6 +592,7 @@ impl EditorShell {
 
     fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
         let source = self.project.source().to_owned();
+        self.install_project_domain_catalog(cx);
         self.canonical = CanonicalProjectModel::new(source.clone());
         self.canonical_revision_seen = self.canonical.revision();
         self.text
@@ -588,6 +606,17 @@ impl EditorShell {
         let compiled = self.compile_current_source(cx);
         let _ = self.compile_preview_now(cx);
         compiled
+    }
+
+    fn install_project_domain_catalog(&mut self, cx: &mut Context<Self>) {
+        let catalog = self.project.domain_catalog().clone();
+        self.domain.set_domain_catalog(catalog.clone());
+        self.text.update(cx, |text, cx| {
+            text.set_domain_catalog(catalog.clone(), cx);
+        });
+        self.preview.update(cx, |preview, cx| {
+            preview.set_domain_catalog(catalog, cx);
+        });
     }
 
     fn new_project(&mut self, cx: &mut Context<Self>) {
@@ -700,6 +729,7 @@ impl EditorShell {
     }
 
     fn finish_save(&mut self, diagnostic_count: usize, cx: &mut Context<Self>) {
+        self.install_project_domain_catalog(cx);
         self.text.update(cx, |text, _| text.mark_saved());
         self.state.project_name = self.project.display_name();
         self.state.dirty = false;

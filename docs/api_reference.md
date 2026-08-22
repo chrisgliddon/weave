@@ -8,7 +8,7 @@ The documentation build regenerates rustdoc for every public integration crate a
 | `weave-compiler` | `compile`, `compile_with_extensions`, `compile_with_modules`, `to_ron`, `to_json`, `json_schema`, and `CompileOptions` | [Open rustdoc](api/weave_compiler/index.html) |
 | `weave-runtime` | `Story`, `StoryEvent`, `StoryState`, `ChoiceView`, and `RuntimeError` | [Open rustdoc](api/weave_runtime/index.html) |
 | `weave-patterns` | `PatternSystem`, built-ins, `CommunityPackage`, `PackageRegistry`, package validation/publication, and `system_from_ir` | [Open rustdoc](api/weave_patterns/index.html) |
-| `weave-domain` | `ModuleManifest`, `DomainPack`, `DomainValue`, `DomainCatalog`, schema generation, validation, and deterministic resolution | [Open rustdoc](api/weave_domain/index.html) |
+| `weave-domain` | `ModuleManifest`, `DomainPack`, `DomainCatalog`, `DomainRegistry`, `DomainProjectConfig`, `DomainLock`, schema generation, validation, discovery, and deterministic resolution | [Open rustdoc](api/weave_domain/index.html) |
 | `weave-fmt` | `format_source` and `format_document` | [Open rustdoc](api/weave_fmt/index.html) |
 | `weave-bevy` | `WeavePlugin`, `WeaveStory`, observer events, and `WeaveCommandsExt` | [Open rustdoc](api/weave_bevy/index.html) |
 | `weave-web` | native `Player` plus WASM-facing player bindings | [Open rustdoc](api/weave_web/index.html) |

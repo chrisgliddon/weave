@@ -6,6 +6,12 @@ use std::time::{Duration, Instant};
 use tempfile::tempdir;
 use weave_patterns::PackageRegistry;
 
+const DOMAIN_SOURCE: &str = include_str!("../../../examples/domain-modules/contract/tracer.weave");
+const DOMAIN_MANIFEST: &str =
+    include_str!("../../../examples/domain-modules/contract/module.weave-module.json");
+const DOMAIN_PACK: &str =
+    include_str!("../../../examples/domain-modules/contract/pack.weave-domain.json");
+
 fn binary() -> &'static str {
     env!("CARGO_BIN_EXE_weavec")
 }
@@ -81,6 +87,54 @@ fn compiles_an_explicit_domain_module_activation() {
     assert_eq!(
         compiled["modules"]["constellation"]["exports"]["phase"]["value"]["value"],
         "twilight"
+    );
+}
+
+#[test]
+fn adjacent_domain_project_writes_and_enforces_an_exact_lock() {
+    let directory = tempdir().expect("temporary directory");
+    let (source, pack) = domain_project_fixture(&directory);
+    let destination = directory.path().join("tracer.json");
+
+    let output = Command::new(binary())
+        .args(["--format", "json", "--output"])
+        .arg(&destination)
+        .arg(&source)
+        .output()
+        .expect("compile adjacent domain project");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let lock_path = directory.path().join("weave.lock");
+    let original_lock = fs::read_to_string(&lock_path).expect("generated lock");
+    assert!(original_lock.contains("org.weave.synthetic_constellation"));
+
+    let locked = Command::new(binary())
+        .args(["--locked", "--format", "json", "--output"])
+        .arg(&destination)
+        .arg(&source)
+        .output()
+        .expect("compile locked project");
+    assert!(
+        locked.status.success(),
+        "{}",
+        String::from_utf8_lossy(&locked.stderr)
+    );
+
+    fs::write(&pack, DOMAIN_PACK.replace("0.625", "0.75")).expect("change pack bytes");
+    let mismatch = Command::new(binary())
+        .args(["--locked", "--format", "json", "--output"])
+        .arg(&destination)
+        .arg(&source)
+        .output()
+        .expect("reject changed locked project");
+    assert_eq!(mismatch.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&mismatch.stderr).contains("lock does not match"));
+    assert_eq!(
+        fs::read_to_string(lock_path).expect("unchanged lock"),
+        original_lock
     );
 }
 
@@ -201,6 +255,45 @@ fn watch_recompiles_after_source_changes() {
     child.stop();
 }
 
+#[test]
+fn watch_keeps_last_good_output_across_invalid_domain_reload() {
+    let directory = tempdir().expect("temporary directory");
+    let (source, pack) = domain_project_fixture(&directory);
+    let output = directory.path().join("watch.json");
+    let child = Command::new(binary())
+        .args(["--watch", "--format", "json", "--output"])
+        .arg(&output)
+        .arg(&source)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("start domain watcher");
+    let mut child = ChildGuard(Some(child));
+    wait_until(Duration::from_secs(5), || {
+        fs::read_to_string(&output)
+            .is_ok_and(|contents| contents.contains("Glasswing constellation"))
+    });
+    let last_good = fs::read_to_string(&output).expect("initial output");
+
+    fs::write(&pack, "{}").expect("write invalid pack");
+    thread::sleep(Duration::from_millis(350));
+    assert_eq!(
+        fs::read_to_string(&output).expect("preserved output"),
+        last_good
+    );
+
+    fs::write(
+        &pack,
+        DOMAIN_PACK.replace("Glasswing constellation", "Reloaded constellation"),
+    )
+    .expect("write valid pack update");
+    wait_until(Duration::from_secs(5), || {
+        fs::read_to_string(&output)
+            .is_ok_and(|contents| contents.contains("Reloaded constellation"))
+    });
+    child.stop();
+}
+
 fn wait_until(timeout: Duration, mut condition: impl FnMut() -> bool) {
     let deadline = Instant::now() + timeout;
     while Instant::now() < deadline {
@@ -218,6 +311,30 @@ fn source_fixture(directory: &tempfile::TempDir) -> std::path::PathBuf {
     let source = directory.path().join("valid.weave");
     fs::write(&source, "=== start ===\nHello.\n-> END\n").expect("write valid source");
     source
+}
+
+fn domain_project_fixture(
+    directory: &tempfile::TempDir,
+) -> (std::path::PathBuf, std::path::PathBuf) {
+    let source = directory.path().join("tracer.weave");
+    let manifest = directory.path().join("module.weave-module.json");
+    let pack = directory.path().join("pack.weave-domain.json");
+    fs::write(&source, DOMAIN_SOURCE).expect("write domain source");
+    fs::write(manifest, DOMAIN_MANIFEST).expect("write manifest");
+    fs::write(&pack, DOMAIN_PACK).expect("write pack");
+    fs::write(
+        directory.path().join("weave.modules.json"),
+        concat!(
+            "{\n",
+            "  \"schema_version\": 1,\n",
+            "  \"registries\": [],\n",
+            "  \"manifests\": [\"module.weave-module.json\"],\n",
+            "  \"packs\": [\"pack.weave-domain.json\"]\n",
+            "}\n"
+        ),
+    )
+    .expect("write domain project");
+    (source, pack)
 }
 
 impl ChildGuard {

@@ -6,7 +6,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 
 | Package | Responsibility | May depend on |
 |---|---|---|
-| `weave-domain` | Host-independent domain-module manifests, types, values, packs, compatibility, deterministic resolution, and provenance | General-purpose serialization, schema, semantic-version, and URL crates only |
+| `weave-domain` | Host-independent domain-module contracts, immutable registry packaging, bounded project discovery, exact locks, deterministic resolution, and provenance | General-purpose serialization, hashing, schema, semantic-version, and URL crates only |
 | `weave-core` | Source AST, spans, diagnostics, parser, static analysis, and versioned runtime IR | `weave-domain` plus general-purpose parsing and serialization crates |
 | `weave-runtime` | Deterministic execution of compiled stories and saveable story/pattern state | `weave-core`, `weave-patterns`; never Bevy |
 | `weave-patterns` | Serializable pattern extension boundary, data-only community package registry, and built-in tarot, I-Ching, and Elder Futhark data/algorithms | `weave-core`; never compiler, runtime, or host APIs |
@@ -45,7 +45,7 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 └── weave-bevy
 ```
 
-`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. `weave-core` consumes its portable value types; the compiler resolves an explicit `DomainCatalog` and lowers selected values into IR 3; runtime, editor, Bevy, and browser boundaries consume that shared representation rather than defining host-specific module models. The complete contract, activation, compatibility, provenance, and tracer rules are in the [domain-module guide](domain_modules.md).
+`weave-domain` is deliberately independent of the language parser, compiler, runtime, editor, and host integrations. Contract v1 is declarative and cannot load package-defined code. It owns immutable registry layout, checksum verification, project-relative discovery, dependency closure, and exact locks as well as portable values. `weave-core` consumes those value types; the compiler resolves a bounded `DomainCatalog` and lowers selected values into IR 3; runtime, editor, Bevy, and browser boundaries consume that shared representation rather than defining host-specific module models. The complete contract, packaging, activation, compatibility, provenance, and tracer rules are in the [domain-module guide](domain_modules.md).
 
 `tree-sitter-weave` is intentionally independent of `weave-core`: editors can parse unfinished source without linking the compiler. Its grammar and queries must track the normative language guide, and its npm package, Rust crate, grammar metadata, and language-specification version are released together.
 

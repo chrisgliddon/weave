@@ -6,6 +6,7 @@
 
 mod catalog;
 mod model;
+mod registry;
 mod validation;
 
 use std::fmt;
@@ -15,12 +16,21 @@ use semver::Version;
 use serde::Serialize;
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 
-pub use catalog::{DomainCatalog, ResolvedDomainModule};
+pub use catalog::{DomainCatalog, ResolvedDomainGraph, ResolvedDomainModule};
 pub use model::{
     CapabilityDeclaration, DOMAIN_CONTRACT_VERSION, DOMAIN_PACK_FORMAT_VERSION, DomainPack,
     DomainValue, ExportDeclaration, ExportSource, FieldDeclaration, ModuleAuthor, ModuleDependency,
     ModuleManifest, ModuleRequirement, PackDependency, Provenance, ProvenanceKind,
     ProvenanceSource, ProvenanceTransformation, TypeExpression,
+};
+pub use registry::{
+    DOMAIN_LOCK_FILE_NAME, DOMAIN_LOCK_FORMAT_VERSION, DOMAIN_PROJECT_FILE_NAME,
+    DOMAIN_PROJECT_FORMAT_VERSION, DOMAIN_REGISTRY_INDEX_VERSION, DomainArtifactCoordinate,
+    DomainLock, DomainManifestSummary, DomainPackSummary, DomainPackageError, DomainProjectConfig,
+    DomainRegistry, DomainRegistryIndex, DomainRegistrySnapshot, InstalledDomainArtifacts,
+    InstalledDomainPack, LoadedDomainProject, LockedModule, LockedModuleDependency, LockedPack,
+    LockedPackDependency, domain_lock_schema, domain_project_path, domain_project_schema,
+    domain_registry_index_schema, load_adjacent_domain_project, load_domain_project,
 };
 pub use validation::{resolve_module_order, validate_manifest, validate_pack};
 

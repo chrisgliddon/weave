@@ -8,9 +8,14 @@ use std::sync::mpsc::{self, Receiver};
 use std::time::{Duration, Instant};
 
 use notify::{Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use semver::Version;
 use serde::{Deserialize, Serialize};
-use weave_compiler::{CompileOptions, compile_to_ron};
+use weave_compiler::{CompileOptions, compile_with_modules, to_ron};
 use weave_core::Diagnostic;
+use weave_domain::{
+    DOMAIN_PROJECT_FILE_NAME, DomainCatalog, DomainPackageError, LoadedDomainProject,
+    load_adjacent_domain_project,
+};
 
 const RECENT_LIMIT: usize = 12;
 
@@ -29,6 +34,8 @@ pub enum ProjectError {
     MissingPath,
     #[error("recovery data is invalid: {0}")]
     InvalidRecovery(#[from] serde_json::Error),
+    #[error("domain project failed: {0}")]
+    DomainPackage(#[from] DomainPackageError),
 }
 
 /// Result of saving source and its optional compiled output.
@@ -53,6 +60,8 @@ pub enum ExternalChange {
     NoChange,
     SelfAuthored,
     Reloaded,
+    DomainReloaded,
+    DomainRejected(String),
     Conflict(ExternalConflict),
 }
 
@@ -89,6 +98,7 @@ pub struct ProjectSession {
     compile_output: Option<PathBuf>,
     pending_self_write: Option<Fingerprint>,
     conflict: Option<ExternalConflict>,
+    domain_project: LoadedDomainProject,
 }
 
 impl ProjectSession {
@@ -106,6 +116,7 @@ impl ProjectSession {
             compile_output: None,
             pending_self_write: None,
             conflict: None,
+            domain_project: LoadedDomainProject::empty_for_source("untitled.weave"),
         }
     }
 
@@ -114,6 +125,7 @@ impl ProjectSession {
         let path = normalize_path(path.as_ref());
         let bytes = fs::read(&path)?;
         let source = String::from_utf8(bytes).map_err(|_| ProjectError::InvalidUtf8)?;
+        let domain_project = load_adjacent_domain_project(&path, &current_weave())?;
         let saved = fingerprint(&source);
         let mut session = Self {
             path: Some(path.clone()),
@@ -125,6 +137,7 @@ impl ProjectSession {
             compile_output: output_path(&path).filter(|output| output.exists()),
             pending_self_write: None,
             conflict: None,
+            domain_project,
         };
         session.remember(path);
         Ok(session)
@@ -137,6 +150,7 @@ impl ProjectSession {
     ) -> Result<(Self, ProjectSave), ProjectError> {
         let mut session = Self::untitled(source);
         session.path = Some(normalize_path(path.as_ref()));
+        session.reload_domain_project()?;
         let saved = session.save()?;
         Ok((session, saved))
     }
@@ -186,6 +200,24 @@ impl ProjectSession {
         self.conflict.as_ref()
     }
 
+    #[must_use]
+    pub fn domain_catalog(&self) -> &DomainCatalog {
+        self.domain_project.catalog()
+    }
+
+    #[must_use]
+    pub fn domain_files(&self) -> &[PathBuf] {
+        self.domain_project.files()
+    }
+
+    /// Reload adjacent module configuration into a candidate and swap only after full validation.
+    pub fn reload_domain_project(&mut self) -> Result<(), ProjectError> {
+        let path = self.path.clone().ok_or(ProjectError::MissingPath)?;
+        let candidate = load_adjacent_domain_project(path, &current_weave())?;
+        self.domain_project = candidate;
+        Ok(())
+    }
+
     /// Replace in-memory source and update dirty state.
     pub fn set_source(&mut self, source: impl Into<String>) {
         self.source = source.into();
@@ -199,6 +231,7 @@ impl ProjectSession {
             return Err(ProjectError::UnresolvedConflict);
         }
         let path = self.path.clone().ok_or(ProjectError::MissingPath)?;
+        self.reload_domain_project()?;
         atomic_write(&path, self.source.as_bytes())?;
         let written = fingerprint(&self.source);
         self.saved = written;
@@ -206,24 +239,26 @@ impl ProjectSession {
         self.dirty = false;
         self.remember(path.clone());
 
-        let (compile_output, diagnostics) = match compile_to_ron(
+        let (compile_output, diagnostics) = match compile_with_modules(
             &self.source,
             &CompileOptions {
                 source_name: Some(path.to_string_lossy().into_owned()),
             },
+            self.domain_project.catalog(),
         ) {
-            Ok((ron, diagnostics)) => {
+            Ok(compiled) => {
+                let ron = to_ron(&compiled.story)
+                    .map_err(|error| ProjectError::Io(io::Error::other(error.to_string())))?;
                 let output = output_path(&path).expect("normalized source has a file name");
                 atomic_write(&output, ron.as_bytes())?;
+                if self.domain_project.is_configured() {
+                    let lock = self.domain_project.lock_for(&compiled.domain_graph)?;
+                    self.domain_project.write_lock(&lock)?;
+                }
                 self.compile_output = Some(output.clone());
-                (Some(output), diagnostics)
+                (Some(output), compiled.diagnostics)
             }
-            Err(weave_compiler::CompileOrSerializeError::Compile(error)) => {
-                (self.compile_output.clone(), error.diagnostics)
-            }
-            Err(weave_compiler::CompileOrSerializeError::Serialize(error)) => {
-                return Err(ProjectError::Io(io::Error::other(error.to_string())));
-            }
+            Err(error) => (self.compile_output.clone(), error.diagnostics),
         };
         Ok(ProjectSave {
             source_path: path,
@@ -235,11 +270,18 @@ impl ProjectSession {
     /// Save to a different path without altering either file until the atomic write succeeds.
     pub fn save_as(&mut self, path: impl AsRef<Path>) -> Result<ProjectSave, ProjectError> {
         let previous = self.path.clone();
+        let previous_domain_project = self.domain_project.clone();
         self.path = Some(normalize_path(path.as_ref()));
+        if let Err(error) = self.reload_domain_project() {
+            self.path = previous;
+            self.domain_project = previous_domain_project;
+            return Err(error);
+        }
         match self.save() {
             Ok(saved) => Ok(saved),
             Err(error) => {
                 self.path = previous;
+                self.domain_project = previous_domain_project;
                 Err(error)
             }
         }
@@ -374,6 +416,9 @@ impl ProjectSession {
         let recovery: RecoverySnapshot = serde_json::from_slice(&fs::read(path)?)?;
         let mut session = Self::untitled(recovery.source);
         session.path = recovery.project_path;
+        if session.path.is_some() {
+            session.reload_domain_project()?;
+        }
         session.revision = recovery.revision;
         session.dirty = true;
         Ok(session)
@@ -401,6 +446,8 @@ pub struct ProjectWatcher {
     target: PathBuf,
     debounce: Duration,
     pending_since: Option<Instant>,
+    source_pending: bool,
+    domain_pending: bool,
 }
 
 impl ProjectWatcher {
@@ -413,7 +460,7 @@ impl ProjectWatcher {
         })?;
         watcher.watch(
             target.parent().unwrap_or_else(|| Path::new(".")),
-            RecursiveMode::NonRecursive,
+            RecursiveMode::Recursive,
         )?;
         Ok(Self {
             _watcher: watcher,
@@ -421,6 +468,8 @@ impl ProjectWatcher {
             target,
             debounce,
             pending_since: None,
+            source_pending: false,
+            domain_pending: false,
         })
     }
 
@@ -432,7 +481,20 @@ impl ProjectWatcher {
     ) -> Result<Option<ExternalChange>, ProjectError> {
         for event in self.receiver.try_iter() {
             let event = event?;
-            if relevant_event(&event, &self.target) {
+            if matches!(event.kind, EventKind::Access(_)) {
+                continue;
+            }
+            let source_changed = event
+                .paths
+                .iter()
+                .any(|path| paths_refer_to_same_file(path, &self.target));
+            let domain_changed = event
+                .paths
+                .iter()
+                .any(|path| relevant_domain_event(path, project.domain_files()));
+            if source_changed || domain_changed {
+                self.source_pending |= source_changed;
+                self.domain_pending |= domain_changed;
                 self.pending_since = Some(now);
             }
         }
@@ -443,16 +505,44 @@ impl ProjectWatcher {
             return Ok(None);
         }
         self.pending_since = None;
-        project.refresh_from_disk().map(Some)
+        let source_pending = std::mem::take(&mut self.source_pending);
+        let domain_pending = std::mem::take(&mut self.domain_pending);
+
+        let domain_change = if domain_pending {
+            Some(match project.reload_domain_project() {
+                Ok(()) => ExternalChange::DomainReloaded,
+                Err(error) => ExternalChange::DomainRejected(error.to_string()),
+            })
+        } else {
+            None
+        };
+        if source_pending {
+            let source_change = project.refresh_from_disk()?;
+            if !matches!(source_change, ExternalChange::NoChange) {
+                return Ok(Some(source_change));
+            }
+        }
+        Ok(domain_change)
     }
 }
 
-fn relevant_event(event: &Event, target: &Path) -> bool {
-    !matches!(event.kind, EventKind::Access(_))
-        && event
-            .paths
-            .iter()
-            .any(|path| paths_refer_to_same_file(path, target))
+fn relevant_domain_event(path: &Path, domain_files: &[PathBuf]) -> bool {
+    if domain_files
+        .iter()
+        .any(|target| paths_refer_to_same_file(path, target))
+    {
+        return true;
+    }
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("");
+    name == DOMAIN_PROJECT_FILE_NAME
+        || name == "module.weave-module.json"
+        || name == "module.weave-module.ron"
+        || name == "pack.weave-domain.json"
+        || name == "pack.weave-domain.ron"
+        || name.ends_with(".sha256")
 }
 
 fn paths_refer_to_same_file(left: &Path, right: &Path) -> bool {
@@ -471,6 +561,10 @@ fn normalize_path(path: &Path) -> PathBuf {
     } else {
         path.to_path_buf()
     }
+}
+
+fn current_weave() -> Version {
+    Version::parse(env!("CARGO_PKG_VERSION")).expect("workspace package version is valid")
 }
 
 fn output_path(path: &Path) -> Option<PathBuf> {
@@ -520,6 +614,11 @@ mod tests {
     use super::*;
 
     const VALID: &str = "=== start ===\nHello.\n-> END\n";
+    const DOMAIN_SOURCE: &str = include_str!("../../examples/domain-modules/contract/tracer.weave");
+    const DOMAIN_MANIFEST: &str =
+        include_str!("../../examples/domain-modules/contract/module.weave-module.json");
+    const DOMAIN_PACK: &str =
+        include_str!("../../examples/domain-modules/contract/pack.weave-domain.json");
 
     fn await_watcher_change(
         watcher: &mut ProjectWatcher,
@@ -648,5 +747,81 @@ mod tests {
         let change = await_watcher_change(&mut watcher, &mut project);
         assert_eq!(change, ExternalChange::Reloaded);
         assert_eq!(project.source(), external);
+    }
+
+    #[test]
+    fn domain_watcher_swaps_valid_catalogs_and_rejects_invalid_updates() {
+        let directory = tempdir().expect("temp dir");
+        let source_path = directory.path().join("tracer.weave");
+        let manifest_path = directory.path().join("module.weave-module.json");
+        let pack_path = directory.path().join("pack.weave-domain.json");
+        fs::write(&source_path, DOMAIN_SOURCE).expect("write source");
+        fs::write(manifest_path, DOMAIN_MANIFEST).expect("write manifest");
+        fs::write(&pack_path, DOMAIN_PACK).expect("write pack");
+        fs::write(
+            directory.path().join(DOMAIN_PROJECT_FILE_NAME),
+            concat!(
+                "{\n",
+                "  \"schema_version\": 1,\n",
+                "  \"registries\": [],\n",
+                "  \"manifests\": [\"module.weave-module.json\"],\n",
+                "  \"packs\": [\"pack.weave-domain.json\"]\n",
+                "}\n"
+            ),
+        )
+        .expect("write module project");
+        let mut project = ProjectSession::open(&source_path).expect("open project");
+        let mut watcher =
+            ProjectWatcher::new(&source_path, Duration::from_millis(20)).expect("watcher");
+
+        let initial = compile_with_modules(
+            project.source(),
+            &CompileOptions::default(),
+            project.domain_catalog(),
+        )
+        .expect("initial module compile");
+        assert!(
+            to_ron(&initial.story)
+                .expect("initial RON")
+                .contains("Glasswing constellation")
+        );
+
+        fs::write(
+            &pack_path,
+            DOMAIN_PACK.replace("Glasswing constellation", "Reloaded constellation"),
+        )
+        .expect("write valid update");
+        assert_eq!(
+            await_watcher_change(&mut watcher, &mut project),
+            ExternalChange::DomainReloaded
+        );
+        let updated = compile_with_modules(
+            project.source(),
+            &CompileOptions::default(),
+            project.domain_catalog(),
+        )
+        .expect("updated module compile");
+        assert!(
+            to_ron(&updated.story)
+                .expect("updated RON")
+                .contains("Reloaded constellation")
+        );
+
+        fs::write(&pack_path, "{}").expect("write invalid update");
+        assert!(matches!(
+            await_watcher_change(&mut watcher, &mut project),
+            ExternalChange::DomainRejected(_)
+        ));
+        let preserved = compile_with_modules(
+            project.source(),
+            &CompileOptions::default(),
+            project.domain_catalog(),
+        )
+        .expect("preserved module compile");
+        assert!(
+            to_ron(&preserved.story)
+                .expect("preserved RON")
+                .contains("Reloaded constellation")
+        );
     }
 }

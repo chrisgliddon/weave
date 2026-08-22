@@ -9,7 +9,10 @@ use clap::{Parser, ValueEnum};
 use notify::{Event, RecursiveMode, Watcher};
 use weave_compiler::{CompileOptions, compile_with_extensions, json_schema, to_json, to_ron};
 use weave_core::{Diagnostic, Severity};
-use weave_domain::{DomainCatalog, DomainPack, ModuleManifest};
+use weave_domain::{
+    DOMAIN_PROJECT_FILE_NAME, DomainCatalog, DomainPack, DomainRegistry, LoadedDomainProject,
+    ModuleManifest, load_adjacent_domain_project, load_domain_project,
+};
 use weave_patterns::{PackageRegistry, PackageRequirement};
 
 #[derive(Debug, Parser)]
@@ -67,6 +70,28 @@ struct Cli {
     /// Explicit domain data-pack artifact. Repeat to make more releases available.
     #[arg(long = "module-pack", value_name = "FILE", conflicts_with = "schema")]
     module_packs: Vec<PathBuf>,
+
+    /// Explicit domain-module project configuration. By default, `weave.modules.json` beside the
+    /// input is discovered when no other module source is supplied.
+    #[arg(
+        long,
+        value_name = "FILE",
+        conflicts_with = "schema",
+        conflicts_with_all = ["module_manifests", "module_packs", "module_registries"]
+    )]
+    module_project: Option<PathBuf>,
+
+    /// Explicit installed domain-module registry. Repeat to combine registries.
+    #[arg(
+        long = "module-registry",
+        value_name = "DIRECTORY",
+        conflicts_with = "schema"
+    )]
+    module_registries: Vec<PathBuf>,
+
+    /// Require the existing project `weave.lock` to match exactly instead of updating it.
+    #[arg(long, conflicts_with = "schema")]
+    locked: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -115,22 +140,48 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
             return 2;
         }
     };
-    let domain_catalog = match domain_catalog(cli) {
-        Ok(catalog) => catalog,
+    let domain_inputs = match domain_inputs(cli, input) {
+        Ok(inputs) => inputs,
         Err(error) => {
             eprintln!("weavec: {error}");
             return 2;
         }
     };
-    let compiled =
-        match compile_with_extensions(&source, &options, &external_patterns, &domain_catalog) {
-            Ok(compiled) => compiled,
+    let compiled = match compile_with_extensions(
+        &source,
+        &options,
+        &external_patterns,
+        &domain_inputs.catalog,
+    ) {
+        Ok(compiled) => compiled,
+        Err(error) => {
+            print_diagnostics(input, &source, &error.diagnostics);
+            return 1;
+        }
+    };
+    print_diagnostics(input, &source, &compiled.diagnostics);
+
+    let lock = if let Some(project) = &domain_inputs.project {
+        let lock = match project.lock_for(&compiled.domain_graph) {
+            Ok(lock) => lock,
             Err(error) => {
-                print_diagnostics(input, &source, &error.diagnostics);
-                return 1;
+                eprintln!("weavec: could not build domain lock: {error}");
+                return 2;
             }
         };
-    print_diagnostics(input, &source, &compiled.diagnostics);
+        if cli.locked
+            && let Err(error) = project.verify_lock(&lock)
+        {
+            eprintln!("weavec: locked domain build failed: {error}");
+            return 2;
+        }
+        Some(lock)
+    } else if cli.locked {
+        eprintln!("weavec: --locked requires a domain project configuration");
+        return 2;
+    } else {
+        None
+    };
 
     let output = match cli.format {
         OutputFormat::Ron => to_ron(&compiled.story).map_err(|error| error.to_string()),
@@ -159,11 +210,57 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
     } else {
         eprintln!("compiled {} -> {}", input.display(), destination.display());
     }
+
+    if !cli.locked
+        && let (Some(project), Some(lock)) = (&domain_inputs.project, &lock)
+        && let Err(error) = project.write_lock(lock)
+    {
+        eprintln!("weavec: could not write domain lock: {error}");
+        return 2;
+    }
     0
 }
 
-fn domain_catalog(cli: &Cli) -> Result<DomainCatalog, String> {
+struct DomainInputs {
+    catalog: DomainCatalog,
+    project: Option<LoadedDomainProject>,
+}
+
+fn domain_inputs(cli: &Cli, input: &Path) -> Result<DomainInputs, String> {
+    let current_weave = semver::Version::parse(env!("CARGO_PKG_VERSION"))
+        .map_err(|_| "compiler compatibility version is invalid".to_owned())?;
+    if let Some(project_path) = &cli.module_project {
+        let project = load_domain_project(project_path, &current_weave)
+            .map_err(|error| format!("could not load domain project: {error}"))?;
+        return Ok(DomainInputs {
+            catalog: project.catalog().clone(),
+            project: Some(project),
+        });
+    }
+
+    let has_explicit_sources = !cli.module_manifests.is_empty()
+        || !cli.module_packs.is_empty()
+        || !cli.module_registries.is_empty();
+    if !has_explicit_sources {
+        let project = load_adjacent_domain_project(input, &current_weave)
+            .map_err(|error| format!("could not load adjacent domain project: {error}"))?;
+        if project.config_path().exists() {
+            return Ok(DomainInputs {
+                catalog: project.catalog().clone(),
+                project: Some(project),
+            });
+        }
+    }
+
     let mut catalog = DomainCatalog::new();
+    for path in &cli.module_registries {
+        let snapshot = DomainRegistry::new(path)
+            .discover(&current_weave)
+            .map_err(|error| format!("could not discover domain registry: {error}"))?;
+        catalog
+            .extend(snapshot.catalog)
+            .map_err(|error| format!("could not combine domain registries: {error}"))?;
+    }
     for path in &cli.module_manifests {
         let source = fs::read_to_string(path).map_err(|error| {
             format!("could not read domain manifest {}: {error}", path.display())
@@ -191,7 +288,10 @@ fn domain_catalog(cli: &Cli) -> Result<DomainCatalog, String> {
             .insert_pack(pack)
             .map_err(|error| format!("could not catalog domain pack: {error}"))?;
     }
-    Ok(catalog)
+    Ok(DomainInputs {
+        catalog,
+        project: None,
+    })
 }
 
 fn external_patterns(
@@ -251,15 +351,42 @@ fn watch(cli: &Cli, input_path: &Path) -> Result<(), String> {
     let (sender, receiver) = mpsc::channel::<notify::Result<Event>>();
     let mut watcher = notify::recommended_watcher(sender).map_err(|error| error.to_string())?;
     watcher
-        .watch(parent, RecursiveMode::NonRecursive)
+        .watch(parent, RecursiveMode::Recursive)
         .map_err(|error| error.to_string())?;
+    for root in additional_watch_roots(cli) {
+        let root = absolute(&root).map_err(|error| error.to_string())?;
+        if root != parent {
+            watcher
+                .watch(&root, RecursiveMode::Recursive)
+                .map_err(|error| error.to_string())?;
+        }
+    }
+
+    let mut explicit_targets = vec![input.clone()];
+    explicit_targets.extend(
+        cli.module_manifests
+            .iter()
+            .chain(&cli.module_packs)
+            .filter_map(|path| absolute(path).ok()),
+    );
+    if let Some(project) = &cli.module_project {
+        if let Ok(project) = absolute(project) {
+            explicit_targets.push(project);
+        }
+    } else {
+        explicit_targets.push(parent.join(DOMAIN_PROJECT_FILE_NAME));
+    }
+    extend_project_watch_targets(cli, input_path, &mut explicit_targets);
+    explicit_targets.sort();
+    explicit_targets.dedup();
 
     let _ = compile_once(cli, input_path);
     eprintln!("watching {}", input_path.display());
     loop {
         match receiver.recv() {
-            Ok(Ok(event)) if event_targets(&event, &input) => {
+            Ok(Ok(event)) if event_targets(&event, &explicit_targets) => {
                 let _ = compile_once(cli, input_path);
+                extend_project_watch_targets(cli, input_path, &mut explicit_targets);
             }
             Ok(Ok(_)) => {}
             Ok(Err(error)) => eprintln!("weavec: watch error: {error}"),
@@ -268,12 +395,55 @@ fn watch(cli: &Cli, input_path: &Path) -> Result<(), String> {
     }
 }
 
-fn event_targets(event: &Event, input: &Path) -> bool {
+fn extend_project_watch_targets(cli: &Cli, input: &Path, targets: &mut Vec<PathBuf>) {
+    if let Ok(inputs) = domain_inputs(cli, input)
+        && let Some(project) = inputs.project
+    {
+        targets.extend(
+            project
+                .files()
+                .iter()
+                .filter_map(|path| absolute(path).ok()),
+        );
+        targets.sort();
+        targets.dedup();
+    }
+}
+
+fn additional_watch_roots(cli: &Cli) -> Vec<PathBuf> {
+    let mut roots = cli.module_registries.clone();
+    roots.extend(
+        cli.module_manifests
+            .iter()
+            .chain(&cli.module_packs)
+            .filter_map(|path| path.parent().map(Path::to_path_buf)),
+    );
+    if let Some(parent) = cli.module_project.as_deref().and_then(Path::parent) {
+        roots.push(parent.to_path_buf());
+    }
+    roots.sort();
+    roots.dedup();
+    roots
+}
+
+fn event_targets(event: &Event, targets: &[PathBuf]) -> bool {
     event.paths.iter().any(|path| {
-        absolute(path)
-            .map(|candidate| candidate == input)
-            .unwrap_or_else(|_| path.file_name() == input.file_name())
+        let candidate = absolute(path).unwrap_or_else(|_| path.to_path_buf());
+        targets.contains(&candidate) || is_domain_artifact_event(path)
     })
+}
+
+fn is_domain_artifact_event(path: &Path) -> bool {
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("");
+    name == DOMAIN_PROJECT_FILE_NAME
+        || name == "module.weave-module.json"
+        || name == "module.weave-module.ron"
+        || name == "pack.weave-domain.json"
+        || name == "pack.weave-domain.ron"
+        || name.ends_with(".sha256")
 }
 
 fn absolute(path: &Path) -> io::Result<PathBuf> {

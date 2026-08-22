@@ -33,6 +33,7 @@ REQUIRED_CHAPTERS = {
     "pattern_systems.md",
     "community_patterns.md",
     "domain_modules.md",
+    "domain_module_tutorial.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -261,10 +262,11 @@ def compile_examples() -> None:
 
     compiler = compiler_binary()
     domain_tracer = ROOT / "examples/domain-modules/contract/tracer.weave"
+    domain_tutorial = ROOT / "examples/domain-modules/third-party-tutorial/story.weave"
     sources = [
         source
         for source in sorted((ROOT / "examples").rglob("*.weave"))
-        if source != domain_tracer
+        if source not in {domain_tracer, domain_tutorial}
     ]
     readme_fixture = ROOT / "crates" / "weave-core" / "tests" / "fixtures" / "fortune_teller.weave"
     sources.append(readme_fixture)
@@ -438,6 +440,9 @@ def verify_domain_contract() -> None:
         workspace = Path(temporary)
         generated_manifest_schema = workspace / "domain-module-manifest-v1.schema.json"
         generated_pack_schema = workspace / "domain-pack-v1.schema.json"
+        generated_project_schema = workspace / "domain-project-v1.schema.json"
+        generated_lock_schema = workspace / "domain-lock-v1.schema.json"
+        generated_registry_schema = workspace / "domain-registry-index-v1.schema.json"
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -448,6 +453,9 @@ def verify_domain_contract() -> None:
         for kind, output in (
             ("manifest", generated_manifest_schema),
             ("pack", generated_pack_schema),
+            ("project", generated_project_schema),
+            ("lock", generated_lock_schema),
+            ("registry", generated_registry_schema),
         ):
             run(
                 [str(domain_tool), "schema", kind, "--output", str(output)],
@@ -459,6 +467,12 @@ def verify_domain_contract() -> None:
                 ROOT / "schemas" / "domain-module-manifest-v1.schema.json",
             ),
             (generated_pack_schema, ROOT / "schemas" / "domain-pack-v1.schema.json"),
+            (generated_project_schema, ROOT / "schemas" / "domain-project-v1.schema.json"),
+            (generated_lock_schema, ROOT / "schemas" / "domain-lock-v1.schema.json"),
+            (
+                generated_registry_schema,
+                ROOT / "schemas" / "domain-registry-index-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -528,7 +542,93 @@ def verify_domain_contract() -> None:
         ):
             raise DocsError("compiled domain tracer omitted its selected module data")
 
-    print("verified domain module schemas, artifacts, and compiled tracer", flush=True)
+        publication = workspace / "publication"
+        registry = workspace / "registry"
+        for command, destination in (("publish", publication), ("install", registry)):
+            flag = "--output" if command == "publish" else "--registry"
+            run(
+                [
+                    str(domain_tool),
+                    command,
+                    str(manifest_json.relative_to(ROOT)),
+                    "--pack",
+                    str(pack_json.relative_to(ROOT)),
+                    flag,
+                    str(destination),
+                ],
+                capture=True,
+            )
+        generated_index = workspace / "registry-index.json"
+        run(
+            [
+                str(domain_tool),
+                "index",
+                "--registry",
+                str(registry),
+                "--output",
+                str(generated_index),
+            ],
+            capture=True,
+        )
+        index = json.loads(generated_index.read_text(encoding="utf-8"))
+        if index.get("schema_version") != 1 or len(index.get("modules", [])) != 1:
+            raise DocsError("installed domain registry index is incomplete")
+
+        tutorial_source = ROOT / "examples/domain-modules/third-party-tutorial"
+        tutorial = workspace / "third-party-tutorial"
+        shutil.copytree(tutorial_source, tutorial)
+        run(
+            [
+                str(domain_tool),
+                "validate-project",
+                str(tutorial / "weave.modules.json"),
+            ],
+            capture=True,
+        )
+        tutorial_output = workspace / "tutorial.story.json"
+        run(
+            [
+                str(compiler),
+                str(tutorial / "story.weave"),
+                "--format",
+                "json",
+                "--output",
+                str(tutorial_output),
+            ],
+            capture=True,
+        )
+        if (tutorial / "weave.lock").read_bytes() != (
+            tutorial_source / "weave.lock"
+        ).read_bytes():
+            raise DocsError("the checked-in third-party tutorial lock is stale")
+        run(
+            [
+                str(compiler),
+                str(tutorial / "story.weave"),
+                "--locked",
+                "--format",
+                "json",
+                "--output",
+                str(tutorial_output),
+            ],
+            capture=True,
+        )
+        tutorial_story = json.loads(tutorial_output.read_text(encoding="utf-8"))
+        if (
+            tutorial_story.get("modules", {})
+            .get("weather", {})
+            .get("exports", {})
+            .get("condition", {})
+            .get("value", {})
+            .get("value")
+            != "rain"
+        ):
+            raise DocsError("third-party tutorial module data was not embedded")
+
+    print(
+        "verified domain module schemas, packaging, locks, tutorial, and tracer",
+        flush=True,
+    )
 
 
 def run_finite_examples() -> None:
@@ -600,6 +700,9 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "community-pattern-package-v1.schema.json",
         "domain-module-manifest-v1.schema.json",
         "domain-pack-v1.schema.json",
+        "domain-project-v1.schema.json",
+        "domain-lock-v1.schema.json",
+        "domain-registry-index-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")
