@@ -35,7 +35,7 @@ pub use registry::{
 };
 pub use validation::{
     apply_authored_overrides, resolve_module_order, validate_effective_values, validate_manifest,
-    validate_pack,
+    validate_pack, validate_provenance,
 };
 
 const MANIFEST_SCHEMA_ID: &str = "urn:weave:schema:domain-module-manifest:1";
@@ -210,7 +210,7 @@ pub enum DomainError {
 impl ModuleManifest {
     /// Parse strict JSON without duplicate keys.
     pub fn from_json(source: &str) -> Result<Self, DomainError> {
-        parse_json(source)
+        parse_strict_json(source)
     }
 
     /// Parse strict RON.
@@ -232,7 +232,7 @@ impl ModuleManifest {
 impl DomainPack {
     /// Parse strict JSON without duplicate keys.
     pub fn from_json(source: &str) -> Result<Self, DomainError> {
-        parse_json(source)
+        parse_strict_json(source)
     }
 
     /// Parse strict RON.
@@ -271,12 +271,26 @@ pub fn domain_pack_schema() -> Result<String, DomainError> {
     )
 }
 
-fn parse_json<T>(source: &str) -> Result<T, DomainError>
+/// Parse a strict JSON value without accepting duplicate object keys.
+///
+/// Domain-specific companion crates use this boundary so every versioned artifact has the same
+/// fail-closed JSON behavior as manifests and packs.
+pub fn parse_strict_json<T>(source: &str) -> Result<T, DomainError>
 where
     T: for<'de> serde::Deserialize<'de>,
 {
     serde_json::from_str::<UniqueJson>(source).map_err(json_error)?;
     serde_json::from_str(source).map_err(json_error)
+}
+
+/// Serialize one portable artifact as stable, human-readable JSON.
+pub fn to_pretty_json(value: &impl Serialize) -> Result<String, DomainError> {
+    pretty_json(value)
+}
+
+/// Serialize one portable artifact as stable, human-readable RON.
+pub fn to_pretty_ron(value: &impl Serialize) -> Result<String, DomainError> {
+    pretty_ron(value)
 }
 
 fn json_error(error: serde_json::Error) -> DomainError {

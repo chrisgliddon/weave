@@ -1,0 +1,276 @@
+{
+  "$defs": {
+    "CompactWorldPlace": {
+      "additionalProperties": false,
+      "description": "One resolved place without source or authoring lineage.",
+      "properties": {
+        "attributes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DomainValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional typed authored attributes."
+        },
+        "climate": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainValue"
+          },
+          "description": "Effective climate fields.",
+          "type": "object"
+        },
+        "environment": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainValue"
+          },
+          "description": "Effective environmental fields.",
+          "type": "object"
+        },
+        "id": {
+          "description": "Stable source-facing identifier.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Broad place kind.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-editable display name.",
+          "type": "string"
+        },
+        "order": {
+          "description": "Deterministic sibling order.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "parent_id": {
+          "description": "Optional parent identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "related_place_ids": {
+          "description": "Symmetric related-place identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "order",
+        "related_place_ids",
+        "environment",
+        "climate"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:world-compact:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Compact runtime World projection with all authoring provenance removed.",
+  "properties": {
+    "format_version": {
+      "const": 1,
+      "description": "Serialized export version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "module_id": {
+      "description": "Exact module identity.",
+      "type": "string"
+    },
+    "module_version": {
+      "description": "Exact module version.",
+      "type": "string"
+    },
+    "pack_id": {
+      "description": "Exact selected composed pack identity.",
+      "type": "string"
+    },
+    "pack_version": {
+      "description": "Exact selected composed pack version.",
+      "type": "string"
+    },
+    "places": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CompactWorldPlace"
+      },
+      "description": "Compact resolved places keyed by stable identifier.",
+      "type": "object"
+    },
+    "roots": {
+      "description": "Root place identifiers in deterministic order.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rules": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DomainValue"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Optional typed world rules."
+    }
+  },
+  "required": [
+    "format_version",
+    "module_id",
+    "module_version",
+    "pack_id",
+    "pack_version",
+    "roots",
+    "places"
+  ],
+  "title": "Weave World Compact Export v1",
+  "type": "object",
+  "x-weave-world-format-version": 1
+}

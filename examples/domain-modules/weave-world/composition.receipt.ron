@@ -1,0 +1,448 @@
+(
+    format_version: 1,
+    output: (
+        id: "glasswind_composed",
+        version: "1.0.0",
+        title: "Glasswind Composed World",
+    ),
+    random_seed: 4278421,
+    layers: [
+        (
+            id: "broad_reference",
+            role: broad,
+            selection: exact,
+            candidates: [
+                (
+                    pack_id: "aotearoa_new_zealand",
+                    version: "1.1.0",
+                ),
+            ],
+            selected_candidate: 0,
+            pack: (
+                pack_id: "aotearoa_new_zealand",
+                version: "1.1.0",
+            ),
+            include: [
+                "seed",
+            ],
+            conflict: reject,
+        ),
+        (
+            id: "regional_climate",
+            role: regional,
+            selection: exact,
+            candidates: [
+                (
+                    pack_id: "hokkaido_japan",
+                    version: "1.1.0",
+                ),
+            ],
+            selected_candidate: 0,
+            pack: (
+                pack_id: "hokkaido_japan",
+                version: "1.1.0",
+            ),
+            include: [
+                "seed.climate",
+                "seed.daylight",
+                "seed.seasonality",
+            ],
+            conflict: replace,
+        ),
+        (
+            id: "ecosystem_surface",
+            role: ecosystem,
+            selection: exact,
+            candidates: [
+                (
+                    pack_id: "british_columbia_temperate_forest",
+                    version: "1.1.0",
+                ),
+            ],
+            selected_candidate: 0,
+            pack: (
+                pack_id: "british_columbia_temperate_forest",
+                version: "1.1.0",
+            ),
+            include: [
+                "seed.hazards",
+                "seed.primary_biome",
+                "seed.terrain",
+                "seed.water",
+                "seed.weather_tendencies",
+            ],
+            conflict: replace,
+        ),
+    ],
+    differences: [
+        (
+            path: "seed.attribution",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.biomes",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.annual_mean_temperature_c.maximum",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.annual_mean_temperature_c.minimum",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.annual_precipitation_mm.maximum",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.annual_precipitation_mm.minimum",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.band",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.confidence",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.reference_period",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.source_resolution",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.spatial_resolution",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.uncertainty",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.units.precipitation",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.units.temperature",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.context.approximation",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.context.geographic_resolution",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.context.uncertainty",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.daylight.longest_daylight_hours",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.daylight.method",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.daylight.representative_latitude_degrees",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.daylight.shortest_daylight_hours",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.daylight.unit",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.hazards.confidence",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.hazards.method",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.hazards.tendencies",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.identity.culture_included",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.identity.display_name",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.identity.preset",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.identity.reference_code",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.identity.reference_kind",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.primary_biome",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.seasonality.coolest_month",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.seasonality.hemisphere",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.seasonality.warmest_months",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.terrain",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.water.coastal",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.water.island_system",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.water.setting",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.weather_tendencies",
+            incoming_layer_id: "broad_reference",
+            resolution: added,
+        ),
+        (
+            path: "seed.climate.annual_mean_temperature_c.maximum",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.annual_mean_temperature_c.minimum",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.annual_precipitation_mm.maximum",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.annual_precipitation_mm.minimum",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.band",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.confidence",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.climate.reference_period",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.climate.source_resolution",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.spatial_resolution",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.uncertainty",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.climate.units.precipitation",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.climate.units.temperature",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.daylight.longest_daylight_hours",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.daylight.method",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.daylight.representative_latitude_degrees",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.daylight.shortest_daylight_hours",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.daylight.unit",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.seasonality.coolest_month",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.seasonality.hemisphere",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.seasonality.warmest_months",
+            incoming_layer_id: "regional_climate",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.hazards.confidence",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.hazards.method",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.hazards.tendencies",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.primary_biome",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.terrain",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.water.coastal",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: confirmed,
+        ),
+        (
+            path: "seed.water.island_system",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.water.setting",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+        (
+            path: "seed.weather_tendencies",
+            incoming_layer_id: "ecosystem_surface",
+            previous_layer_id: Some("broad_reference"),
+            resolution: replaced,
+        ),
+    ],
+)

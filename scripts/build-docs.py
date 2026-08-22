@@ -282,6 +282,28 @@ def world_corpus_tool_binary() -> Path:
     return binary
 
 
+def world_tool_binary() -> Path:
+    """Build and locate the portable Weave World composition tool."""
+
+    run(
+        [
+            "cargo",
+            "build",
+            "--locked",
+            "-p",
+            "weave-world",
+            "--bin",
+            "weave-world",
+        ],
+        environment=cargo_environment(),
+    )
+    suffix = ".exe" if os.name == "nt" else ""
+    binary = cargo_target_directory() / "debug" / f"weave-world{suffix}"
+    if not binary.is_file():
+        raise DocsError(f"world composition tool was not produced at {binary}")
+    return binary
+
+
 def compile_examples() -> None:
     """Compile every public story and compare the browser JSON artifact."""
 
@@ -291,6 +313,7 @@ def compile_examples() -> None:
     domain_world_sources = {
         ROOT / "examples/domain-modules/weave-world/reference-place.weave",
         ROOT / "examples/domain-modules/weave-world/authored-setting.weave",
+        ROOT / "examples/domain-modules/weave-world/composed-setting.weave",
     }
     domain_world_corpus = set(
         (ROOT / "examples/domain-modules/weave-world/corpus/stories").glob("*.weave")
@@ -442,6 +465,7 @@ def verify_domain_contract() -> None:
 
     domain_tool = domain_tool_binary()
     world_corpus_tool = world_corpus_tool_binary()
+    world_tool = world_tool_binary()
     compiler = compiler_binary()
     fixture = ROOT / "examples" / "domain-modules" / "contract"
     manifest_json = fixture / "module.weave-module.json"
@@ -456,6 +480,15 @@ def verify_domain_contract() -> None:
     authored_world_source = world_fixture / "authored-setting.weave"
     authored_world_ron = world_fixture / "authored-setting.story.ron"
     authored_world_json = world_fixture / "authored-setting.story.json"
+    composition_plan = world_fixture / "composition.weave-world.json"
+    composition_receipt_json = world_fixture / "composition.receipt.json"
+    composition_receipt_ron = world_fixture / "composition.receipt.ron"
+    composed_world_pack = world_fixture / "packs" / "glasswind_composed.weave-domain.json"
+    composed_world_source = world_fixture / "composed-setting.weave"
+    composed_world_story_ron = world_fixture / "composed-setting.story.ron"
+    composed_world_story_json = world_fixture / "composed-setting.story.json"
+    full_world_json = world_fixture / "composed-world.full.json"
+    compact_world_json = world_fixture / "composed-world.compact.json"
     naming_manifest = world_fixture / "naming" / "module.weave-module.json"
     naming_pack = world_fixture / "naming" / "glasswind.weave-domain.json"
     world_index = world_fixture / "corpus.weave-world.json"
@@ -518,7 +551,7 @@ def verify_domain_contract() -> None:
         "validate",
         str(world_manifest.relative_to(ROOT)),
     ]
-    for pack in world_packs:
+    for pack in (*world_packs, composed_world_pack):
         world_validation.extend(("--pack", str(pack.relative_to(ROOT))))
     run(world_validation, capture=True)
     run(
@@ -561,6 +594,9 @@ def verify_domain_contract() -> None:
         generated_registry_schema = workspace / "domain-registry-index-v1.schema.json"
         generated_world_index_schema = workspace / "weave-world-corpus-index-v1.schema.json"
         generated_world_preset_schema = workspace / "weave-world-corpus-preset-v1.schema.json"
+        generated_world_composition_schema = workspace / "weave-world-composition-v1.schema.json"
+        generated_world_full_schema = workspace / "weave-world-full-v1.schema.json"
+        generated_world_compact_schema = workspace / "weave-world-compact-v1.schema.json"
         normalized_manifest_json = workspace / "module.weave-module.json"
         normalized_manifest_ron = workspace / "module.weave-module.ron"
         normalized_pack_json = workspace / "pack.weave-domain.json"
@@ -568,6 +604,7 @@ def verify_domain_contract() -> None:
         normalized_world_manifest_json = workspace / "world-module.weave-module.json"
         normalized_naming_manifest_json = workspace / "world-naming-module.weave-module.json"
         normalized_naming_pack_json = workspace / "world-naming-pack.weave-domain.json"
+        normalized_composed_world_pack = workspace / "world-composed-pack.weave-domain.json"
         normalized_world_packs = tuple(
             (workspace / f"world-pack-{index}.weave-domain.json", pack)
             for index, pack in enumerate(world_packs)
@@ -578,6 +615,11 @@ def verify_domain_contract() -> None:
         compiled_world_json = workspace / "reference-place.story.json"
         compiled_authored_world_ron = workspace / "authored-setting.story.ron"
         compiled_authored_world_json = workspace / "authored-setting.story.json"
+        compiled_composed_world_ron = workspace / "composed-setting.story.ron"
+        compiled_composed_world_json = workspace / "composed-setting.story.json"
+        generated_composed_pack = workspace / "glasswind_composed.weave-domain.json"
+        generated_composition_receipt_json = workspace / "composition.receipt.json"
+        generated_composition_receipt_ron = workspace / "composition.receipt.ron"
 
         for kind, output in (
             ("manifest", generated_manifest_schema),
@@ -596,6 +638,15 @@ def verify_domain_contract() -> None:
         ):
             run(
                 [str(world_corpus_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
+        for kind, output in (
+            ("composition", generated_world_composition_schema),
+            ("full", generated_world_full_schema),
+            ("compact", generated_world_compact_schema),
+        ):
+            run(
+                [str(world_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
         for generated, checked in (
@@ -618,6 +669,18 @@ def verify_domain_contract() -> None:
                 generated_world_preset_schema,
                 ROOT / "schemas" / "weave-world-corpus-preset-v1.schema.json",
             ),
+            (
+                generated_world_composition_schema,
+                ROOT / "schemas" / "weave-world-composition-v1.schema.json",
+            ),
+            (
+                generated_world_full_schema,
+                ROOT / "schemas" / "weave-world-full-v1.schema.json",
+            ),
+            (
+                generated_world_compact_schema,
+                ROOT / "schemas" / "weave-world-compact-v1.schema.json",
+            ),
         ):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in domain schema is stale: {checked.name}")
@@ -630,6 +693,7 @@ def verify_domain_contract() -> None:
             ("manifest", world_manifest, "json", normalized_world_manifest_json),
             ("manifest", naming_manifest, "json", normalized_naming_manifest_json),
             ("pack", naming_pack, "json", normalized_naming_pack_json),
+            ("pack", composed_world_pack, "json", normalized_composed_world_pack),
         ) + tuple(
             ("pack", pack, "json", generated)
             for generated, pack in normalized_world_packs
@@ -656,6 +720,7 @@ def verify_domain_contract() -> None:
             (normalized_world_manifest_json, world_manifest),
             (normalized_naming_manifest_json, naming_manifest),
             (normalized_naming_pack_json, naming_pack),
+            (normalized_composed_world_pack, composed_world_pack),
         ) + normalized_world_packs
         for generated, checked in normalized_checks:
             if generated.read_bytes() != checked.read_bytes():
@@ -686,6 +751,57 @@ def verify_domain_contract() -> None:
         for generated, checked in zip(staged_outputs, world_packs, strict=True):
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"offline world corpus output is stale: {checked.name}")
+
+        composition_command = [
+            str(world_tool),
+            "compose",
+            str(composition_plan.relative_to(ROOT)),
+            "--manifest",
+            str(world_manifest.relative_to(ROOT)),
+            "--pack",
+            str(world_pack.relative_to(ROOT)),
+            "--pack",
+            str(world_packs[2].relative_to(ROOT)),
+            "--pack",
+            str(world_packs[1].relative_to(ROOT)),
+            "--output",
+            str(generated_composed_pack),
+        ]
+        run(
+            [
+                *composition_command,
+                "--receipt",
+                str(generated_composition_receipt_json),
+            ],
+            capture=True,
+        )
+        if generated_composed_pack.read_bytes() != composed_world_pack.read_bytes():
+            raise DocsError("checked composed World pack is stale")
+        if generated_composition_receipt_json.read_bytes() != composition_receipt_json.read_bytes():
+            raise DocsError("checked JSON World composition receipt is stale")
+        repeat_pack = workspace / "glasswind_composed-repeat.weave-domain.json"
+        repeat_command = composition_command.copy()
+        repeat_command[-1] = str(repeat_pack)
+        run(
+            [
+                *repeat_command,
+                "--receipt",
+                str(generated_composition_receipt_ron),
+            ],
+            capture=True,
+        )
+        if repeat_pack.read_bytes() != composed_world_pack.read_bytes():
+            raise DocsError("repeated World composition is not deterministic")
+        if generated_composition_receipt_ron.read_bytes() != composition_receipt_ron.read_bytes():
+            raise DocsError("checked RON World composition receipt is stale")
+        receipt = json.loads(composition_receipt_json.read_text(encoding="utf-8"))
+        if (
+            receipt.get("format_version") != 1
+            or receipt.get("random_seed") != 4278421
+            or len(receipt.get("layers", [])) != 3
+            or any(not layer.get("candidates") for layer in receipt.get("layers", []))
+        ):
+            raise DocsError("World composition receipt cannot reproduce layer selection")
 
         for encoding, output in (
             ("ron", compiled_tracer_ron),
@@ -739,7 +855,10 @@ def verify_domain_contract() -> None:
                 [
                     str(compiler),
                     str(world_source.relative_to(ROOT)),
-                    "--locked",
+                    "--module-manifest",
+                    str(world_manifest.relative_to(ROOT)),
+                    "--module-pack",
+                    str(world_pack.relative_to(ROOT)),
                     "--format",
                     encoding,
                     "--output",
@@ -844,6 +963,82 @@ def verify_domain_contract() -> None:
             or len(authored_story.get("modules", {})) != 1
         ):
             raise DocsError("compiled authored World layer omitted rules, places, or lineage")
+
+        for encoding, output in (
+            ("ron", compiled_composed_world_ron),
+            ("json", compiled_composed_world_json),
+        ):
+            run(
+                [
+                    str(compiler),
+                    str(composed_world_source.relative_to(ROOT)),
+                    "--locked",
+                    "--format",
+                    encoding,
+                    "--output",
+                    str(output),
+                ],
+                capture=True,
+            )
+        for generated, checked in (
+            (compiled_composed_world_ron, composed_world_story_ron),
+            (compiled_composed_world_json, composed_world_story_json),
+        ):
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"compiled composed World fixture is stale: {checked.name}")
+        composed_story = json.loads(compiled_composed_world_json.read_text(encoding="utf-8"))
+        composed_module = composed_story.get("modules", {}).get("world", {})
+        composed_seed = (
+            composed_module.get("exports", {})
+            .get("seed", {})
+            .get("value", {})
+            .get("value", {})
+        )
+        if (
+            composed_module.get("pack_id") != "glasswind_composed"
+            or composed_module.get("pack_version") != "1.0.0"
+            or len(composed_module.get("authored_overrides", [])) != 46
+            or composed_seed.get("primary_biome", {}).get("value")
+            != "temperate_conifer_forest"
+            or composed_seed.get("climate", {})
+            .get("value", {})
+            .get("band", {})
+            .get("value")
+            != "humid_continental"
+            or composed_seed.get("identity", {})
+            .get("value", {})
+            .get("preset", {})
+            .get("value")
+            != "glasswind_composed"
+        ):
+            raise DocsError("compiled composed World omitted layer or authored precedence")
+
+        full_export = json.loads(full_world_json.read_text(encoding="utf-8"))
+        compact_export_text = compact_world_json.read_text(encoding="utf-8")
+        compact_export = json.loads(compact_export_text)
+        if (
+            full_export.get("format_version") != 1
+            or len(full_export.get("composition", {}).get("layers", [])) != 3
+            or len(full_export.get("authored_override_paths", [])) != 46
+            or compact_export.get("format_version") != 1
+            or compact_export.get("pack_id") != "glasswind_composed"
+            or compact_export.get("places", {})
+            .get("emberwake_harbor", {})
+            .get("environment", {})
+            .get("primary_biome", {})
+            .get("value")
+            != "temperate_conifer_forest"
+            or any(
+                forbidden in compact_export_text
+                for forbidden in (
+                    '"authored_override_paths"',
+                    '"composition"',
+                    '"origins"',
+                    '"source_path"',
+                )
+            )
+        ):
+            raise DocsError("portable World full/compact lineage boundary is invalid")
 
         observed_world_presets = {
             "aotearoa_new_zealand": "country_scale_selected_stations"
@@ -1003,8 +1198,23 @@ def verify_domain_contract() -> None:
         ):
             raise DocsError("third-party tutorial module data was not embedded")
 
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-world",
+            "--example",
+            "world_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -1084,6 +1294,9 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "domain-registry-index-v1.schema.json",
         "weave-world-corpus-index-v1.schema.json",
         "weave-world-corpus-preset-v1.schema.json",
+        "weave-world-composition-v1.schema.json",
+        "weave-world-full-v1.schema.json",
+        "weave-world-compact-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

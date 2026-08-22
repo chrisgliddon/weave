@@ -171,7 +171,7 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
-Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), or follow the four-preset [Weave World guide](docs/world_module.md) from exact environmental shorthands through stable nested places, typed rules, explicit inheritance, and local overrides. The checked RON and JSON are consumed unchanged by finite [Bevy](examples/domain-module-bevy) and [PixiJS](examples/domain-module-pixijs) examples without loading third-party code or depending on the editor.
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), or follow the four-preset [Weave World guide](docs/world_module.md) from exact environmental shorthands through deterministic broad/regional/ecosystem composition, stable nested places, typed rules, explicit inheritance, authored-last overrides, and full/compact portable exports. The checked RON and JSON drive exact behavior and presentation decisions in finite [Bevy](examples/domain-module-bevy) and [PixiJS](examples/domain-module-pixijs) examples without loading third-party code or depending on the editor.
 
 ---
 
@@ -231,7 +231,7 @@ cargo install mdbook --version 0.5.4 --locked
 python3 scripts/build-docs.py
 ```
 
-The build compiles every ordinary example story, verifies domain schemas, packaging, locks, the third-party tutorial, and tracer RON/JSON, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
+The build compiles every ordinary example story, verifies domain and World composition/export schemas, packaging, transitive locks, the third-party tutorial, tracer and composed World RON/JSON goldens, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
 
 ### RON Output (excerpt)
 
@@ -271,7 +271,7 @@ weave/
 │   ├── weave-runtime/       # Story runtime engine (no Bevy dependency)
 │   ├── weave-patterns/      # Built-ins plus data-only community packages and registry CLI
 │   ├── weave-domain/        # Versioned domain-module manifests, packs, validation, and schemas
-│   ├── weave-world/         # Authored World place/inheritance resolver with value lineage
+│   ├── weave-world/         # Deterministic World composition, exports, and place lineage
 │   ├── weave-world-corpus/  # Offline environmental source records → canonical World packs
 │   ├── weave-compiler/      # .weave → .ron / .json compiler
 │   ├── weave-bevy/          # Bevy plugin
@@ -298,8 +298,8 @@ weave/
 │   ├── standalone-runtime/  # Compiler + runtime example
 │   ├── bevy-dialogue/       # Interactive Bevy dialogue game + smoke test
 │   ├── domain-modules/      # Contract fixtures and compiled synthetic tracer
-│   ├── domain-module-bevy/  # Portable tracer RON consumed as a Bevy resource
-│   ├── domain-module-pixijs/ # Portable tracer JSON rendered with PixiJS
+│   ├── domain-module-bevy/  # Portable tracer/composed World RON consumed as Bevy resources
+│   ├── domain-module-pixijs/ # Portable tracer/composed World JSON rendered with PixiJS
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples
@@ -501,7 +501,7 @@ weavec story.weave --watch            # recompile on file change
 
 ### Phase 5 — Pluggable Domain Modules
 - [x] Shared module manifests, namespaces, compatibility, and provenance contract
-- [ ] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
+- [x] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
 - [ ] Weave Character: personality, date context, relationships, expression, and guided authoring
 - [ ] Selectable tabletop ruleset adapters with isolated, versioned state
 - [x] Portable RON and JSON domain packs with Bevy and PixiJS examples

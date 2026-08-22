@@ -16,6 +16,46 @@
       "version": "1.1.0",
       "sha256": "61b8f9b1f21ee558e13033b080a0024509f107962317ae7b4b61e5f6e1aefe80",
       "dependencies": []
+    },
+    {
+      "module_id": "org.weave.world",
+      "module_version": "1.1.0",
+      "pack_id": "british_columbia_temperate_forest",
+      "version": "1.1.0",
+      "sha256": "06214835e805223b5629a6d065a71ec8a4a5e0ac52f6eb4d433c637daa2341e8",
+      "dependencies": []
+    },
+    {
+      "module_id": "org.weave.world",
+      "module_version": "1.1.0",
+      "pack_id": "hokkaido_japan",
+      "version": "1.1.0",
+      "sha256": "f64997952beca5e64950688492dcea420fb2fa601ec6edf44c5cdedba9bdf753",
+      "dependencies": []
+    },
+    {
+      "module_id": "org.weave.world",
+      "module_version": "1.1.0",
+      "pack_id": "glasswind_composed",
+      "version": "1.0.0",
+      "sha256": "0f572449d305cf0a0b73c7eff95389573443a29134cb3e2413ecb1a46079771d",
+      "dependencies": [
+        {
+          "module_id": "org.weave.world",
+          "pack_id": "aotearoa_new_zealand",
+          "version": "1.1.0"
+        },
+        {
+          "module_id": "org.weave.world",
+          "pack_id": "british_columbia_temperate_forest",
+          "version": "1.1.0"
+        },
+        {
+          "module_id": "org.weave.world",
+          "pack_id": "hokkaido_japan",
+          "version": "1.1.0"
+        }
+      ]
     }
   ]
 }

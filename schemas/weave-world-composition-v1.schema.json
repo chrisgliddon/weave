@@ -1,0 +1,267 @@
+{
+  "$defs": {
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "WorldConflictPolicy": {
+      "description": "Conflict behavior applied independently to every selected leaf.",
+      "oneOf": [
+        {
+          "const": "reject",
+          "description": "Reject any overlap with an earlier layer.",
+          "type": "string"
+        },
+        {
+          "const": "keep",
+          "description": "Preserve the earlier value and record the ignored incoming layer.",
+          "type": "string"
+        },
+        {
+          "const": "replace",
+          "description": "Make the later, more specific layer authoritative.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerRole": {
+      "description": "Semantic layer scopes, ordered from broadest to most specific.",
+      "oneOf": [
+        {
+          "const": "broad",
+          "description": "Broad reference context.",
+          "type": "string"
+        },
+        {
+          "const": "regional",
+          "description": "Regional refinement.",
+          "type": "string"
+        },
+        {
+          "const": "ecosystem",
+          "description": "Ecosystem or biome refinement.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerSelection": {
+      "description": "Candidate-selection behavior for one layer.",
+      "oneOf": [
+        {
+          "const": "exact",
+          "description": "Require exactly one candidate.",
+          "type": "string"
+        },
+        {
+          "const": "seeded",
+          "description": "Select one sorted candidate with the stable SHA-256 chooser and plan seed.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerSpec": {
+      "additionalProperties": false,
+      "description": "One deterministic layer in a World composition plan.",
+      "properties": {
+        "candidates": {
+          "description": "Exact candidate coordinates in canonical order.",
+          "items": {
+            "$ref": "#/$defs/WorldPackSelector"
+          },
+          "type": "array"
+        },
+        "conflict": {
+          "$ref": "#/$defs/WorldConflictPolicy",
+          "description": "Explicit behavior when an included leaf already has a value."
+        },
+        "id": {
+          "description": "Stable plan-local layer identifier.",
+          "type": "string"
+        },
+        "include": {
+          "description": "Sorted, non-overlapping export paths contributed by the selected candidate.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "$ref": "#/$defs/WorldLayerRole",
+          "description": "Semantic scope used to enforce broad-to-specific order."
+        },
+        "selection": {
+          "$ref": "#/$defs/WorldLayerSelection",
+          "description": "How one candidate is selected."
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "candidates",
+        "selection",
+        "include",
+        "conflict"
+      ],
+      "type": "object"
+    },
+    "WorldOutputPack": {
+      "additionalProperties": false,
+      "description": "Coordinate and title assigned to a composed pack.",
+      "properties": {
+        "id": {
+          "description": "Stable pack identifier.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Semantic pack version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title"
+      ],
+      "type": "object"
+    },
+    "WorldPackSelector": {
+      "additionalProperties": false,
+      "description": "One exact World pack candidate.",
+      "properties": {
+        "pack_id": {
+          "description": "Stable pack identifier.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact semantic version without a range operator.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack_id",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:world-composition:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A reviewed plan that composes exact World packs into one ordinary output pack.",
+  "properties": {
+    "format_version": {
+      "const": 1,
+      "description": "Serialized plan version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "layers": {
+      "description": "Canonically ordered broad, regional, then ecosystem layers.",
+      "items": {
+        "$ref": "#/$defs/WorldLayerSpec"
+      },
+      "type": "array"
+    },
+    "output": {
+      "$ref": "#/$defs/WorldOutputPack",
+      "description": "Identity and presentation of the generated pack."
+    },
+    "provenance": {
+      "$ref": "#/$defs/ProvenanceSource",
+      "description": "Original authorship and license record for the composition decisions."
+    },
+    "random_seed": {
+      "description": "Public deterministic entropy used only by layers with `seeded` selection.",
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "format_version",
+    "output",
+    "random_seed",
+    "layers",
+    "provenance"
+  ],
+  "title": "Weave World Composition v1",
+  "type": "object",
+  "x-weave-world-format-version": 1
+}

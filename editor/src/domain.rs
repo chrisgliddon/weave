@@ -26,6 +26,9 @@ pub enum DomainError {
     /// Compiled data could not initialize a preview runtime.
     #[error("runtime initialization failed: {0}")]
     Runtime(#[from] weave_runtime::RuntimeError),
+    /// Portable World composition metadata is invalid.
+    #[error(transparent)]
+    WorldComposition(#[from] weave_world::WorldCompositionError),
     /// A structured editor mutation could not be represented safely.
     #[error("domain edit rejected: {reason}")]
     Edit {
@@ -136,6 +139,8 @@ pub struct ModuleInspection {
     pub entity_collections: Vec<EntityCollectionInspection>,
     /// Resolved World environment/climate inheritance when this is the Weave World module.
     pub resolved_world: Option<weave_world::ResolvedWorld>,
+    /// Selected composition layers and differences when this pack was produced by a World plan.
+    pub world_composition: Option<weave_world::WorldCompositionReceipt>,
 }
 
 /// Canonical source, compiled IR, diagnostics, and preview runtime for one editor session.
@@ -148,6 +153,7 @@ pub struct DomainSession {
     document: Option<Document>,
     last_valid_story: Option<StoryIr>,
     domain_catalog: DomainCatalog,
+    world_compositions: BTreeMap<(String, String), weave_world::WorldCompositionReceipt>,
     active_modules: BTreeMap<String, ResolvedDomainModule>,
     runtime: Option<Story>,
 }
@@ -164,6 +170,7 @@ impl DomainSession {
             document: None,
             last_valid_story: None,
             domain_catalog: DomainCatalog::new(),
+            world_compositions: BTreeMap::new(),
             active_modules: BTreeMap::new(),
             runtime: None,
         }
@@ -181,6 +188,19 @@ impl DomainSession {
     /// Replace the explicit artifact catalog used by subsequent compiles.
     pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog) {
         self.domain_catalog = domain_catalog;
+    }
+
+    /// Register one validated World composition receipt for editor inspection.
+    pub fn register_world_composition(
+        &mut self,
+        receipt: weave_world::WorldCompositionReceipt,
+    ) -> Result<(), DomainError> {
+        receipt.to_json()?;
+        self.world_compositions.insert(
+            (receipt.output.id.clone(), receipt.output.version.clone()),
+            receipt,
+        );
+        Ok(())
     }
 
     /// Compile source through `weave-compiler` and initialize `weave-runtime` on success.
@@ -284,6 +304,10 @@ impl DomainSession {
                     .collect(),
                 entity_collections: entity_collection_inspections(resolved),
                 resolved_world: weave_world::resolve_world(resolved).ok(),
+                world_composition: self
+                    .world_compositions
+                    .get(&(resolved.pack.id.clone(), resolved.pack.version.clone()))
+                    .cloned(),
             })
             .collect()
     }
@@ -307,6 +331,38 @@ impl DomainSession {
                 Some(value),
             )],
         )
+    }
+
+    /// Copy one effective pack-supplied leaf into source as an explicit authored override.
+    pub fn promote_module_value(&mut self, alias: &str, path: &[&str]) -> Result<(), DomainError> {
+        if path.is_empty() {
+            return Err(DomainError::Edit {
+                reason: "promoted value path must not be empty",
+            });
+        }
+        let owned_path = path
+            .iter()
+            .map(|segment| (*segment).to_owned())
+            .collect::<Vec<_>>();
+        let resolved = self.active_modules.get(alias).ok_or(DomainError::Edit {
+            reason: "module alias is not active",
+        })?;
+        if classify_origin(resolved, &owned_path) == DomainValueOrigin::Authored {
+            return Err(DomainError::Edit {
+                reason: "value is already authored",
+            });
+        }
+        let value = domain_value_at(&resolved.effective_values, &owned_path)
+            .cloned()
+            .ok_or(DomainError::Edit {
+                reason: "effective module value is unavailable",
+            })?;
+        if matches!(value, DomainValue::Object(_)) {
+            return Err(DomainError::Edit {
+                reason: "promote one value leaf rather than an object",
+            });
+        }
+        self.set_module_override(alias, path, value)
     }
 
     /// Remove one source-authored replacement so the selected pack or inheritance chain wins.
@@ -974,6 +1030,9 @@ mod tests {
                 "../../examples/domain-modules/weave-world/packs/british_columbia_temperate_forest.weave-domain.json"
             ),
             include_str!(
+                "../../examples/domain-modules/weave-world/packs/glasswind_composed.weave-domain.json"
+            ),
+            include_str!(
                 "../../examples/domain-modules/weave-world/packs/hokkaido_japan.weave-domain.json"
             ),
             include_str!(
@@ -1281,6 +1340,101 @@ mod tests {
                 "beacons_answer_storms"
             ]),
             Some(&weave_core::ir::DomainValueIr::Bool(true))
+        );
+    }
+
+    #[test]
+    fn composed_world_preview_exposes_layers_and_promotes_generated_values() {
+        let source =
+            include_str!("../../examples/domain-modules/weave-world/composed-setting.weave");
+        let receipt = weave_world::WorldCompositionReceipt::from_json(include_str!(
+            "../../examples/domain-modules/weave-world/composition.receipt.json"
+        ))
+        .expect("checked composition receipt");
+        let mut session = DomainSession::with_domain_catalog(29, world_catalog());
+        session
+            .register_world_composition(receipt)
+            .expect("register composition receipt");
+        session
+            .compile_source(source, Some("composed-setting.weave".to_owned()))
+            .expect("composed world compiles");
+
+        let inspection = &session.module_inspections()[0];
+        let composition = inspection
+            .world_composition
+            .as_ref()
+            .expect("composition is inspectable");
+        assert_eq!(
+            composition
+                .layers
+                .iter()
+                .map(|layer| layer.id.as_str())
+                .collect::<Vec<_>>(),
+            ["broad_reference", "regional_climate", "ecosystem_surface"]
+        );
+        assert!(composition.differences.iter().any(|difference| {
+            difference.path == "seed.primary_biome"
+                && difference.incoming_layer_id == "ecosystem_surface"
+                && difference.resolution == weave_world::WorldLayerResolution::Replaced
+        }));
+        let seed = inspection
+            .exports
+            .iter()
+            .find(|export| export.name == "seed")
+            .expect("seed inspection");
+        assert_eq!(
+            seed.origins.get("seed.primary_biome"),
+            Some(&DomainValueOrigin::Generated)
+        );
+        let resolved = inspection.resolved_world.as_ref().expect("resolved World");
+        assert_eq!(
+            resolved.places["glasswind_reach"].environment.values["primary_biome"],
+            DomainValue::Symbol("temperate_conifer_forest".to_owned())
+        );
+        assert_eq!(
+            resolved.places["glasswind_reach"].climate.values["band"],
+            DomainValue::Symbol("humid_continental".to_owned())
+        );
+
+        session
+            .promote_module_value("world", &["seed", "primary_biome"])
+            .expect("promote generated biome");
+        assert!(
+            session
+                .source()
+                .contains("override seed.primary_biome: temperate_conifer_forest")
+        );
+        let promoted = &session.module_inspections()[0];
+        let promoted_seed = promoted
+            .exports
+            .iter()
+            .find(|export| export.name == "seed")
+            .expect("promoted seed inspection");
+        assert_eq!(
+            promoted_seed.origins.get("seed.primary_biome"),
+            Some(&DomainValueOrigin::Authored)
+        );
+        assert!(promoted.world_composition.is_some());
+
+        let before_rejected_promotion = session.source().to_owned();
+        assert!(
+            session
+                .promote_module_value("world", &["seed", "climate"])
+                .is_err()
+        );
+        assert_eq!(session.source(), before_rejected_promotion);
+        session
+            .reset_module_override("world", &["seed", "primary_biome"])
+            .expect("reset promotion");
+        let reset = &session.module_inspections()[0];
+        let reset_seed = reset
+            .exports
+            .iter()
+            .find(|export| export.name == "seed")
+            .expect("reset seed inspection");
+        assert_eq!(
+            reset_seed.origins.get("seed.primary_biome"),
+            Some(&DomainValueOrigin::Generated)
         );
     }
 

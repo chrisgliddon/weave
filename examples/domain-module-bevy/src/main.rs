@@ -13,8 +13,8 @@ const WORLD_STORIES: [&str; 4] = [
     include_str!("../../domain-modules/weave-world/corpus/stories/maldives.story.ron"),
     include_str!("../../domain-modules/weave-world/reference-place.story.ron"),
 ];
-const AUTHORED_WORLD_STORY: &str =
-    include_str!("../../domain-modules/weave-world/authored-setting.story.ron");
+const COMPOSED_WORLD_STORY: &str =
+    include_str!("../../domain-modules/weave-world/composed-setting.story.ron");
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -36,11 +36,16 @@ struct WorldReading {
 struct WorldReadings(Vec<WorldReading>);
 
 #[derive(Resource, Debug, Clone, PartialEq)]
-struct AuthoredWorldReading {
+struct ComposedWorldReading {
     beacons_answer_storms: bool,
     harbor_name: String,
     harbor_parent_id: String,
     road_name: String,
+    primary_biome: String,
+    climate_band: String,
+    harbor_coastal: bool,
+    travel_behavior: String,
+    presentation_palette: String,
     authored_value_count: usize,
 }
 
@@ -120,13 +125,21 @@ fn world_reading_from_story(story: &StoryIr, alias: &str) -> Result<WorldReading
     })
 }
 
-fn authored_world_reading(story: &StoryIr) -> Result<AuthoredWorldReading, io::Error> {
+fn composed_world_reading(story: &StoryIr) -> Result<ComposedWorldReading, io::Error> {
     let module = story
         .modules
         .get("world")
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "world module is absent"))?;
     let string = |path: &[&str], message: &'static str| match module.value(path) {
         Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let symbol = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let boolean = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Bool(value)) => Ok(*value),
         _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
     };
     let beacons_answer_storms = match module.value(&["rules", "booleans", "beacons_answer_storms"])
@@ -139,7 +152,43 @@ fn authored_world_reading(story: &StoryIr) -> Result<AuthoredWorldReading, io::E
             ));
         }
     };
-    Ok(AuthoredWorldReading {
+    let road_name = string(
+        &["places", "lantern_road", "name"],
+        "authored road name is invalid",
+    )?;
+    let primary_biome = symbol(
+        &["seed", "primary_biome"],
+        "composed primary biome is invalid",
+    )?;
+    let climate_band = symbol(
+        &["seed", "climate", "band"],
+        "composed climate band is invalid",
+    )?;
+    let harbor_coastal = boolean(
+        &[
+            "places",
+            "emberwake_harbor",
+            "environment_override",
+            "coastal",
+        ],
+        "authored harbor environment is invalid",
+    )?;
+    let travel_mode = string(
+        &["rules", "symbols", "travel_mode"],
+        "authored travel mode is invalid",
+    )?;
+    let travel_behavior = if beacons_answer_storms && harbor_coastal && travel_mode == "tidebound" {
+        format!("beacon escort via {road_name}")
+    } else {
+        "ordinary overland travel".to_owned()
+    };
+    let presentation_palette = match (primary_biome.as_str(), climate_band.as_str()) {
+        ("temperate_conifer_forest", "humid_continental") => "cedar-snow",
+        ("temperate_conifer_forest", _) => "cedar-rain",
+        _ => "neutral-world",
+    }
+    .to_owned();
+    Ok(ComposedWorldReading {
         beacons_answer_storms,
         harbor_name: string(
             &["places", "emberwake_harbor", "name"],
@@ -149,10 +198,12 @@ fn authored_world_reading(story: &StoryIr) -> Result<AuthoredWorldReading, io::E
             &["places", "emberwake_harbor", "parent_id"],
             "authored harbor parent is invalid",
         )?,
-        road_name: string(
-            &["places", "lantern_road", "name"],
-            "authored road name is invalid",
-        )?,
+        road_name,
+        primary_biome,
+        climate_band,
+        harbor_coastal,
+        travel_behavior,
+        presentation_palette,
         authored_value_count: module.authored_overrides.len(),
     })
 }
@@ -177,11 +228,17 @@ fn report_world(readings: Res<WorldReadings>) {
     }
 }
 
-fn report_authored_world(reading: Res<AuthoredWorldReading>) {
+fn report_composed_world(reading: Res<ComposedWorldReading>) {
     println!(
-        "Bevy read {} under {} with {} ({} authored values)",
+        "Bevy read {} under {}: {}, {} palette, {}/{} environment, coastal={}, beacons={}, road={} ({} authored values)",
         reading.harbor_name,
         reading.harbor_parent_id,
+        reading.travel_behavior,
+        reading.presentation_palette,
+        reading.primary_biome,
+        reading.climate_band,
+        reading.harbor_coastal,
+        reading.beacons_answer_storms,
         reading.road_name,
         reading.authored_value_count,
     );
@@ -199,15 +256,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             })
             .collect::<Result<_, _>>()?,
     );
-    let authored_world = authored_world_reading(&ron::from_str::<StoryIr>(AUTHORED_WORLD_STORY)?)?;
+    let composed_world = composed_world_reading(&ron::from_str::<StoryIr>(COMPOSED_WORLD_STORY)?)?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
         .insert_resource(world_readings)
-        .insert_resource(authored_world)
+        .insert_resource(composed_world)
         .add_systems(
             Startup,
-            (report_reading, report_world, report_authored_world),
+            (report_reading, report_world, report_composed_world),
         );
     app.update();
     Ok(())
@@ -274,16 +331,21 @@ mod tests {
     }
 
     #[test]
-    fn reads_authored_rules_places_and_lineage_without_editor_dependencies() {
-        let story = ron::from_str::<StoryIr>(AUTHORED_WORLD_STORY).expect("authored World RON");
+    fn composed_rules_places_and_environment_change_host_behavior_and_presentation() {
+        let story = ron::from_str::<StoryIr>(COMPOSED_WORLD_STORY).expect("composed World RON");
         assert_eq!(
-            authored_world_reading(&story).expect("read authored World values"),
-            AuthoredWorldReading {
+            composed_world_reading(&story).expect("read composed World values"),
+            ComposedWorldReading {
                 beacons_answer_storms: true,
                 harbor_name: "Emberwake Harbor".to_owned(),
                 harbor_parent_id: "glasswind_reach".to_owned(),
                 road_name: "Lantern Road".to_owned(),
-                authored_value_count: 42,
+                primary_biome: "temperate_conifer_forest".to_owned(),
+                climate_band: "humid_continental".to_owned(),
+                harbor_coastal: true,
+                travel_behavior: "beacon escort via Lantern Road".to_owned(),
+                presentation_palette: "cedar-snow".to_owned(),
+                authored_value_count: 46,
             }
         );
     }

@@ -1,0 +1,67 @@
+module world {
+    id: "org.weave.world"
+    version: "=1.1.0"
+    pack: "glasswind_composed@=1.0.0"
+
+    // Composition supplies environmental defaults; authored fiction is authoritative afterward.
+    override seed.identity.display_name: "Glasswind Composed Reference"
+    override seed.identity.preset: "glasswind_composed"
+    override seed.identity.reference_code: "GLS"
+    override seed.identity.reference_kind: region
+
+    override rules.booleans.beacons_answer_storms: true
+    override rules.numbers.safe_crossing_temperature_c: 6
+    override rules.strings.calendar_note: "Long dusk begins when the western beacons dim."
+    override rules.symbols.travel_mode: "tidebound"
+
+    override places.glasswind_reach.id: "glasswind_reach"
+    override places.glasswind_reach.name: "Glasswind Reach"
+    override places.glasswind_reach.kind: region
+    override places.glasswind_reach.order: 0
+    override places.glasswind_reach.parent_id: ""
+    override places.glasswind_reach.related_place_ids: []
+    override places.glasswind_reach.environment_source: ""
+    override places.glasswind_reach.climate_source: ""
+    override places.glasswind_reach.attributes.symbols.canon: "authored"
+
+    override places.emberwake_harbor.id: "emberwake_harbor"
+    override places.emberwake_harbor.name: "Emberwake Harbor"
+    override places.emberwake_harbor.kind: settlement
+    override places.emberwake_harbor.order: 0
+    override places.emberwake_harbor.parent_id: "glasswind_reach"
+    override places.emberwake_harbor.related_place_ids: ["lantern_road"]
+    override places.emberwake_harbor.environment_source: "glasswind_reach"
+    override places.emberwake_harbor.climate_source: "glasswind_reach"
+    override places.emberwake_harbor.environment_override.coastal: true
+    override places.emberwake_harbor.attributes.booleans.has_beacon: true
+
+    override places.lantern_road.id: "lantern_road"
+    override places.lantern_road.name: "Lantern Road"
+    override places.lantern_road.kind: route
+    override places.lantern_road.order: 1
+    override places.lantern_road.parent_id: "glasswind_reach"
+    override places.lantern_road.related_place_ids: ["emberwake_harbor"]
+    override places.lantern_road.environment_source: "glasswind_reach"
+    override places.lantern_road.climate_source: "glasswind_reach"
+    override places.lantern_road.attributes.numbers.waystones: 12
+
+    override places.saltglass_point.id: "saltglass_point"
+    override places.saltglass_point.name: "Saltglass Point"
+    override places.saltglass_point.kind: site
+    override places.saltglass_point.order: 0
+    override places.saltglass_point.parent_id: "emberwake_harbor"
+    override places.saltglass_point.related_place_ids: []
+    override places.saltglass_point.environment_source: "emberwake_harbor"
+    override places.saltglass_point.climate_source: "emberwake_harbor"
+    override places.saltglass_point.climate_override.annual_mean_temperature_c.minimum: 9
+    override places.saltglass_point.climate_override.annual_mean_temperature_c.maximum: 14
+}
+
+=== start ===
+{world.rules.booleans.beacons_answer_storms:
+    The beacons answer the storm above {world.places.emberwake_harbor.name}.
+- else:
+    The harbor keeps an ordinary watch.
+}
+The {world.places.lantern_road.name} crosses {world.places.glasswind_reach.name}.
+-> END

@@ -1,0 +1,856 @@
+{
+  "pack_format_version": 1,
+  "id": "glasswind_composed",
+  "version": "1.0.0",
+  "title": "Glasswind Composed World",
+  "module": {
+    "id": "org.weave.world",
+    "version": "=1.1.0"
+  },
+  "dependencies": [
+    {
+      "module_id": "org.weave.world",
+      "pack_id": "aotearoa_new_zealand",
+      "version": "=1.1.0"
+    },
+    {
+      "module_id": "org.weave.world",
+      "pack_id": "british_columbia_temperate_forest",
+      "version": "=1.1.0"
+    },
+    {
+      "module_id": "org.weave.world",
+      "pack_id": "hokkaido_japan",
+      "version": "=1.1.0"
+    }
+  ],
+  "values": {
+    "seed": {
+      "kind": "object",
+      "value": {
+        "attribution": {
+          "kind": "string",
+          "value": "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
+        },
+        "biomes": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "montane_grassland_and_shrubland"
+            },
+            {
+              "kind": "symbol",
+              "value": "temperate_broadleaf_and_mixed_forest"
+            },
+            {
+              "kind": "symbol",
+              "value": "temperate_grassland_savanna_and_shrubland"
+            }
+          ]
+        },
+        "climate": {
+          "kind": "object",
+          "value": {
+            "annual_mean_temperature_c": {
+              "kind": "object",
+              "value": {
+                "maximum": {
+                  "kind": "number",
+                  "value": 6.13
+                },
+                "minimum": {
+                  "kind": "number",
+                  "value": 6.13
+                }
+              }
+            },
+            "annual_precipitation_mm": {
+              "kind": "object",
+              "value": {
+                "maximum": {
+                  "kind": "number",
+                  "value": 1267.5
+                },
+                "minimum": {
+                  "kind": "number",
+                  "value": 1267.5
+                }
+              }
+            },
+            "band": {
+              "kind": "symbol",
+              "value": "humid_continental"
+            },
+            "confidence": {
+              "kind": "symbol",
+              "value": "representative_not_exhaustive"
+            },
+            "reference_period": {
+              "kind": "string",
+              "value": "1991-2020"
+            },
+            "source_resolution": {
+              "kind": "string",
+              "value": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude."
+            },
+            "spatial_resolution": {
+              "kind": "symbol",
+              "value": "region_scale_representative_point"
+            },
+            "uncertainty": {
+              "kind": "string",
+              "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
+            },
+            "units": {
+              "kind": "object",
+              "value": {
+                "precipitation": {
+                  "kind": "symbol",
+                  "value": "millimetres_per_year"
+                },
+                "temperature": {
+                  "kind": "symbol",
+                  "value": "degrees_celsius"
+                }
+              }
+            }
+          }
+        },
+        "context": {
+          "kind": "object",
+          "value": {
+            "approximation": {
+              "kind": "symbol",
+              "value": "selected_station_envelope"
+            },
+            "geographic_resolution": {
+              "kind": "symbol",
+              "value": "country_scale_selected_stations"
+            },
+            "uncertainty": {
+              "kind": "string",
+              "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+            }
+          }
+        },
+        "daylight": {
+          "kind": "object",
+          "value": {
+            "longest_daylight_hours": {
+              "kind": "number",
+              "value": 15.2
+            },
+            "method": {
+              "kind": "symbol",
+              "value": "astronomical_solstice_estimate"
+            },
+            "representative_latitude_degrees": {
+              "kind": "number",
+              "value": 43.06
+            },
+            "shortest_daylight_hours": {
+              "kind": "number",
+              "value": 8.8
+            },
+            "unit": {
+              "kind": "symbol",
+              "value": "hours_per_day"
+            }
+          }
+        },
+        "hazards": {
+          "kind": "object",
+          "value": {
+            "confidence": {
+              "kind": "symbol",
+              "value": "representative_not_exhaustive"
+            },
+            "method": {
+              "kind": "symbol",
+              "value": "deterministic_environmental_thresholds_v1"
+            },
+            "tendencies": {
+              "kind": "list",
+              "value": [
+                {
+                  "kind": "symbol",
+                  "value": "heavy_precipitation"
+                },
+                {
+                  "kind": "symbol",
+                  "value": "seasonal_freeze"
+                },
+                {
+                  "kind": "symbol",
+                  "value": "slope_instability"
+                }
+              ]
+            }
+          }
+        },
+        "identity": {
+          "kind": "object",
+          "value": {
+            "culture_included": {
+              "kind": "bool",
+              "value": false
+            },
+            "display_name": {
+              "kind": "string",
+              "value": "Aotearoa New Zealand"
+            },
+            "preset": {
+              "kind": "string",
+              "value": "aotearoa_new_zealand"
+            },
+            "reference_code": {
+              "kind": "string",
+              "value": "NZL"
+            },
+            "reference_kind": {
+              "kind": "symbol",
+              "value": "country"
+            }
+          }
+        },
+        "primary_biome": {
+          "kind": "symbol",
+          "value": "temperate_conifer_forest"
+        },
+        "seasonality": {
+          "kind": "object",
+          "value": {
+            "coolest_month": {
+              "kind": "symbol",
+              "value": "january"
+            },
+            "hemisphere": {
+              "kind": "symbol",
+              "value": "northern"
+            },
+            "warmest_months": {
+              "kind": "list",
+              "value": [
+                {
+                  "kind": "symbol",
+                  "value": "august"
+                }
+              ]
+            }
+          }
+        },
+        "terrain": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal"
+            },
+            {
+              "kind": "symbol",
+              "value": "mountain"
+            }
+          ]
+        },
+        "water": {
+          "kind": "object",
+          "value": {
+            "coastal": {
+              "kind": "bool",
+              "value": true
+            },
+            "island_system": {
+              "kind": "bool",
+              "value": false
+            },
+            "setting": {
+              "kind": "symbol",
+              "value": "open_ocean_coast"
+            }
+          }
+        },
+        "weather_tendencies": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal_moderation"
+            },
+            {
+              "kind": "symbol",
+              "value": "regional_rainfall_contrast"
+            },
+            {
+              "kind": "symbol",
+              "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "composition_plan",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "glasswind-composition-v1",
+        "license": "MIT",
+        "license_url": "https://opensource.org/license/mit",
+        "attribution": "Original fictional World composition decisions from the Weave project.",
+        "modified": false
+      },
+      {
+        "id": "layer0_natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "8689e6932b8e370e2ca4587cf3ba21e460b1235db37b6ed3c172c35b4a6088de",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer0_natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/110m_physical/ne_110m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "8006f16c5af40875fbe8e975bef6d4b6c1ffc7b767491bdc277fbc0b62ba5d02",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer0_niwa_rainfall",
+        "kind": "public_source",
+        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_rainfall_1991-2020_1.xlsx",
+        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
+        "sha256": "cff6bd6e4c4730850b744fe11b40a5867ad0efccee14a25adcffc6627174030b",
+        "license": "CC-BY-4.0",
+        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
+        "attribution": "Earth Sciences New Zealand / NIWA mean monthly rainfall 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer0_niwa_temperature",
+        "kind": "public_source",
+        "url": "https://niwa.co.nz/sites/default/files/inline-images/mean_monthly_air_temperature_1991-2020_1.xlsx",
+        "revision": "1991-2020-normal-period-retrieved-2026-08-21",
+        "sha256": "671feaf14025d344e421cd697c7a0338e0c7b332dc11d2c24a2107d07113a11a",
+        "license": "CC-BY-4.0",
+        "license_url": "https://niwa.co.nz/climate-and-weather/climate-data-and-activities#reuse",
+        "attribution": "Earth Sciences New Zealand / NIWA mean monthly air temperature 1991-2020, CC BY 4.0; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer0_resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=166%2C-48%2C179%2C-34&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-country-envelope-retrieved-2026-08-21",
+        "sha256": "1fe165b148ad6936060ad8b7207dcd8a861f4c35f16c406fa119e5f62f7e6681",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; country-envelope subset normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer0_weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "aotearoa-new-zealand-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only normalization and reference selector authored by Weave Contributors.",
+        "modified": false
+      },
+      {
+        "id": "layer1_nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=141.35&latitude=43.06&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "0e61f7f29468c9eccfdfdbca62e41984e99b7800179a8df91bc3b055d0b5eec0",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer1_natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer1_natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer1_resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=139.3%2C41.3%2C146%2C45.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-region-envelope-retrieved-2026-08-21",
+        "sha256": "5fcd68f5b72f1b1b8f131525d7cf02bc7249002d163adcb60e0fc7dd1d8ca51e",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; regional envelope normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer1_weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "hokkaido-japan-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
+        "modified": false
+      },
+      {
+        "id": "layer2_nasa_power_climate",
+        "kind": "public_source",
+        "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CPRECTOTCORR&community=AG&longitude=-128.0&latitude=52.5&format=CSV&start=1991&end=2020",
+        "revision": "POWER-Climatology-API-v2.9.7-1991-2020-retrieved-2026-08-22",
+        "sha256": "0d46f13589f3d7e198c415a6c07372b72aabe606e9b762c2911f8f3606ebee2f",
+        "license": "LicenseRef-NASA-Public-Data",
+        "license_url": "https://science.data.nasa.gov/about/license",
+        "attribution": "NASA Langley Research Center POWER Project Climatology API v2.9.7 CSV, accessed 2026-08-22; MERRA-2 meteorology; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer2_natural_earth_land",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_land.shp",
+        "revision": "v5.1.2",
+        "sha256": "4cad3a49bc75c1a4c2f3d7efae04f2f8e63151c96764b2658effabf524331fa6",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m land vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer2_natural_earth_ocean",
+        "kind": "public_source",
+        "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_ocean.shp",
+        "revision": "v5.1.2",
+        "sha256": "bb5ae1e0922b02e61e14f6d562fc2299db4bef5ca36c1008b1a8e7ddf9da6410",
+        "license": "LicenseRef-Natural-Earth-Public-Domain",
+        "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+        "attribution": "Natural Earth 10m ocean vectors, public domain; normalized by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer2_resolve_ecoregions",
+        "kind": "public_source",
+        "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Resolve_Ecoregions/FeatureServer/0/query?where=1%3D1&geometry=-130%2C48.3%2C-121%2C55&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ECO_NAME%2CBIOME_NAME%2CECO_BIOME_&returnGeometry=false&orderByFields=ECO_NAME&f=json",
+        "revision": "ecoregions-2017-ecosystem-envelope-retrieved-2026-08-21",
+        "sha256": "0d68f18ae7577e6a8fb10dda13305504dc079dd8c5d05b959ddb6737c52a6e35",
+        "license": "CC-BY-4.0",
+        "license_url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017#terms-of-use",
+        "attribution": "RESOLVE Biodiversity and Wildlife Solutions, Ecoregions 2017, CC BY 4.0; British Columbia coastal conifer class selected by Weave Contributors.",
+        "modified": true
+      },
+      {
+        "id": "layer2_weave_world_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+        "revision": "british-columbia-temperate-forest-reference-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original environmental-only category selection authored by Weave Contributors.",
+        "modified": false
+      }
+    ],
+    "transformations": [
+      {
+        "id": "layer0_normalize_biomes",
+        "inputs": [
+          "layer0_resolve_ecoregions"
+        ],
+        "description": "Deduplicate reviewed ecoregion biome classes into the closed Weave World vocabulary and retain the contributor-selected primary narrative class."
+      },
+      {
+        "id": "layer0_normalize_climate",
+        "inputs": [
+          "layer0_niwa_rainfall",
+          "layer0_niwa_temperature"
+        ],
+        "description": "Validate declared source units, convert daily precipitation rates to annual millimetres using the exact inclusive reference-period day count, form deterministic ranges, and rank monthly temperatures without interpolation."
+      },
+      {
+        "id": "layer0_normalize_daylight",
+        "inputs": [
+          "layer0_natural_earth_land",
+          "layer0_niwa_rainfall",
+          "layer0_niwa_temperature",
+          "layer0_weave_world_fixture"
+        ],
+        "description": "Calculate idealized June and December solstice daylight from the declared representative WGS84 latitude and 23.44 degree solar declination, clamp polar results, and round to one decimal hour; atmospheric refraction, terrain, and twilight are excluded."
+      },
+      {
+        "id": "layer0_normalize_hazards",
+        "inputs": [
+          "layer0_natural_earth_land",
+          "layer0_natural_earth_ocean",
+          "layer0_niwa_rainfall",
+          "layer0_niwa_temperature",
+          "layer0_resolve_ecoregions",
+          "layer0_weave_world_fixture"
+        ],
+        "description": "Apply corpus-v1 environmental thresholds only: annual precipitation at least 2000 mm, monthly freezing, wet mountain slopes, coastal atolls, and explicitly curated cyclone exposure. Results are tendencies, not event forecasts or risk scores."
+      },
+      {
+        "id": "layer0_normalize_identity",
+        "inputs": [
+          "layer0_natural_earth_land",
+          "layer0_weave_world_fixture"
+        ],
+        "description": "Bind the stable contributor-owned shorthand, display identity, country code, and geographic scope while requiring culture_included to remain false."
+      },
+      {
+        "id": "layer0_normalize_terrain_water",
+        "inputs": [
+          "layer0_natural_earth_land",
+          "layer0_natural_earth_ocean",
+          "layer0_resolve_ecoregions",
+          "layer0_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed physical and ecoregion inputs to conservative closed terrain, coast, island-system, and water-setting categories."
+      },
+      {
+        "id": "layer0_normalize_weather",
+        "inputs": [
+          "layer0_natural_earth_land",
+          "layer0_natural_earth_ocean",
+          "layer0_niwa_rainfall",
+          "layer0_niwa_temperature",
+          "layer0_resolve_ecoregions",
+          "layer0_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed climate observations plus physical context to conservative closed weather tendencies; these are broad narrative cues, not forecasts."
+      },
+      {
+        "id": "layer0_normalize_world_seed",
+        "inputs": [
+          "layer0_normalize_biomes",
+          "layer0_normalize_climate",
+          "layer0_normalize_daylight",
+          "layer0_normalize_hazards",
+          "layer0_normalize_identity",
+          "layer0_normalize_terrain_water",
+          "layer0_normalize_weather"
+        ],
+        "description": "Assemble one deterministic typed environmental WorldSeed with explicit attribution, scale, units, uncertainty, approximation, daylight, and hazard policy; no cultural traits are inferred."
+      },
+      {
+        "id": "layer1_normalize_biomes",
+        "inputs": [
+          "layer1_resolve_ecoregions"
+        ],
+        "description": "Deduplicate reviewed ecoregion biome classes into the closed Weave World vocabulary and retain the contributor-selected primary narrative class."
+      },
+      {
+        "id": "layer1_normalize_climate",
+        "inputs": [
+          "layer1_nasa_power_climate"
+        ],
+        "description": "Validate declared source units, convert daily precipitation rates to annual millimetres using the exact inclusive reference-period day count, form deterministic ranges, and rank monthly temperatures without interpolation."
+      },
+      {
+        "id": "layer1_normalize_daylight",
+        "inputs": [
+          "layer1_nasa_power_climate",
+          "layer1_natural_earth_land",
+          "layer1_weave_world_fixture"
+        ],
+        "description": "Calculate idealized June and December solstice daylight from the declared representative WGS84 latitude and 23.44 degree solar declination, clamp polar results, and round to one decimal hour; atmospheric refraction, terrain, and twilight are excluded."
+      },
+      {
+        "id": "layer1_normalize_hazards",
+        "inputs": [
+          "layer1_nasa_power_climate",
+          "layer1_natural_earth_land",
+          "layer1_natural_earth_ocean",
+          "layer1_resolve_ecoregions",
+          "layer1_weave_world_fixture"
+        ],
+        "description": "Apply corpus-v1 environmental thresholds only: annual precipitation at least 2000 mm, monthly freezing, wet mountain slopes, coastal atolls, and explicitly curated cyclone exposure. Results are tendencies, not event forecasts or risk scores."
+      },
+      {
+        "id": "layer1_normalize_identity",
+        "inputs": [
+          "layer1_natural_earth_land",
+          "layer1_weave_world_fixture"
+        ],
+        "description": "Bind the stable contributor-owned shorthand, display identity, country code, and geographic scope while requiring culture_included to remain false."
+      },
+      {
+        "id": "layer1_normalize_terrain_water",
+        "inputs": [
+          "layer1_natural_earth_land",
+          "layer1_natural_earth_ocean",
+          "layer1_resolve_ecoregions",
+          "layer1_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed physical and ecoregion inputs to conservative closed terrain, coast, island-system, and water-setting categories."
+      },
+      {
+        "id": "layer1_normalize_weather",
+        "inputs": [
+          "layer1_nasa_power_climate",
+          "layer1_natural_earth_land",
+          "layer1_natural_earth_ocean",
+          "layer1_resolve_ecoregions",
+          "layer1_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed climate observations plus physical context to conservative closed weather tendencies; these are broad narrative cues, not forecasts."
+      },
+      {
+        "id": "layer1_normalize_world_seed",
+        "inputs": [
+          "layer1_normalize_biomes",
+          "layer1_normalize_climate",
+          "layer1_normalize_daylight",
+          "layer1_normalize_hazards",
+          "layer1_normalize_identity",
+          "layer1_normalize_terrain_water",
+          "layer1_normalize_weather"
+        ],
+        "description": "Assemble one deterministic typed environmental WorldSeed with explicit attribution, scale, units, uncertainty, approximation, daylight, and hazard policy; no cultural traits are inferred."
+      },
+      {
+        "id": "layer2_normalize_biomes",
+        "inputs": [
+          "layer2_resolve_ecoregions"
+        ],
+        "description": "Deduplicate reviewed ecoregion biome classes into the closed Weave World vocabulary and retain the contributor-selected primary narrative class."
+      },
+      {
+        "id": "layer2_normalize_climate",
+        "inputs": [
+          "layer2_nasa_power_climate"
+        ],
+        "description": "Validate declared source units, convert daily precipitation rates to annual millimetres using the exact inclusive reference-period day count, form deterministic ranges, and rank monthly temperatures without interpolation."
+      },
+      {
+        "id": "layer2_normalize_daylight",
+        "inputs": [
+          "layer2_nasa_power_climate",
+          "layer2_natural_earth_land",
+          "layer2_weave_world_fixture"
+        ],
+        "description": "Calculate idealized June and December solstice daylight from the declared representative WGS84 latitude and 23.44 degree solar declination, clamp polar results, and round to one decimal hour; atmospheric refraction, terrain, and twilight are excluded."
+      },
+      {
+        "id": "layer2_normalize_hazards",
+        "inputs": [
+          "layer2_nasa_power_climate",
+          "layer2_natural_earth_land",
+          "layer2_natural_earth_ocean",
+          "layer2_resolve_ecoregions",
+          "layer2_weave_world_fixture"
+        ],
+        "description": "Apply corpus-v1 environmental thresholds only: annual precipitation at least 2000 mm, monthly freezing, wet mountain slopes, coastal atolls, and explicitly curated cyclone exposure. Results are tendencies, not event forecasts or risk scores."
+      },
+      {
+        "id": "layer2_normalize_identity",
+        "inputs": [
+          "layer2_natural_earth_land",
+          "layer2_weave_world_fixture"
+        ],
+        "description": "Bind the stable contributor-owned shorthand, display identity, country code, and geographic scope while requiring culture_included to remain false."
+      },
+      {
+        "id": "layer2_normalize_terrain_water",
+        "inputs": [
+          "layer2_natural_earth_land",
+          "layer2_natural_earth_ocean",
+          "layer2_resolve_ecoregions",
+          "layer2_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed physical and ecoregion inputs to conservative closed terrain, coast, island-system, and water-setting categories."
+      },
+      {
+        "id": "layer2_normalize_weather",
+        "inputs": [
+          "layer2_nasa_power_climate",
+          "layer2_natural_earth_land",
+          "layer2_natural_earth_ocean",
+          "layer2_resolve_ecoregions",
+          "layer2_weave_world_fixture"
+        ],
+        "description": "Reduce reviewed climate observations plus physical context to conservative closed weather tendencies; these are broad narrative cues, not forecasts."
+      },
+      {
+        "id": "layer2_normalize_world_seed",
+        "inputs": [
+          "layer2_normalize_biomes",
+          "layer2_normalize_climate",
+          "layer2_normalize_daylight",
+          "layer2_normalize_hazards",
+          "layer2_normalize_identity",
+          "layer2_normalize_terrain_water",
+          "layer2_normalize_weather"
+        ],
+        "description": "Assemble one deterministic typed environmental WorldSeed with explicit attribution, scale, units, uncertainty, approximation, daylight, and hazard policy; no cultural traits are inferred."
+      },
+      {
+        "id": "world_composition",
+        "inputs": [
+          "composition_plan",
+          "layer0_normalize_biomes",
+          "layer0_normalize_identity",
+          "layer0_normalize_world_seed",
+          "layer1_normalize_climate",
+          "layer1_normalize_daylight",
+          "layer2_normalize_biomes",
+          "layer2_normalize_hazards",
+          "layer2_normalize_terrain_water",
+          "layer2_normalize_weather"
+        ],
+        "description": "Composed selected World fields in declared broad-to-regional-to-ecosystem order; explicit conflict policies resolved every overlap, and seeded candidate layers used the stable SHA-256 chooser."
+      }
+    ],
+    "claims": {
+      "values.seed": [
+        "world_composition"
+      ],
+      "values.seed.attribution": [
+        "layer0_normalize_world_seed"
+      ],
+      "values.seed.biomes": [
+        "layer0_normalize_biomes"
+      ],
+      "values.seed.climate.annual_mean_temperature_c.maximum": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.annual_mean_temperature_c.minimum": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.annual_precipitation_mm.maximum": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.annual_precipitation_mm.minimum": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.band": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.confidence": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.reference_period": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.source_resolution": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.spatial_resolution": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.uncertainty": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.units.precipitation": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.climate.units.temperature": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.context.approximation": [
+        "layer0_normalize_world_seed"
+      ],
+      "values.seed.context.geographic_resolution": [
+        "layer0_normalize_world_seed"
+      ],
+      "values.seed.context.uncertainty": [
+        "layer0_normalize_world_seed"
+      ],
+      "values.seed.daylight.longest_daylight_hours": [
+        "layer1_normalize_daylight"
+      ],
+      "values.seed.daylight.method": [
+        "layer1_normalize_daylight"
+      ],
+      "values.seed.daylight.representative_latitude_degrees": [
+        "layer1_normalize_daylight"
+      ],
+      "values.seed.daylight.shortest_daylight_hours": [
+        "layer1_normalize_daylight"
+      ],
+      "values.seed.daylight.unit": [
+        "layer1_normalize_daylight"
+      ],
+      "values.seed.hazards.confidence": [
+        "layer2_normalize_hazards"
+      ],
+      "values.seed.hazards.method": [
+        "layer2_normalize_hazards"
+      ],
+      "values.seed.hazards.tendencies": [
+        "layer2_normalize_hazards"
+      ],
+      "values.seed.identity.culture_included": [
+        "layer0_normalize_identity"
+      ],
+      "values.seed.identity.display_name": [
+        "layer0_normalize_identity"
+      ],
+      "values.seed.identity.preset": [
+        "layer0_normalize_identity"
+      ],
+      "values.seed.identity.reference_code": [
+        "layer0_normalize_identity"
+      ],
+      "values.seed.identity.reference_kind": [
+        "layer0_normalize_identity"
+      ],
+      "values.seed.primary_biome": [
+        "layer2_normalize_biomes"
+      ],
+      "values.seed.seasonality.coolest_month": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.seasonality.hemisphere": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.seasonality.warmest_months": [
+        "layer1_normalize_climate"
+      ],
+      "values.seed.terrain": [
+        "layer2_normalize_terrain_water"
+      ],
+      "values.seed.water.coastal": [
+        "layer2_normalize_terrain_water"
+      ],
+      "values.seed.water.island_system": [
+        "layer2_normalize_terrain_water"
+      ],
+      "values.seed.water.setting": [
+        "layer2_normalize_terrain_water"
+      ],
+      "values.seed.weather_tendencies": [
+        "layer2_normalize_weather"
+      ]
+    }
+  }
+}

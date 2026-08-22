@@ -1,0 +1,1249 @@
+{
+  "version": 4,
+  "source_name": "examples/domain-modules/weave-world/composed-setting.weave",
+  "entry": "start",
+  "globals": [],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "world": {
+      "id": "org.weave.world",
+      "version": "1.1.0",
+      "pack_id": "glasswind_composed",
+      "pack_version": "1.0.0",
+      "exports": {
+        "places": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "emberwake_harbor": {
+                "kind": "object",
+                "value": {
+                  "attributes": {
+                    "kind": "object",
+                    "value": {
+                      "booleans": {
+                        "kind": "object",
+                        "value": {
+                          "has_beacon": {
+                            "kind": "bool",
+                            "value": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "climate_source": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "environment_override": {
+                    "kind": "object",
+                    "value": {
+                      "coastal": {
+                        "kind": "bool",
+                        "value": true
+                      }
+                    }
+                  },
+                  "environment_source": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "emberwake_harbor"
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "settlement"
+                  },
+                  "name": {
+                    "kind": "string",
+                    "value": "Emberwake Harbor"
+                  },
+                  "order": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "parent_id": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "related_place_ids": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "lantern_road"
+                      }
+                    ]
+                  }
+                }
+              },
+              "glasswind_reach": {
+                "kind": "object",
+                "value": {
+                  "attributes": {
+                    "kind": "object",
+                    "value": {
+                      "symbols": {
+                        "kind": "object",
+                        "value": {
+                          "canon": {
+                            "kind": "string",
+                            "value": "authored"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "climate_source": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "environment_source": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "region"
+                  },
+                  "name": {
+                    "kind": "string",
+                    "value": "Glasswind Reach"
+                  },
+                  "order": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "parent_id": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "related_place_ids": {
+                    "kind": "list",
+                    "value": []
+                  }
+                }
+              },
+              "lantern_road": {
+                "kind": "object",
+                "value": {
+                  "attributes": {
+                    "kind": "object",
+                    "value": {
+                      "numbers": {
+                        "kind": "object",
+                        "value": {
+                          "waystones": {
+                            "kind": "number",
+                            "value": 12.0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "climate_source": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "environment_source": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "lantern_road"
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "route"
+                  },
+                  "name": {
+                    "kind": "string",
+                    "value": "Lantern Road"
+                  },
+                  "order": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "parent_id": {
+                    "kind": "string",
+                    "value": "glasswind_reach"
+                  },
+                  "related_place_ids": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "emberwake_harbor"
+                      }
+                    ]
+                  }
+                }
+              },
+              "saltglass_point": {
+                "kind": "object",
+                "value": {
+                  "climate_override": {
+                    "kind": "object",
+                    "value": {
+                      "annual_mean_temperature_c": {
+                        "kind": "object",
+                        "value": {
+                          "maximum": {
+                            "kind": "number",
+                            "value": 14.0
+                          },
+                          "minimum": {
+                            "kind": "number",
+                            "value": 9.0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "climate_source": {
+                    "kind": "string",
+                    "value": "emberwake_harbor"
+                  },
+                  "environment_source": {
+                    "kind": "string",
+                    "value": "emberwake_harbor"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "saltglass_point"
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "site"
+                  },
+                  "name": {
+                    "kind": "string",
+                    "value": "Saltglass Point"
+                  },
+                  "order": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "parent_id": {
+                    "kind": "string",
+                    "value": "emberwake_harbor"
+                  },
+                  "related_place_ids": {
+                    "kind": "list",
+                    "value": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        "rules": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "booleans": {
+                "kind": "object",
+                "value": {
+                  "beacons_answer_storms": {
+                    "kind": "bool",
+                    "value": true
+                  }
+                }
+              },
+              "numbers": {
+                "kind": "object",
+                "value": {
+                  "safe_crossing_temperature_c": {
+                    "kind": "number",
+                    "value": 6.0
+                  }
+                }
+              },
+              "strings": {
+                "kind": "object",
+                "value": {
+                  "calendar_note": {
+                    "kind": "string",
+                    "value": "Long dusk begins when the western beacons dim."
+                  }
+                }
+              },
+              "symbols": {
+                "kind": "object",
+                "value": {
+                  "travel_mode": {
+                    "kind": "string",
+                    "value": "tidebound"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "seed": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "attribution": {
+                "kind": "string",
+                "value": "Climate data: Earth Sciences New Zealand / NIWA, CC BY 4.0. Ecoregions: RESOLVE Biodiversity and Wildlife Solutions, CC BY 4.0. Modified by Weave Contributors. Natural Earth physical vectors are public domain."
+              },
+              "biomes": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "symbol",
+                    "value": "montane_grassland_and_shrubland"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "temperate_broadleaf_and_mixed_forest"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "temperate_grassland_savanna_and_shrubland"
+                  }
+                ]
+              },
+              "climate": {
+                "kind": "object",
+                "value": {
+                  "annual_mean_temperature_c": {
+                    "kind": "object",
+                    "value": {
+                      "maximum": {
+                        "kind": "number",
+                        "value": 6.13
+                      },
+                      "minimum": {
+                        "kind": "number",
+                        "value": 6.13
+                      }
+                    }
+                  },
+                  "annual_precipitation_mm": {
+                    "kind": "object",
+                    "value": {
+                      "maximum": {
+                        "kind": "number",
+                        "value": 1267.5
+                      },
+                      "minimum": {
+                        "kind": "number",
+                        "value": 1267.5
+                      }
+                    }
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "humid_continental"
+                  },
+                  "confidence": {
+                    "kind": "symbol",
+                    "value": "representative_not_exhaustive"
+                  },
+                  "reference_period": {
+                    "kind": "string",
+                    "value": "1991-2020"
+                  },
+                  "source_resolution": {
+                    "kind": "string",
+                    "value": "NASA MERRA-2 meteorology grid: 0.5 degree latitude by 0.625 degree longitude."
+                  },
+                  "spatial_resolution": {
+                    "kind": "symbol",
+                    "value": "region_scale_representative_point"
+                  },
+                  "uncertainty": {
+                    "kind": "string",
+                    "value": "One source-native grid point near Sapporo represents a diverse island region and does not resolve coasts, mountains, snow belts, or urban heat effects."
+                  },
+                  "units": {
+                    "kind": "object",
+                    "value": {
+                      "precipitation": {
+                        "kind": "symbol",
+                        "value": "millimetres_per_year"
+                      },
+                      "temperature": {
+                        "kind": "symbol",
+                        "value": "degrees_celsius"
+                      }
+                    }
+                  }
+                }
+              },
+              "context": {
+                "kind": "object",
+                "value": {
+                  "approximation": {
+                    "kind": "symbol",
+                    "value": "selected_station_envelope"
+                  },
+                  "geographic_resolution": {
+                    "kind": "symbol",
+                    "value": "country_scale_selected_stations"
+                  },
+                  "uncertainty": {
+                    "kind": "string",
+                    "value": "The selected published stations describe a broad country envelope and do not resolve every coast, valley, mountain, or island microclimate."
+                  }
+                }
+              },
+              "daylight": {
+                "kind": "object",
+                "value": {
+                  "longest_daylight_hours": {
+                    "kind": "number",
+                    "value": 15.2
+                  },
+                  "method": {
+                    "kind": "symbol",
+                    "value": "astronomical_solstice_estimate"
+                  },
+                  "representative_latitude_degrees": {
+                    "kind": "number",
+                    "value": 43.06
+                  },
+                  "shortest_daylight_hours": {
+                    "kind": "number",
+                    "value": 8.8
+                  },
+                  "unit": {
+                    "kind": "symbol",
+                    "value": "hours_per_day"
+                  }
+                }
+              },
+              "hazards": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "symbol",
+                    "value": "representative_not_exhaustive"
+                  },
+                  "method": {
+                    "kind": "symbol",
+                    "value": "deterministic_environmental_thresholds_v1"
+                  },
+                  "tendencies": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "heavy_precipitation"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "seasonal_freeze"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "slope_instability"
+                      }
+                    ]
+                  }
+                }
+              },
+              "identity": {
+                "kind": "object",
+                "value": {
+                  "culture_included": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "display_name": {
+                    "kind": "string",
+                    "value": "Glasswind Composed Reference"
+                  },
+                  "preset": {
+                    "kind": "string",
+                    "value": "glasswind_composed"
+                  },
+                  "reference_code": {
+                    "kind": "string",
+                    "value": "GLS"
+                  },
+                  "reference_kind": {
+                    "kind": "symbol",
+                    "value": "region"
+                  }
+                }
+              },
+              "primary_biome": {
+                "kind": "symbol",
+                "value": "temperate_conifer_forest"
+              },
+              "seasonality": {
+                "kind": "object",
+                "value": {
+                  "coolest_month": {
+                    "kind": "symbol",
+                    "value": "january"
+                  },
+                  "hemisphere": {
+                    "kind": "symbol",
+                    "value": "northern"
+                  },
+                  "warmest_months": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "august"
+                      }
+                    ]
+                  }
+                }
+              },
+              "terrain": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "symbol",
+                    "value": "coastal"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "mountain"
+                  }
+                ]
+              },
+              "water": {
+                "kind": "object",
+                "value": {
+                  "coastal": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "island_system": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "setting": {
+                    "kind": "symbol",
+                    "value": "open_ocean_coast"
+                  }
+                }
+              },
+              "weather_tendencies": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "symbol",
+                    "value": "coastal_moderation"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "regional_rainfall_contrast"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "seasonal_temperature_cycle"
+                  },
+                  {
+                    "kind": "symbol",
+                    "value": "snow_season"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "authored_overrides": [
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "attributes",
+            "booleans",
+            "has_beacon"
+          ],
+          "value": {
+            "kind": "bool",
+            "value": true
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "climate_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "environment_override",
+            "coastal"
+          ],
+          "value": {
+            "kind": "bool",
+            "value": true
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "environment_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "emberwake_harbor"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "kind"
+          ],
+          "value": {
+            "kind": "symbol",
+            "value": "settlement"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "name"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Emberwake Harbor"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "order"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 0.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "parent_id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "emberwake_harbor",
+            "related_place_ids"
+          ],
+          "value": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "string",
+                "value": "lantern_road"
+              }
+            ]
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "attributes",
+            "symbols",
+            "canon"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "authored"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "climate_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": ""
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "environment_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": ""
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "kind"
+          ],
+          "value": {
+            "kind": "symbol",
+            "value": "region"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "name"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Glasswind Reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "order"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 0.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "parent_id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": ""
+          }
+        },
+        {
+          "path": [
+            "places",
+            "glasswind_reach",
+            "related_place_ids"
+          ],
+          "value": {
+            "kind": "list",
+            "value": []
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "attributes",
+            "numbers",
+            "waystones"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 12.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "climate_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "environment_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "lantern_road"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "kind"
+          ],
+          "value": {
+            "kind": "symbol",
+            "value": "route"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "name"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Lantern Road"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "order"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 1.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "parent_id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_reach"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "lantern_road",
+            "related_place_ids"
+          ],
+          "value": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "string",
+                "value": "emberwake_harbor"
+              }
+            ]
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "climate_override",
+            "annual_mean_temperature_c",
+            "maximum"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 14.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "climate_override",
+            "annual_mean_temperature_c",
+            "minimum"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 9.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "climate_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "emberwake_harbor"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "environment_source"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "emberwake_harbor"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "saltglass_point"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "kind"
+          ],
+          "value": {
+            "kind": "symbol",
+            "value": "site"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "name"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Saltglass Point"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "order"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 0.0
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "parent_id"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "emberwake_harbor"
+          }
+        },
+        {
+          "path": [
+            "places",
+            "saltglass_point",
+            "related_place_ids"
+          ],
+          "value": {
+            "kind": "list",
+            "value": []
+          }
+        },
+        {
+          "path": [
+            "rules",
+            "booleans",
+            "beacons_answer_storms"
+          ],
+          "value": {
+            "kind": "bool",
+            "value": true
+          }
+        },
+        {
+          "path": [
+            "rules",
+            "numbers",
+            "safe_crossing_temperature_c"
+          ],
+          "value": {
+            "kind": "number",
+            "value": 6.0
+          }
+        },
+        {
+          "path": [
+            "rules",
+            "strings",
+            "calendar_note"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Long dusk begins when the western beacons dim."
+          }
+        },
+        {
+          "path": [
+            "rules",
+            "symbols",
+            "travel_mode"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "tidebound"
+          }
+        },
+        {
+          "path": [
+            "seed",
+            "identity",
+            "display_name"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "Glasswind Composed Reference"
+          }
+        },
+        {
+          "path": [
+            "seed",
+            "identity",
+            "preset"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "glasswind_composed"
+          }
+        },
+        {
+          "path": [
+            "seed",
+            "identity",
+            "reference_code"
+          ],
+          "value": {
+            "kind": "string",
+            "value": "GLS"
+          }
+        },
+        {
+          "path": [
+            "seed",
+            "identity",
+            "reference_kind"
+          ],
+          "value": {
+            "kind": "symbol",
+            "value": "region"
+          }
+        }
+      ]
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 3058,
+            "end": 3229,
+            "line": 61,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "rules",
+                      "booleans",
+                      "beacons_answer_storms"
+                    ]
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 3107,
+                        "end": 3179,
+                        "line": 62,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The beacons answer the storm above "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "world",
+                                  "places",
+                                  "emberwake_harbor",
+                                  "name"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 3192,
+                    "end": 3227,
+                    "line": 64,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "The harbor keeps an ordinary watch."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 3230,
+            "end": 3311,
+            "line": 66,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "parts": [
+                {
+                  "kind": "text",
+                  "value": "The "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "places",
+                      "lantern_road",
+                      "name"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": " crosses "
+                },
+                {
+                  "kind": "expression",
+                  "value": {
+                    "kind": "path",
+                    "value": [
+                      "world",
+                      "places",
+                      "glasswind_reach",
+                      "name"
+                    ]
+                  }
+                },
+                {
+                  "kind": "text",
+                  "value": "."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 3312,
+            "end": 3318,
+            "line": 67,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,669 @@
+{
+  "$defs": {
+    "AppliedWorldLayer": {
+      "additionalProperties": false,
+      "description": "One selected and applied layer retained in a composition receipt.",
+      "properties": {
+        "candidates": {
+          "description": "Exact sorted candidate set retained so seeded selection can be independently reproduced.",
+          "items": {
+            "$ref": "#/$defs/WorldPackSelector"
+          },
+          "type": "array"
+        },
+        "conflict": {
+          "$ref": "#/$defs/WorldConflictPolicy",
+          "description": "Conflict policy used for this layer."
+        },
+        "id": {
+          "description": "Stable plan-local layer identifier.",
+          "type": "string"
+        },
+        "include": {
+          "description": "Sorted plan paths contributed by this layer.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pack": {
+          "$ref": "#/$defs/WorldPackSelector",
+          "description": "Exact selected pack coordinate."
+        },
+        "role": {
+          "$ref": "#/$defs/WorldLayerRole",
+          "description": "Semantic scope."
+        },
+        "selected_candidate": {
+          "description": "Zero-based selected index in the plan's sorted candidate list.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "selection": {
+          "$ref": "#/$defs/WorldLayerSelection",
+          "description": "Candidate-selection behavior."
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "selection",
+        "candidates",
+        "selected_candidate",
+        "pack",
+        "include",
+        "conflict"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ResolvedClimate": {
+      "additionalProperties": false,
+      "description": "Resolved local climate with one origin record per field.",
+      "properties": {
+        "origins": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorldValueOrigin"
+          },
+          "description": "Field names mapped to exact ownership.",
+          "type": "object"
+        },
+        "values": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainValue"
+          },
+          "description": "Effective portable fields.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "values",
+        "origins"
+      ],
+      "type": "object"
+    },
+    "ResolvedEnvironment": {
+      "additionalProperties": false,
+      "description": "Resolved local environment with one origin record per field.",
+      "properties": {
+        "origins": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorldValueOrigin"
+          },
+          "description": "Field names mapped to exact ownership.",
+          "type": "object"
+        },
+        "values": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainValue"
+          },
+          "description": "Effective portable fields.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "values",
+        "origins"
+      ],
+      "type": "object"
+    },
+    "ResolvedWorld": {
+      "additionalProperties": false,
+      "description": "Complete authored world projection suitable for an editor or runtime host.",
+      "properties": {
+        "places": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ResolvedWorldPlace"
+          },
+          "description": "Resolved places keyed by stable id.",
+          "type": "object"
+        },
+        "roots": {
+          "description": "Root place ids in deterministic order.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DomainValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional typed world-rule maps."
+        }
+      },
+      "required": [
+        "roots",
+        "places"
+      ],
+      "type": "object"
+    },
+    "ResolvedWorldPlace": {
+      "additionalProperties": false,
+      "description": "One stable place after environment and climate inheritance are resolved.",
+      "properties": {
+        "attributes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DomainValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional typed authored attributes."
+        },
+        "climate": {
+          "$ref": "#/$defs/ResolvedClimate",
+          "description": "Effective local climate."
+        },
+        "environment": {
+          "$ref": "#/$defs/ResolvedEnvironment",
+          "description": "Effective local environment."
+        },
+        "id": {
+          "description": "Stable source-facing id.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Broad place kind.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-editable fictional display name.",
+          "type": "string"
+        },
+        "order": {
+          "description": "Deterministic sibling order.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "parent_id": {
+          "description": "Optional stable parent id.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "related_place_ids": {
+          "description": "Symmetric related place ids.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "order",
+        "related_place_ids",
+        "environment",
+        "climate"
+      ],
+      "type": "object"
+    },
+    "WorldCompositionReceipt": {
+      "additionalProperties": false,
+      "description": "Machine-readable proof of one deterministic composition run.",
+      "properties": {
+        "differences": {
+          "description": "Leaf-level additions, confirmations, replacements, and preserved conflicts.",
+          "items": {
+            "$ref": "#/$defs/WorldLayerDifference"
+          },
+          "type": "array"
+        },
+        "format_version": {
+          "description": "Serialized receipt version.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "layers": {
+          "description": "Selected layers in the exact application order.",
+          "items": {
+            "$ref": "#/$defs/AppliedWorldLayer"
+          },
+          "type": "array"
+        },
+        "output": {
+          "$ref": "#/$defs/WorldOutputPack",
+          "description": "Exact generated pack coordinate."
+        },
+        "random_seed": {
+          "description": "Public seed used by candidate selection.",
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "format_version",
+        "output",
+        "random_seed",
+        "layers",
+        "differences"
+      ],
+      "type": "object"
+    },
+    "WorldConflictPolicy": {
+      "description": "Conflict behavior applied independently to every selected leaf.",
+      "oneOf": [
+        {
+          "const": "reject",
+          "description": "Reject any overlap with an earlier layer.",
+          "type": "string"
+        },
+        {
+          "const": "keep",
+          "description": "Preserve the earlier value and record the ignored incoming layer.",
+          "type": "string"
+        },
+        {
+          "const": "replace",
+          "description": "Make the later, more specific layer authoritative.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerDifference": {
+      "additionalProperties": false,
+      "description": "One deterministic leaf decision made while composing layers.",
+      "properties": {
+        "incoming_layer_id": {
+          "description": "Incoming layer making this decision.",
+          "type": "string"
+        },
+        "path": {
+          "description": "Dot-separated export path.",
+          "type": "string"
+        },
+        "previous_layer_id": {
+          "description": "Earlier authoritative layer when the path overlapped.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolution": {
+          "$ref": "#/$defs/WorldLayerResolution",
+          "description": "Result of applying the explicit conflict policy."
+        }
+      },
+      "required": [
+        "path",
+        "incoming_layer_id",
+        "resolution"
+      ],
+      "type": "object"
+    },
+    "WorldLayerResolution": {
+      "description": "Result of one leaf-level composition decision.",
+      "oneOf": [
+        {
+          "const": "added",
+          "description": "First value supplied for this path.",
+          "type": "string"
+        },
+        {
+          "const": "confirmed",
+          "description": "Later layer supplied the same value and became the authoritative source.",
+          "type": "string"
+        },
+        {
+          "const": "replaced",
+          "description": "Later layer replaced a different earlier value.",
+          "type": "string"
+        },
+        {
+          "const": "kept",
+          "description": "Earlier value remained authoritative.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerRole": {
+      "description": "Semantic layer scopes, ordered from broadest to most specific.",
+      "oneOf": [
+        {
+          "const": "broad",
+          "description": "Broad reference context.",
+          "type": "string"
+        },
+        {
+          "const": "regional",
+          "description": "Regional refinement.",
+          "type": "string"
+        },
+        {
+          "const": "ecosystem",
+          "description": "Ecosystem or biome refinement.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldLayerSelection": {
+      "description": "Candidate-selection behavior for one layer.",
+      "oneOf": [
+        {
+          "const": "exact",
+          "description": "Require exactly one candidate.",
+          "type": "string"
+        },
+        {
+          "const": "seeded",
+          "description": "Select one sorted candidate with the stable SHA-256 chooser and plan seed.",
+          "type": "string"
+        }
+      ]
+    },
+    "WorldOutputPack": {
+      "additionalProperties": false,
+      "description": "Coordinate and title assigned to a composed pack.",
+      "properties": {
+        "id": {
+          "description": "Stable pack identifier.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Semantic pack version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title"
+      ],
+      "type": "object"
+    },
+    "WorldPackSelector": {
+      "additionalProperties": false,
+      "description": "One exact World pack candidate.",
+      "properties": {
+        "pack_id": {
+          "description": "Stable pack identifier.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Exact semantic version without a range operator.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack_id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "WorldValueOrigin": {
+      "description": "One effective field's authorship and inheritance chain.",
+      "oneOf": [
+        {
+          "description": "Deterministically normalized from the selected public reference pack.",
+          "properties": {
+            "kind": {
+              "const": "generated",
+              "type": "string"
+            },
+            "source_path": {
+              "description": "Stable pack-value path.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "source_path"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Explicit fictional decision written in source.",
+          "properties": {
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            },
+            "source_path": {
+              "description": "Stable authored override path.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "source_path"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Value inherited from another stable fictional place.",
+          "properties": {
+            "from_place_id": {
+              "description": "Immediate place from which the value was inherited.",
+              "type": "string"
+            },
+            "kind": {
+              "const": "inherited",
+              "type": "string"
+            },
+            "upstream": {
+              "$ref": "#/$defs/WorldValueOrigin",
+              "description": "Ultimate generated or authored source, including deeper inheritance when present."
+            }
+          },
+          "required": [
+            "kind",
+            "from_place_id",
+            "upstream"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:world-full:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Full portable World projection with authoring and composition lineage.",
+  "properties": {
+    "authored_override_paths": {
+      "description": "Canonically ordered source-authored paths applied after composition.",
+      "items": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "array"
+    },
+    "composition": {
+      "$ref": "#/$defs/WorldCompositionReceipt",
+      "description": "Deterministic composition proof and layer differences."
+    },
+    "format_version": {
+      "const": 1,
+      "description": "Serialized export version.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "module_id": {
+      "description": "Exact module identity.",
+      "type": "string"
+    },
+    "module_version": {
+      "description": "Exact module version.",
+      "type": "string"
+    },
+    "pack_id": {
+      "description": "Exact selected composed pack identity.",
+      "type": "string"
+    },
+    "pack_version": {
+      "description": "Exact selected composed pack version.",
+      "type": "string"
+    },
+    "world": {
+      "$ref": "#/$defs/ResolvedWorld",
+      "description": "Resolved rules, places, environment, climate, and value origins."
+    }
+  },
+  "required": [
+    "format_version",
+    "module_id",
+    "module_version",
+    "pack_id",
+    "pack_version",
+    "composition",
+    "authored_override_paths",
+    "world"
+  ],
+  "title": "Weave World Full Export v1",
+  "type": "object",
+  "x-weave-world-format-version": 1
+}

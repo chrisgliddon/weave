@@ -1,0 +1,1465 @@
+(
+    format_version: 1,
+    module_id: "org.weave.world",
+    module_version: "1.1.0",
+    pack_id: "glasswind_composed",
+    pack_version: "1.0.0",
+    composition: (
+        format_version: 1,
+        output: (
+            id: "glasswind_composed",
+            version: "1.0.0",
+            title: "Glasswind Composed World",
+        ),
+        random_seed: 4278421,
+        layers: [
+            (
+                id: "broad_reference",
+                role: broad,
+                selection: exact,
+                candidates: [
+                    (
+                        pack_id: "aotearoa_new_zealand",
+                        version: "1.1.0",
+                    ),
+                ],
+                selected_candidate: 0,
+                pack: (
+                    pack_id: "aotearoa_new_zealand",
+                    version: "1.1.0",
+                ),
+                include: [
+                    "seed",
+                ],
+                conflict: reject,
+            ),
+            (
+                id: "regional_climate",
+                role: regional,
+                selection: exact,
+                candidates: [
+                    (
+                        pack_id: "hokkaido_japan",
+                        version: "1.1.0",
+                    ),
+                ],
+                selected_candidate: 0,
+                pack: (
+                    pack_id: "hokkaido_japan",
+                    version: "1.1.0",
+                ),
+                include: [
+                    "seed.climate",
+                    "seed.daylight",
+                    "seed.seasonality",
+                ],
+                conflict: replace,
+            ),
+            (
+                id: "ecosystem_surface",
+                role: ecosystem,
+                selection: exact,
+                candidates: [
+                    (
+                        pack_id: "british_columbia_temperate_forest",
+                        version: "1.1.0",
+                    ),
+                ],
+                selected_candidate: 0,
+                pack: (
+                    pack_id: "british_columbia_temperate_forest",
+                    version: "1.1.0",
+                ),
+                include: [
+                    "seed.hazards",
+                    "seed.primary_biome",
+                    "seed.terrain",
+                    "seed.water",
+                    "seed.weather_tendencies",
+                ],
+                conflict: replace,
+            ),
+        ],
+        differences: [
+            (
+                path: "seed.attribution",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.biomes",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.annual_mean_temperature_c.maximum",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.annual_mean_temperature_c.minimum",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.annual_precipitation_mm.maximum",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.annual_precipitation_mm.minimum",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.band",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.confidence",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.reference_period",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.source_resolution",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.spatial_resolution",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.uncertainty",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.units.precipitation",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.units.temperature",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.context.approximation",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.context.geographic_resolution",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.context.uncertainty",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.daylight.longest_daylight_hours",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.daylight.method",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.daylight.representative_latitude_degrees",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.daylight.shortest_daylight_hours",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.daylight.unit",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.hazards.confidence",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.hazards.method",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.hazards.tendencies",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.identity.culture_included",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.identity.display_name",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.identity.preset",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.identity.reference_code",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.identity.reference_kind",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.primary_biome",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.seasonality.coolest_month",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.seasonality.hemisphere",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.seasonality.warmest_months",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.terrain",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.water.coastal",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.water.island_system",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.water.setting",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.weather_tendencies",
+                incoming_layer_id: "broad_reference",
+                resolution: added,
+            ),
+            (
+                path: "seed.climate.annual_mean_temperature_c.maximum",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.annual_mean_temperature_c.minimum",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.annual_precipitation_mm.maximum",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.annual_precipitation_mm.minimum",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.band",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.confidence",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.climate.reference_period",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.climate.source_resolution",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.spatial_resolution",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.uncertainty",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.climate.units.precipitation",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.climate.units.temperature",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.daylight.longest_daylight_hours",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.daylight.method",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.daylight.representative_latitude_degrees",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.daylight.shortest_daylight_hours",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.daylight.unit",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.seasonality.coolest_month",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.seasonality.hemisphere",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.seasonality.warmest_months",
+                incoming_layer_id: "regional_climate",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.hazards.confidence",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.hazards.method",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.hazards.tendencies",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.primary_biome",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.terrain",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.water.coastal",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: confirmed,
+            ),
+            (
+                path: "seed.water.island_system",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.water.setting",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+            (
+                path: "seed.weather_tendencies",
+                incoming_layer_id: "ecosystem_surface",
+                previous_layer_id: Some("broad_reference"),
+                resolution: replaced,
+            ),
+        ],
+    ),
+    authored_override_paths: [
+        [
+            "places",
+            "emberwake_harbor",
+            "attributes",
+            "booleans",
+            "has_beacon",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "climate_source",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "environment_override",
+            "coastal",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "environment_source",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "id",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "kind",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "name",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "order",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "parent_id",
+        ],
+        [
+            "places",
+            "emberwake_harbor",
+            "related_place_ids",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "attributes",
+            "symbols",
+            "canon",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "climate_source",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "environment_source",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "id",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "kind",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "name",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "order",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "parent_id",
+        ],
+        [
+            "places",
+            "glasswind_reach",
+            "related_place_ids",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "attributes",
+            "numbers",
+            "waystones",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "climate_source",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "environment_source",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "id",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "kind",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "name",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "order",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "parent_id",
+        ],
+        [
+            "places",
+            "lantern_road",
+            "related_place_ids",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "climate_override",
+            "annual_mean_temperature_c",
+            "maximum",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "climate_override",
+            "annual_mean_temperature_c",
+            "minimum",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "climate_source",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "environment_source",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "id",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "kind",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "name",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "order",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "parent_id",
+        ],
+        [
+            "places",
+            "saltglass_point",
+            "related_place_ids",
+        ],
+        [
+            "rules",
+            "booleans",
+            "beacons_answer_storms",
+        ],
+        [
+            "rules",
+            "numbers",
+            "safe_crossing_temperature_c",
+        ],
+        [
+            "rules",
+            "strings",
+            "calendar_note",
+        ],
+        [
+            "rules",
+            "symbols",
+            "travel_mode",
+        ],
+        [
+            "seed",
+            "identity",
+            "display_name",
+        ],
+        [
+            "seed",
+            "identity",
+            "preset",
+        ],
+        [
+            "seed",
+            "identity",
+            "reference_code",
+        ],
+        [
+            "seed",
+            "identity",
+            "reference_kind",
+        ],
+    ],
+    world: (
+        rules: Some((
+            kind: object,
+            value: {
+                "booleans": (
+                    kind: object,
+                    value: {
+                        "beacons_answer_storms": (
+                            kind: bool,
+                            value: true,
+                        ),
+                    },
+                ),
+                "numbers": (
+                    kind: object,
+                    value: {
+                        "safe_crossing_temperature_c": (
+                            kind: number,
+                            value: 6.0,
+                        ),
+                    },
+                ),
+                "strings": (
+                    kind: object,
+                    value: {
+                        "calendar_note": (
+                            kind: string,
+                            value: "Long dusk begins when the western beacons dim.",
+                        ),
+                    },
+                ),
+                "symbols": (
+                    kind: object,
+                    value: {
+                        "travel_mode": (
+                            kind: string,
+                            value: "tidebound",
+                        ),
+                    },
+                ),
+            },
+        )),
+        roots: [
+            "glasswind_reach",
+        ],
+        places: {
+            "emberwake_harbor": (
+                id: "emberwake_harbor",
+                name: "Emberwake Harbor",
+                kind: "settlement",
+                order: 0,
+                parent_id: Some("glasswind_reach"),
+                related_place_ids: [
+                    "lantern_road",
+                ],
+                environment: (
+                    values: {
+                        "coastal": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "island_system": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "primary_biome": (
+                            kind: symbol,
+                            value: "temperate_conifer_forest",
+                        ),
+                        "terrain": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "mountain",
+                                ),
+                            ],
+                        ),
+                        "water_setting": (
+                            kind: symbol,
+                            value: "open_ocean_coast",
+                        ),
+                        "weather_tendencies": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal_moderation",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "regional_rainfall_contrast",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "seasonal_temperature_cycle",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "snow_season",
+                                ),
+                            ],
+                        ),
+                    },
+                    origins: {
+                        "coastal": (
+                            kind: "authored",
+                            source_path: "places.emberwake_harbor.environment_override.coastal",
+                        ),
+                        "island_system": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.water.island_system",
+                            ),
+                        ),
+                        "primary_biome": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.primary_biome",
+                            ),
+                        ),
+                        "terrain": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.terrain",
+                            ),
+                        ),
+                        "water_setting": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.water.setting",
+                            ),
+                        ),
+                        "weather_tendencies": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.weather_tendencies",
+                            ),
+                        ),
+                    },
+                ),
+                climate: (
+                    values: {
+                        "annual_mean_temperature_c": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                            },
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                            },
+                        ),
+                        "band": (
+                            kind: symbol,
+                            value: "humid_continental",
+                        ),
+                    },
+                    origins: {
+                        "annual_mean_temperature_c": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.annual_mean_temperature_c",
+                            ),
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.annual_precipitation_mm",
+                            ),
+                        ),
+                        "band": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.band",
+                            ),
+                        ),
+                    },
+                ),
+                attributes: Some((
+                    kind: object,
+                    value: {
+                        "booleans": (
+                            kind: object,
+                            value: {
+                                "has_beacon": (
+                                    kind: bool,
+                                    value: true,
+                                ),
+                            },
+                        ),
+                    },
+                )),
+            ),
+            "glasswind_reach": (
+                id: "glasswind_reach",
+                name: "Glasswind Reach",
+                kind: "region",
+                order: 0,
+                parent_id: None,
+                related_place_ids: [],
+                environment: (
+                    values: {
+                        "coastal": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "island_system": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "primary_biome": (
+                            kind: symbol,
+                            value: "temperate_conifer_forest",
+                        ),
+                        "terrain": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "mountain",
+                                ),
+                            ],
+                        ),
+                        "water_setting": (
+                            kind: symbol,
+                            value: "open_ocean_coast",
+                        ),
+                        "weather_tendencies": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal_moderation",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "regional_rainfall_contrast",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "seasonal_temperature_cycle",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "snow_season",
+                                ),
+                            ],
+                        ),
+                    },
+                    origins: {
+                        "coastal": (
+                            kind: "generated",
+                            source_path: "seed.water.coastal",
+                        ),
+                        "island_system": (
+                            kind: "generated",
+                            source_path: "seed.water.island_system",
+                        ),
+                        "primary_biome": (
+                            kind: "generated",
+                            source_path: "seed.primary_biome",
+                        ),
+                        "terrain": (
+                            kind: "generated",
+                            source_path: "seed.terrain",
+                        ),
+                        "water_setting": (
+                            kind: "generated",
+                            source_path: "seed.water.setting",
+                        ),
+                        "weather_tendencies": (
+                            kind: "generated",
+                            source_path: "seed.weather_tendencies",
+                        ),
+                    },
+                ),
+                climate: (
+                    values: {
+                        "annual_mean_temperature_c": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                            },
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                            },
+                        ),
+                        "band": (
+                            kind: symbol,
+                            value: "humid_continental",
+                        ),
+                    },
+                    origins: {
+                        "annual_mean_temperature_c": (
+                            kind: "generated",
+                            source_path: "seed.climate.annual_mean_temperature_c",
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: "generated",
+                            source_path: "seed.climate.annual_precipitation_mm",
+                        ),
+                        "band": (
+                            kind: "generated",
+                            source_path: "seed.climate.band",
+                        ),
+                    },
+                ),
+                attributes: Some((
+                    kind: object,
+                    value: {
+                        "symbols": (
+                            kind: object,
+                            value: {
+                                "canon": (
+                                    kind: string,
+                                    value: "authored",
+                                ),
+                            },
+                        ),
+                    },
+                )),
+            ),
+            "lantern_road": (
+                id: "lantern_road",
+                name: "Lantern Road",
+                kind: "route",
+                order: 1,
+                parent_id: Some("glasswind_reach"),
+                related_place_ids: [
+                    "emberwake_harbor",
+                ],
+                environment: (
+                    values: {
+                        "coastal": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "island_system": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "primary_biome": (
+                            kind: symbol,
+                            value: "temperate_conifer_forest",
+                        ),
+                        "terrain": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "mountain",
+                                ),
+                            ],
+                        ),
+                        "water_setting": (
+                            kind: symbol,
+                            value: "open_ocean_coast",
+                        ),
+                        "weather_tendencies": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal_moderation",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "regional_rainfall_contrast",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "seasonal_temperature_cycle",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "snow_season",
+                                ),
+                            ],
+                        ),
+                    },
+                    origins: {
+                        "coastal": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.water.coastal",
+                            ),
+                        ),
+                        "island_system": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.water.island_system",
+                            ),
+                        ),
+                        "primary_biome": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.primary_biome",
+                            ),
+                        ),
+                        "terrain": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.terrain",
+                            ),
+                        ),
+                        "water_setting": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.water.setting",
+                            ),
+                        ),
+                        "weather_tendencies": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.weather_tendencies",
+                            ),
+                        ),
+                    },
+                ),
+                climate: (
+                    values: {
+                        "annual_mean_temperature_c": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 6.13,
+                                ),
+                            },
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                            },
+                        ),
+                        "band": (
+                            kind: symbol,
+                            value: "humid_continental",
+                        ),
+                    },
+                    origins: {
+                        "annual_mean_temperature_c": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.annual_mean_temperature_c",
+                            ),
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.annual_precipitation_mm",
+                            ),
+                        ),
+                        "band": (
+                            kind: "inherited",
+                            from_place_id: "glasswind_reach",
+                            upstream: (
+                                kind: "generated",
+                                source_path: "seed.climate.band",
+                            ),
+                        ),
+                    },
+                ),
+                attributes: Some((
+                    kind: object,
+                    value: {
+                        "numbers": (
+                            kind: object,
+                            value: {
+                                "waystones": (
+                                    kind: number,
+                                    value: 12.0,
+                                ),
+                            },
+                        ),
+                    },
+                )),
+            ),
+            "saltglass_point": (
+                id: "saltglass_point",
+                name: "Saltglass Point",
+                kind: "site",
+                order: 0,
+                parent_id: Some("emberwake_harbor"),
+                related_place_ids: [],
+                environment: (
+                    values: {
+                        "coastal": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "island_system": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "primary_biome": (
+                            kind: symbol,
+                            value: "temperate_conifer_forest",
+                        ),
+                        "terrain": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "mountain",
+                                ),
+                            ],
+                        ),
+                        "water_setting": (
+                            kind: symbol,
+                            value: "open_ocean_coast",
+                        ),
+                        "weather_tendencies": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: symbol,
+                                    value: "coastal_moderation",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "regional_rainfall_contrast",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "seasonal_temperature_cycle",
+                                ),
+                                (
+                                    kind: symbol,
+                                    value: "snow_season",
+                                ),
+                            ],
+                        ),
+                    },
+                    origins: {
+                        "coastal": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "authored",
+                                source_path: "places.emberwake_harbor.environment_override.coastal",
+                            ),
+                        ),
+                        "island_system": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.water.island_system",
+                                ),
+                            ),
+                        ),
+                        "primary_biome": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.primary_biome",
+                                ),
+                            ),
+                        ),
+                        "terrain": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.terrain",
+                                ),
+                            ),
+                        ),
+                        "water_setting": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.water.setting",
+                                ),
+                            ),
+                        ),
+                        "weather_tendencies": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.weather_tendencies",
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                climate: (
+                    values: {
+                        "annual_mean_temperature_c": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 14.0,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 9.0,
+                                ),
+                            },
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: object,
+                            value: {
+                                "maximum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                                "minimum": (
+                                    kind: number,
+                                    value: 1267.5,
+                                ),
+                            },
+                        ),
+                        "band": (
+                            kind: symbol,
+                            value: "humid_continental",
+                        ),
+                    },
+                    origins: {
+                        "annual_mean_temperature_c": (
+                            kind: "authored",
+                            source_path: "places.saltglass_point.climate_override.annual_mean_temperature_c",
+                        ),
+                        "annual_precipitation_mm": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.climate.annual_precipitation_mm",
+                                ),
+                            ),
+                        ),
+                        "band": (
+                            kind: "inherited",
+                            from_place_id: "emberwake_harbor",
+                            upstream: (
+                                kind: "inherited",
+                                from_place_id: "glasswind_reach",
+                                upstream: (
+                                    kind: "generated",
+                                    source_path: "seed.climate.band",
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                attributes: None,
+            ),
+        },
+    ),
+)

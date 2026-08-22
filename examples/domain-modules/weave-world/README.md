@@ -7,15 +7,19 @@ Compile both portable forms from the repository root:
 ```bash
 cargo run -p weave-compiler -- \
   examples/domain-modules/weave-world/reference-place.weave \
-  --locked --output examples/domain-modules/weave-world/reference-place.story.ron
+  --module-manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --module-pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --output examples/domain-modules/weave-world/reference-place.story.ron
 
 cargo run -p weave-compiler -- \
   examples/domain-modules/weave-world/reference-place.weave \
-  --locked --format json \
+  --module-manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --module-pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --format json \
   --output examples/domain-modules/weave-world/reference-place.story.json
 ```
 
-The adjacent `weave.modules.json` is the complete preset-selection boundary. The exact lock pins the selected module and pack bytes; authoring and runtime do not contact the network.
+The adjacent `weave.modules.json` is the complete artifact-discovery boundary. Its checked lock describes the composed setting below, pinning that output and all three selected input packs; authoring and runtime do not contact the network.
 
 ## Author a fictional layer
 
@@ -37,6 +41,32 @@ cargo run -p weave-compiler -- \
 ```
 
 The optional `naming/` manifest and pack are a separate `CC0-1.0` module containing only original fictional suggestions. They are available for explicit activation but are not selected by the default story, and no environmental preset infers cultural or naming data.
+
+## Compose broad, regional, and ecosystem layers
+
+`composition.weave-world.json` applies an exact broad Aotearoa New Zealand seed, Hokkaido climate/daylight/seasonality, and British Columbia temperate-forest surface fields in that declared order. Every overlap has an explicit reject/keep/replace policy. The output is an ordinary `glasswind_composed@1.0.0` pack with exact dependencies on its three selected inputs; `composition.receipt.{json,ron}` retains the candidate sets, selected indices, includes, policies, and leaf differences.
+
+```bash
+cargo run -p weave-world -- compose \
+  examples/domain-modules/weave-world/composition.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --pack examples/domain-modules/weave-world/packs/hokkaido_japan.weave-domain.json \
+  --pack examples/domain-modules/weave-world/packs/british_columbia_temperate_forest.weave-domain.json \
+  --output target/glasswind_composed.weave-domain.json \
+  --receipt target/composition.receipt.json
+
+cargo run -p weave-compiler -- \
+  examples/domain-modules/weave-world/composed-setting.weave \
+  --locked --format json \
+  --output target/composed-setting.story.json
+```
+
+`composed-setting.weave` applies its fictional identity, rules, places, and local overrides after composition. `composed-world.full.{json,ron}` retains the composition and authoring lineage; `composed-world.compact.{json,ron}` retains only the resolved runtime rules, hierarchy, environment, and climate. Reproduce and check every generated pack, receipt, Story IR, export, and schema with:
+
+```bash
+cargo run -p weave-world --example world_fixture -- --check
+```
 
 ## Build the corpus offline
 

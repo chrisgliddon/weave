@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
+import { composedWorldPresentation } from "../src/world-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
 const worldStoryUrls = [
@@ -11,8 +12,8 @@ const worldStoryUrls = [
   "../../domain-modules/weave-world/corpus/stories/maldives.story.json",
   "../../domain-modules/weave-world/reference-place.story.json",
 ].map((path) => new URL(path, import.meta.url));
-const authoredWorldUrl = new URL(
-  "../../domain-modules/weave-world/authored-setting.story.json",
+const composedWorldUrl = new URL(
+  "../../domain-modules/weave-world/composed-setting.story.json",
   import.meta.url,
 );
 
@@ -61,21 +62,20 @@ test("reads four exact portable world seeds", async () => {
   );
 });
 
-test("reads exact authored world rules, places, and replacement lineage", async () => {
-  const story = JSON.parse(await readFile(authoredWorldUrl, "utf8"));
-  assert.equal(
-    readModuleExport(story, "world", ["rules", "booleans", "beacons_answer_storms"]),
-    true,
-  );
-  assert.equal(
-    readModuleExport(story, "world", ["places", "emberwake_harbor", "name"]),
-    "Emberwake Harbor",
-  );
-  assert.equal(
-    readModuleExport(story, "world", ["places", "emberwake_harbor", "parent_id"]),
-    "glasswind_reach",
-  );
-  assert.equal(story.modules.world.authored_overrides.length, 42);
+test("composed world rules, places, and environment alter PixiJS presentation", async () => {
+  const story = JSON.parse(await readFile(composedWorldUrl, "utf8"));
+  assert.deepEqual(composedWorldPresentation(story), {
+    harbor: "Emberwake Harbor",
+    road: "Lantern Road",
+    primaryBiome: "temperate_conifer_forest",
+    climateBand: "humid_continental",
+    coastal: true,
+    beaconRule: true,
+    behavior: "beacon escort via Lantern Road",
+    background: "#102825",
+    foreground: "#d9f4e3",
+  });
+  assert.equal(story.modules.world.authored_overrides.length, 46);
   assert.deepEqual(story.modules.world.authored_overrides[0].path, [
     "places",
     "emberwake_harbor",

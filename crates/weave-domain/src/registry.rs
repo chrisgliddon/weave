@@ -61,7 +61,7 @@ impl Default for DomainProjectConfig {
 impl DomainProjectConfig {
     /// Parse a strict project JSON document without duplicate keys.
     pub fn from_json(source: &str) -> Result<Self, DomainPackageError> {
-        let config = crate::parse_json(source)?;
+        let config = crate::parse_strict_json(source)?;
         validate_project_config(&config)?;
         Ok(config)
     }
@@ -142,7 +142,7 @@ pub struct DomainLock {
 impl DomainLock {
     /// Parse and validate a strict lock JSON document.
     pub fn from_json(source: &str) -> Result<Self, DomainPackageError> {
-        let lock: Self = crate::parse_json(source)?;
+        let lock: Self = crate::parse_strict_json(source)?;
         if lock.lock_version != DOMAIN_LOCK_FORMAT_VERSION {
             return Err(DomainPackageError::UnsupportedLockFormat {
                 found: lock.lock_version,

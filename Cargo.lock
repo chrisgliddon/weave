@@ -8833,6 +8833,14 @@ dependencies = [
 name = "weave-world"
 version = "0.1.0"
 dependencies = [
+ "clap",
+ "ron",
+ "schemars",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tempfile",
  "thiserror 2.0.20",
  "weave-compiler",
  "weave-domain",

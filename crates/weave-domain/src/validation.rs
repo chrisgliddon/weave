@@ -73,7 +73,7 @@ pub fn validate_manifest(
     validate_dependencies(manifest)?;
     validate_types_and_exports(&manifest.types, &manifest.exports)?;
     validate_authoring(manifest)?;
-    validate_provenance("provenance", &manifest.provenance)?;
+    validate_provenance_at("provenance", &manifest.provenance)?;
     Ok(())
 }
 
@@ -127,7 +127,7 @@ pub fn validate_pack(
     }
 
     validate_effective_values(manifest, &pack.values)?;
-    validate_provenance("provenance", &pack.provenance)?;
+    validate_provenance_at("provenance", &pack.provenance)?;
     for name in pack.values.keys() {
         let claim = format!("values.{name}");
         if !pack.provenance.claims.contains_key(&claim) {
@@ -1108,7 +1108,12 @@ fn validate_symmetric_relations(
     Ok(())
 }
 
-fn validate_provenance(path: &str, provenance: &Provenance) -> Result<(), DomainError> {
+/// Validate one standalone provenance graph with the same fail-closed contract used by artifacts.
+pub fn validate_provenance(provenance: &Provenance) -> Result<(), DomainError> {
+    validate_provenance_at("provenance", provenance)
+}
+
+fn validate_provenance_at(path: &str, provenance: &Provenance) -> Result<(), DomainError> {
     if provenance.sources.is_empty() || provenance.sources.len() > 4_096 {
         return Err(invalid(
             format!("{path}.sources"),

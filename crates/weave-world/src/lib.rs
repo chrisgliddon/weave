@@ -7,13 +7,32 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 use weave_domain::{DomainValue, ResolvedDomainModule};
+
+mod composition;
+mod export;
+mod model;
+
+pub use composition::{ComposedWorldPack, WorldCompositionError, compose_world_pack};
+pub use export::{
+    WorldExportError, compact_world_schema, export_world, full_world_schema,
+    world_composition_schema,
+};
+pub use model::{
+    AppliedWorldLayer, CompactWorldExport, CompactWorldPlace, FullWorldExport,
+    WORLD_COMPOSITION_FORMAT_VERSION, WORLD_EXPORT_FORMAT_VERSION, WorldCompositionPlan,
+    WorldCompositionReceipt, WorldConflictPolicy, WorldLayerDifference, WorldLayerResolution,
+    WorldLayerRole, WorldLayerSelection, WorldLayerSpec, WorldOutputPack, WorldPackSelector,
+};
 
 /// Stable identity of the reference Weave World module.
 pub const WORLD_MODULE_ID: &str = "org.weave.world";
 
 /// One effective field's authorship and inheritance chain.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind")]
 pub enum WorldValueOrigin {
     /// Deterministically normalized from the selected public reference pack.
     Generated {
@@ -35,7 +54,8 @@ pub enum WorldValueOrigin {
 }
 
 /// Resolved local environment with one origin record per field.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ResolvedEnvironment {
     /// Effective portable fields.
     pub values: BTreeMap<String, DomainValue>,
@@ -44,7 +64,8 @@ pub struct ResolvedEnvironment {
 }
 
 /// Resolved local climate with one origin record per field.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ResolvedClimate {
     /// Effective portable fields.
     pub values: BTreeMap<String, DomainValue>,
@@ -53,7 +74,8 @@ pub struct ResolvedClimate {
 }
 
 /// One stable place after environment and climate inheritance are resolved.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ResolvedWorldPlace {
     /// Stable source-facing id.
     pub id: String,
@@ -76,7 +98,8 @@ pub struct ResolvedWorldPlace {
 }
 
 /// Complete authored world projection suitable for an editor or runtime host.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ResolvedWorld {
     /// Optional typed world-rule maps.
     pub rules: Option<DomainValue>,

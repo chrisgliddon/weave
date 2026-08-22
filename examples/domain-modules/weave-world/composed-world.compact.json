@@ -1,0 +1,466 @@
+{
+  "format_version": 1,
+  "module_id": "org.weave.world",
+  "module_version": "1.1.0",
+  "pack_id": "glasswind_composed",
+  "pack_version": "1.0.0",
+  "rules": {
+    "kind": "object",
+    "value": {
+      "booleans": {
+        "kind": "object",
+        "value": {
+          "beacons_answer_storms": {
+            "kind": "bool",
+            "value": true
+          }
+        }
+      },
+      "numbers": {
+        "kind": "object",
+        "value": {
+          "safe_crossing_temperature_c": {
+            "kind": "number",
+            "value": 6.0
+          }
+        }
+      },
+      "strings": {
+        "kind": "object",
+        "value": {
+          "calendar_note": {
+            "kind": "string",
+            "value": "Long dusk begins when the western beacons dim."
+          }
+        }
+      },
+      "symbols": {
+        "kind": "object",
+        "value": {
+          "travel_mode": {
+            "kind": "string",
+            "value": "tidebound"
+          }
+        }
+      }
+    }
+  },
+  "roots": [
+    "glasswind_reach"
+  ],
+  "places": {
+    "emberwake_harbor": {
+      "id": "emberwake_harbor",
+      "name": "Emberwake Harbor",
+      "kind": "settlement",
+      "order": 0,
+      "parent_id": "glasswind_reach",
+      "related_place_ids": [
+        "lantern_road"
+      ],
+      "environment": {
+        "coastal": {
+          "kind": "bool",
+          "value": true
+        },
+        "island_system": {
+          "kind": "bool",
+          "value": false
+        },
+        "primary_biome": {
+          "kind": "symbol",
+          "value": "temperate_conifer_forest"
+        },
+        "terrain": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal"
+            },
+            {
+              "kind": "symbol",
+              "value": "mountain"
+            }
+          ]
+        },
+        "water_setting": {
+          "kind": "symbol",
+          "value": "open_ocean_coast"
+        },
+        "weather_tendencies": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal_moderation"
+            },
+            {
+              "kind": "symbol",
+              "value": "regional_rainfall_contrast"
+            },
+            {
+              "kind": "symbol",
+              "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
+            }
+          ]
+        }
+      },
+      "climate": {
+        "annual_mean_temperature_c": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 6.13
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 6.13
+            }
+          }
+        },
+        "annual_precipitation_mm": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 1267.5
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 1267.5
+            }
+          }
+        },
+        "band": {
+          "kind": "symbol",
+          "value": "humid_continental"
+        }
+      },
+      "attributes": {
+        "kind": "object",
+        "value": {
+          "booleans": {
+            "kind": "object",
+            "value": {
+              "has_beacon": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "glasswind_reach": {
+      "id": "glasswind_reach",
+      "name": "Glasswind Reach",
+      "kind": "region",
+      "order": 0,
+      "related_place_ids": [],
+      "environment": {
+        "coastal": {
+          "kind": "bool",
+          "value": true
+        },
+        "island_system": {
+          "kind": "bool",
+          "value": false
+        },
+        "primary_biome": {
+          "kind": "symbol",
+          "value": "temperate_conifer_forest"
+        },
+        "terrain": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal"
+            },
+            {
+              "kind": "symbol",
+              "value": "mountain"
+            }
+          ]
+        },
+        "water_setting": {
+          "kind": "symbol",
+          "value": "open_ocean_coast"
+        },
+        "weather_tendencies": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal_moderation"
+            },
+            {
+              "kind": "symbol",
+              "value": "regional_rainfall_contrast"
+            },
+            {
+              "kind": "symbol",
+              "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
+            }
+          ]
+        }
+      },
+      "climate": {
+        "annual_mean_temperature_c": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 6.13
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 6.13
+            }
+          }
+        },
+        "annual_precipitation_mm": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 1267.5
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 1267.5
+            }
+          }
+        },
+        "band": {
+          "kind": "symbol",
+          "value": "humid_continental"
+        }
+      },
+      "attributes": {
+        "kind": "object",
+        "value": {
+          "symbols": {
+            "kind": "object",
+            "value": {
+              "canon": {
+                "kind": "string",
+                "value": "authored"
+              }
+            }
+          }
+        }
+      }
+    },
+    "lantern_road": {
+      "id": "lantern_road",
+      "name": "Lantern Road",
+      "kind": "route",
+      "order": 1,
+      "parent_id": "glasswind_reach",
+      "related_place_ids": [
+        "emberwake_harbor"
+      ],
+      "environment": {
+        "coastal": {
+          "kind": "bool",
+          "value": true
+        },
+        "island_system": {
+          "kind": "bool",
+          "value": false
+        },
+        "primary_biome": {
+          "kind": "symbol",
+          "value": "temperate_conifer_forest"
+        },
+        "terrain": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal"
+            },
+            {
+              "kind": "symbol",
+              "value": "mountain"
+            }
+          ]
+        },
+        "water_setting": {
+          "kind": "symbol",
+          "value": "open_ocean_coast"
+        },
+        "weather_tendencies": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal_moderation"
+            },
+            {
+              "kind": "symbol",
+              "value": "regional_rainfall_contrast"
+            },
+            {
+              "kind": "symbol",
+              "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
+            }
+          ]
+        }
+      },
+      "climate": {
+        "annual_mean_temperature_c": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 6.13
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 6.13
+            }
+          }
+        },
+        "annual_precipitation_mm": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 1267.5
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 1267.5
+            }
+          }
+        },
+        "band": {
+          "kind": "symbol",
+          "value": "humid_continental"
+        }
+      },
+      "attributes": {
+        "kind": "object",
+        "value": {
+          "numbers": {
+            "kind": "object",
+            "value": {
+              "waystones": {
+                "kind": "number",
+                "value": 12.0
+              }
+            }
+          }
+        }
+      }
+    },
+    "saltglass_point": {
+      "id": "saltglass_point",
+      "name": "Saltglass Point",
+      "kind": "site",
+      "order": 0,
+      "parent_id": "emberwake_harbor",
+      "related_place_ids": [],
+      "environment": {
+        "coastal": {
+          "kind": "bool",
+          "value": true
+        },
+        "island_system": {
+          "kind": "bool",
+          "value": false
+        },
+        "primary_biome": {
+          "kind": "symbol",
+          "value": "temperate_conifer_forest"
+        },
+        "terrain": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal"
+            },
+            {
+              "kind": "symbol",
+              "value": "mountain"
+            }
+          ]
+        },
+        "water_setting": {
+          "kind": "symbol",
+          "value": "open_ocean_coast"
+        },
+        "weather_tendencies": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "symbol",
+              "value": "coastal_moderation"
+            },
+            {
+              "kind": "symbol",
+              "value": "regional_rainfall_contrast"
+            },
+            {
+              "kind": "symbol",
+              "value": "seasonal_temperature_cycle"
+            },
+            {
+              "kind": "symbol",
+              "value": "snow_season"
+            }
+          ]
+        }
+      },
+      "climate": {
+        "annual_mean_temperature_c": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 14.0
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 9.0
+            }
+          }
+        },
+        "annual_precipitation_mm": {
+          "kind": "object",
+          "value": {
+            "maximum": {
+              "kind": "number",
+              "value": 1267.5
+            },
+            "minimum": {
+              "kind": "number",
+              "value": 1267.5
+            }
+          }
+        },
+        "band": {
+          "kind": "symbol",
+          "value": "humid_continental"
+        }
+      }
+    }
+  }
+}

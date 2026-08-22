@@ -1,0 +1,72 @@
+{
+  "format_version": 1,
+  "output": {
+    "id": "glasswind_composed",
+    "version": "1.0.0",
+    "title": "Glasswind Composed World"
+  },
+  "random_seed": 4278421,
+  "layers": [
+    {
+      "id": "broad_reference",
+      "role": "broad",
+      "candidates": [
+        {
+          "pack_id": "aotearoa_new_zealand",
+          "version": "1.1.0"
+        }
+      ],
+      "selection": "exact",
+      "include": [
+        "seed"
+      ],
+      "conflict": "reject"
+    },
+    {
+      "id": "regional_climate",
+      "role": "regional",
+      "candidates": [
+        {
+          "pack_id": "hokkaido_japan",
+          "version": "1.1.0"
+        }
+      ],
+      "selection": "exact",
+      "include": [
+        "seed.climate",
+        "seed.daylight",
+        "seed.seasonality"
+      ],
+      "conflict": "replace"
+    },
+    {
+      "id": "ecosystem_surface",
+      "role": "ecosystem",
+      "candidates": [
+        {
+          "pack_id": "british_columbia_temperate_forest",
+          "version": "1.1.0"
+        }
+      ],
+      "selection": "exact",
+      "include": [
+        "seed.hazards",
+        "seed.primary_biome",
+        "seed.terrain",
+        "seed.water",
+        "seed.weather_tendencies"
+      ],
+      "conflict": "replace"
+    }
+  ],
+  "provenance": {
+    "id": "composition_plan",
+    "kind": "original",
+    "url": "https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world",
+    "revision": "glasswind-composition-v1",
+    "license": "MIT",
+    "license_url": "https://opensource.org/license/mit",
+    "attribution": "Original fictional World composition decisions from the Weave project.",
+    "modified": false
+  }
+}

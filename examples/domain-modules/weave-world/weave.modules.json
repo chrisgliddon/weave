@@ -9,6 +9,7 @@
     "naming/glasswind.weave-domain.json",
     "pack.weave-domain.json",
     "packs/british_columbia_temperate_forest.weave-domain.json",
+    "packs/glasswind_composed.weave-domain.json",
     "packs/hokkaido_japan.weave-domain.json",
     "packs/maldives.weave-domain.json"
   ]

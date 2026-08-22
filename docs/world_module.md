@@ -1,6 +1,6 @@
 # Weave World reference seeds
 
-Weave World is an optional data-only domain module. Four checked presets turn exact reference-place selectors into closed `WorldSeed` values, while a source-authored layer adds typed rules and stable fictional places without changing the selected pack. The compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read both layers through the shared domain-module contract.
+Weave World is an optional data-only domain module. Four checked presets turn exact reference-place selectors into closed `WorldSeed` values. A deterministic composition plan can combine selected fields from broad, regional, and ecosystem packs into another ordinary pack, after which source-authored rules and stable fictional places remain authoritative. The compiler, editor, runtime, RON, JSON, Bevy, and PixiJS all read the result through shared portable contracts.
 
 The checked fixture is [`examples/domain-modules/weave-world`](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-world). It is an environmental seed for fictional authoring, not a cultural profile. The exported identity explicitly records `culture_included: false`; the preset does not infer people, language, naming, or behavior from geography.
 
@@ -56,6 +56,41 @@ Each preset has its own runnable `.weave` source and checked RON/JSON pair. A st
 
 Every reference pack is deliberately approximate. A selected-station envelope or source-native grid point is not a local forecast, and broad symbols are authoring cues rather than exhaustive geographic claims. Hazard entries are tendencies derived by a closed threshold policy, never event forecasts, probabilities, or risk scores. Later fictional places and overrides should remain separate authored layers rather than silently changing a pinned source seed.
 
+## Compose reviewed layers
+
+[`composition.weave-world.json`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/composition.weave-world.json) is a versioned, closed plan. The checked Glasswind build applies these scopes in order:
+
+| Layer | Selected pack | Included paths | Conflict policy |
+|---|---|---|---|
+| Broad reference | `aotearoa_new_zealand@1.1.0` | Complete `seed` | Reject overlap |
+| Regional climate | `hokkaido_japan@1.1.0` | Climate, daylight, seasonality | Replace broad leaves |
+| Ecosystem surface | `british_columbia_temperate_forest@1.1.0` | Hazards, primary biome, terrain, water, weather | Replace earlier leaves |
+
+The composer validates every candidate against the same World manifest, flattens only the selected paths to leaves, applies layers in canonical `broad` → `regional` → `ecosystem` order, then reconstructs and validates a normal `DomainPack`. Within a scope, layer ids are sorted. Included paths must be sorted, unique, present in every candidate, and non-overlapping within that layer. Every overlap declares one policy:
+
+- `reject` stops composition at the first existing leaf;
+- `keep` preserves the earlier authoritative value and records the ignored incoming layer; and
+- `replace` makes the later layer authoritative, recording `confirmed` for an equal value or `replaced` for a different value.
+
+`exact` selection permits one candidate. `seeded` selection permits a sorted candidate set and hashes the format domain separator, public `random_seed`, zero-based layer index, and layer id with SHA-256; the first eight digest bytes, interpreted little-endian and reduced by candidate count, select the index. The receipt retains that entire candidate set, selected index, selected coordinate, include paths, policy, and every leaf decision, so another implementation can reproduce the choice rather than trusting an opaque result.
+
+Compose the checked pack and JSON receipt without network access:
+
+```bash
+cargo run -p weave-world -- compose \
+  examples/domain-modules/weave-world/composition.weave-world.json \
+  --manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --pack examples/domain-modules/weave-world/packs/hokkaido_japan.weave-domain.json \
+  --pack examples/domain-modules/weave-world/packs/british_columbia_temperate_forest.weave-domain.json \
+  --output target/glasswind_composed.weave-domain.json \
+  --receipt target/glasswind-composition.receipt.json
+```
+
+The output pack declares exact dependencies on the three selected inputs. Existing domain resolution therefore pins the composed pack and its complete input closure in `weave.lock`; unselected seeded candidates are reviewable in the plan and receipt but do not enter the runtime dependency graph. The generated pack copies and namespaces the selected public provenance without changing any input bytes. [`composed-setting.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/composed-setting.weave) then selects `glasswind_composed@=1.0.0`; its ordinary `override` entries apply after all pack composition and give the setting a fictional identity, rules, places, and local exceptions.
+
+The [composition-plan schema](downloads/weave-world-composition-v1.schema.json) is format version 1. The checked output pack, JSON/RON receipt, `.weave` source, and Story IR JSON/RON pair live beside the plan.
+
 ## Author rules and stable places
 
 [`authored-setting.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.weave) is the complete fictional layer. It uses the generic module replacement syntax; the compiler contains no branch for the `org.weave.world` identity:
@@ -94,9 +129,20 @@ module world {
 
 Every place explicitly chooses `environment_source` and `climate_source`: the empty string means the immutable reference seed, while another stable place id inherits that place's effective values. Optional `environment_override`, `climate_override`, and type-separated `attributes` objects record local fictional decisions. Validation rejects mismatched map/id pairs, unknown or self references, duplicate/asymmetric relationships, and cycles in hierarchy or either inheritance graph.
 
-The editor's generic entity workflow reads `authoring.entity_collections` from the manifest. Create, rename, reorder, nest, relate, select inheritance, and reset-override actions rewrite canonical source and recompile atomically. `ModuleInspection` shows the effective hierarchy and marks pack values as inherited or generated and source replacements as authored. The host-independent `weave-world` crate additionally resolves each local climate/environment field and retains its recursive lineage—for example generated from `seed.primary_biome`, inherited through `glasswind_reach`, or authored at `places.emberwake_harbor.environment_override.coastal`.
+The editor's generic entity workflow reads `authoring.entity_collections` from the manifest. Create, rename, reorder, nest, relate, select inheritance, and reset-override actions rewrite canonical source and recompile atomically. `ModuleInspection` shows the effective hierarchy and marks pack values as inherited or generated and source replacements as authored. When given the selected composition receipt it also previews the ordered layers and leaf differences. “Promote to authored” copies one effective generated leaf into canonical source, recompiles atomically, and can be reset to reveal the composed value again. The host-independent `weave-world` crate additionally resolves each local climate/environment field and retains its recursive lineage—for example generated from `seed.primary_biome`, inherited through `glasswind_reach`, or authored at `places.emberwake_harbor.environment_override.coastal`.
 
 Compiled IR embeds effective `rules` and `places` for ordinary consumers and keeps the sorted fictional leaves in `authored_overrides`. The selected pack bytes and their public provenance remain unchanged. Checked RON and JSON are [`authored-setting.story.ron`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.story.ron) and [`authored-setting.story.json`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-world/authored-setting.story.json).
+
+## Full and compact portable World exports
+
+Portable World export format 1 has two projections in both stable JSON and RON:
+
+| Projection | Retained | Deliberately omitted |
+|---|---|---|
+| Full | Composition receipt, authored override paths, resolved rules/places/environment/climate, and recursive generated/authored/inherited origins | Nothing from the authoring lineage boundary |
+| Compact | Exact module/pack coordinate plus resolved rules, roots, places, environment, and climate | Composition, candidate choices, differences, authored paths, origins, and source paths |
+
+The compact form is not a lossy resolver input: it is the final runtime projection after inheritance. The full form is the inspection/audit projection. Both reject unknown fields, unsupported versions, malformed hierarchy/relationship graphs, or inconsistent pack metadata without echoing values. See the checked [full schema](downloads/weave-world-full-v1.schema.json), [compact schema](downloads/weave-world-compact-v1.schema.json), and `composed-world.{full,compact}.{json,ron}` fixtures.
 
 ## Optional names stay separate
 
@@ -109,6 +155,8 @@ The corpus uses [Natural Earth v5.1.2 physical vectors](https://github.com/nvkel
 NASA describes POWER as free, globally available analysis-ready climate data. Its [science-data license policy](https://science.data.nasa.gov/about/license) covers NASA public data, while the POWER [referencing guide](https://power.larc.nasa.gov/docs/referencing/) requests the project reference, service version, access date, and notification when data is redistributed. The generated packs retain that requested attribution and classify the reviewed data under `LicenseRef-NASA-Public-Data`; this avoids implying that NASA names or logos are licensed material.
 
 Every acquired artifact has an HTTPS URL, citation or revision and retrieval date, SHA-256, SPDX or `LicenseRef` expression, license URL, attribution, and modification flag in its generated pack. Named transformations explain filtering, unit conversion, aggregation, daylight calculation, threshold-based hazards, symbol normalization, and final seed assembly. Nested claims connect every major seed field to those transformations. A compact attribution string also remains inside `WorldSeed` when only compiled RON or JSON is redistributed. The editor's module inspection model exposes the selected values plus both manifest and pack provenance unchanged.
+
+Composition never turns one source's license into another. Each input pack remains independently authored and redistributable under its recorded terms; the output copies those source records and transformation claims under layer-local ids, adds the MIT-licensed original composition plan, and records exact input coordinates. The checked plan combines environmental fields only. It neither derives cultural material nor activates the separate naming module.
 
 ## Offline corpus pipeline
 
@@ -168,15 +216,17 @@ Malformed selectors and unsupported artifact formats retain the `D152` and `D100
 ```bash
 cargo run -p weave-compiler -- \
   examples/domain-modules/weave-world/reference-place.weave \
-  --locked --output target/reference-place.story.ron
+  --module-manifest examples/domain-modules/weave-world/module.weave-module.json \
+  --module-pack examples/domain-modules/weave-world/pack.weave-domain.json \
+  --output target/reference-place.story.ron
 
 cargo run -p weave-compiler -- \
-  examples/domain-modules/weave-world/reference-place.weave \
-  --locked --format json --output target/reference-place.story.json
+  examples/domain-modules/weave-world/composed-setting.weave \
+  --locked --format json --output target/composed-setting.story.json
 ```
 
-Compile the authored layer the same way, replacing the input and output names with `authored-setting`.
+Compile the single-pack authored layer with explicit `module.weave-module.json` and `pack.weave-domain.json`, as shown for the reference story. The checked project lock intentionally describes the composed build and its three-pack dependency closure.
 
-Both forms decode to the same `StoryIr` and embed the selected seed plus any effective authored rules and places, so hosts need neither the editor nor the source datasets. The finite [Bevy consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy) reads the RON into resources; the [PixiJS v8 consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) decodes the JSON with the same portable value reader. Both tests assert the exact rule, stable hierarchy references, names, and authored replacement count.
+Both forms decode to the same `StoryIr` and embed the selected seed plus any effective authored rules and places, so hosts need neither the editor nor the source datasets. The finite [Bevy consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-bevy) reads the RON into resources and derives beacon-escort behavior plus a `cedar-snow` presentation token. The [PixiJS v8 consumer](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) decodes the JSON with the same portable value reader and changes its actual palette and travel copy. Both decisions depend on the composed climate/biome together with authored rule, place, and local environment values.
 
-The three additional reference story pairs live under `examples/domain-modules/weave-world/corpus/stories`; the authored setting pair lives beside the reference story. Keep cultural or linguistic material in a separately sourced, explicitly reviewed module; environmental reference shorthand must never synthesize it.
+The three additional reference story pairs live under `examples/domain-modules/weave-world/corpus/stories`; the authored and composed setting pairs live beside the reference story. Keep cultural or linguistic material in a separately sourced, explicitly reviewed module; environmental reference shorthand and composition must never synthesize it.
