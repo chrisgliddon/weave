@@ -1,0 +1,46 @@
+(
+    config_format_version: 1,
+    id: "org.weave.character.projection.glasswind_selection",
+    selected_taxonomies: [
+        "org.weave.projection.glasswind_lenses.narrative_role",
+        "org.weave.projection.glasswind_lenses.personality",
+        "org.weave.projection.glasswind_lenses.social_role",
+        "org.weave.projection.glasswind_lenses.vocation",
+    ],
+    eligible_character_ids: [
+        "org.weave.character.ari_vale",
+        "org.weave.character.sable_reed",
+        "org.weave.character.tavi_quill",
+    ],
+    minimum_coverage_micros: 800000,
+    mode: fill_missing,
+    capacity_overrides: {
+        "org.weave.projection.glasswind_lenses.narrative_role": {
+            "signal_keeper": 1,
+            "trail_opener": 1,
+            "turning_witness": 1,
+        },
+        "org.weave.projection.glasswind_lenses.personality": {
+            "measured_observer": 1,
+            "open_explorer": 1,
+            "steady_coordinator": 1,
+        },
+        "org.weave.projection.glasswind_lenses.social_role": {
+            "boundary_guide": 1,
+            "circle_anchor": 1,
+            "question_host": 1,
+        },
+        "org.weave.projection.glasswind_lenses.vocation": {
+            "field_liaison": 1,
+            "route_archivist": 1,
+            "signal_crafter": 1,
+        },
+    },
+    reservations: [
+        (
+            character_id: "org.weave.character.sable_reed",
+            taxonomy_id: "org.weave.projection.glasswind_lenses.social_role",
+            entry_id: "circle_anchor",
+        ),
+    ],
+)

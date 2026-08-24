@@ -1220,7 +1220,7 @@ mod tests {
         assert_eq!(inspection.alias, "character");
         assert_eq!(inspection.id, "org.weave.character");
         assert_eq!(inspection.pack_id, "ari_vale");
-        assert_eq!(inspection.read_only_paths.len(), 11);
+        assert_eq!(inspection.read_only_paths.len(), 12);
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "expression"].map(str::to_owned)
                 && declaration
@@ -1240,6 +1240,10 @@ mod tests {
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "ocean"].map(str::to_owned)
                 && declaration.reason.contains("lossy derived")
+        }));
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "projections"].map(str::to_owned)
+                && declaration.reason.contains("projection review workflow")
         }));
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path

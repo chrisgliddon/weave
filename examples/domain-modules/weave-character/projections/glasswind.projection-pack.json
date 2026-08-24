@@ -1,0 +1,573 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.projection.glasswind_lenses",
+  "version": "1.0.0",
+  "title": "Glasswind Lenses",
+  "description": "Original categorical displays and fictional role prompts for the deterministic Character projection workflow.",
+  "compatible_profile_versions": [
+    1
+  ],
+  "independently_authored": true,
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "methodology": "Each candidate declares signed weights over canonical HEXACO factors or facets. Available values are converted to millionths, centered around 0.5, multiplied by signed integer weights, summed, and divided by covered absolute weight. Missing values reduce coverage and contribute no value. Eligible candidates are ranked by score, then a pinned SHA-256 seed trace, then stable identifiers.",
+  "limitations": "These labels are optional fictional writing prompts. They do not measure aptitude, diagnose a person, recommend employment, predict conduct, establish a normative distribution, or replace authored character canon. Capacity values demonstrate project allocation policy only.",
+  "inputs": {
+    "agreeableness": {
+      "id": "agreeableness",
+      "trait_id": "agreeableness",
+      "profile_path": "canon.personality.agreeableness.factor",
+      "label": "Agreeableness",
+      "description": "Canonical Agreeableness evidence used only by the declared projection formula."
+    },
+    "conscientiousness": {
+      "id": "conscientiousness",
+      "trait_id": "conscientiousness",
+      "profile_path": "canon.personality.conscientiousness.factor",
+      "label": "Conscientiousness",
+      "description": "Canonical Conscientiousness evidence used only by the declared projection formula."
+    },
+    "creativity": {
+      "id": "creativity",
+      "trait_id": "creativity",
+      "profile_path": "canon.personality.openness.creativity",
+      "label": "Creativity",
+      "description": "Canonical Creativity evidence used only by the declared projection formula."
+    },
+    "diligence": {
+      "id": "diligence",
+      "trait_id": "diligence",
+      "profile_path": "canon.personality.conscientiousness.diligence",
+      "label": "Diligence",
+      "description": "Canonical Diligence evidence used only by the declared projection formula."
+    },
+    "extraversion": {
+      "id": "extraversion",
+      "trait_id": "extraversion",
+      "profile_path": "canon.personality.extraversion.factor",
+      "label": "Extraversion",
+      "description": "Canonical Extraversion evidence used only by the declared projection formula."
+    },
+    "inquisitiveness": {
+      "id": "inquisitiveness",
+      "trait_id": "inquisitiveness",
+      "profile_path": "canon.personality.openness.inquisitiveness",
+      "label": "Inquisitiveness",
+      "description": "Canonical Inquisitiveness evidence used only by the declared projection formula."
+    },
+    "openness": {
+      "id": "openness",
+      "trait_id": "openness",
+      "profile_path": "canon.personality.openness.factor",
+      "label": "Openness",
+      "description": "Canonical Openness evidence used only by the declared projection formula."
+    },
+    "organization": {
+      "id": "organization",
+      "trait_id": "organization",
+      "profile_path": "canon.personality.conscientiousness.organization",
+      "label": "Organization",
+      "description": "Canonical Organization evidence used only by the declared projection formula."
+    },
+    "patience": {
+      "id": "patience",
+      "trait_id": "patience",
+      "profile_path": "canon.personality.agreeableness.patience",
+      "label": "Patience",
+      "description": "Canonical Patience evidence used only by the declared projection formula."
+    },
+    "sincerity": {
+      "id": "sincerity",
+      "trait_id": "sincerity",
+      "profile_path": "canon.personality.honesty_humility.sincerity",
+      "label": "Sincerity",
+      "description": "Canonical Sincerity evidence used only by the declared projection formula."
+    },
+    "sociability": {
+      "id": "sociability",
+      "trait_id": "sociability",
+      "profile_path": "canon.personality.extraversion.sociability",
+      "label": "Sociability",
+      "description": "Canonical Sociability evidence used only by the declared projection formula."
+    },
+    "social_boldness": {
+      "id": "social_boldness",
+      "trait_id": "social_boldness",
+      "profile_path": "canon.personality.extraversion.social_boldness",
+      "label": "Social boldness",
+      "description": "Canonical Social boldness evidence used only by the declared projection formula."
+    }
+  },
+  "taxonomies": {
+    "org.weave.projection.glasswind_lenses.narrative_role": {
+      "id": "org.weave.projection.glasswind_lenses.narrative_role",
+      "output_id": "narrative_role",
+      "kind": "narrative_role",
+      "label": "Narrative role",
+      "description": "Optional story-function prompts for scene planning.",
+      "lossy": false,
+      "independent_evidence": false,
+      "requires_review": true,
+      "minimum_coverage_micros": 750000,
+      "limitations": "A selected label is a transparent fictional prompt, remains outside canon, and cannot be reused as personality evidence.",
+      "entries": {
+        "signal_keeper": {
+          "id": "signal_keeper",
+          "label": "Signal Keeper",
+          "description": "Maintains continuity and makes important changes legible to others.",
+          "evidence": {
+            "diligence": 900,
+            "organization": 850,
+            "sincerity": 500
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "trail_opener": {
+          "id": "trail_opener",
+          "label": "Trail Opener",
+          "description": "Moves first when a story needs a new route or possibility.",
+          "evidence": {
+            "creativity": 850,
+            "openness": 750,
+            "social_boldness": 700
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "turning_witness": {
+          "id": "turning_witness",
+          "label": "Turning Witness",
+          "description": "Notices transformation and gives it narrative weight.",
+          "evidence": {
+            "inquisitiveness": 700,
+            "patience": 800,
+            "sincerity": 650
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        }
+      }
+    },
+    "org.weave.projection.glasswind_lenses.personality": {
+      "id": "org.weave.projection.glasswind_lenses.personality",
+      "output_id": "personality_lens",
+      "kind": "categorical_personality",
+      "label": "Personality display",
+      "description": "A deliberately lossy categorical lens over selected canonical evidence.",
+      "lossy": true,
+      "independent_evidence": false,
+      "requires_review": true,
+      "minimum_coverage_micros": 750000,
+      "limitations": "A selected label is a transparent fictional prompt, remains outside canon, and cannot be reused as personality evidence.",
+      "entries": {
+        "measured_observer": {
+          "id": "measured_observer",
+          "label": "Measured Observer",
+          "description": "Favors patient attention and deliberate organization.",
+          "evidence": {
+            "extraversion": -450,
+            "organization": 750,
+            "patience": 900
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "open_explorer": {
+          "id": "open_explorer",
+          "label": "Open Explorer",
+          "description": "Favors inquisitive and creative engagement with unfamiliar paths.",
+          "evidence": {
+            "creativity": 850,
+            "inquisitiveness": 900,
+            "openness": 700
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "steady_coordinator": {
+          "id": "steady_coordinator",
+          "label": "Steady Coordinator",
+          "description": "Favors organized follow-through with outward collaboration.",
+          "evidence": {
+            "diligence": 800,
+            "organization": 850,
+            "sociability": 550
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        }
+      }
+    },
+    "org.weave.projection.glasswind_lenses.social_role": {
+      "id": "org.weave.projection.glasswind_lenses.social_role",
+      "output_id": "social_role",
+      "kind": "social_role",
+      "label": "Social role",
+      "description": "Optional prompts for how a fictional character might contribute within a group.",
+      "lossy": false,
+      "independent_evidence": false,
+      "requires_review": true,
+      "minimum_coverage_micros": 750000,
+      "limitations": "A selected label is a transparent fictional prompt, remains outside canon, and cannot be reused as personality evidence.",
+      "entries": {
+        "boundary_guide": {
+          "id": "boundary_guide",
+          "label": "Boundary Guide",
+          "description": "Makes limits explicit while helping a group move safely.",
+          "evidence": {
+            "organization": 500,
+            "sincerity": 800,
+            "social_boldness": 650
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "circle_anchor": {
+          "id": "circle_anchor",
+          "label": "Circle Anchor",
+          "description": "Offers patient continuity when a group is changing direction.",
+          "evidence": {
+            "agreeableness": 700,
+            "diligence": 500,
+            "patience": 900
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "question_host": {
+          "id": "question_host",
+          "label": "Question Host",
+          "description": "Invites shared inquiry and keeps space open for multiple answers.",
+          "evidence": {
+            "inquisitiveness": 850,
+            "sincerity": 500,
+            "sociability": 650
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        }
+      }
+    },
+    "org.weave.projection.glasswind_lenses.vocation": {
+      "id": "org.weave.projection.glasswind_lenses.vocation",
+      "output_id": "vocation",
+      "kind": "vocation",
+      "label": "Vocation",
+      "description": "Optional fictional vocation prompts, never aptitude or employment recommendations.",
+      "lossy": false,
+      "independent_evidence": false,
+      "requires_review": true,
+      "minimum_coverage_micros": 750000,
+      "limitations": "A selected label is a transparent fictional prompt, remains outside canon, and cannot be reused as personality evidence.",
+      "entries": {
+        "field_liaison": {
+          "id": "field_liaison",
+          "label": "Field Liaison",
+          "description": "Connects practical field observations with the people who need them.",
+          "evidence": {
+            "diligence": 550,
+            "sincerity": 650,
+            "sociability": 800
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "route_archivist": {
+          "id": "route_archivist",
+          "label": "Route Archivist",
+          "description": "Maintains navigable records while continuing to investigate new routes.",
+          "evidence": {
+            "diligence": 700,
+            "inquisitiveness": 800,
+            "organization": 850
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        },
+        "signal_crafter": {
+          "id": "signal_crafter",
+          "label": "Signal Crafter",
+          "description": "Builds expressive systems that make complex information easier to follow.",
+          "evidence": {
+            "conscientiousness": 650,
+            "creativity": 900,
+            "social_boldness": 450
+          },
+          "minimum_score_micros": -1000000,
+          "eligible_character_ids": [],
+          "eligible_id_prefixes": [
+            "org.weave.character"
+          ],
+          "excluded_character_ids": [],
+          "default_capacity": 2
+        }
+      }
+    }
+  },
+  "calibrations": {
+    "bright_route": {
+      "id": "bright_route",
+      "description": "High exploration, organization, social momentum, patience, and sincerity.",
+      "inputs_micros": {
+        "agreeableness": 690000,
+        "conscientiousness": 810000,
+        "creativity": 880000,
+        "diligence": 790000,
+        "extraversion": 720000,
+        "inquisitiveness": 910000,
+        "openness": 860000,
+        "organization": 830000,
+        "patience": 740000,
+        "sincerity": 760000,
+        "sociability": 710000,
+        "social_boldness": 680000
+      },
+      "expected_rankings": {
+        "org.weave.projection.glasswind_lenses.narrative_role": [
+          {
+            "entry_id": "trail_opener",
+            "score_micros": 625217,
+            "qualifies": true
+          },
+          {
+            "entry_id": "turning_witness",
+            "score_micros": 602791,
+            "qualifies": true
+          },
+          {
+            "entry_id": "signal_keeper",
+            "score_micros": 596889,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.personality": [
+          {
+            "entry_id": "open_explorer",
+            "score_micros": 770612,
+            "qualifies": true
+          },
+          {
+            "entry_id": "steady_coordinator",
+            "score_micros": 570909,
+            "qualifies": true
+          },
+          {
+            "entry_id": "measured_observer",
+            "score_micros": 347143,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.social_role": [
+          {
+            "entry_id": "question_host",
+            "score_micros": 615000,
+            "qualifies": true
+          },
+          {
+            "entry_id": "boundary_guide",
+            "score_micros": 502564,
+            "qualifies": true
+          },
+          {
+            "entry_id": "circle_anchor",
+            "score_micros": 470476,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.vocation": [
+          {
+            "entry_id": "route_archivist",
+            "score_micros": 690638,
+            "qualifies": true
+          },
+          {
+            "entry_id": "signal_crafter",
+            "score_micros": 624500,
+            "qualifies": true
+          },
+          {
+            "entry_id": "field_liaison",
+            "score_micros": 496500,
+            "qualifies": true
+          }
+        ]
+      }
+    },
+    "quiet_harbor": {
+      "id": "quiet_harbor",
+      "description": "Reflective exploration with low outward momentum and strong patience and care.",
+      "inputs_micros": {
+        "agreeableness": 820000,
+        "conscientiousness": 700000,
+        "creativity": 780000,
+        "diligence": 680000,
+        "extraversion": 250000,
+        "inquisitiveness": 820000,
+        "openness": 790000,
+        "organization": 720000,
+        "patience": 900000,
+        "sincerity": 840000,
+        "sociability": 300000,
+        "social_boldness": 230000
+      },
+      "expected_rankings": {
+        "org.weave.projection.glasswind_lenses.narrative_role": [
+          {
+            "entry_id": "turning_witness",
+            "score_micros": 711628,
+            "qualifies": true
+          },
+          {
+            "entry_id": "signal_keeper",
+            "score_micros": 461333,
+            "qualifies": true
+          },
+          {
+            "entry_id": "trail_opener",
+            "score_micros": 231739,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.personality": [
+          {
+            "entry_id": "measured_observer",
+            "score_micros": 607143,
+            "qualifies": true
+          },
+          {
+            "entry_id": "open_explorer",
+            "score_micros": 595102,
+            "qualifies": true
+          },
+          {
+            "entry_id": "steady_coordinator",
+            "score_micros": 200909,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.social_role": [
+          {
+            "entry_id": "circle_anchor",
+            "score_micros": 641905,
+            "qualifies": true
+          },
+          {
+            "entry_id": "question_host",
+            "score_micros": 312000,
+            "qualifies": true
+          },
+          {
+            "entry_id": "boundary_guide",
+            "score_micros": 211795,
+            "qualifies": true
+          }
+        ],
+        "org.weave.projection.glasswind_lenses.vocation": [
+          {
+            "entry_id": "route_archivist",
+            "score_micros": 484255,
+            "qualifies": true
+          },
+          {
+            "entry_id": "signal_crafter",
+            "score_micros": 260500,
+            "qualifies": true
+          },
+          {
+            "entry_id": "field_liaison",
+            "score_micros": 160000,
+            "qualifies": true
+          }
+        ]
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_glasswind_lenses_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-lenses-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "calibrations": [
+        "weave_glasswind_lenses_original"
+      ],
+      "entries": [
+        "weave_glasswind_lenses_original"
+      ],
+      "inputs": [
+        "weave_glasswind_lenses_original"
+      ],
+      "methodology": [
+        "weave_glasswind_lenses_original"
+      ],
+      "taxonomies": [
+        "weave_glasswind_lenses_original"
+      ]
+    }
+  }
+}

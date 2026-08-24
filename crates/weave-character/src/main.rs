@@ -20,15 +20,17 @@ use weave_character::{
     ExpressionRecordOrigin, ExpressionResolution, ExpressionResolutionRequest, ExpressionRevision,
     HexacoTrait, PresentationAllocationRequest, PresentationCatalog, PresentationLockRevision,
     PresentationProposal, PresentationReceipt, PresentationReview, PresentationReviewDecision,
-    RelationshipDate, RelationshipEdgeOrigin, RelationshipFilter, RelationshipGraphPolicy,
-    RelationshipGraphRevision, RelationshipKindPack, RelationshipProposal,
-    RelationshipProposalConfig, RelationshipReceipt, RelationshipReconciliationReport,
-    RelationshipReview, RelationshipReviewDecision, TemporalContextConfig, TemporalContextPack,
-    TemporalContextProposal, TemporalContextReceipt, TemporalContextReview, TemporalReviewDecision,
-    alignment_config_schema, alignment_pack_schema, alignment_profile_fingerprint,
-    alignment_proposal_schema, alignment_receipt_schema, alignment_review_schema,
-    apply_authoring_revision, apply_character_questionnaire_review, apply_expression_revision,
-    apply_presentation_lock_revision, apply_presentation_review, apply_relationship_graph_revision,
+    ProjectionConfig, ProjectionLockRevision, ProjectionPack, ProjectionProposal,
+    ProjectionReceipt, ProjectionReview, ProjectionReviewDecision, RelationshipDate,
+    RelationshipEdgeOrigin, RelationshipFilter, RelationshipGraphPolicy, RelationshipGraphRevision,
+    RelationshipKindPack, RelationshipProposal, RelationshipProposalConfig, RelationshipReceipt,
+    RelationshipReconciliationReport, RelationshipReview, RelationshipReviewDecision,
+    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextReceipt,
+    TemporalContextReview, TemporalReviewDecision, alignment_config_schema, alignment_pack_schema,
+    alignment_profile_fingerprint, alignment_proposal_schema, alignment_receipt_schema,
+    alignment_review_schema, apply_authoring_revision, apply_character_questionnaire_review,
+    apply_expression_revision, apply_presentation_lock_revision, apply_presentation_review,
+    apply_projection_lock_revision, apply_projection_review, apply_relationship_graph_revision,
     apply_reviewed_alignment, apply_reviewed_character_proposal, apply_reviewed_relationships,
     apply_reviewed_temporal_context, assign_expression_pack, character_authoring_preview_schema,
     character_authoring_revision_schema, character_authoring_workspace_schema,
@@ -40,7 +42,7 @@ use weave_character::{
     character_questionnaire_receipt_schema, character_questionnaire_review_schema,
     character_review_schema, character_synthesis_schema, character_template_schema,
     clone_authoring_draft, collection_fingerprint, create_alignment_review, create_authoring_draft,
-    create_character_questionnaire_review, create_relationship_review,
+    create_character_questionnaire_review, create_projection_review, create_relationship_review,
     create_temporal_context_review, export_authoring_profile, expression_assignment_receipt_schema,
     expression_assignment_request_schema, expression_coverage_schema, expression_lint_schema,
     expression_pack_schema, expression_profile_fingerprint, expression_resolution_request_schema,
@@ -50,10 +52,12 @@ use weave_character::{
     presentation_allocation_request_schema, presentation_authoring_revision,
     presentation_catalog_schema, presentation_lock_revision_schema, presentation_proposal_schema,
     presentation_receipt_schema, presentation_review_schema, preview_authoring_revision,
+    projection_config_schema, projection_lock_revision_schema, projection_pack_schema,
+    projection_proposal_schema, projection_receipt_schema, projection_review_schema,
     propose_alignment, propose_character_operation, propose_character_questionnaire,
-    propose_presentation_allocations, propose_relationships, propose_temporal_context,
-    questionnaire_authoring_revision, reconcile_relationship_graph, relationship_config_schema,
-    relationship_dense_matrix_review_csv, relationship_edge_review_csv,
+    propose_presentation_allocations, propose_projections, propose_relationships,
+    propose_temporal_context, questionnaire_authoring_revision, reconcile_relationship_graph,
+    relationship_config_schema, relationship_dense_matrix_review_csv, relationship_edge_review_csv,
     relationship_kind_pack_schema, relationship_policy_schema, relationship_proposal_schema,
     relationship_receipt_schema, relationship_reconciliation_schema, relationship_review_schema,
     relationship_revision_schema, resolve_expression_dialogue, resume_character_operation,
@@ -652,6 +656,69 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Rank and allocate explainable categorical and role projections without changing source.
+    ProjectionPropose {
+        collection: PathBuf,
+        pack: PathBuf,
+        config: PathBuf,
+        #[arg(long)]
+        seed: u64,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Inspect the complete evidence and allocation trace for one proposed slot.
+    ProjectionInspect {
+        proposal: PathBuf,
+        character_id: String,
+        taxonomy_id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Create a complete projection review from explicit per-slot decisions.
+    ProjectionReview {
+        proposal: PathBuf,
+        decisions: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Replay a reviewed projection proposal and atomically apply its output collection.
+    ProjectionApply {
+        collection: PathBuf,
+        proposal: PathBuf,
+        review: PathBuf,
+        /// Produce the exact receipt without changing the collection file.
+        #[arg(long)]
+        dry_run: bool,
+        /// Receipt destination, always written after successful replay.
+        #[arg(long)]
+        receipt_output: PathBuf,
+        /// Collection destination; defaults to atomically replacing the input.
+        #[arg(long)]
+        collection_output: Option<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
+    /// Deterministically lock or unlock exact accepted projection values.
+    ProjectionLock {
+        collection: PathBuf,
+        revision: PathBuf,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        output: Option<PathBuf>,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+    },
     /// Score one exact original narrative-questionnaire pack.
     QuestionnairePropose {
         profile: PathBuf,
@@ -750,6 +817,12 @@ enum DocumentKind {
     PresentationReview,
     PresentationReceipt,
     PresentationLockRevision,
+    ProjectionPack,
+    ProjectionConfig,
+    ProjectionProposal,
+    ProjectionReview,
+    ProjectionReceipt,
+    ProjectionLockRevision,
     QuestionnairePack,
     QuestionnaireAnswers,
     QuestionnaireProposal,
@@ -911,6 +984,12 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::PresentationReview => presentation_review_schema()?,
                 DocumentKind::PresentationReceipt => presentation_receipt_schema()?,
                 DocumentKind::PresentationLockRevision => presentation_lock_revision_schema()?,
+                DocumentKind::ProjectionPack => projection_pack_schema()?,
+                DocumentKind::ProjectionConfig => projection_config_schema()?,
+                DocumentKind::ProjectionProposal => projection_proposal_schema()?,
+                DocumentKind::ProjectionReview => projection_review_schema()?,
+                DocumentKind::ProjectionReceipt => projection_receipt_schema()?,
+                DocumentKind::ProjectionLockRevision => projection_lock_revision_schema()?,
                 DocumentKind::QuestionnairePack => character_questionnaire_pack_schema()?,
                 DocumentKind::QuestionnaireAnswers => character_questionnaire_answers_schema()?,
                 DocumentKind::QuestionnaireProposal => character_questionnaire_proposal_schema()?,
@@ -1062,6 +1141,24 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::PresentationLockRevision => {
                     parse_presentation_lock_revision(&input, &source)?;
+                }
+                DocumentKind::ProjectionPack => {
+                    parse_projection_pack(&input, &source)?;
+                }
+                DocumentKind::ProjectionConfig => {
+                    parse_projection_config(&input, &source)?;
+                }
+                DocumentKind::ProjectionProposal => {
+                    parse_projection_proposal(&input, &source)?;
+                }
+                DocumentKind::ProjectionReview => {
+                    parse_projection_review(&input, &source)?;
+                }
+                DocumentKind::ProjectionReceipt => {
+                    parse_projection_receipt(&input, &source)?;
+                }
+                DocumentKind::ProjectionLockRevision => {
+                    parse_projection_lock_revision(&input, &source)?;
                 }
                 DocumentKind::QuestionnairePack => {
                     parse_questionnaire_pack(&input, &source)?;
@@ -2141,6 +2238,122 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
             atomic_write(&output, serialized.as_bytes())?;
             println!("wrote presentation authoring revision {}", output.display());
         }
+        Command::ProjectionPropose {
+            collection,
+            pack,
+            config,
+            seed,
+            format,
+            output,
+        } => {
+            let collection = parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let pack = parse_projection_pack(&pack, &fs::read_to_string(&pack)?)?;
+            let config = parse_projection_config(&config, &fs::read_to_string(&config)?)?;
+            let proposal = propose_projections(&collection, &pack, &config, seed)?;
+            let serialized = match format {
+                OutputFormat::Json => proposal.to_json()?,
+                OutputFormat::Ron => proposal.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character projection proposal {}", output.display());
+        }
+        Command::ProjectionInspect {
+            proposal,
+            character_id,
+            taxonomy_id,
+            format,
+            output,
+        } => {
+            let proposal = parse_projection_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let assignment = proposal
+                .assignments
+                .get(&character_id)
+                .and_then(|values| values.get(&taxonomy_id))
+                .ok_or("projection assignment was not found")?;
+            let serialized = serialize_value(assignment, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::ProjectionReview {
+            proposal,
+            decisions,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal = parse_projection_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let decisions = read_projection_decisions(&decisions)?;
+            let review = create_projection_review(&proposal, reviewer, rationale, decisions)?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote Character projection review {}", output.display());
+        }
+        Command::ProjectionApply {
+            collection,
+            proposal,
+            review,
+            dry_run,
+            receipt_output,
+            collection_output,
+            format,
+        } => {
+            let collection_value =
+                parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let proposal = parse_projection_proposal(&proposal, &fs::read_to_string(&proposal)?)?;
+            let review = parse_projection_review(&review, &fs::read_to_string(&review)?)?;
+            let receipt = apply_projection_review(&collection_value, &proposal, &review)?;
+            let serialized_receipt = match format {
+                OutputFormat::Json => receipt.to_json()?,
+                OutputFormat::Ron => receipt.to_ron()?,
+            };
+            atomic_write(&receipt_output, serialized_receipt.as_bytes())?;
+            if !dry_run {
+                let destination = collection_output.as_deref().unwrap_or(&collection);
+                let collection_format = collection_output
+                    .as_deref()
+                    .map_or_else(|| output_format_for(destination), output_format_for);
+                let serialized_collection = match collection_format {
+                    OutputFormat::Json => receipt.output_collection.to_json()?,
+                    OutputFormat::Ron => receipt.output_collection.to_ron()?,
+                };
+                atomic_write(destination, serialized_collection.as_bytes())?;
+            }
+            println!(
+                "replayed Character projection receipt {}",
+                receipt_output.display()
+            );
+        }
+        Command::ProjectionLock {
+            collection,
+            revision,
+            dry_run,
+            output,
+            format,
+        } => {
+            let collection_value =
+                parse_collection(&collection, &fs::read_to_string(&collection)?)?;
+            let revision =
+                parse_projection_lock_revision(&revision, &fs::read_to_string(&revision)?)?;
+            let candidate = apply_projection_lock_revision(&collection_value, &revision)?;
+            if !dry_run {
+                let destination = output.as_deref().unwrap_or(&collection);
+                let format = format.unwrap_or_else(|| output_format_for(destination));
+                let serialized = match format {
+                    OutputFormat::Json => candidate.to_json()?,
+                    OutputFormat::Ron => candidate.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!(
+                    "applied Character projection lock revision {}",
+                    destination.display()
+                );
+            } else {
+                println!("validated Character projection lock revision dry-run");
+            }
+        }
         Command::QuestionnairePropose {
             profile,
             pack,
@@ -2730,6 +2943,72 @@ fn parse_presentation_lock_revision(
     }
 }
 
+fn parse_projection_pack(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionPack, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionPack::from_ron(source)
+    } else {
+        ProjectionPack::from_json(source)
+    }
+}
+
+fn parse_projection_config(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionConfig, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionConfig::from_ron(source)
+    } else {
+        ProjectionConfig::from_json(source)
+    }
+}
+
+fn parse_projection_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionProposal, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionProposal::from_ron(source)
+    } else {
+        ProjectionProposal::from_json(source)
+    }
+}
+
+fn parse_projection_review(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionReview, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionReview::from_ron(source)
+    } else {
+        ProjectionReview::from_json(source)
+    }
+}
+
+fn parse_projection_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionReceipt, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionReceipt::from_ron(source)
+    } else {
+        ProjectionReceipt::from_json(source)
+    }
+}
+
+fn parse_projection_lock_revision(
+    path: &Path,
+    source: &str,
+) -> Result<ProjectionLockRevision, weave_character::CharacterError> {
+    if is_ron(path) {
+        ProjectionLockRevision::from_ron(source)
+    } else {
+        ProjectionLockRevision::from_json(source)
+    }
+}
+
 fn parse_questionnaire_answers(
     path: &Path,
     source: &str,
@@ -2995,6 +3274,19 @@ fn read_presentation_decisions(
     } else {
         weave_domain::parse_strict_json(&source)
             .map_err(|_| "invalid presentation decision JSON".into())
+    }
+}
+
+fn read_projection_decisions(
+    path: &Path,
+) -> Result<BTreeMap<String, BTreeMap<String, ProjectionReviewDecision>>, Box<dyn std::error::Error>>
+{
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid projection decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid projection decision JSON".into())
     }
 }
 

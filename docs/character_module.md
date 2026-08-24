@@ -155,6 +155,41 @@ Apply independently reproduces the proposal and review, computes an application 
 
 The checked [Wayfinder Compass corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/alignment) is original MIT-licensed material with five neutral axes and three synthetic calibration boundaries. Its review demonstrates every action: `horizon` is accepted, `reciprocity` edited, `signal` rejected, `structure` overridden, and `tempo` withheld. A contributor can publish a different pack by defining the same declarative fields and passing the public schema/calibration validator; no Character-core code change is required.
 
+## Explainable classification, vocation, and roles
+
+Projection packs turn already-authored canonical HEXACO evidence into optional categorical displays and fictional role prompts. They do not add evidence, infer canon, measure aptitude, recommend employment, predict conduct, diagnose a person, or define a normative distribution. Categorical personality labels are always `lossy: true`, `derived`, and `independent_evidence: false`. Vocation, social-role, and narrative-role candidates remain unpublished suggestions until an author explicitly accepts, edits, or overrides them.
+
+`ProjectionPack` is independently distributable data with a stable id/version, compatible profile versions, title/description, license and public provenance, methodology and limitations, a declared canonical input map, taxonomies, entries, eligibility/exclusion rules, signed weights, score thresholds, default capacities, and complete synthetic calibration vectors. V1 inputs are restricted to exact canonical HEXACO factor/facet paths. Pack validation rejects an undeclared input, mismatched trait/path pair, empty evidence vector, zero weight, invalid threshold/capacity, unsorted eligibility set, unsupported profile version, inconsistent output id/kind/lossiness, or failed calibration.
+
+Scoring uses fixed-point integer arithmetic:
+
+1. Convert each present score to millionths; a retained band uses its documented v1 projection anchor.
+2. Center it as `2 × value_micros − 1000000`.
+3. Multiply by the entry's signed thousandth weight and sum.
+4. Divide covered absolute weight by total absolute weight for coverage in millionths.
+5. Divide the signed sum by covered absolute weight with half-away-from-zero rounding.
+6. Require character eligibility, no exclusion, the maximum of pack/project coverage floors, and the entry's inclusive minimum score.
+
+Every missing input stays visible in `ordered_evidence` with its declared path/trait/weight and no value, contribution, or invented lineage. Candidates rank by score descending, then a lowercase SHA-256 over the exact pack coordinate, configuration hash, character/taxonomy/entry ids, seed, and evidence trace, then stable id. A changed seed changes deterministic tie order and trace identity, never the score formula.
+
+`ProjectionConfig` selects sorted taxonomies and an exact eligible character pool, project coverage floor, fill-missing or rebalance mode, per-entry capacity overrides, and sorted one-slot reservations. Proposal operates across the whole collection. It retains authored, editorially overridden, extension-locked, or value-locked assignments; applies valid reservations first; then fills remaining capacity in deterministic global rank order. Rebalance can reconsider only unlocked `reviewed`, `edited`, or `derived` values. It cannot displace authored, overridden, or locked values. Distribution output records per-taxonomy/entry counts plus retained, reserved, and unavailable slots.
+
+`ProjectionProposal` embeds the exact collection, collection SHA-256, complete pack and pack coordinate, complete config and SHA-256, seed, every candidate trace, selected disposition, distribution, and exact review manifest. The same inputs reproduce the same bytes. `ProjectionReview` must cover every proposed/reserved manifest slot exactly once:
+
+| Decision | Published result | Required author record |
+|---|---|---|
+| `accept` | Proposed pack entry; categorical views become `derived`, roles become `reviewed` | Lock plus optional rationale |
+| `edit` | Another qualified declared pack entry as `edited` | Entry id, lock, rationale |
+| `override` | Explicit editorial entry/label as `overridden`, without a claimed pack score | Entry id, label, lock, rationale |
+| `reject` | No public value | Rationale retained in review/receipt |
+| `withhold` | No public value | Rationale retained in review/receipt |
+
+Apply replays the entire proposal and review against the current collection before returning one atomic receipt/output collection. Approved values retain kind, taxonomy/output/entry ids, label, lossiness, decision, optional score, coverage, explanation, rationale, exact canonical input paths, pack id/version/SHA-256, proposal SHA-256, review SHA-256, and lock. A separate fingerprinted lock revision changes only selected locks. The implementation snapshots canon, derived OCEAN, suggestions, and every non-projection extension before apply; any attempted change to HEXACO, OCEAN, alignment, identity, birth, relationships, expression, temporal context, presentation, or ruleset-owned data fails.
+
+The JSON/RON CLI and `ProjectionSession` editor service call the same host-independent functions. `projection-propose` selects a pack/config/seed, `projection-inspect` returns the complete evidence/threshold/capacity/tie trace, `projection-review` validates a complete decision source document, `projection-apply` supports dry-run or atomic output plus a receipt, and `projection-lock` validates or commits a lock revision. Editor propose, inspect, review, dry-run/commit, lock, config, seed, and rebalance produce the same artifacts. `.weave` source reads only already-approved domain-pack values; it cannot bypass the review by overriding `profile.projections`.
+
+The original MIT-licensed [Glasswind Lenses fixtures](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/projections) exercise three characters, four taxonomies, signed weights, two calibration vectors, explicit eligibility, capacity one per entry, one reservation, deterministic batch allocation, all five review decisions, a locked accepted value, an editorial override, unlock, and rebalance. The domain projection exposes approved values through typed `profile.projections.values` and exact `source_packs`. Its `write_back` object contains all-false `hexaco`, `ocean`, `alignment`, `identity`, `birth`, `relationships`, and `ruleset` fields. The checked Bevy and PixiJS consumers validate those labels, explanations, rationales, input paths, fingerprints, locks, and authority markers directly from Story IR.
+
 ## Optional extension records
 
 Every extension header declares a namespace, positive version, authority, rationale, value/review/lock/freshness states, sorted lineage, and the forbidden write-back policy.
@@ -164,7 +199,7 @@ Every extension header declares a namespace, positive version, authority, ration
 | `identity_presentation` | Stable identity refs and safe project-relative presentation/asset refs | Presentation cannot infer personality, alignment, date context, or protected identity |
 | `expression` | Normalized lexicon, preference, and behavioral-signature refs | Authored expression remains distinct from generated prose |
 | `behavioral_signatures` | Stable cues and bounded strengths | Signatures are projections, not canonical trait measurements |
-| `role_projections` | Accepted taxonomy, role, rationale, and exact input paths | Roles cannot become personality evidence |
+| `role_projections` | Approved categorical/vocation/social/narrative values with exact pack, proposal, review, explanation, rationale, input-path, decision, and lock lineage | Categorical views remain lossy derived displays; roles cannot become personality evidence or write into another extension |
 | `relationships` | Pack-pinned, layered edges with stable endpoints, kind, review, lock, validity, consent, evidence, rationale, and lineage | The pack controls self edges, direction, inverse semantics, multiplicity, and required metadata; an owning profile cannot impersonate another source id or write into canon |
 | `alignment_view` | Exact pack/review/application fingerprints and approved pack-defined values | Rejected/withheld values stay in the receipt; labels are non-diagnostic and cannot mutate canon |
 | `date_context` | Exact context pack/version/hash and accepted record ids | Context is an authoring cue, never causal personality evidence |
@@ -221,6 +256,32 @@ cargo run -p weave-character -- expression-resolve \
   examples/domain-modules/weave-character/expression/glasswind.expression-pack.json \
   examples/domain-modules/weave-character/expression/contextual.expression-resolution-request.json \
   --output target/contextual.expression-resolution.json
+
+cargo run -p weave-character -- projection-propose \
+  examples/domain-modules/weave-character/projections/input.character-collection.json \
+  examples/domain-modules/weave-character/projections/glasswind.projection-pack.json \
+  examples/domain-modules/weave-character/projections/selection.projection-config.json \
+  --seed 20260824 \
+  --output target/proposal.projection-proposal.json
+
+cargo run -p weave-character -- projection-inspect \
+  target/proposal.projection-proposal.json \
+  org.weave.character.ari_vale \
+  org.weave.projection.glasswind_lenses.narrative_role
+
+cargo run -p weave-character -- projection-review \
+  target/proposal.projection-proposal.json \
+  examples/domain-modules/weave-character/projections/decisions.projection-review.json \
+  --reviewer org.weave.reviewer.fixture \
+  --rationale "Review every original Glasswind Lenses display and role independently; retain only explicit fictional editorial choices outside canon." \
+  --output target/review.projection-review.json
+
+cargo run -p weave-character -- projection-apply \
+  examples/domain-modules/weave-character/projections/input.character-collection.json \
+  target/proposal.projection-proposal.json \
+  target/review.projection-review.json \
+  --dry-run \
+  --receipt-output target/receipt.projection-receipt.json
 ```
 
 ## Provenance-aware relationship graphs
@@ -579,19 +640,20 @@ The runtime projection retains:
 - normalized expression lexicon, preferences, vocabulary pools, behavioral signatures, voice constraints, exact template assignments and pack hashes, typed applicability, source ids, and `canonical_personality_write_back: false`;
 - the layered relationship graph with its pack coordinate, direction-preserving edges, review/lock/freshness state, validity, inverse ids, notes, consent, safeguard exceptions, advisory scores, ordered evidence, rationale, lineage, and `canonical_personality_write_back: false`;
 - optional approved alignment shorthand with exact pack, review, application, coverage, decision, explanation, and canonical input-path records, `canonical_personality_write_back: false`, and no rejected/withheld values;
+- optional approved categorical, vocation, social-role, and narrative-role values with exact pack/proposal/review coordinates, explanations, rationales, input paths, decisions, locks, categorical lossiness, and an explicit all-false write-back contract;
 - optional reviewed date context with exact pack coordinates, accepted record ids, accepted/edited/overridden/auto-approved cues, relevance and uncertainty, the review hash, separate fact/cue source ids, and `canonical_personality_write_back: false`; and
 - sorted profile source and transformation identifiers.
 
 `projection_score` is the exact normalized score for a `score` input and only the documented compatibility anchor for a retained band input. It never replaces the original profile measurement. Missing factor or facet evidence remains an absent optional path.
 
-The manifest declares `profile.hexaco`, `profile.ocean`, `profile.expression`, `profile.alignment`, `profile.date_context`, `profile.presentation`, `profile.relationships`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality, expression, presentation, or relationship evidence through its owning artifact workflow, run the validator/projector, and receive a pack whose OCEAN and expression views were recomputed before compilation. A story may still author a permitted attributed display-name value; that source override remains separate in Story IR and cannot change the stable character id or any reviewed extension record.
+The manifest declares `profile.hexaco`, `profile.ocean`, `profile.expression`, `profile.alignment`, `profile.projections`, `profile.date_context`, `profile.presentation`, `profile.relationships`, stable identity, contract version, and provenance paths read-only. The shared compiler rejects an override that targets, encloses, or descends from any such path. Authors revise canonical personality, expression, presentation, relationships, or projections through the owning artifact workflow, run the validator/projector, and receive a pack whose derived views were recomputed before compilation. A story may still author a permitted attributed display-name value; that source override remains separate in Story IR and cannot change the stable character id or any reviewed extension record.
 
-[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) selects the reviewed Character domain pack through ordinary module syntax, then reads typed expression, relationship, pronoun, palette, asset, catalog, alignment, factor/facet, and OCEAN paths. Raw expression assignment/resolution, relationship review, presentation, and alignment selection occur at the authoring boundary in the shared Character CLI/editor workflow; source selects only the resulting validated Character pack, so an unreviewed suggestion cannot enter narrative logic. The story compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). The separate [reviewed temporal story](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave) exercises the temporal projection. Adjacent `weave.modules.json` and `weave.lock` files make both builds deterministic and offline. The editor exposes expression normalization, revision, assignment, list/show, lint, coverage, validation, and resolution beside relationship, presentation, alignment, and temporal workflows. The finite Bevy and PixiJS consumers read the same portable expression projection without an editor dependency; they also preserve the existing relationship, presentation, alignment, temporal, and fact/cue-lineage boundaries.
+[`ari-vale.weave`](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.weave) selects the reviewed Character domain pack through ordinary module syntax, then reads typed projection, expression, relationship, pronoun, palette, asset, catalog, alignment, factor/facet, and OCEAN paths. Projection review, expression assignment/resolution, relationship review, presentation, and alignment selection occur at the authoring boundary in the shared Character CLI/editor workflow; source selects only the resulting validated Character pack, so an unreviewed suggestion cannot enter narrative logic. The story compiles to byte-stable [JSON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.json) and [RON](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/ari-vale.story.ron). The separate [reviewed temporal story](https://github.com/chrisgliddon/weave/blob/main/examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave) exercises the temporal projection. Adjacent `weave.modules.json` and `weave.lock` files make both builds deterministic and offline. The editor exposes projection evidence/review/apply/lock/rebalance beside expression, relationship, presentation, alignment, and temporal workflows. The finite Bevy and PixiJS consumers read the same portable approved projections and validate their no-write-back boundary without an editor dependency.
 
 ```weave
 module character {
     id: "org.weave.character"
-    version: "=1.5.0"
+    version: "=1.6.0"
     pack: "ari_vale@=1.0.0"
 }
 
@@ -614,15 +676,23 @@ VAR relationship_pack_sha256 = character.profile.relationships.kind_pack.sha256
 VAR presentation_subject = character.profile.presentation.pronouns.subject
 VAR presentation_accent = character.profile.presentation.palette.colors.accent
 VAR presentation_avatar = character.profile.presentation.assets.authored_avatar.path
+VAR personality_lens = character.profile.projections.values.personality_lens.label
+VAR vocation = character.profile.projections.values.vocation.label
+VAR social_role = character.profile.projections.values.social_role.label
+VAR narrative_role = character.profile.projections.values.narrative_role.label
+VAR projection_pack = character.profile.projections.values.narrative_role.pack.id
+VAR projection_review = character.profile.projections.values.narrative_role.review_sha256
+VAR projection_write_back = character.profile.projections.write_back.hexaco
 ```
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression lineage, incomplete alignment/temporal/relationship reviews, a malformed proposal, a bad relationship, restricted expression placeholders, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The projection fixtures add an original pack, four taxonomies, signed fixed-point weights, calibration vectors, a three-character capacity-limited batch, reservation, complete traces and distribution, every review decision, locks, unlock, and rebalance. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression lineage, incomplete alignment/temporal/relationship reviews, a malformed proposal, a bad relationship, restricted expression placeholders, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
 cargo run -p weave-character --example expression_fixture -- --check
+cargo run -p weave-character --example projection_fixture -- --check
 
 cargo run -p weave-character -- schema profile \
   --output target/weave-character-profile-v1.schema.json
@@ -739,4 +809,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale-temporal.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks expression normalization, assignment, lint, coverage, and deterministic resolution artifacts; reproduces presentation, alignment, and temporal proposal/review/receipt bytes; checks dry-run and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.

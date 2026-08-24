@@ -152,6 +152,89 @@ export function alignmentCharacterPresentation(story) {
   };
 }
 
+export function projectionCharacterPresentation(story) {
+  const projections = readModuleExport(story, "character", ["profile", "projections"]);
+  const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  const isHash = (value) => typeof value === "string" && /^[0-9a-f]{64}$/u.test(value);
+  const protectedTargets = [
+    "alignment",
+    "birth",
+    "hexaco",
+    "identity",
+    "ocean",
+    "relationships",
+    "ruleset",
+  ];
+  if (
+    !isObject(projections) ||
+    projections.projection_format_version !== 1 ||
+    typeof projections.character_id !== "string" ||
+    !Array.isArray(projections.source_packs) ||
+    !isObject(projections.values) ||
+    !isObject(projections.write_back) ||
+    Object.keys(projections.write_back).sort().join("|") !== protectedTargets.join("|") ||
+    protectedTargets.some((target) => projections.write_back[target] !== false)
+  ) {
+    throw new TypeError("invalid reviewed Character projections");
+  }
+  const values = Object.entries(projections.values)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([projectionId, value]) => {
+      if (
+        !isObject(value) ||
+        value.id !== projectionId ||
+        value.character_id !== projections.character_id ||
+        !["categorical_personality", "vocation", "social_role", "narrative_role"].includes(
+          value.kind,
+        ) ||
+        !["authored", "derived", "edited", "overridden", "reviewed"].includes(
+          value.decision,
+        ) ||
+        typeof value.label !== "string" ||
+        typeof value.explanation !== "string" ||
+        typeof value.rationale !== "string" ||
+        typeof value.lossy !== "boolean" ||
+        value.independent_evidence !== false ||
+        !["locked", "unlocked"].includes(value.lock) ||
+        !Array.isArray(value.input_paths) ||
+        !value.input_paths.every((path) => typeof path === "string") ||
+        !isObject(value.pack) ||
+        typeof value.pack.id !== "string" ||
+        typeof value.pack.version !== "string" ||
+        !isHash(value.pack.sha256) ||
+        !isHash(value.proposal_sha256) ||
+        !isHash(value.review_sha256) ||
+        !Number.isInteger(value.coverage_micros) ||
+        (value.score_micros !== undefined && !Number.isInteger(value.score_micros))
+      ) {
+        throw new TypeError("invalid approved Character projection value");
+      }
+      return {
+        id: value.id,
+        kind: value.kind,
+        label: value.label,
+        lossy: value.lossy,
+        independentEvidence: value.independent_evidence,
+        decision: value.decision,
+        explanation: value.explanation,
+        rationale: value.rationale,
+        inputPaths: value.input_paths,
+        scoreMicros: value.score_micros,
+        coverageMicros: value.coverage_micros,
+        pack: value.pack,
+        proposalSha256: value.proposal_sha256,
+        reviewSha256: value.review_sha256,
+        locked: value.lock === "locked",
+      };
+    });
+  return {
+    characterId: projections.character_id,
+    sourcePacks: projections.source_packs,
+    values,
+    writeBack: projections.write_back,
+  };
+}
+
 export function temporalCharacterPresentation(story) {
   const context = readModuleExport(story, "character", ["profile", "date_context"]);
   if (

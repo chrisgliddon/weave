@@ -1,0 +1,490 @@
+{
+  "$defs": {
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "ProjectionCalibrationExpected": {
+      "additionalProperties": false,
+      "properties": {
+        "entry_id": {
+          "type": "string"
+        },
+        "qualifies": {
+          "type": "boolean"
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entry_id",
+        "score_micros",
+        "qualifies"
+      ],
+      "type": "object"
+    },
+    "ProjectionCalibrationFixture": {
+      "additionalProperties": false,
+      "description": "Synthetic calibration proving the exact fixed-point ranking for a complete input vector.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "expected_rankings": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/ProjectionCalibrationExpected"
+            },
+            "type": "array"
+          },
+          "description": "Complete ranked entries for every taxonomy, highest score first.",
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "inputs_micros": {
+          "additionalProperties": {
+            "format": "uint32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "inputs_micros",
+        "expected_rankings"
+      ],
+      "type": "object"
+    },
+    "ProjectionEntry": {
+      "additionalProperties": false,
+      "description": "One rankable label with signed fixed-point evidence and explicit eligibility/capacity rules.",
+      "properties": {
+        "default_capacity": {
+          "description": "Default collection-wide capacity. A project may replace it explicitly.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "eligible_character_ids": {
+          "description": "Exact ids eligible for this entry. Eligibility is the union with id prefixes.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "eligible_id_prefixes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "evidence": {
+          "additionalProperties": {
+            "format": "int16",
+            "maximum": 32767,
+            "minimum": -32768,
+            "type": "integer"
+          },
+          "description": "Input weights in non-zero signed thousandths.",
+          "type": "object"
+        },
+        "excluded_character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "minimum_score_micros": {
+          "description": "Inclusive minimum signed score required for eligibility.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "evidence",
+        "minimum_score_micros",
+        "eligible_character_ids",
+        "eligible_id_prefixes",
+        "excluded_character_ids"
+      ],
+      "type": "object"
+    },
+    "ProjectionInputField": {
+      "additionalProperties": false,
+      "description": "One declared canonical input. V1 deliberately permits only HEXACO factors and facets.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "profile_path": {
+          "type": "string"
+        },
+        "trait_id": {
+          "$ref": "#/$defs/HexacoTrait"
+        }
+      },
+      "required": [
+        "id",
+        "trait_id",
+        "profile_path",
+        "label",
+        "description"
+      ],
+      "type": "object"
+    },
+    "ProjectionKind": {
+      "description": "Closed projection surfaces supported by the common pack contract.",
+      "enum": [
+        "categorical_personality",
+        "vocation",
+        "social_role",
+        "narrative_role"
+      ],
+      "type": "string"
+    },
+    "ProjectionTaxonomy": {
+      "additionalProperties": false,
+      "description": "One categorical display or suggestion taxonomy with a single output slot per character.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "entries": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ProjectionEntry"
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "independent_evidence": {
+          "type": "boolean"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProjectionKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": "string"
+        },
+        "lossy": {
+          "type": "boolean"
+        },
+        "minimum_coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "output_id": {
+          "type": "string"
+        },
+        "requires_review": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "output_id",
+        "kind",
+        "label",
+        "description",
+        "lossy",
+        "independent_evidence",
+        "requires_review",
+        "minimum_coverage_micros",
+        "limitations",
+        "entries"
+      ],
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-projection-pack:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One independently distributable, data-only projection system.",
+  "properties": {
+    "calibrations": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ProjectionCalibrationFixture"
+      },
+      "type": "object"
+    },
+    "compatible_profile_versions": {
+      "items": {
+        "format": "uint32",
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "independently_authored": {
+      "type": "boolean"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ProjectionInputField"
+      },
+      "type": "object"
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_url": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "string"
+    },
+    "methodology": {
+      "type": "string"
+    },
+    "pack_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "taxonomies": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ProjectionTaxonomy"
+      },
+      "type": "object"
+    },
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pack_format_version",
+    "id",
+    "version",
+    "title",
+    "description",
+    "compatible_profile_versions",
+    "independently_authored",
+    "license",
+    "license_url",
+    "methodology",
+    "limitations",
+    "inputs",
+    "taxonomies",
+    "calibrations",
+    "provenance"
+  ],
+  "title": "Weave Character Projection Pack v1",
+  "type": "object",
+  "x-weave-character-projection-version": 1
+}

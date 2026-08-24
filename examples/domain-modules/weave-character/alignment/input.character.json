@@ -799,40 +799,6 @@
         }
       }
     },
-    "org.weave.character.role_projections": {
-      "kind": "role_projections",
-      "record": {
-        "header": {
-          "namespace": "org.weave.character.role_projections",
-          "extension_version": 1,
-          "authority": "org.weave.character.contract",
-          "rationale": "Explicit optional projection authored for the synthetic fixture.",
-          "state": "reviewed",
-          "review": "accepted",
-          "lock": "unlocked",
-          "freshness": "current",
-          "lineage": [
-            "character_original",
-            "weave_expression_glasswind_original"
-          ],
-          "canonical_personality_write_back": "forbidden"
-        },
-        "value": {
-          "roles": {
-            "route_steward": {
-              "id": "route_steward",
-              "taxonomy": "org.weave.roles.glasswind",
-              "role": "Route steward",
-              "rationale": "Accepted as a narrative role, not a personality fact.",
-              "input_paths": [
-                "canon.personality.conscientiousness.factor",
-                "canon.personality.openness.factor"
-              ]
-            }
-          }
-        }
-      }
-    },
     "org.weave.character.tabletop": {
       "kind": "tabletop",
       "record": {

@@ -1853,7 +1853,7 @@
         "weight_micros": 250000
       }
     ],
-    "expected_input_sha256": "7f99222393d774306ee343b3b018d4639664e900cc467583b2b8e1ae77bed82e",
+    "expected_input_sha256": "9a490910b65666562a7b3213491d5e6da10bdb991864d3b82fd7b1ecd5010c3a",
     "id": "org.weave.relationship.reference_scoring",
     "kind_pack": {
       "id": "org.weave.relationship.reference",
@@ -1973,7 +1973,7 @@
       }
     ]
   },
-  "config_sha256": "bb5d51d177d16e0eb2bb53c46fa58ece9c4ea4308982647e0d6b5afca84633c2",
+  "config_sha256": "a3559b0ebbb1905e38870f37026a82403aa80284d48327fda3aeff6cbf287489",
   "distribution": {
     "by_target": {
       "affinity": {
@@ -2546,7 +2546,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_da2749184c01216c",
+                  "alignment_apply_dd2556dc5d058a13",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -2557,7 +2557,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -2572,7 +2572,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -2895,8 +2895,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "amber_accent",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "accent_color",
                       "value": {
                         "color": "#D6A24A",
@@ -2922,8 +2922,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "ari_avatar",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "avatar",
                       "value": {
                         "asset": {
@@ -2954,8 +2954,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "long_coat",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "silhouette",
                       "value": {
                         "category": "org.weave.appearance.silhouette",
@@ -2981,8 +2981,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "river_glass",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "visual_tone",
                       "value": {
                         "kind": "style_tag",
@@ -3153,40 +3153,6 @@
               }
             }
           },
-          "org.weave.character.role_projections": {
-            "kind": "role_projections",
-            "record": {
-              "header": {
-                "authority": "org.weave.character.contract",
-                "canonical_personality_write_back": "forbidden",
-                "extension_version": 1,
-                "freshness": "current",
-                "lineage": [
-                  "character_original",
-                  "weave_expression_glasswind_original"
-                ],
-                "lock": "unlocked",
-                "namespace": "org.weave.character.role_projections",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
-                "review": "accepted",
-                "state": "reviewed"
-              },
-              "value": {
-                "roles": {
-                  "route_steward": {
-                    "id": "route_steward",
-                    "input_paths": [
-                      "canon.personality.conscientiousness.factor",
-                      "canon.personality.openness.factor"
-                    ],
-                    "rationale": "Accepted as a narrative role, not a personality fact.",
-                    "role": "Route steward",
-                    "taxonomy": "org.weave.roles.glasswind"
-                  }
-                }
-              }
-            }
-          },
           "org.weave.character.tabletop": {
             "kind": "tabletop",
             "record": {
@@ -3237,7 +3203,7 @@
               "weave_glasswind_presentation"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_da2749184c01216c"
+              "alignment_apply_dd2556dc5d058a13"
             ],
             "extensions.org.weave.character.expression": [
               "weave_expression_glasswind_original"
@@ -3326,7 +3292,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_da2749184c01216c",
+              "id": "alignment_apply_dd2556dc5d058a13",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -3911,7 +3877,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_da2749184c01216c",
+                  "alignment_apply_dd2556dc5d058a13",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -3922,7 +3888,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -3937,7 +3903,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -4260,8 +4226,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "amber_accent",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "accent_color",
                       "value": {
                         "color": "#D6A24A",
@@ -4287,8 +4253,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "ari_avatar",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "avatar",
                       "value": {
                         "asset": {
@@ -4319,8 +4285,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "long_coat",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "silhouette",
                       "value": {
                         "category": "org.weave.appearance.silhouette",
@@ -4346,8 +4312,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "river_glass",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "visual_tone",
                       "value": {
                         "kind": "style_tag",
@@ -4497,40 +4463,6 @@
               }
             }
           },
-          "org.weave.character.role_projections": {
-            "kind": "role_projections",
-            "record": {
-              "header": {
-                "authority": "org.weave.character.contract",
-                "canonical_personality_write_back": "forbidden",
-                "extension_version": 1,
-                "freshness": "current",
-                "lineage": [
-                  "character_original",
-                  "weave_expression_glasswind_original"
-                ],
-                "lock": "unlocked",
-                "namespace": "org.weave.character.role_projections",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
-                "review": "accepted",
-                "state": "reviewed"
-              },
-              "value": {
-                "roles": {
-                  "route_steward": {
-                    "id": "route_steward",
-                    "input_paths": [
-                      "canon.personality.conscientiousness.factor",
-                      "canon.personality.openness.factor"
-                    ],
-                    "rationale": "Accepted as a narrative role, not a personality fact.",
-                    "role": "Route steward",
-                    "taxonomy": "org.weave.roles.glasswind"
-                  }
-                }
-              }
-            }
-          },
           "org.weave.character.tabletop": {
             "kind": "tabletop",
             "record": {
@@ -4581,7 +4513,7 @@
               "weave_glasswind_presentation"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_da2749184c01216c"
+              "alignment_apply_dd2556dc5d058a13"
             ],
             "extensions.org.weave.character.expression": [
               "weave_expression_glasswind_original"
@@ -4670,7 +4602,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_da2749184c01216c",
+              "id": "alignment_apply_dd2556dc5d058a13",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -5255,7 +5187,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_da2749184c01216c",
+                  "alignment_apply_dd2556dc5d058a13",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -5266,7 +5198,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -5281,7 +5213,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -5604,8 +5536,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "amber_accent",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "accent_color",
                       "value": {
                         "color": "#D6A24A",
@@ -5631,8 +5563,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "ari_avatar",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "avatar",
                       "value": {
                         "asset": {
@@ -5663,8 +5595,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "long_coat",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "silhouette",
                       "value": {
                         "category": "org.weave.appearance.silhouette",
@@ -5690,8 +5622,8 @@
                         "version": "1.0.0"
                       },
                       "entry_id": "river_glass",
-                      "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                      "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                      "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                      "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                       "slot_id": "visual_tone",
                       "value": {
                         "kind": "style_tag",
@@ -5841,40 +5773,6 @@
               }
             }
           },
-          "org.weave.character.role_projections": {
-            "kind": "role_projections",
-            "record": {
-              "header": {
-                "authority": "org.weave.character.contract",
-                "canonical_personality_write_back": "forbidden",
-                "extension_version": 1,
-                "freshness": "current",
-                "lineage": [
-                  "character_original",
-                  "weave_expression_glasswind_original"
-                ],
-                "lock": "unlocked",
-                "namespace": "org.weave.character.role_projections",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
-                "review": "accepted",
-                "state": "reviewed"
-              },
-              "value": {
-                "roles": {
-                  "route_steward": {
-                    "id": "route_steward",
-                    "input_paths": [
-                      "canon.personality.conscientiousness.factor",
-                      "canon.personality.openness.factor"
-                    ],
-                    "rationale": "Accepted as a narrative role, not a personality fact.",
-                    "role": "Route steward",
-                    "taxonomy": "org.weave.roles.glasswind"
-                  }
-                }
-              }
-            }
-          },
           "org.weave.character.tabletop": {
             "kind": "tabletop",
             "record": {
@@ -5925,7 +5823,7 @@
               "weave_glasswind_presentation"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_da2749184c01216c"
+              "alignment_apply_dd2556dc5d058a13"
             ],
             "extensions.org.weave.character.expression": [
               "weave_expression_glasswind_original"
@@ -6014,7 +5912,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_da2749184c01216c",
+              "id": "alignment_apply_dd2556dc5d058a13",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -6208,9 +6106,9 @@
     "version": "1.0.0"
   },
   "profile_sha256": {
-    "org.weave.character.ari_vale": "f23b883a60e2da7f2f115baabb813af8345e7ac3ece9417acb236f0d681dba98",
-    "org.weave.character.sable_reed": "19ca938d2da440ff1cfd99c6c7465c040f9dcdb814da7eba776f2ce142d96dd1",
-    "org.weave.character.tavi_quill": "81fc206f9cb7f6fb66cc86eb04b5c4139b26f90c5b494347614861b98610f74e"
+    "org.weave.character.ari_vale": "3bccb6cc0497a03c26bf28c416bb38fdf1e43daa1a89d64bb79350d4af019671",
+    "org.weave.character.sable_reed": "dd07a0020faaa98d338264266f3672c1a3e0450af3b07d0b047b91d0b671ff52",
+    "org.weave.character.tavi_quill": "9f839e38b040f67e91516e93cc94065033e8454323b089a9bc5a47545c438b0e"
   },
   "proposal_format_version": 1,
   "roster_sha256": "33b5ff9ce59dd090f0f3ffd455941531247033d7f38679b10f3d0daf53611121"

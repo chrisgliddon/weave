@@ -1,7 +1,7 @@
 {
   "proposal_format_version": 1,
   "profile_id": "org.weave.character.ari_vale",
-  "profile_sha256": "768f7d5ec917c2169cc4fb058d8b03fa56f9b599737da2ac5c7c49377e5c3e77",
+  "profile_sha256": "53c13546b93a922b23d49a62debe186a894f6c521c82cdd12b7589be9ddda79a",
   "pack": {
     "id": "org.weave.alignment.wayfinder_compass",
     "version": "1.0.0",

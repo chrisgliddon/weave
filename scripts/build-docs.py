@@ -590,6 +590,7 @@ def verify_domain_contract() -> None:
     character_operations = character_fixture / "operations"
     character_presentation = character_fixture / "presentation"
     character_expression = character_fixture / "expression"
+    character_projections = character_fixture / "projections"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
@@ -786,6 +787,21 @@ def verify_domain_contract() -> None:
             "weave-character",
             "--example",
             "character_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
+            "projection_fixture",
             "--",
             "--check",
         ],
@@ -1023,6 +1039,20 @@ def verify_domain_contract() -> None:
             "presentation-lock-revision": workspace
             / "weave-character-presentation-lock-revision-v1.schema.json",
         }
+        generated_projection_schemas = {
+            "projection-pack": workspace
+            / "weave-character-projection-pack-v1.schema.json",
+            "projection-config": workspace
+            / "weave-character-projection-config-v1.schema.json",
+            "projection-proposal": workspace
+            / "weave-character-projection-proposal-v1.schema.json",
+            "projection-review": workspace
+            / "weave-character-projection-review-v1.schema.json",
+            "projection-receipt": workspace
+            / "weave-character-projection-receipt-v1.schema.json",
+            "projection-lock-revision": workspace
+            / "weave-character-projection-lock-revision-v1.schema.json",
+        }
         generated_authoring_schemas = {
             "authoring-workspace": workspace
             / "weave-character-authoring-workspace-v1.schema.json",
@@ -1230,6 +1260,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_projection_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for generated, checked in (
             (
                 generated_manifest_schema,
@@ -1368,6 +1403,12 @@ def verify_domain_contract() -> None:
                 raise DocsError(
                     f"checked-in presentation schema is stale: {checked.name}"
                 )
+        for generated in generated_projection_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(
+                    f"checked-in projection schema is stale: {checked.name}"
+                )
 
         for kind, source in (
             (
@@ -1474,6 +1515,94 @@ def verify_domain_contract() -> None:
             ("presentation-receipt", presentation_receipt_ron),
             ("presentation-lock-revision", presentation_lock_revision_json),
             ("presentation-lock-revision", presentation_lock_revision_ron),
+            (
+                "collection",
+                character_projections / "input.character-collection.json",
+            ),
+            (
+                "collection",
+                character_projections / "input.character-collection.ron",
+            ),
+            (
+                "collection",
+                character_projections / "applied.character-collection.json",
+            ),
+            (
+                "collection",
+                character_projections / "applied.character-collection.ron",
+            ),
+            (
+                "collection",
+                character_projections / "unlocked.character-collection.json",
+            ),
+            (
+                "collection",
+                character_projections / "unlocked.character-collection.ron",
+            ),
+            (
+                "projection-pack",
+                character_projections / "glasswind.projection-pack.json",
+            ),
+            (
+                "projection-pack",
+                character_projections / "glasswind.projection-pack.ron",
+            ),
+            (
+                "projection-config",
+                character_projections / "selection.projection-config.json",
+            ),
+            (
+                "projection-config",
+                character_projections / "selection.projection-config.ron",
+            ),
+            (
+                "projection-proposal",
+                character_projections / "proposal.projection-proposal.json",
+            ),
+            (
+                "projection-proposal",
+                character_projections / "proposal.projection-proposal.ron",
+            ),
+            (
+                "projection-review",
+                character_projections / "review.projection-review.json",
+            ),
+            (
+                "projection-review",
+                character_projections / "review.projection-review.ron",
+            ),
+            (
+                "projection-receipt",
+                character_projections / "receipt.projection-receipt.json",
+            ),
+            (
+                "projection-receipt",
+                character_projections / "receipt.projection-receipt.ron",
+            ),
+            (
+                "projection-lock-revision",
+                character_projections / "unlock.projection-lock-revision.json",
+            ),
+            (
+                "projection-lock-revision",
+                character_projections / "unlock.projection-lock-revision.ron",
+            ),
+            (
+                "projection-config",
+                character_projections / "rebalance.projection-config.json",
+            ),
+            (
+                "projection-config",
+                character_projections / "rebalance.projection-config.ron",
+            ),
+            (
+                "projection-proposal",
+                character_projections / "rebalance.projection-proposal.json",
+            ),
+            (
+                "projection-proposal",
+                character_projections / "rebalance.projection-proposal.ron",
+            ),
             ("profile", temporal_profile_json),
             ("profile", temporal_profile_ron),
             ("profile", temporal_enriched_json),
@@ -2673,9 +2802,21 @@ def verify_domain_contract() -> None:
             .get("avatar", {})
             .get("value", {})
         )
+        character_projections_value = character_profile.get("projections", {}).get(
+            "value", {}
+        )
+        character_projection_values = character_projections_value.get(
+            "values", {}
+        ).get("value", {})
+        character_narrative_role = character_projection_values.get(
+            "narrative_role", {}
+        ).get("value", {})
+        character_projection_write_back = character_projections_value.get(
+            "write_back", {}
+        ).get("value", {})
         if (
             character_story.get("version") != 4
-            or character_module.get("version") != "1.5.0"
+            or character_module.get("version") != "1.6.0"
             or character_profile.get("identity", {})
             .get("value", {})
             .get("id", {})
@@ -2795,9 +2936,59 @@ def verify_domain_contract() -> None:
                 .get("value", "")
             )
             != 64
+            or list(character_projection_values)
+            != ["narrative_role", "personality_lens", "social_role", "vocation"]
+            or character_projection_values.get("personality_lens", {})
+            .get("value", {})
+            .get("lossy", {})
+            .get("value")
+            is not True
+            or character_projection_values.get("personality_lens", {})
+            .get("value", {})
+            .get("decision", {})
+            .get("value")
+            != "derived"
+            or character_narrative_role.get("label", {}).get("value")
+            != "Signal Keeper"
+            or character_narrative_role.get("lock", {}).get("value") != "locked"
+            or character_narrative_role.get("pack", {})
+            .get("value", {})
+            .get("id", {})
+            .get("value")
+            != "org.weave.projection.glasswind_lenses"
+            or len(
+                character_narrative_role.get("pack", {})
+                .get("value", {})
+                .get("sha256", {})
+                .get("value", "")
+            )
+            != 64
+            or len(
+                character_narrative_role.get("proposal_sha256", {}).get(
+                    "value", ""
+                )
+            )
+            != 64
+            or len(
+                character_narrative_role.get("review_sha256", {}).get("value", "")
+            )
+            != 64
+            or any(
+                character_projection_write_back.get(target, {}).get("value")
+                is not False
+                for target in (
+                    "alignment",
+                    "birth",
+                    "hexaco",
+                    "identity",
+                    "ocean",
+                    "relationships",
+                    "ruleset",
+                )
+            )
         ):
             raise DocsError(
-                "compiled Character fixture omitted typed presentation, relationships, evidence, derivation labels, or approved alignment"
+                "compiled Character fixture omitted typed projections, presentation, relationships, evidence, derivation labels, or approved alignment"
             )
 
         for encoding, output, checked in (
@@ -2870,7 +3061,7 @@ def verify_domain_contract() -> None:
         ]
         if (
             temporal_story.get("version") != 4
-            or temporal_module.get("version") != "1.5.0"
+            or temporal_module.get("version") != "1.6.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
             != [

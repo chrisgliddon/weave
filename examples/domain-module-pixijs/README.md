@@ -6,7 +6,10 @@ their tagged domain values and renders them with `Application` and `Text`. It re
 variables as the Bevy example, labels OCEAN as derived and lossy, accepts only reviewed/edited/
 overridden alignment labels with exact pack and review fingerprints, excludes rejected and
 withheld axes, and validates attributed pronouns, palette colors, safe asset paths, catalog
-coordinates, assignment value kinds, and presentation locks. Its expression reader validates and
+coordinates, assignment value kinds, and presentation locks. Its projection reader validates
+approved categorical, vocation, social-role, and narrative-role labels with exact pack/proposal/
+review hashes, explanations, rationales, input paths, lossiness, decisions, locks, and the all-false
+write-back contract. Its expression reader validates and
 renders a normalized term, categorized preference, reusable voice instruction, exact dialogue
 template/scenario, and pinned pack coordinate. It keeps fact lineage separate from original
 fictional-cue lineage, verifies expression, presentation, alignment, and temporal personality

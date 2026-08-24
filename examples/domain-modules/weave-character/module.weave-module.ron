@@ -2,10 +2,10 @@
     contract_version: 1,
     pack_format_version: 1,
     id: "org.weave.character",
-    version: "1.5.0",
+    version: "1.6.0",
     namespace: "character",
     title: "Weave Character",
-    summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
+    summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, explainable reviewed classification and role views, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
     authors: [
         (
             name: "Weave Contributors",
@@ -2262,6 +2262,14 @@
                     required: true,
                     description: "Exact Character Profile contract version.",
                 ),
+                "projections": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRoleProjections",
+                    ),
+                    required: false,
+                    description: "Optional explainable categorical, vocation, social-role, and narrative-role values with exact review lineage and no write-back authority.",
+                ),
                 "provenance": (
                     type: (
                         kind: "named",
@@ -2277,6 +2285,272 @@
                     ),
                     required: false,
                     description: "Optional layered relationship graph with review, safeguards, and advisory evidence kept explicit.",
+                ),
+            },
+        ),
+        "CharacterProjectionPack": (
+            kind: "object",
+            fields: {
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact projection pack identity.",
+                ),
+                "sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact lowercase pack content SHA-256.",
+                ),
+                "version": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact projection pack version.",
+                ),
+            },
+        ),
+        "CharacterProjectionValue": (
+            kind: "object",
+            fields: {
+                "character_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact Character owner.",
+                ),
+                "coverage_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Exact covered evidence weight in integer millionths.",
+                ),
+                "decision": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "derived",
+                            "edited",
+                            "overridden",
+                            "reviewed",
+                        ],
+                    ),
+                    required: true,
+                    description: "Explicit path by which this value entered the public view.",
+                ),
+                "entry_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable pack or editorial entry id.",
+                ),
+                "explanation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 4096,
+                    ),
+                    required: true,
+                    description: "Public explanation of evidence, threshold, and selection semantics.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable output slot identifier.",
+                ),
+                "independent_evidence": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; the projection is not independent character evidence.",
+                ),
+                "input_paths": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted canonical evidence paths actually used by the approved value.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "categorical_personality",
+                            "narrative_role",
+                            "social_role",
+                            "vocation",
+                        ],
+                    ),
+                    required: true,
+                    description: "Whether this is a lossy display category or an editorial role suggestion.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Approved public label.",
+                ),
+                "lock": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "locked",
+                            "unlocked",
+                        ],
+                    ),
+                    required: true,
+                    description: "Explicit editorial lock retained across rebalance operations.",
+                ),
+                "lossy": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "True only when the label intentionally compresses richer evidence.",
+                ),
+                "pack": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterProjectionPack",
+                    ),
+                    required: false,
+                    description: "Exact pack coordinate for a derived or reviewed value; absent for direct authorship.",
+                ),
+                "proposal_sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: false,
+                    description: "Exact immutable proposal fingerprint for reviewed lineage.",
+                ),
+                "rationale": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Explicit editorial rationale.",
+                ),
+                "review_sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: false,
+                    description: "Exact complete-review fingerprint for reviewed lineage.",
+                ),
+                "score_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Optional exact signed pack score; absent for editorial overrides and direct authorship.",
+                ),
+                "taxonomy": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Stable taxonomy identity.",
+                ),
+            },
+        ),
+        "CharacterProjectionWriteBack": (
+            kind: "object",
+            fields: {
+                "alignment": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify alignment shorthand.",
+                ),
+                "birth": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify birth evidence.",
+                ),
+                "hexaco": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify canonical HEXACO evidence.",
+                ),
+                "identity": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify canonical identity.",
+                ),
+                "ocean": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify derived OCEAN compatibility values.",
+                ),
+                "relationships": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify relationship graphs.",
+                ),
+                "ruleset": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; projections cannot modify ruleset data.",
                 ),
             },
         ),
@@ -2859,6 +3133,64 @@
                     ),
                     required: false,
                     description: "Inclusive optional start date.",
+                ),
+            },
+        ),
+        "CharacterRoleProjections": (
+            kind: "object",
+            fields: {
+                "character_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact Character owner.",
+                ),
+                "projection_format_version": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "Exact projection value version.",
+                ),
+                "source_packs": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "CharacterProjectionPack",
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted exact pack coordinates retained by public values.",
+                ),
+                "values": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "CharacterProjectionValue",
+                        ),
+                        min_entries: 0,
+                        max_entries: 4096,
+                    ),
+                    required: true,
+                    description: "Approved values only; rejected and withheld slots stay in authoring receipts.",
+                ),
+                "write_back": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterProjectionWriteBack",
+                    ),
+                    required: true,
+                    description: "Explicit all-false authority boundary for every protected target.",
                 ),
             },
         ),
@@ -3466,6 +3798,13 @@
                     "profile_format_version",
                 ],
                 reason: "The profile contract version is fixed by the selected pack.",
+            ),
+            (
+                path: [
+                    "profile",
+                    "projections",
+                ],
+                reason: "Reviewed categorical, vocation, social-role, and narrative-role values retain exact pack, proposal, review, evidence-path, rationale, and lock lineage; revise them only through the projection review workflow.",
             ),
             (
                 path: [

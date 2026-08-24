@@ -1,7 +1,7 @@
 {
   "resolution_format_version": 1,
   "id": "org.weave.character.expression.resolution.ari_fallback.resolution",
-  "profile_sha256": "4358fb647383b35e2200e5289776613eba922658e79203137cdcf8b18748b15a",
+  "profile_sha256": "a0d40a63eecdc96faa3b9a5af27be3725b8f72189194e9b4743aaa9b9f45d9bd",
   "pack": {
     "id": "org.weave.expression.glasswind",
     "version": "1.0.0",

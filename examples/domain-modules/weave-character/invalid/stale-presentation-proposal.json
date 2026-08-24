@@ -1067,7 +1067,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_da2749184c01216c",
+                  "alignment_apply_dd2556dc5d058a13",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -1078,7 +1078,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -1093,7 +1093,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -1539,40 +1539,6 @@
               }
             }
           },
-          "org.weave.character.role_projections": {
-            "kind": "role_projections",
-            "record": {
-              "header": {
-                "authority": "org.weave.character.contract",
-                "canonical_personality_write_back": "forbidden",
-                "extension_version": 1,
-                "freshness": "current",
-                "lineage": [
-                  "character_original",
-                  "weave_expression_glasswind_original"
-                ],
-                "lock": "unlocked",
-                "namespace": "org.weave.character.role_projections",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
-                "review": "accepted",
-                "state": "reviewed"
-              },
-              "value": {
-                "roles": {
-                  "route_steward": {
-                    "id": "route_steward",
-                    "input_paths": [
-                      "canon.personality.conscientiousness.factor",
-                      "canon.personality.openness.factor"
-                    ],
-                    "rationale": "Accepted as a narrative role, not a personality fact.",
-                    "role": "Route steward",
-                    "taxonomy": "org.weave.roles.glasswind"
-                  }
-                }
-              }
-            }
-          },
           "org.weave.character.tabletop": {
             "kind": "tabletop",
             "record": {
@@ -1617,7 +1583,7 @@
               "weave_wayfinder_compass"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_da2749184c01216c"
+              "alignment_apply_dd2556dc5d058a13"
             ],
             "extensions.org.weave.character.expression": [
               "weave_expression_glasswind_original"
@@ -1680,7 +1646,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_da2749184c01216c",
+              "id": "alignment_apply_dd2556dc5d058a13",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -2279,7 +2245,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_da2749184c01216c",
+                  "alignment_apply_dd2556dc5d058a13",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -2290,7 +2256,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -2305,7 +2271,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -2751,40 +2717,6 @@
               }
             }
           },
-          "org.weave.character.role_projections": {
-            "kind": "role_projections",
-            "record": {
-              "header": {
-                "authority": "org.weave.character.contract",
-                "canonical_personality_write_back": "forbidden",
-                "extension_version": 1,
-                "freshness": "current",
-                "lineage": [
-                  "character_original",
-                  "weave_expression_glasswind_original"
-                ],
-                "lock": "unlocked",
-                "namespace": "org.weave.character.role_projections",
-                "rationale": "Explicit optional projection authored for the synthetic fixture.",
-                "review": "accepted",
-                "state": "reviewed"
-              },
-              "value": {
-                "roles": {
-                  "route_steward": {
-                    "id": "route_steward",
-                    "input_paths": [
-                      "canon.personality.conscientiousness.factor",
-                      "canon.personality.openness.factor"
-                    ],
-                    "rationale": "Accepted as a narrative role, not a personality fact.",
-                    "role": "Route steward",
-                    "taxonomy": "org.weave.roles.glasswind"
-                  }
-                }
-              }
-            }
-          },
           "org.weave.character.tabletop": {
             "kind": "tabletop",
             "record": {
@@ -2829,7 +2761,7 @@
               "weave_wayfinder_compass"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_da2749184c01216c"
+              "alignment_apply_dd2556dc5d058a13"
             ],
             "extensions.org.weave.character.expression": [
               "weave_expression_glasswind_original"
@@ -2892,7 +2824,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_da2749184c01216c",
+              "id": "alignment_apply_dd2556dc5d058a13",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -2943,7 +2875,7 @@
       "org.weave.character.ari_vale",
       "org.weave.character.sable_reed"
     ],
-    "expected_input_sha256": "82c3e86713a31cbb995632da71c215abdac1830e6a428b7e7de718d65dc65f04",
+    "expected_input_sha256": "58622d3c273988bef018337a771aa30aeaedc77231544b232df3a96ed2b161f6",
     "id": "org.weave.character.presentation.glasswind_allocation",
     "mode": "fill_missing",
     "request_format_version": 1,
@@ -2955,5 +2887,5 @@
       "visual_tone"
     ]
   },
-  "request_sha256": "b6bfdef7086294f30281c9cf7aefccc0eb5be7a22a3262742367faf8ea6d4557"
+  "request_sha256": "375d0491aa896d9a320f5dd4154ea539fd344fba75aaadefe373706cb0588c41"
 }

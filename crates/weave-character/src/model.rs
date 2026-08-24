@@ -896,22 +896,99 @@ pub struct BehavioralSignature {
     pub rationale: Option<String>,
 }
 
-/// Accepted role projections keyed by stable identifier.
+/// Accepted categorical views and role projections keyed by stable identifier.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RoleProjections {
+    /// Serialized role-projection value version.
+    #[serde(
+        default = "role_projection_format_version",
+        skip_serializing_if = "role_projection_version_is_current"
+    )]
+    pub projection_format_version: u32,
+    /// Exact profile owner. A projection cannot be copied onto another character implicitly.
+    pub character_id: String,
     pub roles: BTreeMap<String, RoleProjection>,
+    /// Exact immutable packs represented by accepted values.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub source_pack_refs: Vec<ProjectionPackRef>,
 }
 
-/// A reviewed narrative or vocational projection.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+/// Role-projection values are currently serialized as version 1.
+#[must_use]
+pub const fn role_projection_format_version() -> u32 {
+    1
+}
+
+const fn role_projection_version_is_current(value: &u32) -> bool {
+    *value == role_projection_format_version()
+}
+
+/// Exact immutable projection-pack coordinate retained by every accepted value.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ProjectionPackRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// Closed projection surfaces supported by the common pack contract.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectionKind {
+    CategoricalPersonality,
+    Vocation,
+    SocialRole,
+    NarrativeRole,
+}
+
+/// Editorial path by which one accepted public value entered the profile.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectionPublicDecision {
+    /// Mechanically derived, explicitly lossy categorical display.
+    Derived,
+    /// Accepted pack suggestion.
+    Reviewed,
+    /// Reviewer selected another eligible entry from the exact pack.
+    Edited,
+    /// Reviewer authored a replacement outside the pack ranking.
+    Overridden,
+    /// Directly authored value that allocation workflows must never displace.
+    Authored,
+}
+
+/// A reviewed categorical, vocational, social, or narrative projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RoleProjection {
     pub id: String,
+    pub character_id: String,
+    pub kind: ProjectionKind,
     pub taxonomy: String,
-    pub role: String,
+    pub entry_id: String,
+    pub label: String,
+    pub lossy: bool,
+    pub independent_evidence: bool,
+    pub decision: ProjectionPublicDecision,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub score_micros: Option<i32>,
+    pub coverage_micros: u32,
+    pub explanation: String,
     pub rationale: String,
     pub input_paths: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pack: Option<ProjectionPackRef>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proposal_sha256: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub review_sha256: Option<String>,
+    pub lock: LockState,
 }
 
 /// One layered, provenance-aware relationship graph owned by a character profile.

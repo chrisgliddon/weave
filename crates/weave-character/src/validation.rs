@@ -19,9 +19,10 @@ use crate::model::{
     PresentationCatalogAssignment, PresentationCatalogRef, PresentationCatalogValue,
     PresentationPalette, PronounSet, RelationshipConsent, RelationshipConsentState,
     RelationshipDate, RelationshipEdge, RelationshipEdgeOrigin, RelationshipEdges,
-    RelationshipKindPackRef, ReviewState, RoleProjections, TraitMeasurement, ValueState,
-    VersionedExtension, VoiceDirection, relationship_graph_format_version,
+    RelationshipKindPackRef, ReviewState, TraitMeasurement, ValueState, VersionedExtension,
+    VoiceDirection, relationship_graph_format_version,
 };
+use crate::projection::validate_role_projections_data;
 
 const MAX_TEXT: usize = 65_536;
 const MAX_COLLECTION: usize = 65_536;
@@ -392,7 +393,7 @@ fn validate_extension(
         }
         CharacterExtension::RoleProjections(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_role_projections(namespace, &record.value)
+            validate_role_projections_data(namespace, profile_id, &record.value)
         }
         CharacterExtension::Relationships(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
@@ -720,28 +721,6 @@ fn validate_presentation_catalog_assignment(
     validate_presentation_catalog_value(&format!("{path}.value"), &value.value)?;
     validate_sha256(&format!("{path}.proposal_sha256"), &value.proposal_sha256)?;
     validate_sha256(&format!("{path}.review_sha256"), &value.review_sha256)
-}
-
-fn validate_role_projections(
-    namespace: &str,
-    value: &RoleProjections,
-) -> Result<(), CharacterError> {
-    for (id, role) in &value.roles {
-        let path = format!("extensions.{namespace}.value.roles.{id}");
-        validate_local_id(&path, id)?;
-        if role.id != *id {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                format!("{path}.id"),
-                "role identifier must equal its containing map key",
-            ));
-        }
-        validate_namespaced_id(&format!("{path}.taxonomy"), &role.taxonomy)?;
-        validate_text(&format!("{path}.role"), &role.role, 1, 256)?;
-        validate_text(&format!("{path}.rationale"), &role.rationale, 1, 2_048)?;
-        validate_sorted_paths(&format!("{path}.input_paths"), &role.input_paths)?;
-    }
-    Ok(())
 }
 
 fn validate_relationships(

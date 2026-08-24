@@ -153,6 +153,12 @@ fn retarget_template_owner_links(profile: &mut CharacterProfile, old_id: &str, n
                     retarget_applicability(&mut value.applicability, old_id, new_id);
                 }
             }
+            CharacterExtension::RoleProjections(record) => {
+                retarget_owner(&mut record.value.character_id, old_id, new_id);
+                for value in record.value.roles.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                }
+            }
             CharacterExtension::Relationships(record) => {
                 for edge in record.value.edges.values_mut() {
                     retarget_owner(&mut edge.source_character_id, old_id, new_id);

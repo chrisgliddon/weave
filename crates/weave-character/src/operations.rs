@@ -1418,6 +1418,40 @@ fn rewrite_owned_expression_links(
                     );
                 }
             }
+            CharacterExtension::RoleProjections(record) => {
+                let has_owner_links = record.value.character_id == old_id
+                    || record
+                        .value
+                        .roles
+                        .values()
+                        .any(|value| value.character_id == old_id);
+                if !has_owner_links {
+                    continue;
+                }
+                require_extension_override(
+                    &mut record.header,
+                    rationale,
+                    override_locked,
+                    "role_projections.character_id",
+                )?;
+                if record.value.character_id == old_id {
+                    record.value.character_id = new_id.to_owned();
+                    changes.push(CharacterReferenceChange {
+                        owner_character_id: profile.id.clone(),
+                        path: format!("extensions.{namespace}.value.character_id"),
+                    });
+                }
+                for (id, value) in &mut record.value.roles {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.roles.{id}.character_id"),
+                    );
+                }
+            }
             _ => {}
         }
     }
@@ -1650,10 +1684,18 @@ fn profile_has_locks(profile: &CharacterProfile) -> bool {
             .as_ref()
             .is_some_and(|value| value.lock == LockState::Locked);
     identity_locked
-        || profile
-            .extensions
-            .values()
-            .any(|extension| extension_header(extension).lock == LockState::Locked)
+        || profile.extensions.values().any(|extension| {
+            extension_header(extension).lock == LockState::Locked
+                || matches!(
+                    extension,
+                    CharacterExtension::RoleProjections(record)
+                        if record
+                            .value
+                            .roles
+                            .values()
+                            .any(|value| value.lock == LockState::Locked)
+                )
+        })
         || ALL_HEXACO_TRAITS.iter().any(|trait_id| {
             trait_value(&profile.canon.personality, *trait_id)
                 .is_some_and(|value| value.lock == LockState::Locked)

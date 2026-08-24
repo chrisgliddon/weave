@@ -1,0 +1,167 @@
+{
+  "$defs": {
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "ProjectionReviewDecision": {
+      "description": "Explicit editorial disposition of one projected value.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "accept",
+              "type": "string"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "decision",
+            "lock"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "edit",
+              "type": "string"
+            },
+            "entry_id": {
+              "type": "string"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "entry_id",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "override",
+              "type": "string"
+            },
+            "entry_id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "lock": {
+              "$ref": "#/$defs/LockState"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "entry_id",
+            "label",
+            "lock",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "withhold",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-projection-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete decision map for every proposed or reserved character/taxonomy pair.",
+  "properties": {
+    "decisions": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ProjectionReviewDecision"
+        },
+        "type": "object"
+      },
+      "type": "object"
+    },
+    "proposal_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "proposal_sha256",
+    "reviewer",
+    "rationale",
+    "decisions"
+  ],
+  "title": "Weave Character Projection Review v1",
+  "type": "object",
+  "x-weave-character-projection-version": 1
+}

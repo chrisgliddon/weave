@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.5.0"
+    version: "=1.6.0"
     pack: "ari_vale@=1.0.0"
     override profile.identity.display_name.value: "Ari Vale, Wayfinder"
 }
@@ -33,6 +33,20 @@ VAR expression_template = character.profile.expression.template_assignments.arri
 VAR expression_pack = character.profile.expression.template_assignments.arrival_greeting.pack.id
 VAR expression_pack_sha256 = character.profile.expression.template_assignments.arrival_greeting.pack.sha256
 VAR expression_personality_writeback = character.profile.expression.canonical_personality_write_back
+VAR projection_personality = character.profile.projections.values.personality_lens.label
+VAR projection_personality_lossy = character.profile.projections.values.personality_lens.lossy
+VAR projection_vocation = character.profile.projections.values.vocation.label
+VAR projection_social_role = character.profile.projections.values.social_role.label
+VAR projection_narrative_role = character.profile.projections.values.narrative_role.label
+VAR projection_explanation = character.profile.projections.values.narrative_role.explanation
+VAR projection_rationale = character.profile.projections.values.narrative_role.rationale
+VAR projection_lock = character.profile.projections.values.narrative_role.lock
+VAR projection_pack = character.profile.projections.values.narrative_role.pack.id
+VAR projection_pack_version = character.profile.projections.values.narrative_role.pack.version
+VAR projection_pack_sha256 = character.profile.projections.values.narrative_role.pack.sha256
+VAR projection_proposal_sha256 = character.profile.projections.values.narrative_role.proposal_sha256
+VAR projection_review_sha256 = character.profile.projections.values.narrative_role.review_sha256
+VAR projection_hexaco_writeback = character.profile.projections.write_back.hexaco
 
 === start ===
 {presentation_personality_writeback:
@@ -58,5 +72,10 @@ VAR expression_personality_writeback = character.profile.expression.canonical_pe
     This branch is unreachable because expression cannot become personality evidence.
 - else:
     Runtime expression query: {expression_term}; preference {expression_preference}; template {expression_template} from {expression_pack} ({expression_pack_sha256}).
+}
+{projection_hexaco_writeback:
+    This branch is unreachable because projection labels cannot become HEXACO evidence.
+- else:
+    Reviewed projection query: lossy={projection_personality_lossy} {projection_personality}; vocation {projection_vocation}; social role {projection_social_role}; narrative role {projection_narrative_role} ({projection_lock}) from {projection_pack}@{projection_pack_version} ({projection_pack_sha256}), proposal {projection_proposal_sha256}, review {projection_review_sha256}. Explanation: {projection_explanation} Rationale: {projection_rationale}
 }
 -> END

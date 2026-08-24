@@ -139,6 +139,12 @@ fn retarget_profile(
                     value.character_id = id.to_owned();
                 }
             }
+            CharacterExtension::RoleProjections(projections) => {
+                projections.value.character_id = id.to_owned();
+                for value in projections.value.roles.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+            }
             _ => {}
         }
     }
@@ -330,7 +336,7 @@ fn reference_safe_rename_previews_every_migration_and_respects_locks() {
     let request = CharacterOperationRequest::from_json(REQUEST_JSON).unwrap();
     let proposal = propose_character_operation(&collection, &request).unwrap();
     assert_eq!(proposal.changes.len(), 2);
-    assert_eq!(proposal.changes[0].affected_references.len(), 11);
+    assert_eq!(proposal.changes[0].affected_references.len(), 16);
     assert_eq!(proposal.changes[1].affected_references.len(), 1);
     assert!(
         proposal.changes[0]
@@ -351,6 +357,20 @@ fn reference_safe_rename_previews_every_migration_and_respects_locks() {
             .any(|change| change
                 .path
                 .ends_with("behavioral_signatures.value.character_id"))
+    );
+    assert!(
+        proposal.changes[0]
+            .affected_references
+            .iter()
+            .any(|change| change.path.ends_with("role_projections.value.character_id"))
+    );
+    assert!(
+        proposal.changes[0]
+            .affected_references
+            .iter()
+            .any(|change| change
+                .path
+                .ends_with("role_projections.value.roles.narrative_role.character_id"))
     );
     assert!(
         proposal.changes[1].affected_references[0]
@@ -376,6 +396,22 @@ fn reference_safe_rename_previews_every_migration_and_respects_locks() {
             .edges
             .values()
             .all(|edge| { edge.source_character_id == "org.weave.character.ari_vale_wayfinder" })
+    );
+    let CharacterExtension::RoleProjections(ari_projections) =
+        &renamed_ari.extensions["org.weave.character.role_projections"]
+    else {
+        panic!("projection kind changed")
+    };
+    assert_eq!(
+        ari_projections.value.character_id,
+        "org.weave.character.ari_vale_wayfinder"
+    );
+    assert!(
+        ari_projections
+            .value
+            .roles
+            .values()
+            .all(|value| { value.character_id == "org.weave.character.ari_vale_wayfinder" })
     );
     let CharacterExtension::Relationships(sable_relationships) =
         &renamed.characters["org.weave.character.sable_reed"].extensions["org.weave.character.relationships"]
@@ -492,6 +528,24 @@ fn create_clone_revise_import_and_recompute_share_one_contract() {
             .display_name
             .value,
         "Tess Waymark"
+    );
+    let CharacterExtension::RoleProjections(cloned_projections) = &cloned
+        .resulting_collection
+        .characters["org.weave.character.tess_waymark"]
+        .extensions["org.weave.character.role_projections"]
+    else {
+        panic!("projection kind changed")
+    };
+    assert_eq!(
+        cloned_projections.value.character_id,
+        "org.weave.character.tess_waymark"
+    );
+    assert!(
+        cloned_projections
+            .value
+            .roles
+            .values()
+            .all(|value| value.character_id == "org.weave.character.tess_waymark")
     );
 
     let overlay = CharacterOverlay::from_json(OVERLAY_JSON).unwrap();

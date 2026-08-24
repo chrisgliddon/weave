@@ -273,7 +273,7 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
     assert_eq!(ModuleManifest::from_ron(MODULE_RON).unwrap(), manifest);
     assert_eq!(manifest.to_json().unwrap(), MODULE_JSON);
     assert_eq!(manifest.to_ron().unwrap(), MODULE_RON);
-    assert_eq!(manifest.version, "1.5.0");
+    assert_eq!(manifest.version, "1.6.0");
     assert!(
         manifest
             .authoring
@@ -282,6 +282,16 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
             .any(|declaration| {
                 declaration.path == ["profile", "alignment"].map(str::to_owned)
                     && declaration.reason.contains("non-diagnostic")
+            })
+    );
+    assert!(
+        manifest
+            .authoring
+            .read_only_paths
+            .iter()
+            .any(|declaration| {
+                declaration.path == ["profile", "projections"].map(str::to_owned)
+                    && declaration.reason.contains("review")
             })
     );
 
@@ -504,6 +514,65 @@ fn validated_profile_projects_through_the_shared_domain_contract() {
         domain_value_at(&pack.values, &["profile", "alignment", "values", "signal"],).is_none()
     );
     assert!(domain_value_at(&pack.values, &["profile", "alignment", "values", "tempo"],).is_none());
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &[
+                "profile",
+                "projections",
+                "values",
+                "personality_lens",
+                "label",
+            ],
+        ),
+        Some(&DomainValue::String("Open Explorer".to_owned()))
+    );
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &[
+                "profile",
+                "projections",
+                "values",
+                "personality_lens",
+                "decision",
+            ],
+        ),
+        Some(&DomainValue::Symbol("derived".to_owned()))
+    );
+    assert_eq!(
+        domain_value_at(
+            &pack.values,
+            &[
+                "profile",
+                "projections",
+                "values",
+                "narrative_role",
+                "pack",
+                "id",
+            ],
+        ),
+        Some(&DomainValue::String(
+            "org.weave.projection.glasswind_lenses".to_owned()
+        ))
+    );
+    for target in [
+        "alignment",
+        "birth",
+        "hexaco",
+        "identity",
+        "ocean",
+        "relationships",
+        "ruleset",
+    ] {
+        assert_eq!(
+            domain_value_at(
+                &pack.values,
+                &["profile", "projections", "write_back", target],
+            ),
+            Some(&DomainValue::Bool(false))
+        );
+    }
 }
 
 #[test]

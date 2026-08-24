@@ -26,7 +26,8 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | Character authoring workspace/revision/preview | `1` | [`character_module.md`](character_module.md) |
 | Character questionnaire pack/answers/proposal/review/receipt | `1` | [`character_module.md`](character_module.md) |
 | Character final review | `1` | [`character_module.md`](character_module.md) |
-| Weave Character domain module | `1.0.0` | `weave_character::CHARACTER_DOMAIN_MODULE_VERSION` |
+| Character projection pack/config/proposal/review/receipt/lock revision | `1` | [`character_module.md`](character_module.md) |
+| Weave Character domain module | `1.6.0` | `weave_character::CHARACTER_DOMAIN_MODULE_VERSION` |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |
 | Tree-sitter package | `0.1.0` | [`tree_sitter.md`](tree_sitter.md) |

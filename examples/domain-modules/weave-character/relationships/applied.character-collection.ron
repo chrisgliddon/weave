@@ -520,7 +520,7 @@
                             lock: unlocked,
                             freshness: current,
                             lineage: [
-                                "alignment_apply_da2749184c01216c",
+                                "alignment_apply_dd2556dc5d058a13",
                                 "character_original",
                                 "weave_wayfinder_compass",
                             ],
@@ -584,8 +584,8 @@
                                 "canon.personality.openness.factor",
                                 "canon.personality.openness.inquisitiveness",
                             ],
-                            review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
-                            applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                            review_sha256: "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
+                            applied_sha256: "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                         ),
                     ),
                 ),
@@ -949,8 +949,8 @@
                                             palette_slot: "accent",
                                             color: "#D6A24A",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -981,8 +981,8 @@
                                                 alt_text: "Geometric cedar and gold wayfinder avatar.",
                                             ),
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -1008,8 +1008,8 @@
                                             category: "org.weave.appearance.silhouette",
                                             descriptor: "Long layered travel coat with a narrow shoulder line.",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -1034,8 +1034,8 @@
                                             kind: "style_tag",
                                             tag: "river_glass",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -1065,7 +1065,7 @@
                             freshness: current,
                             lineage: [
                                 "character_original",
-                                "relationship_review_68af1a409c78b22f",
+                                "relationship_review_acd4eb2808f44279",
                                 "weave_expression_glasswind_original",
                                 "weave_relationship_config",
                                 "weave_relationship_revision",
@@ -1161,7 +1161,7 @@
                                         ),
                                     ],
                                     lineage: [
-                                        "relationship_review_68af1a409c78b22f",
+                                        "relationship_review_acd4eb2808f44279",
                                         "weave_relationship_config",
                                     ],
                                     rationale: Some("Edit metadata while preserving the exact proposed topology and evidence trace."),
@@ -1242,7 +1242,7 @@
                                         ),
                                     ],
                                     lineage: [
-                                        "relationship_review_68af1a409c78b22f",
+                                        "relationship_review_acd4eb2808f44279",
                                         "weave_relationship_config",
                                     ],
                                     rationale: Some("Retain this transparent computed prompt as a reviewed optional edge."),
@@ -1278,7 +1278,7 @@
                                             reviewer: "org.weave.reviewer.fixture",
                                             rationale: "Exercise the explicit, retained author-exception path for a wholly synthetic fictional fixture.",
                                             lineage: [
-                                                "relationship_review_68af1a409c78b22f",
+                                                "relationship_review_acd4eb2808f44279",
                                             ],
                                         ),
                                     },
@@ -1333,7 +1333,7 @@
                                         ),
                                     ],
                                     lineage: [
-                                        "relationship_review_68af1a409c78b22f",
+                                        "relationship_review_acd4eb2808f44279",
                                         "weave_relationship_config",
                                     ],
                                     rationale: Some("Exercise the explicit, retained author-exception path for a wholly synthetic fictional fixture."),
@@ -1379,40 +1379,6 @@
                                         "weave_relationship_revision",
                                     ],
                                     rationale: Some("Authored only for the public synthetic relationship fixture."),
-                                ),
-                            },
-                        ),
-                    ),
-                ),
-                "org.weave.character.role_projections": (
-                    kind: role_projections,
-                    record: (
-                        header: (
-                            namespace: "org.weave.character.role_projections",
-                            extension_version: 1,
-                            authority: "org.weave.character.contract",
-                            rationale: "Explicit optional projection authored for the synthetic fixture.",
-                            state: reviewed,
-                            review: accepted,
-                            lock: unlocked,
-                            freshness: current,
-                            lineage: [
-                                "character_original",
-                                "weave_expression_glasswind_original",
-                            ],
-                            canonical_personality_write_back: forbidden,
-                        ),
-                        value: (
-                            roles: {
-                                "route_steward": (
-                                    id: "route_steward",
-                                    taxonomy: "org.weave.roles.glasswind",
-                                    role: "Route steward",
-                                    rationale: "Accepted as a narrative role, not a personality fact.",
-                                    input_paths: [
-                                        "canon.personality.conscientiousness.factor",
-                                        "canon.personality.openness.factor",
-                                    ],
                                 ),
                             },
                         ),
@@ -1591,7 +1557,7 @@
                 ],
                 transformations: [
                     (
-                        id: "alignment_apply_da2749184c01216c",
+                        id: "alignment_apply_dd2556dc5d058a13",
                         inputs: [
                             "character_original",
                             "weave_wayfinder_compass",
@@ -1599,7 +1565,7 @@
                         description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                     ),
                     (
-                        id: "relationship_review_68af1a409c78b22f",
+                        id: "relationship_review_acd4eb2808f44279",
                         inputs: [
                             "weave_relationship_config",
                         ],
@@ -1623,7 +1589,7 @@
                         "weave_glasswind_presentation",
                     ],
                     "extensions.org.weave.character.alignment": [
-                        "alignment_apply_da2749184c01216c",
+                        "alignment_apply_dd2556dc5d058a13",
                     ],
                     "extensions.org.weave.character.expression": [
                         "weave_expression_glasswind_original",
@@ -1632,7 +1598,7 @@
                         "weave_relationship_reference_pack",
                     ],
                     "extensions.relationships": [
-                        "relationship_review_68af1a409c78b22f",
+                        "relationship_review_acd4eb2808f44279",
                     ],
                     "inputs": [
                         "weave_wayfinder_compass",
@@ -2169,7 +2135,7 @@
                             lock: unlocked,
                             freshness: current,
                             lineage: [
-                                "alignment_apply_da2749184c01216c",
+                                "alignment_apply_dd2556dc5d058a13",
                                 "character_original",
                                 "weave_wayfinder_compass",
                             ],
@@ -2233,8 +2199,8 @@
                                 "canon.personality.openness.factor",
                                 "canon.personality.openness.inquisitiveness",
                             ],
-                            review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
-                            applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                            review_sha256: "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
+                            applied_sha256: "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                         ),
                     ),
                 ),
@@ -2598,8 +2564,8 @@
                                             palette_slot: "accent",
                                             color: "#D6A24A",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -2630,8 +2596,8 @@
                                                 alt_text: "Geometric cedar and gold wayfinder avatar.",
                                             ),
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -2657,8 +2623,8 @@
                                             category: "org.weave.appearance.silhouette",
                                             descriptor: "Long layered travel coat with a narrow shoulder line.",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -2683,8 +2649,8 @@
                                             kind: "style_tag",
                                             tag: "river_glass",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -2714,7 +2680,7 @@
                             freshness: current,
                             lineage: [
                                 "character_original",
-                                "relationship_review_68af1a409c78b22f",
+                                "relationship_review_acd4eb2808f44279",
                                 "weave_expression_glasswind_original",
                                 "weave_relationship_config",
                                 "weave_relationship_revision",
@@ -2810,7 +2776,7 @@
                                         ),
                                     ],
                                     lineage: [
-                                        "relationship_review_68af1a409c78b22f",
+                                        "relationship_review_acd4eb2808f44279",
                                         "weave_relationship_config",
                                     ],
                                     rationale: Some("Override proposal metadata without claiming that the computed score is objective truth."),
@@ -2835,40 +2801,6 @@
                                         "weave_relationship_revision",
                                     ],
                                     rationale: Some("Authored only for the public synthetic relationship fixture."),
-                                ),
-                            },
-                        ),
-                    ),
-                ),
-                "org.weave.character.role_projections": (
-                    kind: role_projections,
-                    record: (
-                        header: (
-                            namespace: "org.weave.character.role_projections",
-                            extension_version: 1,
-                            authority: "org.weave.character.contract",
-                            rationale: "Explicit optional projection authored for the synthetic fixture.",
-                            state: reviewed,
-                            review: accepted,
-                            lock: unlocked,
-                            freshness: current,
-                            lineage: [
-                                "character_original",
-                                "weave_expression_glasswind_original",
-                            ],
-                            canonical_personality_write_back: forbidden,
-                        ),
-                        value: (
-                            roles: {
-                                "route_steward": (
-                                    id: "route_steward",
-                                    taxonomy: "org.weave.roles.glasswind",
-                                    role: "Route steward",
-                                    rationale: "Accepted as a narrative role, not a personality fact.",
-                                    input_paths: [
-                                        "canon.personality.conscientiousness.factor",
-                                        "canon.personality.openness.factor",
-                                    ],
                                 ),
                             },
                         ),
@@ -3047,7 +2979,7 @@
                 ],
                 transformations: [
                     (
-                        id: "alignment_apply_da2749184c01216c",
+                        id: "alignment_apply_dd2556dc5d058a13",
                         inputs: [
                             "character_original",
                             "weave_wayfinder_compass",
@@ -3055,7 +2987,7 @@
                         description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                     ),
                     (
-                        id: "relationship_review_68af1a409c78b22f",
+                        id: "relationship_review_acd4eb2808f44279",
                         inputs: [
                             "weave_relationship_config",
                         ],
@@ -3079,7 +3011,7 @@
                         "weave_glasswind_presentation",
                     ],
                     "extensions.org.weave.character.alignment": [
-                        "alignment_apply_da2749184c01216c",
+                        "alignment_apply_dd2556dc5d058a13",
                     ],
                     "extensions.org.weave.character.expression": [
                         "weave_expression_glasswind_original",
@@ -3088,7 +3020,7 @@
                         "weave_relationship_reference_pack",
                     ],
                     "extensions.relationships": [
-                        "relationship_review_68af1a409c78b22f",
+                        "relationship_review_acd4eb2808f44279",
                     ],
                     "inputs": [
                         "weave_wayfinder_compass",
@@ -3625,7 +3557,7 @@
                             lock: unlocked,
                             freshness: current,
                             lineage: [
-                                "alignment_apply_da2749184c01216c",
+                                "alignment_apply_dd2556dc5d058a13",
                                 "character_original",
                                 "weave_wayfinder_compass",
                             ],
@@ -3689,8 +3621,8 @@
                                 "canon.personality.openness.factor",
                                 "canon.personality.openness.inquisitiveness",
                             ],
-                            review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
-                            applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                            review_sha256: "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
+                            applied_sha256: "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                         ),
                     ),
                 ),
@@ -4054,8 +3986,8 @@
                                             palette_slot: "accent",
                                             color: "#D6A24A",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -4086,8 +4018,8 @@
                                                 alt_text: "Geometric cedar and gold wayfinder avatar.",
                                             ),
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -4113,8 +4045,8 @@
                                             category: "org.weave.appearance.silhouette",
                                             descriptor: "Long layered travel coat with a narrow shoulder line.",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -4139,8 +4071,8 @@
                                             kind: "style_tag",
                                             tag: "river_glass",
                                         ),
-                                        proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                                        review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                        proposal_sha256: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                                        review_sha256: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                     ),
                                     state: reviewed,
                                     confidence: high,
@@ -4170,7 +4102,7 @@
                             freshness: current,
                             lineage: [
                                 "character_original",
-                                "relationship_review_68af1a409c78b22f",
+                                "relationship_review_acd4eb2808f44279",
                                 "weave_expression_glasswind_original",
                                 "weave_relationship_config",
                                 "weave_relationship_revision",
@@ -4280,44 +4212,10 @@
                                         ),
                                     ],
                                     lineage: [
-                                        "relationship_review_68af1a409c78b22f",
+                                        "relationship_review_acd4eb2808f44279",
                                         "weave_relationship_config",
                                     ],
                                     rationale: Some("Accept one optional narrative suggestion after explicit human review."),
-                                ),
-                            },
-                        ),
-                    ),
-                ),
-                "org.weave.character.role_projections": (
-                    kind: role_projections,
-                    record: (
-                        header: (
-                            namespace: "org.weave.character.role_projections",
-                            extension_version: 1,
-                            authority: "org.weave.character.contract",
-                            rationale: "Explicit optional projection authored for the synthetic fixture.",
-                            state: reviewed,
-                            review: accepted,
-                            lock: unlocked,
-                            freshness: current,
-                            lineage: [
-                                "character_original",
-                                "weave_expression_glasswind_original",
-                            ],
-                            canonical_personality_write_back: forbidden,
-                        ),
-                        value: (
-                            roles: {
-                                "route_steward": (
-                                    id: "route_steward",
-                                    taxonomy: "org.weave.roles.glasswind",
-                                    role: "Route steward",
-                                    rationale: "Accepted as a narrative role, not a personality fact.",
-                                    input_paths: [
-                                        "canon.personality.conscientiousness.factor",
-                                        "canon.personality.openness.factor",
-                                    ],
                                 ),
                             },
                         ),
@@ -4496,7 +4394,7 @@
                 ],
                 transformations: [
                     (
-                        id: "alignment_apply_da2749184c01216c",
+                        id: "alignment_apply_dd2556dc5d058a13",
                         inputs: [
                             "character_original",
                             "weave_wayfinder_compass",
@@ -4504,7 +4402,7 @@
                         description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                     ),
                     (
-                        id: "relationship_review_68af1a409c78b22f",
+                        id: "relationship_review_acd4eb2808f44279",
                         inputs: [
                             "weave_relationship_config",
                         ],
@@ -4528,7 +4426,7 @@
                         "weave_glasswind_presentation",
                     ],
                     "extensions.org.weave.character.alignment": [
-                        "alignment_apply_da2749184c01216c",
+                        "alignment_apply_dd2556dc5d058a13",
                     ],
                     "extensions.org.weave.character.expression": [
                         "weave_expression_glasswind_original",
@@ -4537,7 +4435,7 @@
                         "weave_relationship_reference_pack",
                     ],
                     "extensions.relationships": [
-                        "relationship_review_68af1a409c78b22f",
+                        "relationship_review_acd4eb2808f44279",
                     ],
                     "inputs": [
                         "weave_wayfinder_compass",

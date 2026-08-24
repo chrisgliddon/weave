@@ -30,7 +30,7 @@ The complete [browser example guide](https://github.com/chrisgliddon/weave/blob/
 
 ## PixiJS domain-module consumer
 
-The separate [PixiJS v8 example](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) imports canonical IR-4 tracer, composed World JSON, and reviewed Character JSON, validates versions and tagged values, and renders selected module exports without WASM or editor dependencies. Its exact host tests prove that the composed climate/biome changes the canvas colors while the authored beacon rule, harbor, road, and coastal override change the travel presentation; they also decode Character pronouns, canonical palette colors, safe asset paths, exact catalog hashes, reviewed assignment kinds, locks, and the forbidden personality-write-back marker.
+The separate [PixiJS v8 example](https://github.com/chrisgliddon/weave/tree/main/examples/domain-module-pixijs) imports canonical IR-4 tracer, composed World JSON, and reviewed Character JSON, validates versions and tagged values, and renders selected module exports without WASM or editor dependencies. Its exact host tests prove that the composed climate/biome changes the canvas colors while the authored beacon rule, harbor, road, and coastal override change the travel presentation; they also decode Character pronouns, canonical palette colors, safe asset paths, exact catalog hashes, reviewed assignment kinds, locks, and approved classification/role labels with pack/proposal/review lineage and an all-false write-back contract.
 
 ```bash
 npm --prefix examples/domain-module-pixijs ci

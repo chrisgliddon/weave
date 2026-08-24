@@ -2,7 +2,7 @@
   "revision_format_version": 1,
   "id": "org.weave.character.expression.revision.ari_authored",
   "character_id": "org.weave.character.ari_vale",
-  "expected_profile_sha256": "1e4f6497cf6b27c9877b858d34f9c999820df64c8424914f237db9d35bffe8bb",
+  "expected_profile_sha256": "8b82becf7df9919164b76043bc0daa033aae1e748ade71b21a60ae43d2dd6fcd",
   "mutations": [
     {
       "action": "upsert_term",

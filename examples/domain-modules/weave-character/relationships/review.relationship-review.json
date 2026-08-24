@@ -1,6 +1,6 @@
 {
   "review_format_version": 1,
-  "proposal_sha256": "5ab3f5e223757f23ae7eed6462a83749990a1873f2cf2516d6fd7dd8d804befb",
+  "proposal_sha256": "bbaf495cc7b3a6a06bb4ff20616f1931c931adb5d753540448c131487c8237f0",
   "reviewer": "org.weave.reviewer.fixture",
   "rationale": "Review every deterministic candidate, preserve every rationale, and publish only explicit human decisions.",
   "decisions": {

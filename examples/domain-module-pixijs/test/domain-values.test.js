@@ -8,6 +8,7 @@ import {
   characterPresentation,
   expressionCharacterPresentation,
   identityCharacterPresentation,
+  projectionCharacterPresentation,
   relationshipCharacterPresentation,
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
@@ -186,6 +187,79 @@ test("reads only approved alignment values with exact portable fingerprints", as
         value.id !== "tempo",
     ),
   );
+});
+
+test("reads explainable projection labels with exact review lineage and no write-back", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const projections = projectionCharacterPresentation(story);
+  assert.equal(projections.characterId, "org.weave.character.ari_vale");
+  assert.deepEqual(
+    projections.values.map(({ id, kind, label, decision, lossy, locked }) => ({
+      id,
+      kind,
+      label,
+      decision,
+      lossy,
+      locked,
+    })),
+    [
+      {
+        id: "narrative_role",
+        kind: "narrative_role",
+        label: "Signal Keeper",
+        decision: "reviewed",
+        lossy: false,
+        locked: true,
+      },
+      {
+        id: "personality_lens",
+        kind: "categorical_personality",
+        label: "Open Explorer",
+        decision: "derived",
+        lossy: true,
+        locked: false,
+      },
+      {
+        id: "social_role",
+        kind: "social_role",
+        label: "Question Host",
+        decision: "reviewed",
+        lossy: false,
+        locked: false,
+      },
+      {
+        id: "vocation",
+        kind: "vocation",
+        label: "Route Archivist",
+        decision: "reviewed",
+        lossy: false,
+        locked: false,
+      },
+    ],
+  );
+  assert.ok(
+    projections.values.every(
+      (value) =>
+        value.independentEvidence === false &&
+        value.explanation.length > 0 &&
+        value.rationale.length > 0 &&
+        value.inputPaths.length > 0 &&
+        value.pack.id === "org.weave.projection.glasswind_lenses" &&
+        value.pack.version === "1.0.0" &&
+        /^[0-9a-f]{64}$/u.test(value.pack.sha256) &&
+        /^[0-9a-f]{64}$/u.test(value.proposalSha256) &&
+        /^[0-9a-f]{64}$/u.test(value.reviewSha256),
+    ),
+  );
+  assert.deepEqual(projections.writeBack, {
+    alignment: false,
+    birth: false,
+    hexaco: false,
+    identity: false,
+    ocean: false,
+    relationships: false,
+    ruleset: false,
+  });
 });
 
 test("queries layered Character relationships without treating affinity as canon", async () => {

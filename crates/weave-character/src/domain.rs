@@ -19,15 +19,16 @@ use crate::{
     ExpressionVoiceConstraint, Freshness, HexacoProfile, IdentityContextKind, IdentityPresentation,
     LockState, NormalizedExpressionTerm, NormalizedPreference, OceanView, PreferencePolarity,
     PresentationAssetKind, PresentationAssetReference, PresentationCatalogAssignment,
-    PresentationCatalogRef, PresentationCatalogValue, RelationshipConsent,
-    RelationshipConsentState, RelationshipDate, RelationshipEdge, RelationshipEdgeOrigin,
-    RelationshipEvidenceContribution, RelationshipEvidenceKind, RelationshipKindPackRef,
-    RelationshipNote, RelationshipSafeguardException, RelationshipValidityPeriod, ReviewState,
+    PresentationCatalogRef, PresentationCatalogValue, ProjectionKind, ProjectionPackRef,
+    ProjectionPublicDecision, RelationshipConsent, RelationshipConsentState, RelationshipDate,
+    RelationshipEdge, RelationshipEdgeOrigin, RelationshipEvidenceContribution,
+    RelationshipEvidenceKind, RelationshipKindPackRef, RelationshipNote,
+    RelationshipSafeguardException, RelationshipValidityPeriod, ReviewState, RoleProjection,
     TraitBand, TraitMeasurement, ValueState, validate_profile,
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.5.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.6.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -143,6 +144,22 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             character_presentation_assignment_type(),
         ),
         (
+            "CharacterProjectionPack".to_owned(),
+            character_projection_pack_type(),
+        ),
+        (
+            "CharacterProjectionValue".to_owned(),
+            character_projection_value_type(),
+        ),
+        (
+            "CharacterProjectionWriteBack".to_owned(),
+            character_projection_write_back_type(),
+        ),
+        (
+            "CharacterRoleProjections".to_owned(),
+            character_role_projections_type(),
+        ),
+        (
             "CharacterRelationshipConsent".to_owned(),
             character_relationship_consent_type(),
         ),
@@ -245,7 +262,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         version: CHARACTER_DOMAIN_MODULE_VERSION.to_owned(),
         namespace: "character".to_owned(),
         title: "Weave Character".to_owned(),
-        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
+        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, explainable reviewed classification and role views, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
         authors: vec![ModuleAuthor {
             name: "Weave Contributors".to_owned(),
             url: Some("https://github.com/chrisgliddon/weave".to_owned()),
@@ -286,6 +303,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
                 (vec!["profile", "presentation", "canonical_personality_write_back"], "Presentation has no write path into canonical personality evidence."),
                 (vec!["profile", "presentation", "catalog_assignments"], "Reviewed catalog assignments retain exact proposal, review, catalog, and lock metadata; revise them through the presentation review workflow."),
                 (vec!["profile", "profile_format_version"], "The profile contract version is fixed by the selected pack."),
+                (vec!["profile", "projections"], "Reviewed categorical, vocation, social-role, and narrative-role values retain exact pack, proposal, review, evidence-path, rationale, and lock lineage; revise them only through the projection review workflow."),
                 (vec!["profile", "provenance"], "Pack provenance is immutable and cannot be replaced by story source."),
                 (vec!["profile", "relationships"], "Relationship layers, reviews, locks, safeguard exceptions, and advisory evidence are changed only through a fingerprinted relationship revision or complete proposal review."),
             ]
@@ -441,6 +459,9 @@ pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue
     if let Some(presentation) = identity_presentation_value(profile) {
         fields.insert("presentation".to_owned(), presentation);
     }
+    if let Some(projections) = role_projections_value(profile) {
+        fields.insert("projections".to_owned(), projections);
+    }
     if let Some(relationships) = relationship_graph_value(profile) {
         fields.insert("relationships".to_owned(), relationships);
     }
@@ -455,7 +476,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v6";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v7";
     if input
         .transformations
         .iter()
@@ -471,7 +492,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, explainable reviewed categorical and role values, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -1499,6 +1520,238 @@ fn character_alignment_view_type() -> TypeExpression {
     }
 }
 
+fn character_projection_pack_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact projection pack identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact lowercase pack content SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(text(1, 256), true, "Exact projection pack version."),
+            ),
+        ]),
+    }
+}
+
+fn character_projection_value_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "character_id".to_owned(),
+                field(text(3, 256), true, "Exact Character owner."),
+            ),
+            (
+                "coverage_micros".to_owned(),
+                field(
+                    number(true, 0.0, 1_000_000.0),
+                    true,
+                    "Exact covered evidence weight in integer millionths.",
+                ),
+            ),
+            (
+                "decision".to_owned(),
+                field(
+                    symbol(&["authored", "derived", "edited", "overridden", "reviewed"]),
+                    true,
+                    "Explicit path by which this value entered the public view.",
+                ),
+            ),
+            (
+                "entry_id".to_owned(),
+                field(text(1, 128), true, "Stable pack or editorial entry id."),
+            ),
+            (
+                "explanation".to_owned(),
+                field(
+                    text(1, 4_096),
+                    true,
+                    "Public explanation of evidence, threshold, and selection semantics.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable output slot identifier."),
+            ),
+            (
+                "independent_evidence".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; the projection is not independent character evidence.",
+                ),
+            ),
+            (
+                "input_paths".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 512)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted canonical evidence paths actually used by the approved value.",
+                ),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&[
+                        "categorical_personality",
+                        "narrative_role",
+                        "social_role",
+                        "vocation",
+                    ]),
+                    true,
+                    "Whether this is a lossy display category or an editorial role suggestion.",
+                ),
+            ),
+            (
+                "label".to_owned(),
+                field(text(1, 256), true, "Approved public label."),
+            ),
+            (
+                "lock".to_owned(),
+                field(
+                    symbol(&["locked", "unlocked"]),
+                    true,
+                    "Explicit editorial lock retained across rebalance operations.",
+                ),
+            ),
+            (
+                "lossy".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "True only when the label intentionally compresses richer evidence.",
+                ),
+            ),
+            (
+                "pack".to_owned(),
+                field(
+                    named("CharacterProjectionPack"),
+                    false,
+                    "Exact pack coordinate for a derived or reviewed value; absent for direct authorship.",
+                ),
+            ),
+            (
+                "proposal_sha256".to_owned(),
+                field(
+                    text(64, 64),
+                    false,
+                    "Exact immutable proposal fingerprint for reviewed lineage.",
+                ),
+            ),
+            (
+                "rationale".to_owned(),
+                field(text(1, 2_048), true, "Explicit editorial rationale."),
+            ),
+            (
+                "review_sha256".to_owned(),
+                field(
+                    text(64, 64),
+                    false,
+                    "Exact complete-review fingerprint for reviewed lineage.",
+                ),
+            ),
+            (
+                "score_micros".to_owned(),
+                field(
+                    number(true, -1_000_000.0, 1_000_000.0),
+                    false,
+                    "Optional exact signed pack score; absent for editorial overrides and direct authorship.",
+                ),
+            ),
+            (
+                "taxonomy".to_owned(),
+                field(text(3, 256), true, "Stable taxonomy identity."),
+            ),
+        ]),
+    }
+}
+
+fn character_projection_write_back_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: [
+            ("alignment", "alignment shorthand"),
+            ("birth", "birth evidence"),
+            ("hexaco", "canonical HEXACO evidence"),
+            ("identity", "canonical identity"),
+            ("ocean", "derived OCEAN compatibility values"),
+            ("relationships", "relationship graphs"),
+            ("ruleset", "ruleset data"),
+        ]
+        .into_iter()
+        .map(|(id, target)| {
+            (
+                id.to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    &format!("Always false; projections cannot modify {target}."),
+                ),
+            )
+        })
+        .collect(),
+    }
+}
+
+fn character_role_projections_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "character_id".to_owned(),
+                field(text(3, 256), true, "Exact Character owner."),
+            ),
+            (
+                "projection_format_version".to_owned(),
+                field(
+                    number(true, 1.0, 1.0),
+                    true,
+                    "Exact projection value version.",
+                ),
+            ),
+            (
+                "source_packs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterProjectionPack")),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted exact pack coordinates retained by public values.",
+                ),
+            ),
+            (
+                "values".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterProjectionValue")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Approved values only; rejected and withheld slots stay in authoring receipts.",
+                ),
+            ),
+            (
+                "write_back".to_owned(),
+                field(
+                    named("CharacterProjectionWriteBack"),
+                    true,
+                    "Explicit all-false authority boundary for every protected target.",
+                ),
+            ),
+        ]),
+    }
+}
+
 fn character_relationship_kind_pack_type() -> TypeExpression {
     TypeExpression::Object {
         fields: BTreeMap::from([
@@ -2448,6 +2701,14 @@ fn runtime_profile_type() -> TypeExpression {
                     named("CharacterProvenance"),
                     true,
                     "Profile source and transformation identifiers.",
+                ),
+            ),
+            (
+                "projections".to_owned(),
+                field(
+                    named("CharacterRoleProjections"),
+                    false,
+                    "Optional explainable categorical, vocation, social-role, and narrative-role values with exact review lineage and no write-back authority.",
                 ),
             ),
             (
@@ -3518,6 +3779,166 @@ const fn relationship_evidence_kind(value: RelationshipEvidenceKind) -> &'static
         RelationshipEvidenceKind::PreferenceOverlap => "preference_overlap",
         RelationshipEvidenceKind::SharedContext => "shared_context",
         RelationshipEvidenceKind::ExistingCanon => "existing_canon",
+    }
+}
+
+fn role_projections_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::RoleProjections(extension) = profile
+        .extensions
+        .get(crate::ROLE_PROJECTION_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    let value = &extension.value;
+    Some(object([
+        (
+            "character_id",
+            DomainValue::String(value.character_id.clone()),
+        ),
+        (
+            "projection_format_version",
+            DomainValue::Number(f64::from(value.projection_format_version)),
+        ),
+        (
+            "source_packs",
+            DomainValue::List(
+                value
+                    .source_pack_refs
+                    .iter()
+                    .map(projection_pack_value)
+                    .collect(),
+            ),
+        ),
+        (
+            "values",
+            DomainValue::Object(
+                value
+                    .roles
+                    .iter()
+                    .map(|(id, value)| (id.clone(), role_projection_value(value)))
+                    .collect(),
+            ),
+        ),
+        (
+            "write_back",
+            object([
+                ("alignment", DomainValue::Bool(false)),
+                ("birth", DomainValue::Bool(false)),
+                ("hexaco", DomainValue::Bool(false)),
+                ("identity", DomainValue::Bool(false)),
+                ("ocean", DomainValue::Bool(false)),
+                ("relationships", DomainValue::Bool(false)),
+                ("ruleset", DomainValue::Bool(false)),
+            ]),
+        ),
+    ]))
+}
+
+fn projection_pack_value(pack: &ProjectionPackRef) -> DomainValue {
+    object([
+        ("id", DomainValue::String(pack.id.clone())),
+        ("sha256", DomainValue::String(pack.sha256.clone())),
+        ("version", DomainValue::String(pack.version.clone())),
+    ])
+}
+
+fn role_projection_value(value: &RoleProjection) -> DomainValue {
+    let mut fields = BTreeMap::from([
+        (
+            "character_id".to_owned(),
+            DomainValue::String(value.character_id.clone()),
+        ),
+        (
+            "coverage_micros".to_owned(),
+            DomainValue::Number(f64::from(value.coverage_micros)),
+        ),
+        (
+            "decision".to_owned(),
+            DomainValue::Symbol(projection_decision(value.decision).to_owned()),
+        ),
+        (
+            "entry_id".to_owned(),
+            DomainValue::String(value.entry_id.clone()),
+        ),
+        (
+            "explanation".to_owned(),
+            DomainValue::String(value.explanation.clone()),
+        ),
+        ("id".to_owned(), DomainValue::String(value.id.clone())),
+        (
+            "independent_evidence".to_owned(),
+            DomainValue::Bool(value.independent_evidence),
+        ),
+        (
+            "input_paths".to_owned(),
+            DomainValue::List(
+                value
+                    .input_paths
+                    .iter()
+                    .cloned()
+                    .map(DomainValue::String)
+                    .collect(),
+            ),
+        ),
+        (
+            "kind".to_owned(),
+            DomainValue::Symbol(projection_kind(value.kind).to_owned()),
+        ),
+        ("label".to_owned(), DomainValue::String(value.label.clone())),
+        (
+            "lock".to_owned(),
+            DomainValue::Symbol(lock(value.lock).to_owned()),
+        ),
+        ("lossy".to_owned(), DomainValue::Bool(value.lossy)),
+        (
+            "rationale".to_owned(),
+            DomainValue::String(value.rationale.clone()),
+        ),
+        (
+            "taxonomy".to_owned(),
+            DomainValue::String(value.taxonomy.clone()),
+        ),
+    ]);
+    if let Some(pack) = &value.pack {
+        fields.insert("pack".to_owned(), projection_pack_value(pack));
+    }
+    if let Some(proposal_sha256) = &value.proposal_sha256 {
+        fields.insert(
+            "proposal_sha256".to_owned(),
+            DomainValue::String(proposal_sha256.clone()),
+        );
+    }
+    if let Some(review_sha256) = &value.review_sha256 {
+        fields.insert(
+            "review_sha256".to_owned(),
+            DomainValue::String(review_sha256.clone()),
+        );
+    }
+    if let Some(score_micros) = value.score_micros {
+        fields.insert(
+            "score_micros".to_owned(),
+            DomainValue::Number(f64::from(score_micros)),
+        );
+    }
+    DomainValue::Object(fields)
+}
+
+const fn projection_kind(value: ProjectionKind) -> &'static str {
+    match value {
+        ProjectionKind::CategoricalPersonality => "categorical_personality",
+        ProjectionKind::Vocation => "vocation",
+        ProjectionKind::SocialRole => "social_role",
+        ProjectionKind::NarrativeRole => "narrative_role",
+    }
+}
+
+const fn projection_decision(value: ProjectionPublicDecision) -> &'static str {
+    match value {
+        ProjectionPublicDecision::Derived => "derived",
+        ProjectionPublicDecision::Reviewed => "reviewed",
+        ProjectionPublicDecision::Edited => "edited",
+        ProjectionPublicDecision::Overridden => "overridden",
+        ProjectionPublicDecision::Authored => "authored",
     }
 }
 

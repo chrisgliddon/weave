@@ -67,7 +67,7 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(from_ron, first.story);
     let character = &from_ron.modules["character"];
     assert_eq!(character.id, "org.weave.character");
-    assert_eq!(character.version, "1.5.0");
+    assert_eq!(character.version, "1.6.0");
     assert_eq!(character.pack_id, "ari_vale");
     assert_eq!(
         character.value(&["profile", "identity", "id"]),
@@ -147,6 +147,105 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
         character.value(&["profile", "expression", "canonical_personality_write_back",]),
         Some(&DomainValueIr::Bool(false))
     );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "personality_lens",
+            "label",
+        ]),
+        Some(&DomainValueIr::String("Open Explorer".to_owned()))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "personality_lens",
+            "lossy",
+        ]),
+        Some(&DomainValueIr::Bool(true))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "personality_lens",
+            "decision",
+        ]),
+        Some(&DomainValueIr::Symbol("derived".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "projections", "values", "vocation", "label",]),
+        Some(&DomainValueIr::String("Route Archivist".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "projections", "values", "social_role", "label",]),
+        Some(&DomainValueIr::String("Question Host".to_owned()))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "narrative_role",
+            "label",
+        ]),
+        Some(&DomainValueIr::String("Signal Keeper".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "projections", "values", "narrative_role", "lock",]),
+        Some(&DomainValueIr::Symbol("locked".to_owned()))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "narrative_role",
+            "pack",
+            "id",
+        ]),
+        Some(&DomainValueIr::String(
+            "org.weave.projection.glasswind_lenses".to_owned()
+        ))
+    );
+    assert!(matches!(
+        character.value(&[
+            "profile",
+            "projections",
+            "values",
+            "narrative_role",
+            "review_sha256",
+        ]),
+        Some(DomainValueIr::String(value)) if value.len() == 64
+    ));
+    let Some(DomainValueIr::List(input_paths)) = character.value(&[
+        "profile",
+        "projections",
+        "values",
+        "narrative_role",
+        "input_paths",
+    ]) else {
+        panic!("projection input paths are absent");
+    };
+    assert_eq!(input_paths.len(), 3);
+    for target in [
+        "alignment",
+        "birth",
+        "hexaco",
+        "identity",
+        "ocean",
+        "relationships",
+        "ruleset",
+    ] {
+        assert_eq!(
+            character.value(&["profile", "projections", "write_back", target]),
+            Some(&DomainValueIr::Bool(false))
+        );
+    }
     assert_eq!(
         character.value(&[
             "profile",
@@ -253,6 +352,14 @@ fn character_schema_paths_are_static_and_derived_evidence_is_read_only() {
     );
     let error = compile_with_modules(&expression_writeback, &options(), &catalog())
         .expect_err("expression workflow bypass must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+
+    let projection_writeback = SOURCE.replace(
+        "override profile.identity.display_name.value: \"Ari Vale, Wayfinder\"",
+        "override profile.projections.values.narrative_role.label: \"Changed\"",
+    );
+    let error = compile_with_modules(&projection_writeback, &options(), &catalog())
+        .expect_err("projection review bypass must fail");
     assert_eq!(error.diagnostics[0].code.0, "D140");
 }
 

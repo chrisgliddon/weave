@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "ProjectionAssignmentMode": {
+      "enum": [
+        "fill_missing",
+        "rebalance"
+      ],
+      "type": "string"
+    },
+    "ProjectionReservation": {
+      "additionalProperties": false,
+      "description": "One exact reserved assignment, applied before ordinary ranked capacity allocation.",
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "entry_id": {
+          "type": "string"
+        },
+        "taxonomy_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "character_id",
+        "taxonomy_id",
+        "entry_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-projection-config:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Project-specific selection, eligible pool, capacity, reservation, and rebalance policy.",
+  "properties": {
+    "capacity_overrides": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": "object"
+      },
+      "description": "Taxonomy id, then entry id, to an explicit positive capacity.",
+      "type": "object"
+    },
+    "config_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "eligible_character_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "minimum_coverage_micros": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "mode": {
+      "$ref": "#/$defs/ProjectionAssignmentMode"
+    },
+    "reservations": {
+      "items": {
+        "$ref": "#/$defs/ProjectionReservation"
+      },
+      "type": "array"
+    },
+    "selected_taxonomies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "config_format_version",
+    "id",
+    "selected_taxonomies",
+    "eligible_character_ids",
+    "minimum_coverage_micros",
+    "mode",
+    "capacity_overrides",
+    "reservations"
+  ],
+  "title": "Weave Character Projection Configuration v1",
+  "type": "object",
+  "x-weave-character-projection-version": 1
+}

@@ -2857,6 +2857,67 @@
       ],
       "type": "object"
     },
+    "ProjectionKind": {
+      "description": "Closed projection surfaces supported by the common pack contract.",
+      "enum": [
+        "categorical_personality",
+        "vocation",
+        "social_role",
+        "narrative_role"
+      ],
+      "type": "string"
+    },
+    "ProjectionPackRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable projection-pack coordinate retained by every accepted value.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "ProjectionPublicDecision": {
+      "description": "Editorial path by which one accepted public value entered the profile.",
+      "oneOf": [
+        {
+          "const": "derived",
+          "description": "Mechanically derived, explicitly lossy categorical display.",
+          "type": "string"
+        },
+        {
+          "const": "reviewed",
+          "description": "Accepted pack suggestion.",
+          "type": "string"
+        },
+        {
+          "const": "edited",
+          "description": "Reviewer selected another eligible entry from the exact pack.",
+          "type": "string"
+        },
+        {
+          "const": "overridden",
+          "description": "Reviewer authored a replacement outside the pack ranking.",
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Directly authored value that allocation workflows must never displace.",
+          "type": "string"
+        }
+      ]
+    },
     "PronounSet": {
       "additionalProperties": false,
       "description": "Explicit grammatical forms without assuming a fixed pronoun vocabulary.",
@@ -3421,10 +3482,30 @@
     },
     "RoleProjection": {
       "additionalProperties": false,
-      "description": "A reviewed narrative or vocational projection.",
+      "description": "A reviewed categorical, vocational, social, or narrative projection.",
       "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "coverage_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "decision": {
+          "$ref": "#/$defs/ProjectionPublicDecision"
+        },
+        "entry_id": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
         "id": {
           "type": "string"
+        },
+        "independent_evidence": {
+          "type": "boolean"
         },
         "input_paths": {
           "items": {
@@ -3432,11 +3513,49 @@
           },
           "type": "array"
         },
+        "kind": {
+          "$ref": "#/$defs/ProjectionKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState"
+        },
+        "lossy": {
+          "type": "boolean"
+        },
+        "pack": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectionPackRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "proposal_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "rationale": {
           "type": "string"
         },
-        "role": {
-          "type": "string"
+        "review_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score_micros": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "taxonomy": {
           "type": "string"
@@ -3444,25 +3563,52 @@
       },
       "required": [
         "id",
+        "character_id",
+        "kind",
         "taxonomy",
-        "role",
+        "entry_id",
+        "label",
+        "lossy",
+        "independent_evidence",
+        "decision",
+        "coverage_micros",
+        "explanation",
         "rationale",
-        "input_paths"
+        "input_paths",
+        "lock"
       ],
       "type": "object"
     },
     "RoleProjections": {
       "additionalProperties": false,
-      "description": "Accepted role projections keyed by stable identifier.",
+      "description": "Accepted categorical views and role projections keyed by stable identifier.",
       "properties": {
+        "character_id": {
+          "description": "Exact profile owner. A projection cannot be copied onto another character implicitly.",
+          "type": "string"
+        },
+        "projection_format_version": {
+          "description": "Serialized role-projection value version.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
         "roles": {
           "additionalProperties": {
             "$ref": "#/$defs/RoleProjection"
           },
           "type": "object"
+        },
+        "source_pack_refs": {
+          "description": "Exact immutable packs represented by accepted values.",
+          "items": {
+            "$ref": "#/$defs/ProjectionPackRef"
+          },
+          "type": "array"
         }
       },
       "required": [
+        "character_id",
         "roles"
       ],
       "type": "object"

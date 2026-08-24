@@ -1,8 +1,8 @@
 (
     progress_format_version: 1,
     collection_id: "org.weave.character.collection.glasswind",
-    input_sha256: "65e68cfab4776ea450caae37e8990f207aa666399e0e94ae60e8e97c51bee67a",
-    request_sha256: "73503a919496292d1c927edcbcf9fdadb3bdb04f6230cdc907d69656610a3324",
+    input_sha256: "cc61f604b3694dc8c604786b293ac44dfd8380a1e19e51011ba90bb5c9f9ce7d",
+    request_sha256: "c7ba8fc937e422c2d572cefc41df895e196d0162cb2eea0920c5fd91c3be3ca9",
     total: 2,
     next_index: 1,
     completed_target_ids: [

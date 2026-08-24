@@ -529,7 +529,7 @@
           "lock": "unlocked",
           "freshness": "current",
           "lineage": [
-            "alignment_apply_da2749184c01216c",
+            "alignment_apply_dd2556dc5d058a13",
             "character_original",
             "weave_wayfinder_compass"
           ],
@@ -593,8 +593,8 @@
             "canon.personality.openness.factor",
             "canon.personality.openness.inquisitiveness"
           ],
-          "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
-          "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577"
+          "review_sha256": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
+          "applied_sha256": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495"
         }
       }
     },
@@ -930,8 +930,8 @@
                   "palette_slot": "accent",
                   "color": "#D6A24A"
                 },
-                "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
               },
               "state": "reviewed",
               "confidence": "high",
@@ -962,8 +962,8 @@
                     "alt_text": "Geometric cedar and gold wayfinder avatar."
                   }
                 },
-                "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
               },
               "state": "reviewed",
               "confidence": "high",
@@ -989,8 +989,8 @@
                   "category": "org.weave.appearance.silhouette",
                   "descriptor": "Long layered travel coat with a narrow shoulder line."
                 },
-                "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
               },
               "state": "reviewed",
               "confidence": "high",
@@ -1015,8 +1015,8 @@
                   "kind": "style_tag",
                   "tag": "river_glass"
                 },
-                "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
-                "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                "proposal_sha256": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
+                "review_sha256": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
               },
               "state": "reviewed",
               "confidence": "high",
@@ -1089,31 +1089,142 @@
         "header": {
           "namespace": "org.weave.character.role_projections",
           "extension_version": 1,
-          "authority": "org.weave.character.contract",
-          "rationale": "Explicit optional projection authored for the synthetic fixture.",
+          "authority": "org.weave.reviewer.runtime_fixture",
+          "rationale": "Review every explainable fictional projection independently before exposing it to source and runtime consumers.",
           "state": "reviewed",
           "review": "accepted",
           "lock": "unlocked",
           "freshness": "current",
           "lineage": [
             "character_original",
-            "weave_expression_glasswind_original"
+            "projection_apply_81cf025790774968",
+            "weave_glasswind_lenses_original"
           ],
           "canonical_personality_write_back": "forbidden"
         },
         "value": {
+          "character_id": "org.weave.character.ari_vale",
           "roles": {
-            "route_steward": {
-              "id": "route_steward",
-              "taxonomy": "org.weave.roles.glasswind",
-              "role": "Route steward",
-              "rationale": "Accepted as a narrative role, not a personality fact.",
+            "narrative_role": {
+              "id": "narrative_role",
+              "character_id": "org.weave.character.ari_vale",
+              "kind": "narrative_role",
+              "taxonomy": "org.weave.projection.glasswind_lenses.narrative_role",
+              "entry_id": "signal_keeper",
+              "label": "Signal Keeper",
+              "lossy": false,
+              "independent_evidence": false,
+              "decision": "reviewed",
+              "score_micros": 576444,
+              "coverage_micros": 1000000,
+              "explanation": "Optional story-function prompts for scene planning. Maintains continuity and makes important changes legible to others.",
+              "rationale": "Accept this explainable fictional display or role suggestion for the typed runtime example.",
               "input_paths": [
-                "canon.personality.conscientiousness.factor",
-                "canon.personality.openness.factor"
-              ]
+                "canon.personality.conscientiousness.diligence",
+                "canon.personality.conscientiousness.organization",
+                "canon.personality.honesty_humility.sincerity"
+              ],
+              "pack": {
+                "id": "org.weave.projection.glasswind_lenses",
+                "version": "1.0.0",
+                "sha256": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+              },
+              "proposal_sha256": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+              "review_sha256": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+              "lock": "locked"
+            },
+            "personality_lens": {
+              "id": "personality_lens",
+              "character_id": "org.weave.character.ari_vale",
+              "kind": "categorical_personality",
+              "taxonomy": "org.weave.projection.glasswind_lenses.personality",
+              "entry_id": "open_explorer",
+              "label": "Open Explorer",
+              "lossy": true,
+              "independent_evidence": false,
+              "decision": "derived",
+              "score_micros": 666122,
+              "coverage_micros": 1000000,
+              "explanation": "A deliberately lossy categorical lens over selected canonical evidence. Favors inquisitive and creative engagement with unfamiliar paths.",
+              "rationale": "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+              "input_paths": [
+                "canon.personality.openness.creativity",
+                "canon.personality.openness.factor",
+                "canon.personality.openness.inquisitiveness"
+              ],
+              "pack": {
+                "id": "org.weave.projection.glasswind_lenses",
+                "version": "1.0.0",
+                "sha256": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+              },
+              "proposal_sha256": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+              "review_sha256": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+              "lock": "unlocked"
+            },
+            "social_role": {
+              "id": "social_role",
+              "character_id": "org.weave.character.ari_vale",
+              "kind": "social_role",
+              "taxonomy": "org.weave.projection.glasswind_lenses.social_role",
+              "entry_id": "question_host",
+              "label": "Question Host",
+              "lossy": false,
+              "independent_evidence": false,
+              "decision": "reviewed",
+              "score_micros": 484500,
+              "coverage_micros": 1000000,
+              "explanation": "Optional prompts for how a fictional character might contribute within a group. Invites shared inquiry and keeps space open for multiple answers.",
+              "rationale": "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+              "input_paths": [
+                "canon.personality.extraversion.sociability",
+                "canon.personality.honesty_humility.sincerity",
+                "canon.personality.openness.inquisitiveness"
+              ],
+              "pack": {
+                "id": "org.weave.projection.glasswind_lenses",
+                "version": "1.0.0",
+                "sha256": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+              },
+              "proposal_sha256": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+              "review_sha256": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+              "lock": "unlocked"
+            },
+            "vocation": {
+              "id": "vocation",
+              "character_id": "org.weave.character.ari_vale",
+              "kind": "vocation",
+              "taxonomy": "org.weave.projection.glasswind_lenses.vocation",
+              "entry_id": "route_archivist",
+              "label": "Route Archivist",
+              "lossy": false,
+              "independent_evidence": false,
+              "decision": "reviewed",
+              "score_micros": 594468,
+              "coverage_micros": 1000000,
+              "explanation": "Optional fictional vocation prompts, never aptitude or employment recommendations. Maintains navigable records while continuing to investigate new routes.",
+              "rationale": "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+              "input_paths": [
+                "canon.personality.conscientiousness.diligence",
+                "canon.personality.conscientiousness.organization",
+                "canon.personality.openness.inquisitiveness"
+              ],
+              "pack": {
+                "id": "org.weave.projection.glasswind_lenses",
+                "version": "1.0.0",
+                "sha256": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+              },
+              "proposal_sha256": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+              "review_sha256": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+              "lock": "unlocked"
             }
-          }
+          },
+          "source_pack_refs": [
+            {
+              "id": "org.weave.projection.glasswind_lenses",
+              "version": "1.0.0",
+              "sha256": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+            }
+          ]
         }
       }
     },
@@ -1238,6 +1349,16 @@
         "modified": false
       },
       {
+        "id": "weave_glasswind_lenses_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-lenses-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+        "modified": false
+      },
+      {
         "id": "weave_glasswind_presentation",
         "kind": "original",
         "url": "https://github.com/chrisgliddon/weave",
@@ -1270,12 +1391,20 @@
     ],
     "transformations": [
       {
-        "id": "alignment_apply_da2749184c01216c",
+        "id": "alignment_apply_dd2556dc5d058a13",
         "inputs": [
           "character_original",
           "weave_wayfinder_compass"
         ],
         "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+      },
+      {
+        "id": "projection_apply_81cf025790774968",
+        "inputs": [
+          "character_original",
+          "weave_glasswind_lenses_original"
+        ],
+        "description": "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family."
       }
     ],
     "claims": {
@@ -1286,13 +1415,15 @@
         "weave_wayfinder_compass"
       ],
       "calibrations": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "entries": [
+        "weave_glasswind_lenses_original",
         "weave_glasswind_presentation"
       ],
       "extensions.org.weave.character.alignment": [
-        "alignment_apply_da2749184c01216c"
+        "alignment_apply_dd2556dc5d058a13"
       ],
       "extensions.org.weave.character.expression": [
         "weave_expression_glasswind_original"
@@ -1300,10 +1431,15 @@
       "extensions.org.weave.character.relationships": [
         "weave_relationship_reference_pack"
       ],
+      "extensions.org.weave.character.role_projections": [
+        "projection_apply_81cf025790774968"
+      ],
       "inputs": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "methodology": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "profile": [
@@ -1311,6 +1447,9 @@
       ],
       "slots": [
         "weave_glasswind_presentation"
+      ],
+      "taxonomies": [
+        "weave_glasswind_lenses_original"
       ]
     }
   }

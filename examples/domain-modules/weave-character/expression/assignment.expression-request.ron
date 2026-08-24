@@ -2,7 +2,7 @@
     request_format_version: 1,
     id: "org.weave.character.expression.assignment.ari_glasswind",
     character_id: "org.weave.character.ari_vale",
-    expected_profile_sha256: "7e94236679ebcaf064d65cc7dcb8961e8124ca4e1ebce052f6aa90aad498376a",
+    expected_profile_sha256: "9451751027f2b1d634533d60f800e1160bb47afeb24cc8006f4490db19f6bdfa",
     pack: (
         id: "org.weave.expression.glasswind",
         version: "1.0.0",

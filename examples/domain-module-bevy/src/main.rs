@@ -95,6 +95,31 @@ struct AlignmentCharacterReading {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+struct ProjectionValueReading {
+    id: String,
+    kind: String,
+    label: String,
+    lossy: bool,
+    independent_evidence: bool,
+    decision: String,
+    explanation: String,
+    rationale: String,
+    input_paths: Vec<String>,
+    pack_id: String,
+    pack_version: String,
+    pack_sha256: String,
+    proposal_sha256: String,
+    review_sha256: String,
+    lock: String,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct ProjectionCharacterReading {
+    values: Vec<ProjectionValueReading>,
+    write_back: std::collections::BTreeMap<String, bool>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 struct TemporalCueReading {
     record_id: String,
     kind: String,
@@ -638,6 +663,150 @@ fn alignment_character_reading(story: &StoryIr) -> Result<AlignmentCharacterRead
     })
 }
 
+fn projection_character_reading(story: &StoryIr) -> Result<ProjectionCharacterReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let Some(DomainValueIr::Object(projections)) = module.value(&["profile", "projections"]) else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "reviewed Character projections are invalid",
+        ));
+    };
+    let Some(DomainValueIr::Object(raw_values)) = projections.get("values") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "approved projection value map is invalid",
+        ));
+    };
+    let values = raw_values
+        .iter()
+        .map(|(projection_id, value)| {
+            let DomainValueIr::Object(fields) = value else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection value is invalid",
+                ));
+            };
+            let string = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::String(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection string is invalid",
+                )),
+            };
+            let symbol = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection symbol is invalid",
+                )),
+            };
+            let boolean = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::Bool(value)) => Ok(*value),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection marker is invalid",
+                )),
+            };
+            let id = string("id")?;
+            if id != *projection_id {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection id does not match its map key",
+                ));
+            }
+            let Some(DomainValueIr::Object(pack)) = fields.get("pack") else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection pack coordinate is invalid",
+                ));
+            };
+            let pack_string = |name: &str| match pack.get(name) {
+                Some(DomainValueIr::String(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection pack field is invalid",
+                )),
+            };
+            let pack_sha256 = pack_string("sha256")?;
+            let proposal_sha256 = string("proposal_sha256")?;
+            let review_sha256 = string("review_sha256")?;
+            if !is_sha256(&pack_sha256)
+                || !is_sha256(&proposal_sha256)
+                || !is_sha256(&review_sha256)
+            {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "approved projection fingerprint is invalid",
+                ));
+            }
+            Ok(ProjectionValueReading {
+                id,
+                kind: symbol("kind")?,
+                label: string("label")?,
+                lossy: boolean("lossy")?,
+                independent_evidence: boolean("independent_evidence")?,
+                decision: symbol("decision")?,
+                explanation: string("explanation")?,
+                rationale: string("rationale")?,
+                input_paths: string_list(
+                    fields.get("input_paths"),
+                    "approved projection input paths are invalid",
+                )?,
+                pack_id: pack_string("id")?,
+                pack_version: pack_string("version")?,
+                pack_sha256,
+                proposal_sha256,
+                review_sha256,
+                lock: symbol("lock")?,
+            })
+        })
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    let Some(DomainValueIr::Object(raw_write_back)) = projections.get("write_back") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "projection write-back contract is invalid",
+        ));
+    };
+    let write_back = raw_write_back
+        .iter()
+        .map(|(target, value)| match value {
+            DomainValueIr::Bool(value) => Ok((target.clone(), *value)),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "projection write-back marker is invalid",
+            )),
+        })
+        .collect::<Result<std::collections::BTreeMap<_, _>, io::Error>>()?;
+    let expected_targets = [
+        "alignment",
+        "birth",
+        "hexaco",
+        "identity",
+        "ocean",
+        "relationships",
+        "ruleset",
+    ];
+    if write_back.keys().map(String::as_str).ne(expected_targets)
+        || write_back.values().any(|value| *value)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "projection write-back authority is invalid",
+        ));
+    }
+    Ok(ProjectionCharacterReading { values, write_back })
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|value| value.is_ascii_hexdigit() && !value.is_ascii_uppercase())
+}
+
 fn relationship_graph_reading(story: &StoryIr) -> Result<RelationshipGraphReading, io::Error> {
     let module = story
         .modules
@@ -964,6 +1133,18 @@ fn report_alignment_character(reading: Res<AlignmentCharacterReading>) {
     );
 }
 
+fn report_projection_character(reading: Res<ProjectionCharacterReading>) {
+    println!(
+        "Bevy read {} explainable classification and role values from {}; protected write-back targets={}",
+        reading.values.len(),
+        reading
+            .values
+            .first()
+            .map_or("no pack", |value| value.pack_id.as_str()),
+        reading.write_back.len(),
+    );
+}
+
 fn report_temporal_character(reading: Res<TemporalCharacterReading>) {
     println!(
         "Bevy read {} reviewed temporal cues across {} accepted records; personality write-back={}",
@@ -1014,6 +1195,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let character = character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let alignment_character =
         alignment_character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
+    let projection_character =
+        projection_character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let relationship_graph =
         relationship_graph_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let expression = expression_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
@@ -1026,6 +1209,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(composed_world)
         .insert_resource(character)
         .insert_resource(alignment_character)
+        .insert_resource(projection_character)
         .insert_resource(relationship_graph)
         .insert_resource(expression)
         .insert_resource(temporal_character)
@@ -1037,6 +1221,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_composed_world,
                 report_character,
                 report_alignment_character,
+                report_projection_character,
                 report_relationship_graph,
                 report_expression,
                 report_temporal_character,
@@ -1195,6 +1380,89 @@ mod tests {
                 && value.id != "signal"
                 && value.id != "tempo"
         }));
+    }
+
+    #[test]
+    fn reads_explainable_projection_values_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(CHARACTER_STORY).expect("checked Character RON");
+        let reading =
+            projection_character_reading(&story).expect("read approved Character projections");
+        assert_eq!(
+            reading
+                .values
+                .iter()
+                .map(|value| (
+                    value.id.as_str(),
+                    value.kind.as_str(),
+                    value.label.as_str(),
+                    value.decision.as_str(),
+                    value.lossy,
+                    value.lock.as_str(),
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    "narrative_role",
+                    "narrative_role",
+                    "Signal Keeper",
+                    "reviewed",
+                    false,
+                    "locked",
+                ),
+                (
+                    "personality_lens",
+                    "categorical_personality",
+                    "Open Explorer",
+                    "derived",
+                    true,
+                    "unlocked",
+                ),
+                (
+                    "social_role",
+                    "social_role",
+                    "Question Host",
+                    "reviewed",
+                    false,
+                    "unlocked",
+                ),
+                (
+                    "vocation",
+                    "vocation",
+                    "Route Archivist",
+                    "reviewed",
+                    false,
+                    "unlocked",
+                ),
+            ]
+        );
+        assert!(reading.values.iter().all(|value| {
+            !value.independent_evidence
+                && !value.explanation.is_empty()
+                && !value.rationale.is_empty()
+                && !value.input_paths.is_empty()
+                && value.pack_id == "org.weave.projection.glasswind_lenses"
+                && value.pack_version == "1.0.0"
+                && is_sha256(&value.pack_sha256)
+                && is_sha256(&value.proposal_sha256)
+                && is_sha256(&value.review_sha256)
+        }));
+        assert_eq!(
+            reading
+                .write_back
+                .keys()
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+            vec![
+                "alignment",
+                "birth",
+                "hexaco",
+                "identity",
+                "ocean",
+                "relationships",
+                "ruleset",
+            ]
+        );
+        assert!(reading.write_back.values().all(|value| !value));
     }
 
     #[test]

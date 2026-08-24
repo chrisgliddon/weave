@@ -582,6 +582,16 @@
         "modified": false
       },
       {
+        "id": "weave_glasswind_lenses_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-lenses-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+        "modified": false
+      },
+      {
         "id": "weave_glasswind_presentation",
         "kind": "original",
         "url": "https://github.com/chrisgliddon/weave",
@@ -614,12 +624,20 @@
     ],
     "transformations": [
       {
-        "id": "alignment_apply_da2749184c01216c",
+        "id": "alignment_apply_dd2556dc5d058a13",
         "inputs": [
           "character_original",
           "weave_wayfinder_compass"
         ],
         "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+      },
+      {
+        "id": "projection_apply_81cf025790774968",
+        "inputs": [
+          "character_original",
+          "weave_glasswind_lenses_original"
+        ],
+        "description": "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family."
       }
     ],
     "claims": {
@@ -630,13 +648,15 @@
         "weave_wayfinder_compass"
       ],
       "calibrations": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "entries": [
+        "weave_glasswind_lenses_original",
         "weave_glasswind_presentation"
       ],
       "extensions.org.weave.character.alignment": [
-        "alignment_apply_da2749184c01216c"
+        "alignment_apply_dd2556dc5d058a13"
       ],
       "extensions.org.weave.character.expression": [
         "weave_expression_glasswind_original"
@@ -644,10 +664,15 @@
       "extensions.org.weave.character.relationships": [
         "weave_relationship_reference_pack"
       ],
+      "extensions.org.weave.character.role_projections": [
+        "projection_apply_81cf025790774968"
+      ],
       "inputs": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "methodology": [
+        "weave_glasswind_lenses_original",
         "weave_wayfinder_compass"
       ],
       "profile": [
@@ -655,6 +680,9 @@
       ],
       "slots": [
         "weave_glasswind_presentation"
+      ],
+      "taxonomies": [
+        "weave_glasswind_lenses_original"
       ]
     }
   }

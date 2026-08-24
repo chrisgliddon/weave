@@ -5,7 +5,7 @@
     title: "Ari Vale Reviewed Temporal Context",
     module: (
         id: "org.weave.character",
-        version: "=1.5.0",
+        version: "=1.6.0",
     ),
     dependencies: [],
     values: {
@@ -17,7 +17,7 @@
                     value: {
                         "applied_sha256": (
                             kind: string,
-                            value: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+                            value: "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495",
                         ),
                         "canonical_personality_write_back": (
                             kind: bool,
@@ -75,7 +75,7 @@
                         ),
                         "review_sha256": (
                             kind: string,
-                            value: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                            value: "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd",
                         ),
                         "values": (
                             kind: object,
@@ -308,7 +308,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
+                                            value: "6f4af128d3fc94fee4d18ee2d305cb6ecb318a9a1d8759670e8f056ae9be3899",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -371,7 +371,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
+                                            value: "6f4af128d3fc94fee4d18ee2d305cb6ecb318a9a1d8759670e8f056ae9be3899",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -434,7 +434,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
+                                            value: "6f4af128d3fc94fee4d18ee2d305cb6ecb318a9a1d8759670e8f056ae9be3899",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -2729,7 +2729,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            value: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2741,7 +2741,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                            value: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2817,7 +2817,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            value: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2829,7 +2829,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                            value: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2922,7 +2922,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            value: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2934,7 +2934,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                            value: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -3010,7 +3010,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            value: "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -3022,7 +3022,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
+                                            value: "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -3336,6 +3336,491 @@
                     kind: number,
                     value: 1.0,
                 ),
+                "projections": (
+                    kind: object,
+                    value: {
+                        "character_id": (
+                            kind: string,
+                            value: "org.weave.character.ari_vale",
+                        ),
+                        "projection_format_version": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                        "source_packs": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: object,
+                                    value: {
+                                        "id": (
+                                            kind: string,
+                                            value: "org.weave.projection.glasswind_lenses",
+                                        ),
+                                        "sha256": (
+                                            kind: string,
+                                            value: "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746",
+                                        ),
+                                        "version": (
+                                            kind: string,
+                                            value: "1.0.0",
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                        "values": (
+                            kind: object,
+                            value: {
+                                "narrative_role": (
+                                    kind: object,
+                                    value: {
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "coverage_micros": (
+                                            kind: number,
+                                            value: 1000000.0,
+                                        ),
+                                        "decision": (
+                                            kind: symbol,
+                                            value: "reviewed",
+                                        ),
+                                        "entry_id": (
+                                            kind: string,
+                                            value: "signal_keeper",
+                                        ),
+                                        "explanation": (
+                                            kind: string,
+                                            value: "Optional story-function prompts for scene planning. Maintains continuity and makes important changes legible to others.",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "narrative_role",
+                                        ),
+                                        "independent_evidence": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "input_paths": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.conscientiousness.diligence",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.conscientiousness.organization",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.honesty_humility.sincerity",
+                                                ),
+                                            ],
+                                        ),
+                                        "kind": (
+                                            kind: symbol,
+                                            value: "narrative_role",
+                                        ),
+                                        "label": (
+                                            kind: string,
+                                            value: "Signal Keeper",
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "locked",
+                                        ),
+                                        "lossy": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "pack": (
+                                            kind: object,
+                                            value: {
+                                                "id": (
+                                                    kind: string,
+                                                    value: "org.weave.projection.glasswind_lenses",
+                                                ),
+                                                "sha256": (
+                                                    kind: string,
+                                                    value: "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746",
+                                                ),
+                                                "version": (
+                                                    kind: string,
+                                                    value: "1.0.0",
+                                                ),
+                                            },
+                                        ),
+                                        "proposal_sha256": (
+                                            kind: string,
+                                            value: "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+                                        ),
+                                        "review_sha256": (
+                                            kind: string,
+                                            value: "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+                                        ),
+                                        "score_micros": (
+                                            kind: number,
+                                            value: 576444.0,
+                                        ),
+                                        "taxonomy": (
+                                            kind: string,
+                                            value: "org.weave.projection.glasswind_lenses.narrative_role",
+                                        ),
+                                    },
+                                ),
+                                "personality_lens": (
+                                    kind: object,
+                                    value: {
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "coverage_micros": (
+                                            kind: number,
+                                            value: 1000000.0,
+                                        ),
+                                        "decision": (
+                                            kind: symbol,
+                                            value: "derived",
+                                        ),
+                                        "entry_id": (
+                                            kind: string,
+                                            value: "open_explorer",
+                                        ),
+                                        "explanation": (
+                                            kind: string,
+                                            value: "A deliberately lossy categorical lens over selected canonical evidence. Favors inquisitive and creative engagement with unfamiliar paths.",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "personality_lens",
+                                        ),
+                                        "independent_evidence": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "input_paths": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.openness.creativity",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.openness.factor",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.openness.inquisitiveness",
+                                                ),
+                                            ],
+                                        ),
+                                        "kind": (
+                                            kind: symbol,
+                                            value: "categorical_personality",
+                                        ),
+                                        "label": (
+                                            kind: string,
+                                            value: "Open Explorer",
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "lossy": (
+                                            kind: bool,
+                                            value: true,
+                                        ),
+                                        "pack": (
+                                            kind: object,
+                                            value: {
+                                                "id": (
+                                                    kind: string,
+                                                    value: "org.weave.projection.glasswind_lenses",
+                                                ),
+                                                "sha256": (
+                                                    kind: string,
+                                                    value: "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746",
+                                                ),
+                                                "version": (
+                                                    kind: string,
+                                                    value: "1.0.0",
+                                                ),
+                                            },
+                                        ),
+                                        "proposal_sha256": (
+                                            kind: string,
+                                            value: "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+                                        ),
+                                        "review_sha256": (
+                                            kind: string,
+                                            value: "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+                                        ),
+                                        "score_micros": (
+                                            kind: number,
+                                            value: 666122.0,
+                                        ),
+                                        "taxonomy": (
+                                            kind: string,
+                                            value: "org.weave.projection.glasswind_lenses.personality",
+                                        ),
+                                    },
+                                ),
+                                "social_role": (
+                                    kind: object,
+                                    value: {
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "coverage_micros": (
+                                            kind: number,
+                                            value: 1000000.0,
+                                        ),
+                                        "decision": (
+                                            kind: symbol,
+                                            value: "reviewed",
+                                        ),
+                                        "entry_id": (
+                                            kind: string,
+                                            value: "question_host",
+                                        ),
+                                        "explanation": (
+                                            kind: string,
+                                            value: "Optional prompts for how a fictional character might contribute within a group. Invites shared inquiry and keeps space open for multiple answers.",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "social_role",
+                                        ),
+                                        "independent_evidence": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "input_paths": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.extraversion.sociability",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.honesty_humility.sincerity",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.openness.inquisitiveness",
+                                                ),
+                                            ],
+                                        ),
+                                        "kind": (
+                                            kind: symbol,
+                                            value: "social_role",
+                                        ),
+                                        "label": (
+                                            kind: string,
+                                            value: "Question Host",
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "lossy": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "pack": (
+                                            kind: object,
+                                            value: {
+                                                "id": (
+                                                    kind: string,
+                                                    value: "org.weave.projection.glasswind_lenses",
+                                                ),
+                                                "sha256": (
+                                                    kind: string,
+                                                    value: "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746",
+                                                ),
+                                                "version": (
+                                                    kind: string,
+                                                    value: "1.0.0",
+                                                ),
+                                            },
+                                        ),
+                                        "proposal_sha256": (
+                                            kind: string,
+                                            value: "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+                                        ),
+                                        "review_sha256": (
+                                            kind: string,
+                                            value: "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+                                        ),
+                                        "score_micros": (
+                                            kind: number,
+                                            value: 484500.0,
+                                        ),
+                                        "taxonomy": (
+                                            kind: string,
+                                            value: "org.weave.projection.glasswind_lenses.social_role",
+                                        ),
+                                    },
+                                ),
+                                "vocation": (
+                                    kind: object,
+                                    value: {
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "coverage_micros": (
+                                            kind: number,
+                                            value: 1000000.0,
+                                        ),
+                                        "decision": (
+                                            kind: symbol,
+                                            value: "reviewed",
+                                        ),
+                                        "entry_id": (
+                                            kind: string,
+                                            value: "route_archivist",
+                                        ),
+                                        "explanation": (
+                                            kind: string,
+                                            value: "Optional fictional vocation prompts, never aptitude or employment recommendations. Maintains navigable records while continuing to investigate new routes.",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "vocation",
+                                        ),
+                                        "independent_evidence": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "input_paths": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.conscientiousness.diligence",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.conscientiousness.organization",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "canon.personality.openness.inquisitiveness",
+                                                ),
+                                            ],
+                                        ),
+                                        "kind": (
+                                            kind: symbol,
+                                            value: "vocation",
+                                        ),
+                                        "label": (
+                                            kind: string,
+                                            value: "Route Archivist",
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "lossy": (
+                                            kind: bool,
+                                            value: false,
+                                        ),
+                                        "pack": (
+                                            kind: object,
+                                            value: {
+                                                "id": (
+                                                    kind: string,
+                                                    value: "org.weave.projection.glasswind_lenses",
+                                                ),
+                                                "sha256": (
+                                                    kind: string,
+                                                    value: "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746",
+                                                ),
+                                                "version": (
+                                                    kind: string,
+                                                    value: "1.0.0",
+                                                ),
+                                            },
+                                        ),
+                                        "proposal_sha256": (
+                                            kind: string,
+                                            value: "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept this explainable fictional display or role suggestion for the typed runtime example.",
+                                        ),
+                                        "review_sha256": (
+                                            kind: string,
+                                            value: "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5",
+                                        ),
+                                        "score_micros": (
+                                            kind: number,
+                                            value: 594468.0,
+                                        ),
+                                        "taxonomy": (
+                                            kind: string,
+                                            value: "org.weave.projection.glasswind_lenses.vocation",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "write_back": (
+                            kind: object,
+                            value: {
+                                "alignment": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "birth": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "hexaco": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "identity": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "ocean": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "relationships": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "ruleset": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                    },
+                ),
                 "provenance": (
                     kind: object,
                     value: {
@@ -3361,6 +3846,10 @@
                                 (
                                     kind: string,
                                     value: "weave_expression_glasswind_original",
+                                ),
+                                (
+                                    kind: string,
+                                    value: "weave_glasswind_lenses_original",
                                 ),
                                 (
                                     kind: string,
@@ -3393,11 +3882,15 @@
                             value: [
                                 (
                                     kind: string,
-                                    value: "alignment_apply_da2749184c01216c",
+                                    value: "alignment_apply_dd2556dc5d058a13",
                                 ),
                                 (
                                     kind: string,
-                                    value: "temporal_review_b812d1e4ba467792",
+                                    value: "projection_apply_81cf025790774968",
+                                ),
+                                (
+                                    kind: string,
+                                    value: "temporal_review_6f4af128d3fc94fe",
                                 ),
                             ],
                         ),
@@ -3592,6 +4085,16 @@
                 modified: false,
             ),
             (
+                id: "weave_glasswind_lenses_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "glasswind-lenses-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+                modified: false,
+            ),
+            (
                 id: "weave_glasswind_presentation",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -3654,7 +4157,7 @@
         ],
         transformations: [
             (
-                id: "alignment_apply_da2749184c01216c",
+                id: "alignment_apply_dd2556dc5d058a13",
                 inputs: [
                     "character_original",
                     "weave_wayfinder_compass",
@@ -3662,7 +4165,15 @@
                 description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
             ),
             (
-                id: "temporal_review_b812d1e4ba467792",
+                id: "projection_apply_81cf025790774968",
+                inputs: [
+                    "character_original",
+                    "weave_glasswind_lenses_original",
+                ],
+                description: "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family.",
+            ),
+            (
+                id: "temporal_review_6f4af128d3fc94fe",
                 inputs: [
                     "apollo_11_wikidata",
                     "weave_calendar_cues",
@@ -3674,13 +4185,14 @@
                 description: "Recorded explicit editorial decisions over non-causal fictional temporal authoring cues; no dated fact was treated as personality evidence or written into canon.",
             ),
             (
-                id: "weave_character_domain_projection_v6",
+                id: "weave_character_domain_projection_v7",
                 inputs: [
                     "apollo_11_wikidata",
                     "character_original",
                     "weave_calendar_cues",
                     "weave_calendar_facts",
                     "weave_expression_glasswind_original",
+                    "weave_glasswind_lenses_original",
                     "weave_glasswind_presentation",
                     "weave_historical_cues",
                     "weave_relationship_reference_pack",
@@ -3688,12 +4200,12 @@
                     "weave_world_cues",
                     "weave_world_projection",
                 ],
-                description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
+                description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, explainable reviewed categorical and role values, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
             ),
         ],
         claims: {
             "values.profile": [
-                "weave_character_domain_projection_v6",
+                "weave_character_domain_projection_v7",
             ],
         },
     ),

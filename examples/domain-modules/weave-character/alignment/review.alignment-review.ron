@@ -1,7 +1,7 @@
 (
     review_format_version: 1,
-    proposal_sha256: "bc95acb0fbbea08bca1d4ddc5e23c9424a0eacb40da0c4aa7da447fafd2db2cd",
-    profile_sha256: "768f7d5ec917c2169cc4fb058d8b03fa56f9b599737da2ac5c7c49377e5c3e77",
+    proposal_sha256: "6eef19d5950ba3c4e551261806b70a13a31f5ea53ada0136503d4a8baeb80087",
+    profile_sha256: "53c13546b93a922b23d49a62debe186a894f6c521c82cdd12b7589be9ddda79a",
     pack_sha256: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
     reviewer: "org.weave.reviewer.fixture",
     rationale: "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",

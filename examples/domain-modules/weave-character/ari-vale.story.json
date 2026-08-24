@@ -745,6 +745,386 @@
           "allowed_states": []
         }
       }
+    },
+    {
+      "span": {
+        "start": 2531,
+        "end": 2620,
+        "line": 36,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_personality",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "personality_lens",
+              "label"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2620,
+        "end": 2715,
+        "line": 37,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_personality_lossy",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "personality_lens",
+              "lossy"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2715,
+        "end": 2793,
+        "line": 38,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_vocation",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "vocation",
+              "label"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2793,
+        "end": 2877,
+        "line": 39,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_social_role",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "social_role",
+              "label"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2877,
+        "end": 2967,
+        "line": 40,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_narrative_role",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "label"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2967,
+        "end": 3060,
+        "line": 41,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_explanation",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "explanation"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3060,
+        "end": 3149,
+        "line": 42,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_rationale",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "rationale"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3149,
+        "end": 3228,
+        "line": 43,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_lock",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "lock"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3228,
+        "end": 3310,
+        "line": 44,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_pack",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "pack",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3310,
+        "end": 3405,
+        "line": 45,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_pack_version",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "pack",
+              "version"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3405,
+        "end": 3498,
+        "line": 46,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_pack_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "pack",
+              "sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3498,
+        "end": 3599,
+        "line": 47,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_proposal_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "proposal_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3599,
+        "end": 3696,
+        "line": 48,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_review_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "values",
+              "narrative_role",
+              "review_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 3696,
+        "end": 3778,
+        "line": 49,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "projection_hexaco_writeback",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "projections",
+              "write_back",
+              "hexaco"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
     }
   ],
   "grammars": {},
@@ -752,7 +1132,7 @@
   "modules": {
     "character": {
       "id": "org.weave.character",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "pack_id": "ari_vale",
       "pack_version": "1.0.0",
       "exports": {
@@ -766,7 +1146,7 @@
                 "value": {
                   "applied_sha256": {
                     "kind": "string",
-                    "value": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577"
+                    "value": "dd2556dc5d058a1373063640331e339f9d91adc469027f643127f46f9aa5b495"
                   },
                   "canonical_personality_write_back": {
                     "kind": "bool",
@@ -824,7 +1204,7 @@
                   },
                   "review_sha256": {
                     "kind": "string",
-                    "value": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf"
+                    "value": "dbe51e67a7d87233c0812a61f60f55bc075dc8b03b88cbadb3181e4144670bcd"
                   },
                   "values": {
                     "kind": "object",
@@ -3246,7 +3626,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
+                            "value": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97"
                           },
                           "rationale": {
                             "kind": "string",
@@ -3258,7 +3638,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                            "value": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -3334,7 +3714,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
+                            "value": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97"
                           },
                           "rationale": {
                             "kind": "string",
@@ -3346,7 +3726,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                            "value": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -3439,7 +3819,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
+                            "value": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97"
                           },
                           "rationale": {
                             "kind": "string",
@@ -3451,7 +3831,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                            "value": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -3527,7 +3907,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
+                            "value": "4fe983ac39d0f0d894c14b4ad64f05e67e9fbf35f24d9610610361f2dc46bf97"
                           },
                           "rationale": {
                             "kind": "string",
@@ -3539,7 +3919,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
+                            "value": "e03c3aaad17f98a03bf514388d96835c271e7c84c3c080aa7eea2bdc20a749fc"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -3853,6 +4233,491 @@
                 "kind": "number",
                 "value": 1.0
               },
+              "projections": {
+                "kind": "object",
+                "value": {
+                  "character_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.ari_vale"
+                  },
+                  "projection_format_version": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "source_packs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "id": {
+                            "kind": "string",
+                            "value": "org.weave.projection.glasswind_lenses"
+                          },
+                          "sha256": {
+                            "kind": "string",
+                            "value": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+                          },
+                          "version": {
+                            "kind": "string",
+                            "value": "1.0.0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "values": {
+                    "kind": "object",
+                    "value": {
+                      "narrative_role": {
+                        "kind": "object",
+                        "value": {
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "coverage_micros": {
+                            "kind": "number",
+                            "value": 1000000.0
+                          },
+                          "decision": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "signal_keeper"
+                          },
+                          "explanation": {
+                            "kind": "string",
+                            "value": "Optional story-function prompts for scene planning. Maintains continuity and makes important changes legible to others."
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "narrative_role"
+                          },
+                          "independent_evidence": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "input_paths": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.conscientiousness.diligence"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.conscientiousness.organization"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.honesty_humility.sincerity"
+                              }
+                            ]
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "narrative_role"
+                          },
+                          "label": {
+                            "kind": "string",
+                            "value": "Signal Keeper"
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "locked"
+                          },
+                          "lossy": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "pack": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.projection.glasswind_lenses"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept this explainable fictional display or role suggestion for the typed runtime example."
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5"
+                          },
+                          "score_micros": {
+                            "kind": "number",
+                            "value": 576444.0
+                          },
+                          "taxonomy": {
+                            "kind": "string",
+                            "value": "org.weave.projection.glasswind_lenses.narrative_role"
+                          }
+                        }
+                      },
+                      "personality_lens": {
+                        "kind": "object",
+                        "value": {
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "coverage_micros": {
+                            "kind": "number",
+                            "value": 1000000.0
+                          },
+                          "decision": {
+                            "kind": "symbol",
+                            "value": "derived"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "open_explorer"
+                          },
+                          "explanation": {
+                            "kind": "string",
+                            "value": "A deliberately lossy categorical lens over selected canonical evidence. Favors inquisitive and creative engagement with unfamiliar paths."
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "personality_lens"
+                          },
+                          "independent_evidence": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "input_paths": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.openness.creativity"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.openness.factor"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.openness.inquisitiveness"
+                              }
+                            ]
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "categorical_personality"
+                          },
+                          "label": {
+                            "kind": "string",
+                            "value": "Open Explorer"
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "lossy": {
+                            "kind": "bool",
+                            "value": true
+                          },
+                          "pack": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.projection.glasswind_lenses"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept this explainable fictional display or role suggestion for the typed runtime example."
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5"
+                          },
+                          "score_micros": {
+                            "kind": "number",
+                            "value": 666122.0
+                          },
+                          "taxonomy": {
+                            "kind": "string",
+                            "value": "org.weave.projection.glasswind_lenses.personality"
+                          }
+                        }
+                      },
+                      "social_role": {
+                        "kind": "object",
+                        "value": {
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "coverage_micros": {
+                            "kind": "number",
+                            "value": 1000000.0
+                          },
+                          "decision": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "question_host"
+                          },
+                          "explanation": {
+                            "kind": "string",
+                            "value": "Optional prompts for how a fictional character might contribute within a group. Invites shared inquiry and keeps space open for multiple answers."
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "social_role"
+                          },
+                          "independent_evidence": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "input_paths": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.extraversion.sociability"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.honesty_humility.sincerity"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.openness.inquisitiveness"
+                              }
+                            ]
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "social_role"
+                          },
+                          "label": {
+                            "kind": "string",
+                            "value": "Question Host"
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "lossy": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "pack": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.projection.glasswind_lenses"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept this explainable fictional display or role suggestion for the typed runtime example."
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5"
+                          },
+                          "score_micros": {
+                            "kind": "number",
+                            "value": 484500.0
+                          },
+                          "taxonomy": {
+                            "kind": "string",
+                            "value": "org.weave.projection.glasswind_lenses.social_role"
+                          }
+                        }
+                      },
+                      "vocation": {
+                        "kind": "object",
+                        "value": {
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "coverage_micros": {
+                            "kind": "number",
+                            "value": 1000000.0
+                          },
+                          "decision": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "entry_id": {
+                            "kind": "string",
+                            "value": "route_archivist"
+                          },
+                          "explanation": {
+                            "kind": "string",
+                            "value": "Optional fictional vocation prompts, never aptitude or employment recommendations. Maintains navigable records while continuing to investigate new routes."
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "vocation"
+                          },
+                          "independent_evidence": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "input_paths": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.conscientiousness.diligence"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.conscientiousness.organization"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "canon.personality.openness.inquisitiveness"
+                              }
+                            ]
+                          },
+                          "kind": {
+                            "kind": "symbol",
+                            "value": "vocation"
+                          },
+                          "label": {
+                            "kind": "string",
+                            "value": "Route Archivist"
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "lossy": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "pack": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.projection.glasswind_lenses"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "41f7ef23f3d141644c95226b3fac2bc2f0455537b7b930170fcb188954f62746"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "proposal_sha256": {
+                            "kind": "string",
+                            "value": "7d91fafd0062fbc0ee28373057b0e491c36270dd64d9e4a6d139e0b3aab701ba"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept this explainable fictional display or role suggestion for the typed runtime example."
+                          },
+                          "review_sha256": {
+                            "kind": "string",
+                            "value": "220f640fdac4ee913c8de057c99a2c658ddb0585c2e1cf47ae05f5c5da4681e5"
+                          },
+                          "score_micros": {
+                            "kind": "number",
+                            "value": 594468.0
+                          },
+                          "taxonomy": {
+                            "kind": "string",
+                            "value": "org.weave.projection.glasswind_lenses.vocation"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "write_back": {
+                    "kind": "object",
+                    "value": {
+                      "alignment": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "birth": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "hexaco": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "identity": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "ocean": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "relationships": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "ruleset": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  }
+                }
+              },
               "provenance": {
                 "kind": "object",
                 "value": {
@@ -3866,6 +4731,10 @@
                       {
                         "kind": "string",
                         "value": "weave_expression_glasswind_original"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "weave_glasswind_lenses_original"
                       },
                       {
                         "kind": "string",
@@ -3886,7 +4755,11 @@
                     "value": [
                       {
                         "kind": "string",
-                        "value": "alignment_apply_da2749184c01216c"
+                        "value": "alignment_apply_dd2556dc5d058a13"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "projection_apply_81cf025790774968"
                       }
                     ]
                   }
@@ -4049,9 +4922,9 @@
       "content": [
         {
           "span": {
-            "start": 2546,
-            "end": 2741,
-            "line": 38,
+            "start": 3793,
+            "end": 3988,
+            "line": 52,
             "column": 1
           },
           "kind": {
@@ -4068,9 +4941,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 2587,
-                        "end": 2670,
-                        "line": 39,
+                        "start": 3834,
+                        "end": 3917,
+                        "line": 53,
                         "column": 5
                       },
                       "kind": {
@@ -4091,9 +4964,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 2683,
-                    "end": 2739,
-                    "line": 41,
+                    "start": 3930,
+                    "end": 3986,
+                    "line": 55,
                     "column": 5
                   },
                   "kind": {
@@ -4114,9 +4987,9 @@
         },
         {
           "span": {
-            "start": 2742,
-            "end": 3488,
-            "line": 43,
+            "start": 3989,
+            "end": 4735,
+            "line": 57,
             "column": 1
           },
           "kind": {
@@ -4133,9 +5006,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 2780,
-                        "end": 2879,
-                        "line": 44,
+                        "start": 4027,
+                        "end": 4126,
+                        "line": 58,
                         "column": 5
                       },
                       "kind": {
@@ -4156,9 +5029,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 2892,
-                    "end": 3486,
-                    "line": 46,
+                    "start": 4139,
+                    "end": 4733,
+                    "line": 60,
                     "column": 5
                   },
                   "kind": {
@@ -4178,9 +5051,9 @@
                           "body": [
                             {
                               "span": {
-                                "start": 2932,
-                                "end": 3415,
-                                "line": 47,
+                                "start": 4179,
+                                "end": 4662,
+                                "line": 61,
                                 "column": 9
                               },
                               "kind": {
@@ -4366,9 +5239,9 @@
                       "fallback": [
                         {
                           "span": {
-                            "start": 3436,
-                            "end": 3480,
-                            "line": 49,
+                            "start": 4683,
+                            "end": 4727,
+                            "line": 63,
                             "column": 9
                           },
                           "kind": {
@@ -4393,9 +5266,9 @@
         },
         {
           "span": {
-            "start": 3489,
-            "end": 3776,
-            "line": 52,
+            "start": 4736,
+            "end": 5023,
+            "line": 66,
             "column": 1
           },
           "kind": {
@@ -4412,9 +5285,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 3530,
-                        "end": 3614,
-                        "line": 53,
+                        "start": 4777,
+                        "end": 4861,
+                        "line": 67,
                         "column": 5
                       },
                       "kind": {
@@ -4435,9 +5308,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 3627,
-                    "end": 3774,
-                    "line": 55,
+                    "start": 4874,
+                    "end": 5021,
+                    "line": 69,
                     "column": 5
                   },
                   "kind": {
@@ -4523,9 +5396,9 @@
         },
         {
           "span": {
-            "start": 3777,
-            "end": 4074,
-            "line": 57,
+            "start": 5024,
+            "end": 5321,
+            "line": 71,
             "column": 1
           },
           "kind": {
@@ -4542,9 +5415,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 3816,
-                        "end": 3897,
-                        "line": 58,
+                        "start": 5063,
+                        "end": 5144,
+                        "line": 72,
                         "column": 5
                       },
                       "kind": {
@@ -4565,9 +5438,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 3910,
-                    "end": 4072,
-                    "line": 60,
+                    "start": 5157,
+                    "end": 5319,
+                    "line": 74,
                     "column": 5
                   },
                   "kind": {
@@ -4653,9 +5526,239 @@
         },
         {
           "span": {
-            "start": 4075,
-            "end": 4081,
-            "line": 62,
+            "start": 5322,
+            "end": 5899,
+            "line": 76,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "path",
+                    "value": [
+                      "projection_hexaco_writeback"
+                    ]
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 5356,
+                        "end": 5439,
+                        "line": 77,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "This branch is unreachable because projection labels cannot become HEXACO evidence."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 5452,
+                    "end": 5897,
+                    "line": 79,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "Reviewed projection query: lossy="
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_personality_lossy"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_personality"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "; vocation "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_vocation"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "; social role "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_social_role"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "; narrative role "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_narrative_role"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " ("
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_lock"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": ") from "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_pack"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "@"
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_pack_version"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " ("
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_pack_sha256"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "), proposal "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_proposal_sha256"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": ", review "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_review_sha256"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": ". Explanation: "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_explanation"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " Rationale: "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "projection_rationale"
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 5900,
+            "end": 5906,
+            "line": 81,
             "column": 1
           },
           "kind": {

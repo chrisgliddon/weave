@@ -532,7 +532,7 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "expression_revision_1a077a0239c55097",
+                            "expression_revision_ef00481e23bd1bfe",
                             "weave_expression_authored_fixture",
                         ],
                         canonical_personality_write_back: forbidden,
@@ -556,7 +556,7 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "expression_revision_1a077a0239c55097",
+                            "expression_revision_ef00481e23bd1bfe",
                             "weave_expression_authored_fixture",
                         ],
                         canonical_personality_write_back: forbidden,
@@ -675,6 +675,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_glasswind_lenses_original",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "glasswind-lenses-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+                    modified: false,
+                ),
+                (
                     id: "weave_glasswind_presentation",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -707,7 +717,7 @@
             ],
             transformations: [
                 (
-                    id: "alignment_apply_da2749184c01216c",
+                    id: "alignment_apply_dd2556dc5d058a13",
                     inputs: [
                         "character_original",
                         "weave_wayfinder_compass",
@@ -715,11 +725,19 @@
                     description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                 ),
                 (
-                    id: "expression_revision_1a077a0239c55097",
+                    id: "expression_revision_ef00481e23bd1bfe",
                     inputs: [
                         "weave_expression_authored_fixture",
                     ],
                     description: "Applied one fingerprinted authored expression revision without changing canonical personality evidence.",
+                ),
+                (
+                    id: "projection_apply_81cf025790774968",
+                    inputs: [
+                        "character_original",
+                        "weave_glasswind_lenses_original",
+                    ],
+                    description: "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family.",
                 ),
             ],
             claims: {
@@ -730,16 +748,18 @@
                     "weave_wayfinder_compass",
                 ],
                 "calibrations": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "entries": [
+                    "weave_glasswind_lenses_original",
                     "weave_glasswind_presentation",
                 ],
                 "extensions.expression": [
-                    "expression_revision_1a077a0239c55097",
+                    "expression_revision_ef00481e23bd1bfe",
                 ],
                 "extensions.org.weave.character.alignment": [
-                    "alignment_apply_da2749184c01216c",
+                    "alignment_apply_dd2556dc5d058a13",
                 ],
                 "extensions.org.weave.character.expression": [
                     "weave_expression_glasswind_original",
@@ -747,10 +767,15 @@
                 "extensions.org.weave.character.relationships": [
                     "weave_relationship_reference_pack",
                 ],
+                "extensions.org.weave.character.role_projections": [
+                    "projection_apply_81cf025790774968",
+                ],
                 "inputs": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "methodology": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "mutations": [
@@ -762,10 +787,13 @@
                 "slots": [
                     "weave_glasswind_presentation",
                 ],
+                "taxonomies": [
+                    "weave_glasswind_lenses_original",
+                ],
             },
         ),
     ),
-    input_sha256: "7e94236679ebcaf064d65cc7dcb8961e8124ca4e1ebce052f6aa90aad498376a",
+    input_sha256: "9451751027f2b1d634533d60f800e1160bb47afeb24cc8006f4490db19f6bdfa",
     pack: (
         pack_format_version: 1,
         id: "org.weave.expression.glasswind",
@@ -1128,7 +1156,7 @@
         request_format_version: 1,
         id: "org.weave.character.expression.assignment.ari_glasswind",
         character_id: "org.weave.character.ari_vale",
-        expected_profile_sha256: "7e94236679ebcaf064d65cc7dcb8961e8124ca4e1ebce052f6aa90aad498376a",
+        expected_profile_sha256: "9451751027f2b1d634533d60f800e1160bb47afeb24cc8006f4490db19f6bdfa",
         pack: (
             id: "org.weave.expression.glasswind",
             version: "1.0.0",
@@ -1171,7 +1199,7 @@
             },
         ),
     ),
-    request_sha256: "a0230b82e3c2b6e4db48fb11f86ec3aa89cfb7a81acbf75825f2dfe5542d79a5",
+    request_sha256: "459f11333a89e3ec9a5c4f59dee6d06ed593fa7fe106d1a04fdd69b8973938db",
     output_profile: (
         profile_format_version: 1,
         id: "org.weave.character.ari_vale",
@@ -1703,8 +1731,8 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "expression_revision_1a077a0239c55097",
-                            "expression_revision_34c9e47de48f9cad",
+                            "expression_revision_bd65c526101051fd",
+                            "expression_revision_ef00481e23bd1bfe",
                             "weave_expression_assignment_fixture",
                             "weave_expression_authored_fixture",
                             "weave_expression_glasswind_original",
@@ -1745,8 +1773,8 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "expression_revision_1a077a0239c55097",
-                            "expression_revision_34c9e47de48f9cad",
+                            "expression_revision_bd65c526101051fd",
+                            "expression_revision_ef00481e23bd1bfe",
                             "weave_expression_assignment_fixture",
                             "weave_expression_authored_fixture",
                             "weave_expression_glasswind_original",
@@ -1990,6 +2018,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_glasswind_lenses_original",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "glasswind-lenses-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+                    modified: false,
+                ),
+                (
                     id: "weave_glasswind_presentation",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -2022,7 +2060,7 @@
             ],
             transformations: [
                 (
-                    id: "alignment_apply_da2749184c01216c",
+                    id: "alignment_apply_dd2556dc5d058a13",
                     inputs: [
                         "character_original",
                         "weave_wayfinder_compass",
@@ -2030,19 +2068,27 @@
                     description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                 ),
                 (
-                    id: "expression_revision_1a077a0239c55097",
+                    id: "expression_revision_bd65c526101051fd",
+                    inputs: [
+                        "weave_expression_assignment_fixture",
+                        "weave_expression_glasswind_original",
+                    ],
+                    description: "Applied one fingerprinted authored expression revision without changing canonical personality evidence.",
+                ),
+                (
+                    id: "expression_revision_ef00481e23bd1bfe",
                     inputs: [
                         "weave_expression_authored_fixture",
                     ],
                     description: "Applied one fingerprinted authored expression revision without changing canonical personality evidence.",
                 ),
                 (
-                    id: "expression_revision_34c9e47de48f9cad",
+                    id: "projection_apply_81cf025790774968",
                     inputs: [
-                        "weave_expression_assignment_fixture",
-                        "weave_expression_glasswind_original",
+                        "character_original",
+                        "weave_glasswind_lenses_original",
                     ],
-                    description: "Applied one fingerprinted authored expression revision without changing canonical personality evidence.",
+                    description: "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family.",
                 ),
             ],
             claims: {
@@ -2056,18 +2102,20 @@
                     "weave_wayfinder_compass",
                 ],
                 "calibrations": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "entries": [
                     "weave_expression_glasswind_original",
+                    "weave_glasswind_lenses_original",
                     "weave_glasswind_presentation",
                 ],
                 "extensions.expression": [
-                    "expression_revision_1a077a0239c55097",
-                    "expression_revision_34c9e47de48f9cad",
+                    "expression_revision_bd65c526101051fd",
+                    "expression_revision_ef00481e23bd1bfe",
                 ],
                 "extensions.org.weave.character.alignment": [
-                    "alignment_apply_da2749184c01216c",
+                    "alignment_apply_dd2556dc5d058a13",
                 ],
                 "extensions.org.weave.character.expression": [
                     "weave_expression_glasswind_original",
@@ -2075,10 +2123,15 @@
                 "extensions.org.weave.character.relationships": [
                     "weave_relationship_reference_pack",
                 ],
+                "extensions.org.weave.character.role_projections": [
+                    "projection_apply_81cf025790774968",
+                ],
                 "inputs": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "methodology": [
+                    "weave_glasswind_lenses_original",
                     "weave_wayfinder_compass",
                 ],
                 "mutations": [
@@ -2090,11 +2143,14 @@
                 "slots": [
                     "weave_glasswind_presentation",
                 ],
+                "taxonomies": [
+                    "weave_glasswind_lenses_original",
+                ],
                 "templates": [
                     "weave_expression_glasswind_original",
                 ],
             },
         ),
     ),
-    output_sha256: "73d561106e94959057ac91725986428602b0a615b1ca4a8aefc16f2746d7dc30",
+    output_sha256: "f42554c2836a280a6c133840ed58e6e0c600b6ec683b2873ea8a2a230ae10579",
 )

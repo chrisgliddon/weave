@@ -1,7 +1,7 @@
 (
     config_format_version: 1,
     id: "org.weave.relationship.reference_scoring",
-    expected_input_sha256: "7f99222393d774306ee343b3b018d4639664e900cc467583b2b8e1ae77bed82e",
+    expected_input_sha256: "9a490910b65666562a7b3213491d5e6da10bdb991864d3b82fd7b1ecd5010c3a",
     kind_pack: (
         id: "org.weave.relationship.reference",
         version: "1.0.0",

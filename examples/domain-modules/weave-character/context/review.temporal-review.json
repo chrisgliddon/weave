@@ -1,7 +1,7 @@
 {
   "review_format_version": 1,
-  "proposal_sha256": "90aaad8d644ea300ff46455a9175e4732ab11f290f2be72b925978adf3ec015a",
-  "profile_sha256": "00694b0faae8f788e28c880c9c5e6197e72a7320eb96bdc0f176afffc089abf9",
+  "proposal_sha256": "a5da35346f948701a6365cc4ea6b0090a06316af0e55e6f4124ad1ea5506eb6a",
+  "profile_sha256": "a4c9250f136ab3ec8878a18e43ce40b20e271bf5e068a460636ddb637b4fef21",
   "reviewer": "org.weave.reviewer.fixture",
   "rationale": "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
   "decisions": {

@@ -1,7 +1,7 @@
 (
     revision_format_version: 1,
     id: "org.weave.relationship.reference_authored_graph",
-    expected_input_sha256: "8d107e565a0551c98395146c2d454477eeb6973c0f3285746135ec86c03f76cb",
+    expected_input_sha256: "aa97adfb91fdad992c8da1070887421abd158db62076ed9ca7b7eb1042864ca7",
     kind_pack: (
         id: "org.weave.relationship.reference",
         version: "1.0.0",

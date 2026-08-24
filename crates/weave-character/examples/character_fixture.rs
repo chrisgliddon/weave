@@ -5,6 +5,8 @@ use std::path::{Path, PathBuf};
 use sha2::{Digest, Sha256};
 #[path = "support/expression.rs"]
 mod expression_support;
+#[path = "support/projection.rs"]
+mod projection_support;
 
 use weave_character::{
     ALIGNMENT_CONFIG_FORMAT_VERSION, ALIGNMENT_PACK_FORMAT_VERSION, Agreeableness, AlignmentAxis,
@@ -27,12 +29,14 @@ use weave_character::{
     IdentityContextNote, IdentityPresentation, InnerLifeCategory, LockState,
     NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
     Openness, PRESENTATION_ALLOCATION_REQUEST_FORMAT_VERSION, PRESENTATION_CATALOG_FORMAT_VERSION,
-    PRESENTATION_LOCK_REVISION_FORMAT_VERSION, PreferencePolarity, PresentationAllocationMode,
-    PresentationAllocationRequest, PresentationAssetKind, PresentationAssetReference,
-    PresentationCatalog, PresentationCatalogEntry, PresentationCatalogSlot,
-    PresentationCatalogValue, PresentationCatalogValueKind, PresentationLockRevision,
-    PresentationLockTarget, PresentationPalette, PresentationProposal, PresentationReceipt,
-    PresentationReview, PresentationReviewDecision, PronounSet, RELATIONSHIP_CONFIG_FORMAT_VERSION,
+    PRESENTATION_LOCK_REVISION_FORMAT_VERSION, PROJECTION_CONFIG_FORMAT_VERSION,
+    PreferencePolarity, PresentationAllocationMode, PresentationAllocationRequest,
+    PresentationAssetKind, PresentationAssetReference, PresentationCatalog,
+    PresentationCatalogEntry, PresentationCatalogSlot, PresentationCatalogValue,
+    PresentationCatalogValueKind, PresentationLockRevision, PresentationLockTarget,
+    PresentationPalette, PresentationProposal, PresentationReceipt, PresentationReview,
+    PresentationReviewDecision, ProjectionAssignmentMode, ProjectionConfig, ProjectionReceipt,
+    ProjectionReviewDecision, PronounSet, RELATIONSHIP_CONFIG_FORMAT_VERSION,
     RELATIONSHIP_KIND_PACK_FORMAT_VERSION, RELATIONSHIP_POLICY_FORMAT_VERSION,
     RELATIONSHIP_REVISION_FORMAT_VERSION, RelationshipConsent, RelationshipConsentRecord,
     RelationshipConsentState, RelationshipDate, RelationshipDiagnosticCode,
@@ -43,37 +47,37 @@ use weave_character::{
     RelationshipNote, RelationshipProposal, RelationshipProposalConfig, RelationshipProposalTarget,
     RelationshipReceipt, RelationshipReconciliationReport, RelationshipReview,
     RelationshipReviewDecision, RelationshipSafeguards, RelationshipValidityPeriod, ReviewState,
-    RoleProjection, RoleProjections, TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION,
-    TEMPORAL_CONTEXT_PACK_FORMAT_VERSION, TemporalAuthoringCue, TemporalAutoApprovePolicy,
-    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextProvider,
-    TemporalContextReceipt, TemporalContextRecord, TemporalContextReview, TemporalDate,
-    TemporalEvidenceClass, TemporalExtent, TemporalPlaceScope, TemporalRecordKind,
-    TemporalReferencePeriod, TemporalResolution, TemporalReviewAction, TemporalReviewDecision,
-    TemporalSensitivity, TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState,
-    VersionedExtension, VoiceCategory, VoiceDirection, alignment_config_schema,
-    alignment_pack_schema, alignment_proposal_schema, alignment_provider_content_fingerprint,
-    alignment_receipt_schema, alignment_review_schema, apply_presentation_lock_revision,
-    apply_presentation_review, apply_relationship_graph_revision, apply_reviewed_alignment,
+    TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION, TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
+    TemporalAuthoringCue, TemporalAutoApprovePolicy, TemporalContextConfig, TemporalContextPack,
+    TemporalContextProposal, TemporalContextProvider, TemporalContextReceipt,
+    TemporalContextRecord, TemporalContextReview, TemporalDate, TemporalEvidenceClass,
+    TemporalExtent, TemporalPlaceScope, TemporalRecordKind, TemporalReferencePeriod,
+    TemporalResolution, TemporalReviewAction, TemporalReviewDecision, TemporalSensitivity,
+    TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState, VersionedExtension,
+    VoiceCategory, VoiceDirection, alignment_config_schema, alignment_pack_schema,
+    alignment_proposal_schema, alignment_provider_content_fingerprint, alignment_receipt_schema,
+    alignment_review_schema, apply_presentation_lock_revision, apply_presentation_review,
+    apply_projection_review, apply_relationship_graph_revision, apply_reviewed_alignment,
     apply_reviewed_character_proposal, apply_reviewed_relationships,
     apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
     character_domain_pack, character_module_manifest, character_operation_request_schema,
     character_overlay_schema, character_profile_schema, character_progress_schema,
     character_proposal_schema, character_review_schema, character_synthesis_schema,
     character_template_schema, collection_fingerprint, create_alignment_review,
-    create_relationship_review, create_temporal_context_review,
+    create_projection_review, create_relationship_review, create_temporal_context_review,
     presentation_allocation_request_schema, presentation_catalog_ref, presentation_catalog_schema,
     presentation_lock_revision_schema, presentation_proposal_schema, presentation_receipt_schema,
     presentation_review_schema, propose_alignment, propose_character_operation,
-    propose_presentation_allocations, propose_relationships, propose_temporal_context,
-    recompute_derived, reconcile_relationship_graph, relationship_config_schema,
-    relationship_dense_matrix_review_csv, relationship_edge_review_csv, relationship_kind_pack_ref,
-    relationship_kind_pack_schema, relationship_policy_schema, relationship_proposal_schema,
-    relationship_receipt_schema, relationship_reconciliation_schema, relationship_review_schema,
-    relationship_revision_schema, resume_character_operation, review_character_proposal,
-    review_presentation_proposal, synthesize_character, template_fingerprint,
-    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
-    temporal_context_receipt_schema, temporal_context_review_schema,
-    temporal_provider_content_fingerprint,
+    propose_presentation_allocations, propose_projections, propose_relationships,
+    propose_temporal_context, recompute_derived, reconcile_relationship_graph,
+    relationship_config_schema, relationship_dense_matrix_review_csv, relationship_edge_review_csv,
+    relationship_kind_pack_ref, relationship_kind_pack_schema, relationship_policy_schema,
+    relationship_proposal_schema, relationship_receipt_schema, relationship_reconciliation_schema,
+    relationship_review_schema, relationship_revision_schema, resume_character_operation,
+    review_character_proposal, review_presentation_proposal, synthesize_character,
+    template_fingerprint, temporal_context_config_schema, temporal_context_pack_schema,
+    temporal_context_proposal_schema, temporal_context_receipt_schema,
+    temporal_context_review_schema, temporal_provider_content_fingerprint,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, to_pretty_json};
 
@@ -103,13 +107,20 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     let alignment = alignment_fixture(&complete_profile())?;
     let presentation = presentation_fixture(&alignment.receipt.output_profile)?;
-    let profile = presentation
+    let presentation_profile = presentation
         .receipt
         .output_collection
         .characters
         .get("org.weave.character.ari_vale")
         .cloned()
         .ok_or("presentation fixture omitted Ari Vale")?;
+    let projection = projection_runtime_fixture(&presentation.receipt.output_collection)?;
+    let profile = projection
+        .output_collection
+        .characters
+        .get("org.weave.character.ari_vale")
+        .cloned()
+        .ok_or("projection fixture omitted Ari Vale")?;
     let template = CharacterTemplate {
         template_format_version: CHARACTER_TEMPLATE_FORMAT_VERSION,
         id: "org.weave.character.template.glasswind_wayfinder".to_owned(),
@@ -130,7 +141,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "1.0.0",
         "Ari Vale Synthetic Character",
     )?;
-    let collection = presentation.receipt.output_collection.clone();
+    let collection = projection.output_collection.clone();
     let rename_request = rename_request(&collection)?;
     let progress = resume_character_operation(&collection, &rename_request, None, 1)?.progress;
     let rename_proposal = propose_character_operation(&collection, &rename_request)?;
@@ -149,7 +160,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "1.0.0",
         "Ari Vale Reviewed Temporal Context",
     )?;
-    let relationships = relationship_fixture(&profile)?;
+    let relationships = relationship_fixture(&presentation_profile)?;
 
     write_pair(&fixture, "profile.character", &profile, write)?;
     write_pair(&fixture, "template.character", &template, write)?;
@@ -3076,6 +3087,61 @@ fn complete_profile() -> CharacterProfile {
     profile
 }
 
+fn projection_runtime_fixture(
+    input: &CharacterCollection,
+) -> Result<ProjectionReceipt, Box<dyn std::error::Error>> {
+    let pack = projection_support::reference_projection_pack();
+    let config = ProjectionConfig {
+        config_format_version: PROJECTION_CONFIG_FORMAT_VERSION,
+        id: "org.weave.character.projection.glasswind_runtime".to_owned(),
+        selected_taxonomies: projection_support::taxonomy_ids(),
+        eligible_character_ids: input.characters.keys().cloned().collect(),
+        minimum_coverage_micros: 1_000_000,
+        mode: ProjectionAssignmentMode::FillMissing,
+        capacity_overrides: BTreeMap::new(),
+        reservations: Vec::new(),
+    };
+    let proposal = propose_projections(input, &pack, &config, 20_260_824)?;
+    let decisions = proposal
+        .review_manifest
+        .iter()
+        .map(|(character_id, taxonomy_ids)| {
+            let decisions = taxonomy_ids
+                .iter()
+                .map(|taxonomy_id| {
+                    let lock = if character_id == "org.weave.character.ari_vale"
+                        && matches!(
+                            pack.taxonomies[taxonomy_id].kind,
+                            weave_character::ProjectionKind::NarrativeRole
+                        ) {
+                        LockState::Locked
+                    } else {
+                        LockState::Unlocked
+                    };
+                    (
+                        taxonomy_id.clone(),
+                        ProjectionReviewDecision::Accept {
+                            lock,
+                            rationale: Some(
+                                "Accept this explainable fictional display or role suggestion for the typed runtime example."
+                                    .to_owned(),
+                            ),
+                        },
+                    )
+                })
+                .collect();
+            (character_id.clone(), decisions)
+        })
+        .collect();
+    let review = create_projection_review(
+        &proposal,
+        "org.weave.reviewer.runtime_fixture",
+        "Review every explainable fictional projection independently before exposing it to source and runtime consumers.",
+        decisions,
+    )?;
+    Ok(apply_projection_review(input, &proposal, &review)?)
+}
+
 fn extensions(
     lineage: &[String],
     relationship_kind_pack: RelationshipKindPackRef,
@@ -3084,7 +3150,6 @@ fn extensions(
     let identity_namespace = "org.weave.character.identity_presentation";
     let expression_namespace = "org.weave.character.expression";
     let behavior_namespace = "org.weave.character.behavioral_signatures";
-    let role_namespace = "org.weave.character.role_projections";
     let relationship_namespace = "org.weave.character.relationships";
     let date_namespace = "org.weave.character.date_context";
     let tabletop_namespace = "org.weave.character.tabletop";
@@ -3298,28 +3363,6 @@ fn extensions(
                                 "Authored only for the public synthetic Character fixture."
                                     .to_owned(),
                             ),
-                        },
-                    )]),
-                },
-            }),
-        ),
-        (
-            role_namespace.to_owned(),
-            CharacterExtension::RoleProjections(VersionedExtension {
-                header: extension_header(role_namespace, 1, lineage),
-                value: RoleProjections {
-                    roles: BTreeMap::from([(
-                        "route_steward".to_owned(),
-                        RoleProjection {
-                            id: "route_steward".to_owned(),
-                            taxonomy: "org.weave.roles.glasswind".to_owned(),
-                            role: "Route steward".to_owned(),
-                            rationale: "Accepted as a narrative role, not a personality fact."
-                                .to_owned(),
-                            input_paths: vec![
-                                "canon.personality.conscientiousness.factor".to_owned(),
-                                "canon.personality.openness.factor".to_owned(),
-                            ],
                         },
                     )]),
                 },
