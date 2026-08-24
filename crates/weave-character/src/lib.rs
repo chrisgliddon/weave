@@ -10,6 +10,7 @@ mod assistance;
 mod authoring;
 mod domain;
 mod expression;
+mod health;
 mod model;
 mod operations;
 mod presentation;
@@ -32,6 +33,7 @@ pub use domain::{
     character_module_manifest, character_profile_domain_value,
 };
 pub use expression::*;
+pub use health::*;
 pub use model::*;
 pub use operations::*;
 pub use presentation::*;

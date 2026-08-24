@@ -1,0 +1,160 @@
+{
+  "report_format_version": 1,
+  "id": "org.weave.character.health.report_9f8f601e673f9639",
+  "manifest_id": "org.weave.character.health.incomplete",
+  "input_sha256": "9f8f601e673f9639830187a099685e668310229e801704052b29a1aeaec9e412",
+  "summary": {
+    "documents_total": 1,
+    "documents_valid": 1,
+    "characters_total": 1,
+    "diagnostics_total": 1,
+    "active_diagnostics": 1,
+    "suppressed_diagnostics": 0,
+    "active_by_severity": {
+      "note": 1
+    },
+    "failure_threshold": "error",
+    "ci_exit_code": 0
+  },
+  "coverage": {
+    "characters": {
+      "org.weave.character.ari_vale": {
+        "factors_present": 6,
+        "factors_total": 6,
+        "facets_present": 23,
+        "facets_total": 24,
+        "known_confidence_values": 29,
+        "measured_values": 29,
+        "current_values": 29,
+        "stale_values": 0,
+        "relationship_edges": 0,
+        "expression_records": 0,
+        "role_projections": 0,
+        "pending_suggestions": 0
+      }
+    },
+    "factor_values_present": 6,
+    "factor_values_total": 6,
+    "facet_values_present": 23,
+    "facet_values_total": 24,
+    "known_confidence_values": 29,
+    "measured_values": 29
+  },
+  "distributions": {
+    "trait_bands": {
+      "honesty_humility": {
+        "high": 1
+      },
+      "sincerity": {
+        "high": 1
+      },
+      "fairness": {
+        "very_high": 1
+      },
+      "greed_avoidance": {
+        "high": 1
+      },
+      "modesty": {
+        "high": 1
+      },
+      "emotionality": {
+        "middle": 1
+      },
+      "fearfulness": {
+        "middle": 1
+      },
+      "anxiety": {
+        "middle": 1
+      },
+      "dependence": {
+        "middle": 1
+      },
+      "sentimentality": {
+        "high": 1
+      },
+      "extraversion": {
+        "high": 1
+      },
+      "social_self_esteem": {
+        "high": 1
+      },
+      "social_boldness": {
+        "high": 1
+      },
+      "sociability": {
+        "high": 1
+      },
+      "liveliness": {
+        "high": 1
+      },
+      "agreeableness": {
+        "high": 1
+      },
+      "forgivingness": {
+        "middle": 1
+      },
+      "gentleness": {
+        "high": 1
+      },
+      "flexibility": {
+        "middle": 1
+      },
+      "patience": {
+        "high": 1
+      },
+      "conscientiousness": {
+        "high": 1
+      },
+      "organization": {
+        "high": 1
+      },
+      "diligence": {
+        "very_high": 1
+      },
+      "perfectionism": {
+        "high": 1
+      },
+      "prudence": {
+        "very_high": 1
+      },
+      "openness": {
+        "very_high": 1
+      },
+      "aesthetic_appreciation": {
+        "very_high": 1
+      },
+      "inquisitiveness": {
+        "very_high": 1
+      },
+      "unconventionality": {
+        "high": 1
+      }
+    },
+    "relationship_kinds": {},
+    "role_taxonomies": {},
+    "expression_categories": {},
+    "constraints_configured": 0
+  },
+  "diagnostics": [
+    {
+      "id": "health_f2d3657892adee03",
+      "code": "H104",
+      "severity": "note",
+      "scope": {
+        "scope": "character_document",
+        "document_id": "org.weave.health.incomplete.collection",
+        "character_id": "org.weave.character.ari_vale"
+      },
+      "path": "characters.org.weave.character.ari_vale.canon.personality.openness.creativity",
+      "source": {
+        "document_id": "org.weave.health.incomplete.collection",
+        "file": "collection.character-collection.json"
+      },
+      "explanation": "canonical HEXACO facet is absent and remains explicitly unmeasured",
+      "remediation": "Add evidence only when it is available; otherwise retain the absence and review coverage intentionally."
+    }
+  ],
+  "suppressions": [],
+  "read_only": true,
+  "source_payloads_retained": false
+}

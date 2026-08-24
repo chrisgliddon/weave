@@ -29,6 +29,7 @@ You are reading the documentation for **Weave 0.1.0**. The navigation title and 
 | Character assistance template/request/preview/approval/provider response/candidate set | `1` | [`character_module.md`](character_module.md) |
 | Character assistance advisory/decision review/receipt/batch/comparison | `1` | [`character_module.md`](character_module.md) |
 | Character projection pack/config/proposal/review/receipt/lock revision | `1` | [`character_module.md`](character_module.md) |
+| Character health manifest/report/suppression/policy | `1` | [`character_module.md`](character_module.md#corpus-health-drift-safety-and-coverage) |
 | Weave Character domain module | `1.6.0` | `weave_character::CHARACTER_DOMAIN_MODULE_VERSION` |
 | Formatter contract | `1` | `weave_fmt::FORMAT_VERSION` |
 | Bevy integration | Bevy `0.18` | `weave_bevy::BEVY_VERSION` |

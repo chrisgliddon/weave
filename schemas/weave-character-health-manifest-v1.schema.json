@@ -1,0 +1,610 @@
+{
+  "$defs": {
+    "CharacterHealthDiagnosticCode": {
+      "description": "Stable, versioned diagnostic vocabulary for the aggregate Character audit.",
+      "enum": [
+        "H100",
+        "H101",
+        "H102",
+        "H103",
+        "H104",
+        "H105",
+        "H106",
+        "H107",
+        "H108",
+        "H109",
+        "H110",
+        "H200",
+        "H201",
+        "H202",
+        "H203",
+        "H204",
+        "H205",
+        "H206",
+        "H207",
+        "H208",
+        "H209",
+        "H300",
+        "H301",
+        "H302",
+        "H303",
+        "H304",
+        "H305",
+        "H306",
+        "H307",
+        "H400",
+        "H401",
+        "H402",
+        "H403",
+        "H404",
+        "H410",
+        "H411",
+        "H412",
+        "H413",
+        "H500",
+        "H501",
+        "H502",
+        "H503",
+        "H504",
+        "H600",
+        "H601",
+        "H700",
+        "H701"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthDistributionConstraint": {
+      "additionalProperties": false,
+      "description": "One explicit distribution rule. It is never inferred from corpus composition.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "maximum": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "metric": {
+          "$ref": "#/$defs/CharacterHealthDistributionMetric"
+        },
+        "minimum": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "policy_url": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "metric",
+        "rationale",
+        "policy_url"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthDistributionMetric": {
+      "description": "Descriptive metrics that a project may explicitly constrain.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "metric": {
+              "const": "character_count",
+              "type": "string"
+            }
+          },
+          "required": [
+            "metric"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "band": {
+              "$ref": "#/$defs/TraitBand"
+            },
+            "metric": {
+              "const": "trait_band",
+              "type": "string"
+            },
+            "trait_id": {
+              "$ref": "#/$defs/HexacoTrait"
+            }
+          },
+          "required": [
+            "metric",
+            "trait_id",
+            "band"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind_id": {
+              "type": "string"
+            },
+            "metric": {
+              "const": "relationship_kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "metric",
+            "kind_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "metric": {
+              "const": "role_taxonomy",
+              "type": "string"
+            },
+            "taxonomy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "metric",
+            "taxonomy"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "type": "string"
+            },
+            "metric": {
+              "const": "expression_category",
+              "type": "string"
+            }
+          },
+          "required": [
+            "metric",
+            "category"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterHealthDocumentFormat": {
+      "description": "Supported source encodings. CSV is deliberately an export diagnostic, not canonical input.",
+      "enum": [
+        "json",
+        "ron"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthDocumentKind": {
+      "description": "Source artifact kinds understood by the extensible v1 health router.",
+      "enum": [
+        "character_collection",
+        "character_profile",
+        "character_template",
+        "character_overlay",
+        "character_synthesis",
+        "temporal_context_pack",
+        "temporal_context_receipt",
+        "alignment_pack",
+        "alignment_receipt",
+        "presentation_catalog",
+        "presentation_receipt",
+        "relationship_kind_pack",
+        "relationship_policy",
+        "expression_pack",
+        "expression_revision",
+        "projection_pack",
+        "projection_proposal",
+        "projection_review",
+        "projection_receipt",
+        "assistance_template",
+        "assistance_candidate_set",
+        "assistance_advisory_review",
+        "assistance_decision_review",
+        "assistance_receipt",
+        "assistance_job",
+        "assistance_batch_receipt",
+        "runtime_domain_pack"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthDocumentRef": {
+      "additionalProperties": false,
+      "description": "Safe, project-relative source reference used by an audit manifest.",
+      "properties": {
+        "character_id": {
+          "description": "Required for runtime pack documents and optional for character-owned artifacts.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "format": {
+          "$ref": "#/$defs/CharacterHealthDocumentFormat"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/CharacterHealthDocumentKind"
+        },
+        "logical_id": {
+          "description": "Stable semantic identity used to pair equivalent RON and JSON documents.",
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "primary": {
+          "description": "Exactly one Character collection source is the audit's canonical corpus.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "format",
+        "path",
+        "logical_id"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthPolicy": {
+      "additionalProperties": false,
+      "description": "Explicit project policy. Distribution constraints are absent unless a project opts into them.",
+      "properties": {
+        "csv_loss_diagnostics": {
+          "type": "boolean"
+        },
+        "distribution_constraints": {
+          "description": "Optional, explicitly documented quotas. Empty means distributions are descriptive only.",
+          "items": {
+            "$ref": "#/$defs/CharacterHealthDistributionConstraint"
+          },
+          "type": "array"
+        },
+        "failure_threshold": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterHealthSeverity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "CI is successful when absent; otherwise active diagnostics at or above this threshold fail."
+        },
+        "policy_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "require_portable_pairs": {
+          "type": "boolean"
+        },
+        "required_extension_namespaces": {
+          "description": "Optional project-required extensions. The base audit imposes none.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "policy_format_version",
+        "require_portable_pairs",
+        "csv_loss_diagnostics"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthSeverity": {
+      "description": "Stable health diagnostic severity ordered from advisory note through blocking error.",
+      "enum": [
+        "note",
+        "warning",
+        "error"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthSuppression": {
+      "additionalProperties": false,
+      "description": "Versioned, attributable, reviewable suppression. Matching is exact except for path prefix.",
+      "properties": {
+        "character_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code": {
+          "$ref": "#/$defs/CharacterHealthDiagnosticCode"
+        },
+        "document_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "path_prefix": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reviewed_by": {
+          "type": "string"
+        },
+        "suppression_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "suppression_format_version",
+        "id",
+        "code",
+        "path_prefix",
+        "reviewed_by",
+        "rationale",
+        "review_revision"
+      ],
+      "type": "object"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "TraitBand": {
+      "description": "Closed five-band trait vocabulary.",
+      "enum": [
+        "very_low",
+        "low",
+        "middle",
+        "high",
+        "very_high"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-health-manifest:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One audit manifest. Referenced source files are loaded separately and never copied into reports.",
+  "properties": {
+    "documents": {
+      "description": "Canonically sorted source documents. Exactly one collection document is primary.",
+      "items": {
+        "$ref": "#/$defs/CharacterHealthDocumentRef"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "manifest_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "policy": {
+      "$ref": "#/$defs/CharacterHealthPolicy"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "suppressions": {
+      "items": {
+        "$ref": "#/$defs/CharacterHealthSuppression"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "manifest_format_version",
+    "id",
+    "documents",
+    "policy",
+    "provenance"
+  ],
+  "title": "Weave Character Health Manifest v1",
+  "type": "object",
+  "x-weave-character-health-contract-version": 1
+}

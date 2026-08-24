@@ -106,6 +106,32 @@ def run(
     return result
 
 
+def run_expect_status(
+    command: list[str], expected_status: int
+) -> subprocess.CompletedProcess[str]:
+    """Run one command whose documented nonzero status is part of the contract."""
+
+    print(f"+ {shlex.join(command)}  # expect {expected_status}", flush=True)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+    except OSError as error:
+        raise DocsError(f"could not run {command[0]}: {error.strerror}") from None
+    if result.returncode != expected_status:
+        sys.stderr.write(result.stdout)
+        sys.stderr.write(result.stderr)
+        raise DocsError(
+            f"command returned {result.returncode}, expected {expected_status}: "
+            f"{shlex.join(command)}"
+        )
+    return result
+
+
 def workspace_version() -> str:
     cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
     return str(cargo["workspace"]["package"]["version"])
@@ -592,6 +618,7 @@ def verify_domain_contract() -> None:
     character_expression = character_fixture / "expression"
     character_projections = character_fixture / "projections"
     character_assistance = character_fixture / "assistance"
+    character_health = character_fixture / "health"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
@@ -788,6 +815,21 @@ def verify_domain_contract() -> None:
             "weave-character",
             "--example",
             "character_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
+            "health_fixture",
             "--",
             "--check",
         ],
@@ -1099,6 +1141,11 @@ def verify_domain_contract() -> None:
             "assistance-comparison": workspace
             / "weave-character-assistance-comparison-v1.schema.json",
         }
+        generated_health_schemas = {
+            "health-manifest": workspace
+            / "weave-character-health-manifest-v1.schema.json",
+            "health-report": workspace / "weave-character-health-report-v1.schema.json",
+        }
         generated_authoring_schemas = {
             "authoring-workspace": workspace
             / "weave-character-authoring-workspace-v1.schema.json",
@@ -1316,6 +1363,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_health_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for generated, checked in (
             (
                 generated_manifest_schema,
@@ -1466,6 +1518,88 @@ def verify_domain_contract() -> None:
                 raise DocsError(
                     f"checked-in assistance schema is stale: {checked.name}"
                 )
+        for generated in generated_health_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"checked-in health schema is stale: {checked.name}")
+
+        health_before = {
+            path.relative_to(character_health): path.read_bytes()
+            for path in sorted(character_health.rglob("*"))
+            if path.is_file()
+        }
+        health_ci_statuses = {
+            "healthy": 0,
+            "incomplete": 0,
+            "stale": 2,
+            "unsafe": 2,
+            "malformed": 2,
+            "migration-required": 2,
+        }
+        for scenario, expected_status in health_ci_statuses.items():
+            project = character_health / scenario
+            for extension in ("json", "ron"):
+                for kind, stem in (
+                    ("health-manifest", "project.health-manifest"),
+                    ("health-report", "report.health-report"),
+                ):
+                    run(
+                        [
+                            str(character_tool),
+                            "validate",
+                            kind,
+                            str((project / f"{stem}.{extension}").relative_to(ROOT)),
+                        ],
+                        capture=True,
+                    )
+            for output_format, suffix, manifest_extension in (
+                ("text", "txt", "json"),
+                ("json", "json", "json"),
+                ("ron", "ron", "ron"),
+            ):
+                generated = workspace / f"{scenario}.health-report.{suffix}"
+                run(
+                    [
+                        str(character_tool),
+                        "health-audit",
+                        str(
+                            (
+                                project
+                                / f"project.health-manifest.{manifest_extension}"
+                            ).relative_to(ROOT)
+                        ),
+                        "--format",
+                        output_format,
+                        "--output",
+                        str(generated),
+                    ],
+                    capture=True,
+                )
+                checked = project / f"report.health-report.{suffix}"
+                if generated.read_bytes() != checked.read_bytes():
+                    raise DocsError(
+                        f"checked-in Character health report is stale: {checked}"
+                    )
+            run_expect_status(
+                [
+                    str(character_tool),
+                    "health-audit",
+                    str(
+                        (project / "project.health-manifest.json").relative_to(ROOT)
+                    ),
+                    "--format",
+                    "json",
+                    "--ci",
+                ],
+                expected_status,
+            )
+        health_after = {
+            path.relative_to(character_health): path.read_bytes()
+            for path in sorted(character_health.rglob("*"))
+            if path.is_file()
+        }
+        if health_after != health_before:
+            raise DocsError("Character health audit modified its checked project data")
 
         assistance_documents = {
             "assistance-template": "glasswind.assistance-template",
@@ -3576,7 +3710,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/presentation catalogs/explainable alignment/reviewed temporal context/provider-neutral assistance/domain projection, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/presentation catalogs/explainable alignment/reviewed temporal context/provider-neutral assistance/read-only corpus health/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -3910,6 +4044,8 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-assistance-job-v1.schema.json",
         "weave-character-assistance-batch-receipt-v1.schema.json",
         "weave-character-assistance-comparison-v1.schema.json",
+        "weave-character-health-manifest-v1.schema.json",
+        "weave-character-health-report-v1.schema.json",
         "weave-tabletop-adapter-manifest-v1.schema.json",
         "weave-tabletop-adapter-selection-v1.schema.json",
         "weave-tabletop-character-projection-v1.schema.json",

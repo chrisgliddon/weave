@@ -1,0 +1,143 @@
+(
+    report_format_version: 1,
+    id: "org.weave.character.health.report_3473630217ecbc39",
+    manifest_id: "org.weave.character.health.healthy_project",
+    input_sha256: "3473630217ecbc392fbaf1d965ee7e07f62177d4828ff73cc980e12a5c8da0d1",
+    summary: (
+        documents_total: 4,
+        documents_valid: 4,
+        characters_total: 1,
+        diagnostics_total: 0,
+        active_diagnostics: 0,
+        suppressed_diagnostics: 0,
+        active_by_severity: {},
+        failure_threshold: Some(error),
+        ci_exit_code: 0,
+    ),
+    coverage: (
+        characters: {
+            "org.weave.character.ari_vale": (
+                factors_present: 6,
+                factors_total: 6,
+                facets_present: 24,
+                facets_total: 24,
+                known_confidence_values: 30,
+                measured_values: 30,
+                current_values: 30,
+                stale_values: 0,
+                relationship_edges: 0,
+                expression_records: 0,
+                role_projections: 0,
+                pending_suggestions: 0,
+            ),
+        },
+        factor_values_present: 6,
+        factor_values_total: 6,
+        facet_values_present: 24,
+        facet_values_total: 24,
+        known_confidence_values: 30,
+        measured_values: 30,
+    ),
+    distributions: (
+        trait_bands: {
+            honesty_humility: {
+                high: 1,
+            },
+            sincerity: {
+                high: 1,
+            },
+            fairness: {
+                very_high: 1,
+            },
+            greed_avoidance: {
+                high: 1,
+            },
+            modesty: {
+                high: 1,
+            },
+            emotionality: {
+                middle: 1,
+            },
+            fearfulness: {
+                middle: 1,
+            },
+            anxiety: {
+                middle: 1,
+            },
+            dependence: {
+                middle: 1,
+            },
+            sentimentality: {
+                high: 1,
+            },
+            extraversion: {
+                high: 1,
+            },
+            social_self_esteem: {
+                high: 1,
+            },
+            social_boldness: {
+                high: 1,
+            },
+            sociability: {
+                high: 1,
+            },
+            liveliness: {
+                high: 1,
+            },
+            agreeableness: {
+                high: 1,
+            },
+            forgivingness: {
+                middle: 1,
+            },
+            gentleness: {
+                high: 1,
+            },
+            flexibility: {
+                middle: 1,
+            },
+            patience: {
+                high: 1,
+            },
+            conscientiousness: {
+                high: 1,
+            },
+            organization: {
+                high: 1,
+            },
+            diligence: {
+                very_high: 1,
+            },
+            perfectionism: {
+                high: 1,
+            },
+            prudence: {
+                very_high: 1,
+            },
+            openness: {
+                very_high: 1,
+            },
+            aesthetic_appreciation: {
+                very_high: 1,
+            },
+            inquisitiveness: {
+                very_high: 1,
+            },
+            creativity: {
+                very_high: 1,
+            },
+            unconventionality: {
+                high: 1,
+            },
+        },
+        relationship_kinds: {},
+        role_taxonomies: {},
+        expression_categories: {},
+        constraints_configured: 0,
+    ),
+    diagnostics: [],
+    suppressions: [],
+    read_only: true,
+    source_payloads_retained: false,
+)

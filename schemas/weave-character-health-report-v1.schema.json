@@ -1,0 +1,1519 @@
+{
+  "$defs": {
+    "CharacterHealthCharacterCoverage": {
+      "additionalProperties": false,
+      "description": "Per-character completeness and review counts.",
+      "properties": {
+        "current_values": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expression_records": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "facets_present": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "facets_total": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "factors_present": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "factors_total": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "known_confidence_values": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "measured_values": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pending_suggestions": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "relationship_edges": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "role_projections": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "stale_values": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "factors_present",
+        "factors_total",
+        "facets_present",
+        "facets_total",
+        "known_confidence_values",
+        "measured_values",
+        "current_values",
+        "stale_values",
+        "relationship_edges",
+        "expression_records",
+        "role_projections",
+        "pending_suggestions"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthCoverage": {
+      "additionalProperties": false,
+      "description": "Corpus-wide coverage, retaining exact per-character denominators.",
+      "properties": {
+        "characters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CharacterHealthCharacterCoverage"
+          },
+          "type": "object"
+        },
+        "facet_values_present": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "facet_values_total": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "factor_values_present": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "factor_values_total": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "known_confidence_values": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "measured_values": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "characters",
+        "factor_values_present",
+        "factor_values_total",
+        "facet_values_present",
+        "facet_values_total",
+        "known_confidence_values",
+        "measured_values"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthDiagnostic": {
+      "additionalProperties": false,
+      "description": "One deterministic, redaction-safe, actionable diagnostic.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/CharacterHealthDiagnosticCode"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/CharacterHealthDiagnosticScope"
+        },
+        "severity": {
+          "$ref": "#/$defs/CharacterHealthSeverity"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterHealthSourceLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppressed_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "severity",
+        "scope",
+        "path",
+        "explanation",
+        "remediation"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthDiagnosticCode": {
+      "description": "Stable, versioned diagnostic vocabulary for the aggregate Character audit.",
+      "enum": [
+        "H100",
+        "H101",
+        "H102",
+        "H103",
+        "H104",
+        "H105",
+        "H106",
+        "H107",
+        "H108",
+        "H109",
+        "H110",
+        "H200",
+        "H201",
+        "H202",
+        "H203",
+        "H204",
+        "H205",
+        "H206",
+        "H207",
+        "H208",
+        "H209",
+        "H300",
+        "H301",
+        "H302",
+        "H303",
+        "H304",
+        "H305",
+        "H306",
+        "H307",
+        "H400",
+        "H401",
+        "H402",
+        "H403",
+        "H404",
+        "H410",
+        "H411",
+        "H412",
+        "H413",
+        "H500",
+        "H501",
+        "H502",
+        "H503",
+        "H504",
+        "H600",
+        "H601",
+        "H700",
+        "H701"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthDiagnosticScope": {
+      "description": "Collection, character, or standalone artifact scope for one diagnostic.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "scope": {
+              "const": "collection",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "character_id": {
+              "type": "string"
+            },
+            "scope": {
+              "const": "character",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope",
+            "character_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "document_id": {
+              "type": "string"
+            },
+            "scope": {
+              "const": "document",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope",
+            "document_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "character_id": {
+              "type": "string"
+            },
+            "document_id": {
+              "type": "string"
+            },
+            "scope": {
+              "const": "character_document",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope",
+            "document_id",
+            "character_id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CharacterHealthDistributions": {
+      "additionalProperties": false,
+      "description": "Descriptive distributions only. They have no normative target absent an explicit constraint.",
+      "properties": {
+        "constraints_configured": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expression_categories": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "relationship_kinds": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "role_taxonomies": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "trait_bands": {
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic_appreciation": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "agreeableness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "anxiety": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "conscientiousness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "creativity": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "dependence": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "diligence": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "emotionality": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "extraversion": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "fairness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "fearfulness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "flexibility": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "forgivingness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "gentleness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "greed_avoidance": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "honesty_humility": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "inquisitiveness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "liveliness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "modesty": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "openness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "organization": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "patience": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "perfectionism": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "prudence": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "sentimentality": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "sincerity": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "sociability": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "social_boldness": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "social_self_esteem": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "unconventionality": {
+              "additionalProperties": false,
+              "properties": {
+                "high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "middle": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_high": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "very_low": {
+                  "format": "uint64",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "trait_bands",
+        "relationship_kinds",
+        "role_taxonomies",
+        "expression_categories",
+        "constraints_configured"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthSeverity": {
+      "description": "Stable health diagnostic severity ordered from advisory note through blocking error.",
+      "enum": [
+        "note",
+        "warning",
+        "error"
+      ],
+      "type": "string"
+    },
+    "CharacterHealthSourceLocation": {
+      "additionalProperties": false,
+      "description": "Optional file and line coordinate. Values are locations only and never rejected source text.",
+      "properties": {
+        "column": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "document_id",
+        "file"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthSummary": {
+      "additionalProperties": false,
+      "description": "Aggregate counts after suppressions are applied.",
+      "properties": {
+        "active_by_severity": {
+          "additionalProperties": false,
+          "properties": {
+            "error": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "note": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "warning": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "active_diagnostics": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "characters_total": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ci_exit_code": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "diagnostics_total": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "documents_total": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "documents_valid": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "failure_threshold": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CharacterHealthSeverity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppressed_diagnostics": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "documents_total",
+        "documents_valid",
+        "characters_total",
+        "diagnostics_total",
+        "active_diagnostics",
+        "suppressed_diagnostics",
+        "active_by_severity",
+        "ci_exit_code"
+      ],
+      "type": "object"
+    },
+    "CharacterHealthSuppressionResult": {
+      "additionalProperties": false,
+      "description": "Review trace for one configured suppression, including whether it matched anything.",
+      "properties": {
+        "matched_diagnostic_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reviewed_by": {
+          "type": "string"
+        },
+        "suppression_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "suppression_id",
+        "reviewed_by",
+        "rationale",
+        "review_revision",
+        "matched_diagnostic_ids"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-health-report:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete stable JSON/RON health report. It contains hashes and locations, never source payloads.",
+  "properties": {
+    "coverage": {
+      "$ref": "#/$defs/CharacterHealthCoverage"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/CharacterHealthDiagnostic"
+      },
+      "type": "array"
+    },
+    "distributions": {
+      "$ref": "#/$defs/CharacterHealthDistributions"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input_sha256": {
+      "type": "string"
+    },
+    "manifest_id": {
+      "type": "string"
+    },
+    "read_only": {
+      "type": "boolean"
+    },
+    "report_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "source_payloads_retained": {
+      "type": "boolean"
+    },
+    "summary": {
+      "$ref": "#/$defs/CharacterHealthSummary"
+    },
+    "suppressions": {
+      "items": {
+        "$ref": "#/$defs/CharacterHealthSuppressionResult"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "report_format_version",
+    "id",
+    "manifest_id",
+    "input_sha256",
+    "summary",
+    "coverage",
+    "distributions",
+    "diagnostics",
+    "suppressions",
+    "read_only",
+    "source_payloads_retained"
+  ],
+  "title": "Weave Character Health Report v1",
+  "type": "object",
+  "x-weave-character-health-contract-version": 1
+}

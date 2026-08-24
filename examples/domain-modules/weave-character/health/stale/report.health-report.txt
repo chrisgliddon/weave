@@ -1,0 +1,60 @@
+Character health report
+report_format_version: 1
+id: org.weave.character.health.report_3c7ec8ad5b172e36
+manifest_id: org.weave.character.health.stale
+input_sha256: 3c7ec8ad5b172e366659a130deca859307e6a354932ba2442b183b4ef79c2e94
+read_only: true
+source_payloads_retained: false
+summary: documents_valid=0 documents_total=1 characters_total=1 diagnostics_total=3 active_diagnostics=3 suppressed_diagnostics=0 ci_exit_code=2
+summary active_note=0
+summary active_warning=1
+summary active_error=2
+summary failure_threshold=error
+coverage: factor_values_present=6 factor_values_total=6 facet_values_present=24 facet_values_total=24 known_confidence_values=30 measured_values=30
+distribution trait honesty_humility high=1
+distribution trait sincerity high=1
+distribution trait fairness very_high=1
+distribution trait greed_avoidance high=1
+distribution trait modesty high=1
+distribution trait emotionality middle=1
+distribution trait fearfulness middle=1
+distribution trait anxiety middle=1
+distribution trait dependence middle=1
+distribution trait sentimentality high=1
+distribution trait extraversion high=1
+distribution trait social_self_esteem high=1
+distribution trait social_boldness high=1
+distribution trait sociability high=1
+distribution trait liveliness high=1
+distribution trait agreeableness high=1
+distribution trait forgivingness middle=1
+distribution trait gentleness high=1
+distribution trait flexibility middle=1
+distribution trait patience high=1
+distribution trait conscientiousness high=1
+distribution trait organization high=1
+distribution trait diligence very_high=1
+distribution trait perfectionism high=1
+distribution trait prudence very_high=1
+distribution trait openness very_high=1
+distribution trait aesthetic_appreciation very_high=1
+distribution trait inquisitiveness very_high=1
+distribution trait creativity very_high=1
+distribution trait unconventionality high=1
+character org.weave.character.ari_vale: factors=6/6 facets=24/24 confidence=30/30 current=30 stale=0 relationships=0 expressions=0 roles=0 suggestions=0
+distributions: trait_bands=30 relationship_kinds=0 role_taxonomies=0 expression_categories=0 constraints_configured=0
+[active] H106 error document:org.weave.health.stale.collection canon.identity.display_name.freshness
+  id: health_8e5a23feb76e4d08
+  source: collection.character-collection.json (org.weave.health.stale.collection)
+  explanation: stale values cannot be applied
+  remediation: Recompute the artifact from its exact current inputs and repeat review where required.
+[active] H106 warning document:org.weave.health.stale.collection/character:org.weave.character.ari_vale characters.org.weave.character.ari_vale.canon.identity.display_name.freshness
+  id: health_3677750a6e231cd5
+  source: collection.character-collection.json (org.weave.health.stale.collection)
+  explanation: canonical attributed value is explicitly marked stale against its lineage
+  remediation: Review its upstream source and revise or reaffirm the value through an authorized operation.
+[active] H106 error document:org.weave.health.stale.collection/character:org.weave.character.ari_vale characters.org.weave.character.ari_vale.canon.identity.display_name.freshness
+  id: health_6cb1e4838675e453
+  source: collection.character-collection.json (org.weave.health.stale.collection)
+  explanation: stale values cannot be applied
+  remediation: Recompute the artifact from its exact current inputs and repeat review where required.

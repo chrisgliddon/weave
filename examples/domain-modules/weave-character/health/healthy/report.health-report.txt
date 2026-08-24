@@ -1,0 +1,45 @@
+Character health report
+report_format_version: 1
+id: org.weave.character.health.report_3473630217ecbc39
+manifest_id: org.weave.character.health.healthy_project
+input_sha256: 3473630217ecbc392fbaf1d965ee7e07f62177d4828ff73cc980e12a5c8da0d1
+read_only: true
+source_payloads_retained: false
+summary: documents_valid=4 documents_total=4 characters_total=1 diagnostics_total=0 active_diagnostics=0 suppressed_diagnostics=0 ci_exit_code=0
+summary active_note=0
+summary active_warning=0
+summary active_error=0
+summary failure_threshold=error
+coverage: factor_values_present=6 factor_values_total=6 facet_values_present=24 facet_values_total=24 known_confidence_values=30 measured_values=30
+distribution trait honesty_humility high=1
+distribution trait sincerity high=1
+distribution trait fairness very_high=1
+distribution trait greed_avoidance high=1
+distribution trait modesty high=1
+distribution trait emotionality middle=1
+distribution trait fearfulness middle=1
+distribution trait anxiety middle=1
+distribution trait dependence middle=1
+distribution trait sentimentality high=1
+distribution trait extraversion high=1
+distribution trait social_self_esteem high=1
+distribution trait social_boldness high=1
+distribution trait sociability high=1
+distribution trait liveliness high=1
+distribution trait agreeableness high=1
+distribution trait forgivingness middle=1
+distribution trait gentleness high=1
+distribution trait flexibility middle=1
+distribution trait patience high=1
+distribution trait conscientiousness high=1
+distribution trait organization high=1
+distribution trait diligence very_high=1
+distribution trait perfectionism high=1
+distribution trait prudence very_high=1
+distribution trait openness very_high=1
+distribution trait aesthetic_appreciation very_high=1
+distribution trait inquisitiveness very_high=1
+distribution trait creativity very_high=1
+distribution trait unconventionality high=1
+character org.weave.character.ari_vale: factors=6/6 facets=24/24 confidence=30/30 current=30 stale=0 relationships=0 expressions=0 roles=0 suggestions=0
+distributions: trait_bands=30 relationship_kinds=0 role_taxonomies=0 expression_categories=0 constraints_configured=0

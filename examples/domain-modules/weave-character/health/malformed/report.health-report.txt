@@ -1,0 +1,24 @@
+Character health report
+report_format_version: 1
+id: org.weave.character.health.report_316d9a3a5c653939
+manifest_id: org.weave.character.health.malformed_project
+input_sha256: 316d9a3a5c6539396506e8673c4e8348213765670d75a525ad3b95097d7bf151
+read_only: true
+source_payloads_retained: false
+summary: documents_valid=0 documents_total=1 characters_total=0 diagnostics_total=2 active_diagnostics=2 suppressed_diagnostics=0 ci_exit_code=2
+summary active_note=0
+summary active_warning=0
+summary active_error=2
+summary failure_threshold=error
+coverage: factor_values_present=0 factor_values_total=0 facet_values_present=0 facet_values_total=0 known_confidence_values=0 measured_values=0
+distributions: trait_bands=0 relationship_kinds=0 role_taxonomies=0 expression_categories=0 constraints_configured=0
+[active] H101 error document:org.weave.health.malformed.collection characters
+  id: health_60de45c5f3574a25
+  source: collection.character-collection.json (org.weave.health.malformed.collection)
+  explanation: source omits a required field from its declared Character document contract
+  remediation: Add the required typed field using the current schema, then rerun strict validation.
+[active] H100 error document:org.weave.health.malformed.collection document
+  id: health_0efa899a0c8967a2
+  source: collection.character-collection.json (org.weave.health.malformed.collection)
+  explanation: source cannot be decoded as its declared strict Character document kind and encoding
+  remediation: Restore every required field, remove unknown or duplicate fields, and validate the declared JSON or RON document.

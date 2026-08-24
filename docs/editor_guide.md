@@ -62,6 +62,12 @@ accepted review is unavailable while blocking diagnostics remain. See the [Chara
 
 Candidate evidence and deterministic advisory scores, issues, and proposed edits remain separate from author decisions. The author must accept, edit, reject, defer, or request regeneration for every immutable candidate. Dry-run reproduces the full receipt without changing the session. Commit adds accepted values only to the pending suggestion queue, increments the collection revision once, and leaves canon, extensions, and derived values unchanged. A stale profile or review fails atomically and preserves the selected collection. See the [assistance contract](character_module.md#provider-neutral-assisted-character-development) and checked [JSON/RON corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/assistance).
 
+## Character corpus health
+
+`CharacterHealthSession` opens the same strict project manifest and runs the same deterministic, read-only audit as `weave-character health-audit`. The summary panel exposes document validity, character count, coverage, active/suppressed diagnostics, severity counts, the configured threshold, and CI decision. Descriptive distributions remain informational unless the manifest names a documented constraint.
+
+Each diagnostic link retains its stable `H###` code and id, severity, document and optional character scope, exact field path, source file, and available line/column. Selecting a link therefore navigates to the relevant Character field without retaining rejected source text in the report. Code, severity, character, and suppression filters use the shared report filter; they change only the visible diagnostics. Refresh re-audits the same retained bytes and never edits, normalizes, migrates, or applies project data. See [corpus health](character_module.md#corpus-health-drift-safety-and-coverage) and its [synthetic golden projects](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/health).
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source and updates `weave.lock` for a configured domain project. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:

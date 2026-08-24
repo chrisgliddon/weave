@@ -1,0 +1,147 @@
+(
+    manifest_format_version: 1,
+    id: "org.weave.character.health.stale",
+    documents: [
+        (
+            id: "org.weave.health.stale.collection",
+            kind: character_collection,
+            format: json,
+            path: "collection.character-collection.json",
+            logical_id: "org.weave.health.stale.collection",
+            primary: true,
+        ),
+    ],
+    policy: (
+        policy_format_version: 1,
+        failure_threshold: Some(error),
+        require_portable_pairs: false,
+        csv_loss_diagnostics: false,
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "character_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "character-contract-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Weave Character contract fixture.",
+                modified: false,
+            ),
+            (
+                id: "weave_expression_glasswind_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "expression-dialogue-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                modified: false,
+            ),
+            (
+                id: "weave_glasswind_lenses_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "glasswind-lenses-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+                modified: false,
+            ),
+            (
+                id: "weave_glasswind_presentation",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "glasswind-presentation-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original synthetic Glasswind presentation catalog and vector assets.",
+                modified: false,
+            ),
+            (
+                id: "weave_relationship_reference_pack",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "relationship-graph-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                modified: false,
+            ),
+            (
+                id: "weave_wayfinder_compass",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "wayfinder-compass-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+                modified: false,
+            ),
+        ],
+        transformations: [
+            (
+                id: "alignment_apply_dd2556dc5d058a13",
+                inputs: [
+                    "character_original",
+                    "weave_wayfinder_compass",
+                ],
+                description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
+            ),
+            (
+                id: "projection_apply_81cf025790774968",
+                inputs: [
+                    "character_original",
+                    "weave_glasswind_lenses_original",
+                ],
+                description: "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family.",
+            ),
+        ],
+        claims: {
+            "assets": [
+                "weave_glasswind_presentation",
+            ],
+            "axes": [
+                "weave_wayfinder_compass",
+            ],
+            "calibrations": [
+                "weave_glasswind_lenses_original",
+                "weave_wayfinder_compass",
+            ],
+            "entries": [
+                "weave_glasswind_lenses_original",
+                "weave_glasswind_presentation",
+            ],
+            "extensions.org.weave.character.alignment": [
+                "alignment_apply_dd2556dc5d058a13",
+            ],
+            "extensions.org.weave.character.expression": [
+                "weave_expression_glasswind_original",
+            ],
+            "extensions.org.weave.character.relationships": [
+                "weave_relationship_reference_pack",
+            ],
+            "extensions.org.weave.character.role_projections": [
+                "projection_apply_81cf025790774968",
+            ],
+            "inputs": [
+                "weave_glasswind_lenses_original",
+                "weave_wayfinder_compass",
+            ],
+            "methodology": [
+                "weave_glasswind_lenses_original",
+                "weave_wayfinder_compass",
+            ],
+            "profile": [
+                "character_original",
+            ],
+            "slots": [
+                "weave_glasswind_presentation",
+            ],
+            "taxonomies": [
+                "weave_glasswind_lenses_original",
+            ],
+        },
+    ),
+)

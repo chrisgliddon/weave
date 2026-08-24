@@ -1,0 +1,197 @@
+(
+    report_format_version: 1,
+    id: "org.weave.character.health.report_3c7ec8ad5b172e36",
+    manifest_id: "org.weave.character.health.stale",
+    input_sha256: "3c7ec8ad5b172e366659a130deca859307e6a354932ba2442b183b4ef79c2e94",
+    summary: (
+        documents_total: 1,
+        documents_valid: 0,
+        characters_total: 1,
+        diagnostics_total: 3,
+        active_diagnostics: 3,
+        suppressed_diagnostics: 0,
+        active_by_severity: {
+            warning: 1,
+            error: 2,
+        },
+        failure_threshold: Some(error),
+        ci_exit_code: 2,
+    ),
+    coverage: (
+        characters: {
+            "org.weave.character.ari_vale": (
+                factors_present: 6,
+                factors_total: 6,
+                facets_present: 24,
+                facets_total: 24,
+                known_confidence_values: 30,
+                measured_values: 30,
+                current_values: 30,
+                stale_values: 0,
+                relationship_edges: 0,
+                expression_records: 0,
+                role_projections: 0,
+                pending_suggestions: 0,
+            ),
+        },
+        factor_values_present: 6,
+        factor_values_total: 6,
+        facet_values_present: 24,
+        facet_values_total: 24,
+        known_confidence_values: 30,
+        measured_values: 30,
+    ),
+    distributions: (
+        trait_bands: {
+            honesty_humility: {
+                high: 1,
+            },
+            sincerity: {
+                high: 1,
+            },
+            fairness: {
+                very_high: 1,
+            },
+            greed_avoidance: {
+                high: 1,
+            },
+            modesty: {
+                high: 1,
+            },
+            emotionality: {
+                middle: 1,
+            },
+            fearfulness: {
+                middle: 1,
+            },
+            anxiety: {
+                middle: 1,
+            },
+            dependence: {
+                middle: 1,
+            },
+            sentimentality: {
+                high: 1,
+            },
+            extraversion: {
+                high: 1,
+            },
+            social_self_esteem: {
+                high: 1,
+            },
+            social_boldness: {
+                high: 1,
+            },
+            sociability: {
+                high: 1,
+            },
+            liveliness: {
+                high: 1,
+            },
+            agreeableness: {
+                high: 1,
+            },
+            forgivingness: {
+                middle: 1,
+            },
+            gentleness: {
+                high: 1,
+            },
+            flexibility: {
+                middle: 1,
+            },
+            patience: {
+                high: 1,
+            },
+            conscientiousness: {
+                high: 1,
+            },
+            organization: {
+                high: 1,
+            },
+            diligence: {
+                very_high: 1,
+            },
+            perfectionism: {
+                high: 1,
+            },
+            prudence: {
+                very_high: 1,
+            },
+            openness: {
+                very_high: 1,
+            },
+            aesthetic_appreciation: {
+                very_high: 1,
+            },
+            inquisitiveness: {
+                very_high: 1,
+            },
+            creativity: {
+                very_high: 1,
+            },
+            unconventionality: {
+                high: 1,
+            },
+        },
+        relationship_kinds: {},
+        role_taxonomies: {},
+        expression_categories: {},
+        constraints_configured: 0,
+    ),
+    diagnostics: [
+        (
+            id: "health_8e5a23feb76e4d08",
+            code: H106,
+            severity: error,
+            scope: (
+                scope: "document",
+                document_id: "org.weave.health.stale.collection",
+            ),
+            path: "canon.identity.display_name.freshness",
+            source: Some((
+                document_id: "org.weave.health.stale.collection",
+                file: "collection.character-collection.json",
+            )),
+            explanation: "stale values cannot be applied",
+            remediation: "Recompute the artifact from its exact current inputs and repeat review where required.",
+        ),
+        (
+            id: "health_3677750a6e231cd5",
+            code: H106,
+            severity: warning,
+            scope: (
+                scope: "character_document",
+                document_id: "org.weave.health.stale.collection",
+                character_id: "org.weave.character.ari_vale",
+            ),
+            path: "characters.org.weave.character.ari_vale.canon.identity.display_name.freshness",
+            source: Some((
+                document_id: "org.weave.health.stale.collection",
+                file: "collection.character-collection.json",
+            )),
+            explanation: "canonical attributed value is explicitly marked stale against its lineage",
+            remediation: "Review its upstream source and revise or reaffirm the value through an authorized operation.",
+        ),
+        (
+            id: "health_6cb1e4838675e453",
+            code: H106,
+            severity: error,
+            scope: (
+                scope: "character_document",
+                document_id: "org.weave.health.stale.collection",
+                character_id: "org.weave.character.ari_vale",
+            ),
+            path: "characters.org.weave.character.ari_vale.canon.identity.display_name.freshness",
+            source: Some((
+                document_id: "org.weave.health.stale.collection",
+                file: "collection.character-collection.json",
+            )),
+            explanation: "stale values cannot be applied",
+            remediation: "Recompute the artifact from its exact current inputs and repeat review where required.",
+        ),
+    ],
+    suppressions: [],
+    read_only: true,
+    source_payloads_retained: false,
+)

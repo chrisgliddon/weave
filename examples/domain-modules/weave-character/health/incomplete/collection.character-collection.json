@@ -1,0 +1,682 @@
+{
+  "collection_format_version": 1,
+  "id": "org.weave.character.health.incomplete",
+  "revision": 1,
+  "characters": {
+    "org.weave.character.ari_vale": {
+      "profile_format_version": 1,
+      "id": "org.weave.character.ari_vale",
+      "canon": {
+        "identity": {
+          "display_name": {
+            "value": "Ari Vale",
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          },
+          "aliases": {
+            "value": [
+              "Ari",
+              "Vale"
+            ],
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_original"
+            ]
+          }
+        },
+        "birth_date": {
+          "value": {
+            "precision": "full",
+            "calendar": "proleptic_gregorian",
+            "year": 998,
+            "month": 3,
+            "day": 14
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "personality": {
+          "honesty_humility": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.72
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "sincerity": {
+              "value": {
+                "form": "score",
+                "score": 0.76
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "fairness": {
+              "value": {
+                "form": "score",
+                "score": 0.81
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "greed_avoidance": {
+              "value": {
+                "form": "score",
+                "score": 0.66
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "modesty": {
+              "value": {
+                "form": "score",
+                "score": 0.65
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          },
+          "emotionality": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.57
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "fearfulness": {
+              "value": {
+                "form": "score",
+                "score": 0.42
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "anxiety": {
+              "value": {
+                "form": "score",
+                "score": 0.58
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "dependence": {
+              "value": {
+                "form": "score",
+                "score": 0.49
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "sentimentality": {
+              "value": {
+                "form": "score",
+                "score": 0.79
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          },
+          "extraversion": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.68
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "social_self_esteem": {
+              "value": {
+                "form": "score",
+                "score": 0.73
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "social_boldness": {
+              "value": {
+                "form": "score",
+                "score": 0.61
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "sociability": {
+              "value": {
+                "form": "score",
+                "score": 0.64
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "liveliness": {
+              "value": {
+                "form": "score",
+                "score": 0.74
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          },
+          "agreeableness": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.63
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "forgivingness": {
+              "value": {
+                "form": "score",
+                "score": 0.55
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "gentleness": {
+              "value": {
+                "form": "score",
+                "score": 0.71
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "flexibility": {
+              "value": {
+                "form": "score",
+                "score": 0.59
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "patience": {
+              "value": {
+                "form": "score",
+                "score": 0.67
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          },
+          "conscientiousness": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.78
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "organization": {
+              "value": {
+                "form": "score",
+                "score": 0.75
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "diligence": {
+              "value": {
+                "form": "score",
+                "score": 0.84
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "perfectionism": {
+              "value": {
+                "form": "score",
+                "score": 0.69
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "prudence": {
+              "value": {
+                "form": "score",
+                "score": 0.82
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "locked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          },
+          "openness": {
+            "factor": {
+              "value": {
+                "form": "score",
+                "score": 0.83
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "aesthetic_appreciation": {
+              "value": {
+                "form": "score",
+                "score": 0.88
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "inquisitiveness": {
+              "value": {
+                "form": "score",
+                "score": 0.81
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            },
+            "unconventionality": {
+              "value": {
+                "form": "score",
+                "score": 0.77
+              },
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          }
+        },
+        "inner_life": {
+          "keeps_promises": {
+            "id": "keeps_promises",
+            "category": "value",
+            "content": {
+              "value": "Promises become paths Ari can follow through uncertainty.",
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          }
+        },
+        "voice": {
+          "measured_warmth": {
+            "id": "measured_warmth",
+            "category": "cadence",
+            "content": {
+              "value": "Short observations followed by one generous question.",
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_original"
+              ]
+            }
+          }
+        }
+      },
+      "derived": {
+        "ocean": {
+          "algorithm": "weave_hexaco_to_ocean_compatibility",
+          "algorithm_version": 1,
+          "lossy": true,
+          "independent_evidence": false,
+          "openness": {
+            "score": 0.83,
+            "confidence": "high",
+            "input_paths": [
+              "canon.personality.openness.factor"
+            ]
+          },
+          "conscientiousness": {
+            "score": 0.78,
+            "confidence": "high",
+            "input_paths": [
+              "canon.personality.conscientiousness.factor"
+            ]
+          },
+          "extraversion": {
+            "score": 0.68,
+            "confidence": "high",
+            "input_paths": [
+              "canon.personality.extraversion.factor"
+            ]
+          },
+          "agreeableness": {
+            "score": 0.63,
+            "confidence": "high",
+            "input_paths": [
+              "canon.personality.agreeableness.factor"
+            ]
+          },
+          "neuroticism": {
+            "score": 0.57,
+            "confidence": "high",
+            "input_paths": [
+              "canon.personality.emotionality.factor"
+            ]
+          },
+          "omitted_factor": "honesty_humility"
+        }
+      },
+      "provenance": {
+        "sources": [
+          {
+            "id": "character_original",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "character-contract-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic Weave Character contract fixture.",
+            "modified": false
+          },
+          {
+            "id": "weave_expression_glasswind_original",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "expression-dialogue-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+            "modified": false
+          },
+          {
+            "id": "weave_glasswind_lenses_original",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "glasswind-lenses-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original Glasswind Lenses inputs, labels, scoring method, limitations, and calibration vectors.",
+            "modified": false
+          },
+          {
+            "id": "weave_glasswind_presentation",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "glasswind-presentation-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original synthetic Glasswind presentation catalog and vector assets.",
+            "modified": false
+          },
+          {
+            "id": "weave_relationship_reference_pack",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "relationship-graph-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+            "modified": false
+          },
+          {
+            "id": "weave_wayfinder_compass",
+            "kind": "original",
+            "url": "https://github.com/chrisgliddon/weave",
+            "revision": "wayfinder-compass-v1",
+            "license": "MIT",
+            "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+            "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+            "modified": false
+          }
+        ],
+        "transformations": [
+          {
+            "id": "alignment_apply_dd2556dc5d058a13",
+            "inputs": [
+              "character_original",
+              "weave_wayfinder_compass"
+            ],
+            "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+          },
+          {
+            "id": "projection_apply_81cf025790774968",
+            "inputs": [
+              "character_original",
+              "weave_glasswind_lenses_original"
+            ],
+            "description": "Applied a complete editorial review to deterministic categorical and role projections without mutating character canon or another extension family."
+          }
+        ],
+        "claims": {
+          "assets": [
+            "weave_glasswind_presentation"
+          ],
+          "axes": [
+            "weave_wayfinder_compass"
+          ],
+          "calibrations": [
+            "weave_glasswind_lenses_original",
+            "weave_wayfinder_compass"
+          ],
+          "entries": [
+            "weave_glasswind_lenses_original",
+            "weave_glasswind_presentation"
+          ],
+          "extensions.org.weave.character.alignment": [
+            "alignment_apply_dd2556dc5d058a13"
+          ],
+          "extensions.org.weave.character.expression": [
+            "weave_expression_glasswind_original"
+          ],
+          "extensions.org.weave.character.relationships": [
+            "weave_relationship_reference_pack"
+          ],
+          "extensions.org.weave.character.role_projections": [
+            "projection_apply_81cf025790774968"
+          ],
+          "inputs": [
+            "weave_glasswind_lenses_original",
+            "weave_wayfinder_compass"
+          ],
+          "methodology": [
+            "weave_glasswind_lenses_original",
+            "weave_wayfinder_compass"
+          ],
+          "profile": [
+            "character_original"
+          ],
+          "slots": [
+            "weave_glasswind_presentation"
+          ],
+          "taxonomies": [
+            "weave_glasswind_lenses_original"
+          ]
+        }
+      }
+    }
+  }
+}

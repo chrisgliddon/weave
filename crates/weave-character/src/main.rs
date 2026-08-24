@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -83,6 +83,13 @@ use weave_character::{
     compare_assistance_providers, create_assistance_decision_review, execute_assistance_request,
     preview_assistance_batch, preview_assistance_request, resume_assistance_job,
     review_assistance_candidates_offline, start_assistance_job,
+};
+use weave_character::{
+    CHARACTER_HEALTH_MAX_DOCUMENT_BYTES, CharacterHealthDocumentFormat, CharacterHealthFilter,
+    CharacterHealthManifest, CharacterHealthProject, CharacterHealthReport,
+    CharacterHealthSeverity, audit_character_health, character_health_code_from_str,
+    character_health_manifest_schema, character_health_report_schema,
+    filter_character_health_report, render_character_health_text,
 };
 
 #[derive(Debug, Parser)]
@@ -899,6 +906,25 @@ enum Command {
         #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
         format: OutputFormat,
     },
+    /// Audit Character corpus health, drift, safety, coverage, and portable outputs read-only.
+    HealthAudit {
+        manifest: PathBuf,
+        #[arg(long, value_enum, default_value_t = HealthOutputFormat::Text)]
+        format: HealthOutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+        #[arg(long = "character")]
+        characters: Vec<String>,
+        #[arg(long = "code")]
+        codes: Vec<String>,
+        #[arg(long, value_enum)]
+        minimum_severity: Option<HealthSeverityArg>,
+        #[arg(long)]
+        include_suppressed: bool,
+        /// Return status 2 only when the complete report meets its configured CI threshold.
+        #[arg(long)]
+        ci: bool,
+    },
     /// Score one exact original narrative-questionnaire pack.
     QuestionnairePropose {
         profile: PathBuf,
@@ -1017,6 +1043,8 @@ enum DocumentKind {
     AssistanceJob,
     AssistanceBatchReceipt,
     AssistanceComparison,
+    HealthManifest,
+    HealthReport,
     QuestionnairePack,
     QuestionnaireAnswers,
     QuestionnaireProposal,
@@ -1029,6 +1057,30 @@ enum DocumentKind {
 enum OutputFormat {
     Json,
     Ron,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum HealthOutputFormat {
+    Text,
+    Json,
+    Ron,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum HealthSeverityArg {
+    Note,
+    Warning,
+    Error,
+}
+
+impl From<HealthSeverityArg> for CharacterHealthSeverity {
+    fn from(value: HealthSeverityArg) -> Self {
+        match value {
+            HealthSeverityArg::Note => Self::Note,
+            HealthSeverityArg::Warning => Self::Warning,
+            HealthSeverityArg::Error => Self::Error,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -1118,10 +1170,24 @@ enum FinalReviewDecision {
 
 fn main() {
     if let Err(error) = run(Cli::parse()) {
+        if error.downcast_ref::<HealthCiFailure>().is_some() {
+            std::process::exit(2);
+        }
         eprintln!("error: {error}");
         std::process::exit(1);
     }
 }
+
+#[derive(Debug)]
+struct HealthCiFailure;
+
+impl std::fmt::Display for HealthCiFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("Character health CI threshold was met")
+    }
+}
+
+impl std::error::Error for HealthCiFailure {}
 
 fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
     match cli.command {
@@ -1198,6 +1264,8 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::AssistanceJob => assistance_job_schema()?,
                 DocumentKind::AssistanceBatchReceipt => assistance_batch_receipt_schema()?,
                 DocumentKind::AssistanceComparison => assistance_comparison_schema()?,
+                DocumentKind::HealthManifest => character_health_manifest_schema()?,
+                DocumentKind::HealthReport => character_health_report_schema()?,
                 DocumentKind::QuestionnairePack => character_questionnaire_pack_schema()?,
                 DocumentKind::QuestionnaireAnswers => character_questionnaire_answers_schema()?,
                 DocumentKind::QuestionnaireProposal => character_questionnaire_proposal_schema()?,
@@ -1409,6 +1477,12 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::AssistanceComparison => {
                     parse_assistance_comparison(&input, &source)?;
+                }
+                DocumentKind::HealthManifest => {
+                    parse_health_manifest(&input, &source)?;
+                }
+                DocumentKind::HealthReport => {
+                    parse_health_report(&input, &source)?;
                 }
                 DocumentKind::QuestionnairePack => {
                     parse_questionnaire_pack(&input, &source)?;
@@ -2936,6 +3010,45 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 receipt_output.display()
             );
         }
+        Command::HealthAudit {
+            manifest,
+            format,
+            output,
+            characters,
+            codes,
+            minimum_severity,
+            include_suppressed,
+            ci,
+        } => {
+            let project = read_health_project(&manifest)?;
+            let report = audit_character_health(&project)?;
+            let ci_exit_code = report.summary.ci_exit_code;
+            let mut code_filter = BTreeSet::new();
+            for code in codes {
+                let code = character_health_code_from_str(&code)
+                    .ok_or("health diagnostic code must use the public H### vocabulary")?;
+                code_filter.insert(code);
+            }
+            let filter = CharacterHealthFilter {
+                character_ids: characters.into_iter().collect(),
+                codes: code_filter,
+                minimum_severity: minimum_severity.map(Into::into),
+                include_suppressed,
+            };
+            let report = filter_character_health_report(&report, &filter)?;
+            let serialized = match format {
+                HealthOutputFormat::Text => render_character_health_text(&report)?,
+                HealthOutputFormat::Json => report.to_json()?,
+                HealthOutputFormat::Ron => report.to_ron()?,
+            };
+            if let Some(output) = output.as_deref() {
+                ensure_health_output_is_separate(&manifest, &project.manifest, output)?;
+            }
+            write_or_print(output.as_deref(), &serialized)?;
+            if ci && ci_exit_code != 0 {
+                return Err(Box::new(HealthCiFailure));
+            }
+        }
         Command::QuestionnairePropose {
             profile,
             pack,
@@ -3621,6 +3734,28 @@ assistance_parser!(parse_assistance_job, AssistanceJob);
 assistance_parser!(parse_assistance_batch_receipt, AssistanceBatchReceipt);
 assistance_parser!(parse_assistance_comparison, AssistanceComparisonReport);
 
+fn parse_health_manifest(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterHealthManifest, weave_character::CharacterHealthError> {
+    if is_ron(path) {
+        CharacterHealthManifest::from_ron(source)
+    } else {
+        CharacterHealthManifest::from_json(source)
+    }
+}
+
+fn parse_health_report(
+    path: &Path,
+    source: &str,
+) -> Result<CharacterHealthReport, weave_character::CharacterHealthError> {
+    if is_ron(path) {
+        CharacterHealthReport::from_ron(source)
+    } else {
+        CharacterHealthReport::from_json(source)
+    }
+}
+
 fn parse_questionnaire_answers(
     path: &Path,
     source: &str,
@@ -3674,6 +3809,55 @@ fn parse_final_review(
     } else {
         CharacterFinalReview::from_json(source)
     }
+}
+
+fn read_health_project(path: &Path) -> Result<CharacterHealthProject, Box<dyn std::error::Error>> {
+    let manifest_source = fs::read_to_string(path)?;
+    let manifest = parse_health_manifest(path, &manifest_source)?;
+    let manifest_path = fs::canonicalize(path)?;
+    let base = manifest_path
+        .parent()
+        .ok_or("health manifest requires a containing project directory")?;
+    let mut documents = BTreeMap::new();
+    for document in &manifest.documents {
+        let source_path = base.join(&document.path);
+        let canonical = fs::canonicalize(&source_path)?;
+        if !canonical.starts_with(base) {
+            return Err("health source path escapes its manifest directory".into());
+        }
+        if fs::metadata(&canonical)?.len() > CHARACTER_HEALTH_MAX_DOCUMENT_BYTES as u64 {
+            return Err("health source exceeds the documented byte limit".into());
+        }
+        let declared_ron = document.format == CharacterHealthDocumentFormat::Ron;
+        if is_ron(&canonical) != declared_ron {
+            return Err("health source extension does not match its declared encoding".into());
+        }
+        documents.insert(document.id.clone(), fs::read_to_string(canonical)?);
+    }
+    Ok(CharacterHealthProject::new(manifest, documents)?)
+}
+
+fn ensure_health_output_is_separate(
+    manifest_path: &Path,
+    manifest: &CharacterHealthManifest,
+    output: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let Ok(output) = fs::canonicalize(output) else {
+        return Ok(());
+    };
+    let manifest_path = fs::canonicalize(manifest_path)?;
+    if output == manifest_path {
+        return Err("health output cannot replace its manifest input".into());
+    }
+    let base = manifest_path
+        .parent()
+        .ok_or("health manifest requires a containing project directory")?;
+    for document in &manifest.documents {
+        if output == fs::canonicalize(base.join(&document.path))? {
+            return Err("health output cannot replace an audited project source".into());
+        }
+    }
+    Ok(())
 }
 
 fn read_authoring_workspace(

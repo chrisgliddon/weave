@@ -689,6 +689,46 @@ Expression validation and lint use a separate stable, redaction-safe vocabulary:
 
 Parsing, validation, and synthesis return no partial effective profile. File output uses an atomic same-directory temporary file.
 
+## Corpus health, drift, safety, and coverage
+
+`CharacterHealthManifest` routes one bounded, project-relative set of canonical and authoring artifacts through the existing typed Character validators. It supports collections and profiles, template/overlay/synthesis lineage, temporal/alignment/presentation receipts, relationships, expression, projections, assistance, and runtime domain packs. Exactly one collection is primary. Each document declares a stable id, artifact kind, JSON or RON encoding, relative path, semantic `logical_id`, and optional owning character; matching logical ids are how the audit compares portable RON/JSON pairs.
+
+`audit_character_health` is deterministic and read-only. It hashes the strict manifest and exact source bytes, audits isolated parsed values, and returns a `CharacterHealthReport`; it never normalizes, migrates, applies, or writes project data. The serialized report explicitly records `read_only: true` and `source_payloads_retained: false`. It carries source files and optional line/column coordinates, but no rejected field value or source payload. Credential-shaped input produces `H110`; the remediation requires replacing the whole value with exactly `[REDACTED]`.
+
+The stable `H###` vocabulary composes the narrower Character, relationship, and expression validators:
+
+| Codes | Audit family |
+|---|---|
+| `H100`–`H110` | Invalid/missing/versioned fields, identifiers, facet confidence, derived consistency, stale fingerprints, references, template overlays, protected authority, and sensitive values |
+| `H200`–`H209` | Relationship inverse/symmetry, pedigree, dates, duplicate edges, affinity freshness, and configured age/kinship/partnership/consent safeguards |
+| `H300`–`H307` | Expression links, placeholders/text/constraints, unsafe personalization, review state, and exact/near duplicate variants |
+| `H400`–`H413` | Projection and assistance provenance/version/explanation/review/freshness, provider metadata, and accepted-source lineage |
+| `H500`–`H504` | RON/JSON equivalence, canonical ordering, runtime references, authoring/runtime authority, and optional CSV loss |
+| `H600`–`H601` | Explicit coverage or distribution policy failures |
+| `H700`–`H701` | Invalid or unused reviewed suppressions |
+
+Every diagnostic has a stable id and code, severity, collection/character/document scope, field path, available source location, redaction-safe explanation, actionable remediation, and optional suppression id. A suppression pins its own format version, code and optional scope/path prefix, reviewer, rationale, and positive review revision. The report retains the exact matched diagnostic ids and emits `H701` when a valid suppression no longer matches, making cleanup reviewable. `H110` sensitive-value findings cannot be suppressed; an attempted exception leaves the finding active and emits blocking `H700`.
+
+Coverage reports exact factor/facet/confidence numerators and denominators globally and per character, plus stale/current values and relationship/expression/role/suggestion counts. Trait-band, relationship-kind, role-taxonomy, and expression-category distributions are descriptive. They never become demographic, personality, relationship, role, or expression quotas. A constraint is enforced only when the project manifest names the metric, bounds, rationale, and public policy URL explicitly.
+
+The CLI renders equivalent text, JSON, or RON. Text enumerates every report field, coverage row, distribution entry, diagnostic, and suppression rather than collapsing machine-readable details. `--character`, `--code`, `--minimum-severity`, and `--include-suppressed` filter presentation only. `--ci` evaluates the complete unfiltered report and returns status `2` only when an active diagnostic meets the manifest's `failure_threshold`; no threshold means diagnostics remain informational. Manifest/command failures use status `1`. An output path may not replace the manifest or any audited source.
+
+```bash
+cargo run -p weave-character -- health-audit \
+  examples/domain-modules/weave-character/health/healthy/project.health-manifest.json
+
+cargo run -p weave-character -- health-audit \
+  examples/domain-modules/weave-character/health/unsafe/project.health-manifest.json \
+  --format json \
+  --code H304 \
+  --minimum-severity error \
+  --ci
+```
+
+The editor's `CharacterHealthSession` calls the same audit and filter functions. Its summary exposes the exact counts and CI decision; every diagnostic becomes a navigation link carrying its document id, optional character id, field path, source file, and coordinate. Refreshing re-audits the retained bytes without modifying them.
+
+The checked [health manifest schema](downloads/weave-character-health-manifest-v1.schema.json), [health report schema](downloads/weave-character-health-report-v1.schema.json), and [six-project synthetic corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/health) cover healthy, incomplete, stale, unsafe, malformed, and migration-required outcomes. The healthy project includes semantically identical collection/runtime JSON and RON pairs. Every fixture and expected report is original MIT-licensed Weave data.
+
 ## End-to-end module projection
 
 The checked Ari Vale profile also passes through the ordinary domain-module boundary. `character_module_manifest()` returns the same declarative `ModuleManifest` used by World, and `character_domain_pack()` validates the complete `CharacterProfile` before projecting it into one finite `DomainValue` tree. Neither function parses `.weave`, depends on the editor, contacts a provider, or loads executable package code.
@@ -749,19 +789,25 @@ VAR projection_write_back = character.profile.projections.write_back.hexaco
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The projection fixtures add an original pack, four taxonomies, signed fixed-point weights, calibration vectors, a three-character capacity-limited batch, reservation, complete traces and distribution, every review decision, locks, unlock, and rebalance. The assistance fixtures add an original template, complete offline typed scaffolds, exact disclosure/approval artifacts, strict provider-response normalization, evidence, advisory and all five author decisions, suggestion-only application, a second credential-free coordinate, provider comparison, and a rate-limited resumable two-character batch with atomic receipt. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures and deterministic fake-adapter tests cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression/assistance lineage, incomplete alignment/temporal/relationship/assistance reviews, malformed proposals or provider responses, bad relationships, restricted expression placeholders, credential-shaped assistance values, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The projection fixtures add an original pack, four taxonomies, signed fixed-point weights, calibration vectors, a three-character capacity-limited batch, reservation, complete traces and distribution, every review decision, locks, unlock, and rebalance. The assistance fixtures add an original template, complete offline typed scaffolds, exact disclosure/approval artifacts, strict provider-response normalization, evidence, advisory and all five author decisions, suggestion-only application, a second credential-free coordinate, provider comparison, and a rate-limited resumable two-character batch with atomic receipt. The health fixtures add six original corpus manifests with exact text/JSON/RON reports for healthy, incomplete, stale, unsafe, malformed, and migration-required outcomes. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures and deterministic fake-adapter tests cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression/assistance lineage, incomplete alignment/temporal/relationship/assistance reviews, malformed proposals or provider responses, bad relationships, restricted expression placeholders, credential-shaped assistance values, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
 cargo run -p weave-character --example expression_fixture -- --check
 cargo run -p weave-character --example projection_fixture -- --check
 cargo run -p weave-character --example assistance_fixture -- --check
+cargo run -p weave-character --example health_fixture -- --check
 
 cargo run -p weave-character -- schema profile \
   --output target/weave-character-profile-v1.schema.json
 
 cargo run -p weave-character -- validate profile \
   examples/domain-modules/weave-character/profile.character.json
+
+cargo run -p weave-character -- health-audit \
+  examples/domain-modules/weave-character/health/healthy/project.health-manifest.json \
+  --format json \
+  --output target/character-health.json
 
 cargo run -p weave-character -- expression-validate \
   examples/domain-modules/weave-character/expression/applied.character.json \
@@ -872,4 +918,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale-temporal.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, assistance, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks assistance templates/requests/previews/approvals/provider responses/candidate sets/reviews/jobs/receipts/comparisons, projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run, stale, redaction, and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, assistance, health, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks health manifests/reports and all six CI outcomes, assistance templates/requests/previews/approvals/provider responses/candidate sets/reviews/jobs/receipts/comparisons, projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run, stale, redaction, and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.
