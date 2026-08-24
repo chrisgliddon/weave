@@ -184,6 +184,24 @@ pub struct LicenseTextReference {
     pub sha256: String,
 }
 
+/// One additional official artifact covered by the adapter's public-source boundary.
+///
+/// The primary artifact remains in [`AdapterProvenance`] for format-v1 compatibility. This
+/// record pins companion rules, sheets, notices, or other reviewed inputs independently so a
+/// changed download cannot silently enter an adapter release.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AdapterSourceArtifact {
+    pub source_url: String,
+    pub exact_artifact: String,
+    pub revision: String,
+    pub retrieved_on: String,
+    pub sha256: String,
+    pub media_type: String,
+    pub purpose: String,
+    pub redistributed: bool,
+}
+
 /// Conservative provenance record for an adapter's complete public source boundary.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -200,6 +218,9 @@ pub struct AdapterProvenance {
     pub exclusions: Vec<ExcludedMaterial>,
     pub attribution: String,
     pub required_license_text: LicenseTextReference,
+    /// Additional exact source artifacts, ordered by `exact_artifact`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub additional_artifacts: Vec<AdapterSourceArtifact>,
     pub notices: Vec<String>,
     pub compatibility_statement: String,
 }

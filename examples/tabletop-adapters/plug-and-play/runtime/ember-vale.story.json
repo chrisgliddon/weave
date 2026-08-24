@@ -1,0 +1,998 @@
+{
+  "version": 4,
+  "source_name": "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 113,
+        "end": 147,
+        "line": 7,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_id",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 147,
+        "end": 191,
+        "line": 8,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_version",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "version"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 191,
+        "end": 241,
+        "line": 9,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "content_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 241,
+        "end": 304,
+        "line": 10,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "checks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "capabilities",
+              "checks_and_conflicts"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 304,
+        "end": 361,
+        "line": 11,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "encounters_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "capabilities",
+              "encounters"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 361,
+        "end": 404,
+        "line": 12,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "character_name",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "name"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 404,
+        "end": 464,
+        "line": 13,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "agility",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "effective_attributes",
+              "agility"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 464,
+        "end": 522,
+        "line": 14,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "brains",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "effective_attributes",
+              "brains"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 522,
+        "end": 578,
+        "line": 15,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "brawn",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "effective_attributes",
+              "brawn"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 578,
+        "end": 632,
+        "line": 16,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "wits",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "effective_attributes",
+              "wits"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 632,
+        "end": 676,
+        "line": 17,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "fortune",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "fortune_remaining"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 676,
+        "end": 730,
+        "line": 18,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "survivability",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "survivability_current"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 730,
+        "end": 764,
+        "line": 19,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "wounded",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "wounded"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "rules": {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "pack_id": "ember_vale",
+      "pack_version": "1.0.0",
+      "exports": {
+        "adapter": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "content_sha256": {
+                "kind": "string",
+                "value": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+              },
+              "id": {
+                "kind": "string",
+                "value": "org.weave.tabletop.plug_and_play"
+              },
+              "schema_version": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "version": {
+                "kind": "string",
+                "value": "1.0.0"
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "character_creation": {
+                "kind": "bool",
+                "value": true
+              },
+              "checks_and_conflicts": {
+                "kind": "bool",
+                "value": true
+              },
+              "derived_values": {
+                "kind": "bool",
+                "value": true
+              },
+              "encounters": {
+                "kind": "bool",
+                "value": true
+              },
+              "equipment_and_abilities": {
+                "kind": "bool",
+                "value": true
+              },
+              "resources_and_conditions": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        },
+        "definition": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "age": {
+                "kind": "number",
+                "value": 31.0
+              },
+              "assignment": {
+                "kind": "object",
+                "value": {
+                  "agility": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "brains": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "brawn": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "wits": {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                }
+              },
+              "base_attributes": {
+                "kind": "object",
+                "value": {
+                  "agility": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "brains": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "brawn": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "wits": {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                }
+              },
+              "base_fortune": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "creation_mode": {
+                "kind": "symbol",
+                "value": "rolled"
+              },
+              "creation_seed": {
+                "kind": "string",
+                "value": "2026082401"
+              },
+              "effective_attributes": {
+                "kind": "object",
+                "value": {
+                  "agility": {
+                    "kind": "number",
+                    "value": 7.0
+                  },
+                  "brains": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "brawn": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "wits": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "fortune_initial": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "inventory": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "field knife"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "signal pistol"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "weather cloak"
+                  }
+                ]
+              },
+              "modifiers": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "object",
+                    "value": {
+                      "attributes": {
+                        "kind": "object",
+                        "value": {
+                          "agility": {
+                            "kind": "number",
+                            "value": 0.0
+                          },
+                          "brains": {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          "brawn": {
+                            "kind": "number",
+                            "value": 0.0
+                          },
+                          "wits": {
+                            "kind": "number",
+                            "value": -1.0
+                          }
+                        }
+                      },
+                      "explanation": {
+                        "kind": "string",
+                        "value": "Practiced analysis is offset by slower improvisation."
+                      },
+                      "fortune": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "id": {
+                        "kind": "string",
+                        "value": "field_medic"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Field medic"
+                      }
+                    }
+                  },
+                  {
+                    "kind": "object",
+                    "value": {
+                      "attributes": {
+                        "kind": "object",
+                        "value": {
+                          "agility": {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          "brains": {
+                            "kind": "number",
+                            "value": 0.0
+                          },
+                          "brawn": {
+                            "kind": "number",
+                            "value": -1.0
+                          },
+                          "wits": {
+                            "kind": "number",
+                            "value": 0.0
+                          }
+                        }
+                      },
+                      "explanation": {
+                        "kind": "string",
+                        "value": "Fast movement is offset by a lighter frame."
+                      },
+                      "fortune": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "id": {
+                        "kind": "string",
+                        "value": "rooftop_runner"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Rooftop runner"
+                      }
+                    }
+                  }
+                ]
+              },
+              "name": {
+                "kind": "string",
+                "value": "Ember Vale"
+              },
+              "roll_sets": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "object",
+                    "value": {
+                      "d3": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "d6": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 3.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 2.0
+                          }
+                        ]
+                      },
+                      "entropy_end": {
+                        "kind": "number",
+                        "value": 5.0
+                      },
+                      "entropy_start": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "index": {
+                        "kind": "number",
+                        "value": 0.0
+                      }
+                    }
+                  },
+                  {
+                    "kind": "object",
+                    "value": {
+                      "d3": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "d6": {
+                        "kind": "list",
+                        "value": [
+                          {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 2.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 2.0
+                          },
+                          {
+                            "kind": "number",
+                            "value": 6.0
+                          }
+                        ]
+                      },
+                      "entropy_end": {
+                        "kind": "number",
+                        "value": 10.0
+                      },
+                      "entropy_start": {
+                        "kind": "number",
+                        "value": 5.0
+                      },
+                      "index": {
+                        "kind": "number",
+                        "value": 1.0
+                      }
+                    }
+                  }
+                ]
+              },
+              "selected_set": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "survivability": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "survivability_body": {
+                "kind": "symbol",
+                "value": "brawn"
+              },
+              "survivability_mind": {
+                "kind": "symbol",
+                "value": "brains"
+              }
+            }
+          }
+        },
+        "state": {
+          "source": "state",
+          "value": {
+            "kind": "object",
+            "value": {
+              "dead": {
+                "kind": "bool",
+                "value": false
+              },
+              "fortune_remaining": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "inventory": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "field knife"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "signal pistol"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "weather cloak"
+                  }
+                ]
+              },
+              "jammed_items": {
+                "kind": "list",
+                "value": []
+              },
+              "last_operation": {
+                "kind": "string",
+                "value": "take_damage"
+              },
+              "survivability_current": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "wounded": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 779,
+            "end": 1177,
+            "line": 22,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "binary",
+                    "value": {
+                      "left": {
+                        "kind": "path",
+                        "value": [
+                          "checks_supported"
+                        ]
+                      },
+                      "operator": "and",
+                      "right": {
+                        "kind": "path",
+                        "value": [
+                          "encounters_supported"
+                        ]
+                      }
+                    }
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 826,
+                        "end": 977,
+                        "line": 23,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "character_name"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " enters play with Agility "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "agility"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", Brains "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "brains"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", Brawn "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "brawn"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", Wits "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "wits"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", Fortune "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "fortune"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", and Survivability "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "survivability"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "."
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "start": 982,
+                        "end": 1075,
+                        "line": 24,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The active rules are "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_id"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "@"
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_version"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " ("
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_sha256"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "); wounded is "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "wounded"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 1088,
+                    "end": 1175,
+                    "line": 26,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "This branch is unreachable because the selected adapter declares checks and encounters."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1178,
+            "end": 1184,
+            "line": 28,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -13,6 +13,7 @@ import {
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
+import { tabletopPresentation } from "../src/tabletop-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
 const worldStoryUrls = [
@@ -33,6 +34,14 @@ const temporalCharacterUrl = new URL(
   "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json",
   import.meta.url,
 );
+const tabletopStoryUrl = new URL(
+  "../../tabletop-adapters/plug-and-play/runtime/ember-vale.story.json",
+  import.meta.url,
+);
+const tabletopReceiptUrl = new URL(
+  "../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json",
+  import.meta.url,
+);
 
 test("reads the exact portable tracer exports", async () => {
   const story = JSON.parse(await readFile(storyUrl, "utf8"));
@@ -42,6 +51,38 @@ test("reads the exact portable tracer exports", async () => {
     "Glasswing constellation",
   );
   assert.equal(readModuleExport(story, "constellation", ["observation", "intensity"]), 0.625);
+});
+
+test("reads Plug-And-Play character state and a visibility-projected receipt", async () => {
+  const [story, receipt] = await Promise.all(
+    [tabletopStoryUrl, tabletopReceiptUrl].map(async (url) =>
+      JSON.parse(await readFile(url, "utf8")),
+    ),
+  );
+  const presentation = tabletopPresentation(story, receipt);
+  assert.equal(presentation.adapter.id, "org.weave.tabletop.plug_and_play");
+  assert.equal(presentation.name, "Ember Vale");
+  assert.ok(Number.isInteger(presentation.attributes.agility));
+  assert.ok(Number.isInteger(presentation.fortune));
+  assert.ok(Number.isInteger(presentation.survivability));
+  assert.match(presentation.requestSha256, /^[0-9a-f]{64}$/u);
+  assert.match(presentation.hiddenEntropySha256, /^[0-9a-f]{64}$/u);
+  assert.equal(typeof presentation.check.outcome, "string");
+  assert.equal(typeof presentation.check.rerolled, "boolean");
+});
+
+test("rejects a tabletop receipt that exposes host-only entropy", async () => {
+  const [story, receipt] = await Promise.all(
+    [tabletopStoryUrl, tabletopReceiptUrl].map(async (url) =>
+      JSON.parse(await readFile(url, "utf8")),
+    ),
+  );
+  const entropy = receipt.events.find((event) => event.kind === "entropy_trace");
+  entropy.payload = { kind: "object", value: {} };
+  assert.throws(
+    () => tabletopPresentation(story, receipt),
+    /invalid portable tabletop presentation/u,
+  );
 });
 
 test("reads four exact portable world seeds", async () => {

@@ -1,0 +1,998 @@
+StoryIr(
+    version: 4,
+    source_name: Some("examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 113,
+                end: 147,
+                line: 7,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_id",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "id",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 147,
+                end: 191,
+                line: 8,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_version",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "version",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 191,
+                end: 241,
+                line: 9,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_sha256",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "content_sha256",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 241,
+                end: 304,
+                line: 10,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "checks_supported",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "capabilities",
+                            "checks_and_conflicts",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 304,
+                end: 361,
+                line: 11,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "encounters_supported",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "capabilities",
+                            "encounters",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 361,
+                end: 404,
+                line: 12,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "character_name",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "name",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 404,
+                end: 464,
+                line: 13,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "agility",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "effective_attributes",
+                            "agility",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 464,
+                end: 522,
+                line: 14,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "brains",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "effective_attributes",
+                            "brains",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 522,
+                end: 578,
+                line: 15,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "brawn",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "effective_attributes",
+                            "brawn",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 578,
+                end: 632,
+                line: 16,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "wits",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "effective_attributes",
+                            "wits",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 632,
+                end: 676,
+                line: 17,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "fortune",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "fortune_remaining",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 676,
+                end: 730,
+                line: 18,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "survivability",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "survivability_current",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 730,
+                end: 764,
+                line: 19,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "wounded",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "wounded",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "rules": DomainModuleIr(
+            id: "org.weave.tabletop.plug_and_play",
+            version: "1.0.0",
+            pack_id: "ember_vale",
+            pack_version: "1.0.0",
+            exports: {
+                "adapter": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "content_sha256": DomainValueIr(
+                                kind: string,
+                                value: "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+                            ),
+                            "id": DomainValueIr(
+                                kind: string,
+                                value: "org.weave.tabletop.plug_and_play",
+                            ),
+                            "schema_version": DomainValueIr(
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            "version": DomainValueIr(
+                                kind: string,
+                                value: "1.0.0",
+                            ),
+                        },
+                    ),
+                ),
+                "capabilities": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "character_creation": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "checks_and_conflicts": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "derived_values": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "encounters": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "equipment_and_abilities": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "resources_and_conditions": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                        },
+                    ),
+                ),
+                "definition": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "age": DomainValueIr(
+                                kind: number,
+                                value: 31.0,
+                            ),
+                            "assignment": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "agility": DomainValueIr(
+                                        kind: number,
+                                        value: 3.0,
+                                    ),
+                                    "brains": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "brawn": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "wits": DomainValueIr(
+                                        kind: number,
+                                        value: 2.0,
+                                    ),
+                                },
+                            ),
+                            "base_attributes": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "agility": DomainValueIr(
+                                        kind: number,
+                                        value: 6.0,
+                                    ),
+                                    "brains": DomainValueIr(
+                                        kind: number,
+                                        value: 2.0,
+                                    ),
+                                    "brawn": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "wits": DomainValueIr(
+                                        kind: number,
+                                        value: 2.0,
+                                    ),
+                                },
+                            ),
+                            "base_fortune": DomainValueIr(
+                                kind: number,
+                                value: 2.0,
+                            ),
+                            "creation_mode": DomainValueIr(
+                                kind: symbol,
+                                value: "rolled",
+                            ),
+                            "creation_seed": DomainValueIr(
+                                kind: string,
+                                value: "2026082401",
+                            ),
+                            "effective_attributes": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "agility": DomainValueIr(
+                                        kind: number,
+                                        value: 7.0,
+                                    ),
+                                    "brains": DomainValueIr(
+                                        kind: number,
+                                        value: 3.0,
+                                    ),
+                                    "brawn": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "wits": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                },
+                            ),
+                            "fortune_initial": DomainValueIr(
+                                kind: number,
+                                value: 2.0,
+                            ),
+                            "inventory": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "field knife",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "signal pistol",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "weather cloak",
+                                    ),
+                                ],
+                            ),
+                            "modifiers": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "attributes": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "agility": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.0,
+                                                    ),
+                                                    "brains": DomainValueIr(
+                                                        kind: number,
+                                                        value: 1.0,
+                                                    ),
+                                                    "brawn": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.0,
+                                                    ),
+                                                    "wits": DomainValueIr(
+                                                        kind: number,
+                                                        value: -1.0,
+                                                    ),
+                                                },
+                                            ),
+                                            "explanation": DomainValueIr(
+                                                kind: string,
+                                                value: "Practiced analysis is offset by slower improvisation.",
+                                            ),
+                                            "fortune": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "field_medic",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Field medic",
+                                            ),
+                                        },
+                                    ),
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "attributes": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "agility": DomainValueIr(
+                                                        kind: number,
+                                                        value: 1.0,
+                                                    ),
+                                                    "brains": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.0,
+                                                    ),
+                                                    "brawn": DomainValueIr(
+                                                        kind: number,
+                                                        value: -1.0,
+                                                    ),
+                                                    "wits": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.0,
+                                                    ),
+                                                },
+                                            ),
+                                            "explanation": DomainValueIr(
+                                                kind: string,
+                                                value: "Fast movement is offset by a lighter frame.",
+                                            ),
+                                            "fortune": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "rooftop_runner",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Rooftop runner",
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            ),
+                            "name": DomainValueIr(
+                                kind: string,
+                                value: "Ember Vale",
+                            ),
+                            "roll_sets": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "d3": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                            "d6": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 1.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 3.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 1.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 2.0,
+                                                    ),
+                                                ],
+                                            ),
+                                            "entropy_end": DomainValueIr(
+                                                kind: number,
+                                                value: 5.0,
+                                            ),
+                                            "entropy_start": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "index": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                        },
+                                    ),
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "d3": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                            "d6": DomainValueIr(
+                                                kind: list,
+                                                value: [
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 1.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 2.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 2.0,
+                                                    ),
+                                                    DomainValueIr(
+                                                        kind: number,
+                                                        value: 6.0,
+                                                    ),
+                                                ],
+                                            ),
+                                            "entropy_end": DomainValueIr(
+                                                kind: number,
+                                                value: 10.0,
+                                            ),
+                                            "entropy_start": DomainValueIr(
+                                                kind: number,
+                                                value: 5.0,
+                                            ),
+                                            "index": DomainValueIr(
+                                                kind: number,
+                                                value: 1.0,
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            ),
+                            "selected_set": DomainValueIr(
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            "survivability": DomainValueIr(
+                                kind: number,
+                                value: 2.0,
+                            ),
+                            "survivability_body": DomainValueIr(
+                                kind: symbol,
+                                value: "brawn",
+                            ),
+                            "survivability_mind": DomainValueIr(
+                                kind: symbol,
+                                value: "brains",
+                            ),
+                        },
+                    ),
+                ),
+                "state": DomainExportIr(
+                    source: state,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "dead": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "fortune_remaining": DomainValueIr(
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            "inventory": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "field knife",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "signal pistol",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "weather cloak",
+                                    ),
+                                ],
+                            ),
+                            "jammed_items": DomainValueIr(
+                                kind: list,
+                                value: [],
+                            ),
+                            "last_operation": DomainValueIr(
+                                kind: string,
+                                value: "take_damage",
+                            ),
+                            "survivability_current": DomainValueIr(
+                                kind: number,
+                                value: 0.0,
+                            ),
+                            "wounded": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 779,
+                        end: 1177,
+                        line: 22,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: binary,
+                                        value: binary(
+                                            left: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "checks_supported",
+                                                ],
+                                            ),
+                                            operator: and,
+                                            right: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "encounters_supported",
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 826,
+                                                end: 977,
+                                                line: 23,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "character_name",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " enters play with Agility ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "agility",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", Brains ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "brains",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", Brawn ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "brawn",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", Wits ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "wits",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", Fortune ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "fortune",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", and Survivability ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "survivability",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ".",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                        Instruction(
+                                            span: Span(
+                                                start: 982,
+                                                end: 1075,
+                                                line: 24,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "The active rules are ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_id",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "@",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_version",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " (",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_sha256",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "); wounded is ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "wounded",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ".",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 1088,
+                                        end: 1175,
+                                        line: 26,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "This branch is unreachable because the selected adapter declares checks and encounters.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 1178,
+                        end: 1184,
+                        line: 28,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

@@ -1,0 +1,143 @@
+(
+    resolver_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.plug_and_play",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+    ),
+    operation: "fortune_test",
+    capability: resources_and_conditions,
+    request_sha256: "79ae61b97247b594ec29eaeddacd1349c9483386582c855925ff13331595c488",
+    before_state_sha256: "5260a0d6d51c2b72d669c9c63d2d25e81e0d3959f4e672d38cf21a9bcb055f03",
+    before_revision: 1,
+    entropy_before: (
+        algorithm: "sha256_counter_v1",
+        seed: 2026082401,
+        cursor: 14,
+    ),
+    after_state_sha256: "4015657e6be266b84098f54e1c9763f32c82aaaac37b68563f90609dfbd31cdf",
+    entropy_consumed: 1,
+    after_state: (
+        state_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.plug_and_play",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+        ),
+        owner_id: "org.weave.character.ember_vale",
+        definition_sha256: "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+        revision: 2,
+        entropy: (
+            algorithm: "sha256_counter_v1",
+            seed: 2026082401,
+            cursor: 15,
+        ),
+        value: (
+            kind: object,
+            value: {
+                "dead": (
+                    kind: bool,
+                    value: false,
+                ),
+                "fortune_remaining": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "inventory": (
+                    kind: list,
+                    value: [
+                        (
+                            kind: string,
+                            value: "field knife",
+                        ),
+                        (
+                            kind: string,
+                            value: "signal pistol",
+                        ),
+                        (
+                            kind: string,
+                            value: "weather cloak",
+                        ),
+                    ],
+                ),
+                "jammed_items": (
+                    kind: list,
+                    value: [],
+                ),
+                "last_operation": (
+                    kind: string,
+                    value: "fortune_test",
+                ),
+                "survivability_current": (
+                    kind: number,
+                    value: 2.0,
+                ),
+                "wounded": (
+                    kind: bool,
+                    value: false,
+                ),
+            },
+        ),
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "fortune_test_resolved",
+            capability: resources_and_conditions,
+            visibility: public,
+            payload_sha256: "fe51f2ac4d0e8ebfcc9607418fb93aecb21bfbe7eb330a029f4b5833f6450885",
+            payload: Some((
+                kind: object,
+                value: {
+                    "die": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "fortune": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "success": (
+                        kind: bool,
+                        value: false,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 1,
+            kind: "entropy_trace",
+            capability: resources_and_conditions,
+            visibility: host_only,
+            payload_sha256: "be6e2e935acc2a266097dd8fd9220f9934f7475ae8b918493295e4b9665c4aa5",
+            payload: Some((
+                kind: object,
+                value: {
+                    "cursor_after": (
+                        kind: number,
+                        value: 15.0,
+                    ),
+                    "cursor_before": (
+                        kind: number,
+                        value: 14.0,
+                    ),
+                    "draws": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                        ],
+                    ),
+                    "operation": (
+                        kind: string,
+                        value: "fortune_test",
+                    ),
+                },
+            )),
+        ),
+    ],
+)

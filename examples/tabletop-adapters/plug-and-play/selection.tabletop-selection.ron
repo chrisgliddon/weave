@@ -1,0 +1,19 @@
+(
+    selection_format_version: 1,
+    installed: [
+        (
+            id: "org.weave.tabletop.plug_and_play",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+        ),
+    ],
+    primary: [
+        (
+            id: "org.weave.tabletop.plug_and_play",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+        ),
+    ],
+)

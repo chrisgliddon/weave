@@ -74,6 +74,13 @@
       "additionalProperties": false,
       "description": "Conservative provenance record for an adapter's complete public source boundary.",
       "properties": {
+        "additional_artifacts": {
+          "description": "Additional exact source artifacts, ordered by `exact_artifact`.",
+          "items": {
+            "$ref": "#/$defs/AdapterSourceArtifact"
+          },
+          "type": "array"
+        },
         "attribution": {
           "type": "string"
         },
@@ -141,6 +148,47 @@
         "required_license_text",
         "notices",
         "compatibility_statement"
+      ],
+      "type": "object"
+    },
+    "AdapterSourceArtifact": {
+      "additionalProperties": false,
+      "description": "One additional official artifact covered by the adapter's public-source boundary.\n\nThe primary artifact remains in [`AdapterProvenance`] for format-v1 compatibility. This\nrecord pins companion rules, sheets, notices, or other reviewed inputs independently so a\nchanged download cannot silently enter an adapter release.",
+      "properties": {
+        "exact_artifact": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "redistributed": {
+          "type": "boolean"
+        },
+        "retrieved_on": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_url",
+        "exact_artifact",
+        "revision",
+        "retrieved_on",
+        "sha256",
+        "media_type",
+        "purpose",
+        "redistributed"
       ],
       "type": "object"
     },

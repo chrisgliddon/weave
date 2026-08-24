@@ -1,0 +1,1797 @@
+(
+    manifest_format_version: 1,
+    id: "org.weave.tabletop.plug_and_play",
+    version: "1.0.0",
+    schema_version: 1,
+    namespace: "plug_and_play",
+    title: "Plug-And-Play compatible adapter",
+    compatibility_label: "Compatible with the CC0 Plug-And-Play rules; not endorsed by its creator",
+    summary: "An independently implemented, deterministic adapter for quick d6 character creation, checks, Fortune, combat, group action, card initiative, and bounded chases.",
+    weave_version: ">=0.1.0, <0.2.0",
+    character_contract_version: ">=1.0.0, <2.0.0",
+    extension_surface: (
+        kind: "declarative_data_with_registered_resolver",
+        resolver_contract_version: 1,
+    ),
+    capabilities: [
+        (
+            capability: character_creation,
+            version: 1,
+        ),
+        (
+            capability: derived_values,
+            version: 1,
+        ),
+        (
+            capability: checks_and_conflicts,
+            version: 1,
+        ),
+        (
+            capability: resources_and_conditions,
+            version: 1,
+        ),
+        (
+            capability: equipment_and_abilities,
+            version: 1,
+        ),
+        (
+            capability: encounters,
+            version: 1,
+        ),
+    ],
+    types: {
+        "Assignment": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Agility roll index.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Brains roll index.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Brawn roll index.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Wits roll index.",
+                ),
+            },
+        ),
+        "AttributeAdjustments": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Agility adjustment.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Brains adjustment.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Brawn adjustment.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Wits adjustment.",
+                ),
+            },
+        ),
+        "Attributes": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Agility rating.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Brains rating.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Brawn rating.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Wits rating.",
+                ),
+            },
+        ),
+        "ChaseRound": (
+            kind: "object",
+            fields: {
+                "opponent_die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Opponent selected die.",
+                ),
+                "opponent_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Opponent total.",
+                ),
+                "player_die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Player selected die.",
+                ),
+                "player_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Player total.",
+                ),
+                "round": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "One-based chase round.",
+                ),
+                "winner": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "opponent",
+                            "player",
+                            "tie",
+                        ],
+                    ),
+                    required: true,
+                    description: "Round winner.",
+                ),
+            },
+        ),
+        "GroupResult": (
+            kind: "object",
+            fields: {
+                "critical": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural critical flag.",
+                ),
+                "die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Selected d6 result.",
+                ),
+                "fumble": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural fumble flag.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identifier.",
+                ),
+                "success": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Individual outcome.",
+                ),
+                "total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Resolved individual total.",
+                ),
+            },
+        ),
+        "InitiativeEntry": (
+            kind: "object",
+            fields: {
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 32,
+                    ),
+                    required: true,
+                    description: "Portable card label.",
+                ),
+                "participant": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identifier.",
+                ),
+                "rank": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(14.0),
+                    ),
+                    required: true,
+                    description: "Numeric rank; zero is a joker.",
+                ),
+                "suit": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "clubs",
+                            "diamonds",
+                            "hearts",
+                            "joker",
+                            "spades",
+                        ],
+                    ),
+                    required: true,
+                    description: "Portable suit identity.",
+                ),
+            },
+        ),
+        "Modifier": (
+            kind: "object",
+            fields: {
+                "attributes": (
+                    type: (
+                        kind: "named",
+                        name: "AttributeAdjustments",
+                    ),
+                    required: true,
+                    description: "Balanced regular-attribute adjustments.",
+                ),
+                "explanation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Original author-facing adjustment explanation.",
+                ),
+                "fortune": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Balanced Fortune adjustment.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable modifier identifier.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Author-facing modifier label.",
+                ),
+            },
+        ),
+        "RollSet": (
+            kind: "object",
+            fields: {
+                "d3": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Raw Fortune die result.",
+                ),
+                "d6": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 4,
+                        max_items: 4,
+                    ),
+                    required: true,
+                    description: "Four assignable regular-attribute results.",
+                ),
+                "entropy_end": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Cursor after this set.",
+                ),
+                "entropy_start": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Cursor before this set.",
+                ),
+                "index": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "Creation set index.",
+                ),
+            },
+        ),
+    },
+    definition_type: (
+        kind: "object",
+        fields: {
+            "age": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(1.0),
+                    maximum: Some(300.0),
+                ),
+                required: true,
+                description: "Explicit fictional age.",
+            ),
+            "assignment": (
+                type: (
+                    kind: "named",
+                    name: "Assignment",
+                ),
+                required: false,
+                description: "Explicit assignment for rolled creation.",
+            ),
+            "base_attributes": (
+                type: (
+                    kind: "named",
+                    name: "Attributes",
+                ),
+                required: true,
+                description: "Unmodified accepted ratings.",
+            ),
+            "base_fortune": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(1.0),
+                    maximum: Some(3.0),
+                ),
+                required: true,
+                description: "Unmodified accepted Fortune rating.",
+            ),
+            "creation_mode": (
+                type: (
+                    kind: "symbol",
+                    values: [
+                        "authored",
+                        "rolled",
+                    ],
+                ),
+                required: true,
+                description: "Explicit creation mode.",
+            ),
+            "creation_seed": (
+                type: (
+                    kind: "string",
+                    min_length: 1,
+                    max_length: 20,
+                ),
+                required: true,
+                description: "Exact decimal deterministic seed.",
+            ),
+            "effective_attributes": (
+                type: (
+                    kind: "named",
+                    name: "Attributes",
+                ),
+                required: true,
+                description: "Ratings after both balanced modifiers.",
+            ),
+            "fortune_initial": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(6.0),
+                ),
+                required: true,
+                description: "Fortune after balanced modifiers.",
+            ),
+            "inventory": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 120,
+                    ),
+                    min_items: 0,
+                    max_items: 64,
+                ),
+                required: true,
+                description: "Initial carried item names.",
+            ),
+            "modifiers": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "named",
+                        name: "Modifier",
+                    ),
+                    min_items: 2,
+                    max_items: 2,
+                ),
+                required: true,
+                description: "Exactly two balanced modifiers.",
+            ),
+            "name": (
+                type: (
+                    kind: "string",
+                    min_length: 1,
+                    max_length: 160,
+                ),
+                required: true,
+                description: "Explicit fictional display name.",
+            ),
+            "roll_sets": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "named",
+                        name: "RollSet",
+                    ),
+                    min_items: 0,
+                    max_items: 2,
+                ),
+                required: true,
+                description: "Deterministic raw creation options.",
+            ),
+            "selected_set": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                ),
+                required: false,
+                description: "Explicitly accepted rolled set.",
+            ),
+            "survivability": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(18.0),
+                ),
+                required: true,
+                description: "Derived starting Survivability.",
+            ),
+            "survivability_body": (
+                type: (
+                    kind: "symbol",
+                    values: [
+                        "agility",
+                        "brawn",
+                    ],
+                ),
+                required: true,
+                description: "Whole physical contribution.",
+            ),
+            "survivability_mind": (
+                type: (
+                    kind: "symbol",
+                    values: [
+                        "brains",
+                        "wits",
+                    ],
+                ),
+                required: true,
+                description: "Rounded-up half mental contribution.",
+            ),
+        },
+    ),
+    state_type: (
+        kind: "object",
+        fields: {
+            "dead": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Whether further play is unavailable.",
+            ),
+            "fortune_remaining": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(6.0),
+                ),
+                required: true,
+                description: "Unspent Fortune points.",
+            ),
+            "inventory": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 120,
+                    ),
+                    min_items: 0,
+                    max_items: 64,
+                ),
+                required: true,
+                description: "Current carried items.",
+            ),
+            "jammed_items": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 120,
+                    ),
+                    min_items: 0,
+                    max_items: 64,
+                ),
+                required: true,
+                description: "Ranged items jammed by a fumble.",
+            ),
+            "last_operation": (
+                type: (
+                    kind: "string",
+                    min_length: 0,
+                    max_length: 128,
+                ),
+                required: true,
+                description: "Most recently resolved operation.",
+            ),
+            "survivability_current": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(18.0),
+                ),
+                required: true,
+                description: "Current Survivability.",
+            ),
+            "wounded": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Wounded state at zero Survivability.",
+            ),
+        },
+    ),
+    creation_steps: [
+        (
+            id: "identity",
+            title: "Character identity",
+            description: "Enter an original fictional name and age; these values are never inferred from the canonical Character profile.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "name",
+                    label: "Name",
+                    description: "Explicit adapter-owned Name input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "age",
+                    label: "Age",
+                    description: "Explicit adapter-owned Age input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(300.0),
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "ratings",
+            title: "Ratings",
+            description: "Choose deterministic rolled creation or explicit ratings, then inspect both roll sets, their seed lineage, and the selected assignment before accepting.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "creation_mode",
+                    label: "Creation mode",
+                    description: "Explicit adapter-owned Creation mode input.",
+                    value_type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "rolled",
+                        ],
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "seed",
+                    label: "Seed",
+                    description: "Explicit adapter-owned Seed input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 20,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "agility",
+                    label: "Agility",
+                    description: "Explicit adapter-owned Agility input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "brains",
+                    label: "Brains",
+                    description: "Explicit adapter-owned Brains input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "brawn",
+                    label: "Brawn",
+                    description: "Explicit adapter-owned Brawn input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "wits",
+                    label: "Wits",
+                    description: "Explicit adapter-owned Wits input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "fortune",
+                    label: "Fortune",
+                    description: "Explicit adapter-owned Fortune input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "survivability",
+            title: "Survivability",
+            description: "Choose one physical rating plus one rounded-up half mental rating; the derived value is recomputed and cannot be authored directly.",
+            required_capability: derived_values,
+            fields: [
+                (
+                    id: "survivability_body",
+                    label: "Physical basis",
+                    description: "Explicit adapter-owned Physical basis input.",
+                    value_type: (
+                        kind: "symbol",
+                        values: [
+                            "agility",
+                            "brawn",
+                        ],
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "survivability_mind",
+                    label: "Mental basis",
+                    description: "Explicit adapter-owned Mental basis input.",
+                    value_type: (
+                        kind: "symbol",
+                        values: [
+                            "brains",
+                            "wits",
+                        ],
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "details",
+            title: "Balanced modifiers and inventory",
+            description: "Add exactly two independently described zero-sum modifiers and an explicit bounded inventory.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "modifiers",
+                    label: "Two modifiers",
+                    description: "Explicit adapter-owned Two modifiers input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "Modifier",
+                        ),
+                        min_items: 2,
+                        max_items: 2,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "inventory",
+                    label: "Inventory",
+                    description: "Explicit adapter-owned Inventory input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 120,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+    ],
+    operations: {
+        "attack": (
+            id: "attack",
+            title: "Resolve an attack",
+            description: "Resolve a weapon or unarmed attack against explicit target Survivability, including critical damage, melee self-harm, ranged jams, and wound state.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "agility",
+                                "brains",
+                                "brawn",
+                                "wits",
+                            ],
+                        ),
+                        required: true,
+                        description: "Attack attribute.",
+                    ),
+                    "damage_die": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(20.0),
+                        ),
+                        required: true,
+                        description: "Maximum weapon damage.",
+                    ),
+                    "modifier": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-12.0),
+                            maximum: Some(12.0),
+                        ),
+                        required: true,
+                        description: "Situational modifier.",
+                    ),
+                    "roll_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Normal, advantage, or disadvantage.",
+                    ),
+                    "target_survivability": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(18.0),
+                        ),
+                        required: true,
+                        description: "Target number met to hit.",
+                    ),
+                    "weapon_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 120,
+                        ),
+                        required: true,
+                        description: "Inventory item or `unarmed`.",
+                    ),
+                    "weapon_kind": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "melee",
+                                "ranged",
+                                "unarmed",
+                            ],
+                        ),
+                        required: true,
+                        description: "Weapon behavior.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "attack_resolved",
+                "entropy_trace",
+                "resource_changed",
+            ],
+            consumes_entropy: true,
+        ),
+        "chase": (
+            id: "chase",
+            title: "Resolve a bounded chase",
+            description: "Resolve no more than three opposed checks and stop immediately on a natural critical or fumble.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "agility",
+                                "brains",
+                                "brawn",
+                                "wits",
+                            ],
+                        ),
+                        required: true,
+                        description: "Player chase attribute.",
+                    ),
+                    "max_checks": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(3.0),
+                        ),
+                        required: true,
+                        description: "Explicit chase bound.",
+                    ),
+                    "opponent_modifier": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-12.0),
+                            maximum: Some(12.0),
+                        ),
+                        required: true,
+                        description: "Opponent situational modifier.",
+                    ),
+                    "opponent_rating": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(12.0),
+                        ),
+                        required: true,
+                        description: "Opponent rating.",
+                    ),
+                    "opponent_roll_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Opponent roll mode.",
+                    ),
+                    "player_modifier": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-12.0),
+                            maximum: Some(12.0),
+                        ),
+                        required: true,
+                        description: "Player situational modifier.",
+                    ),
+                    "player_roll_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Player roll mode.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "chase_resolved",
+                "entropy_trace",
+            ],
+            consumes_entropy: true,
+        ),
+        "check": (
+            id: "check",
+            title: "Resolve a check",
+            description: "Roll one d6 or two for advantage/disadvantage, apply the selected rating and explicit difficulty modifier, and optionally spend Fortune after failure.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "agility",
+                                "brains",
+                                "brawn",
+                                "wits",
+                            ],
+                        ),
+                        required: true,
+                        description: "Checked attribute.",
+                    ),
+                    "difficulty": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(18.0),
+                        ),
+                        required: true,
+                        description: "Total that must be exceeded.",
+                    ),
+                    "modifier": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-12.0),
+                            maximum: Some(12.0),
+                        ),
+                        required: true,
+                        description: "Situational modifier.",
+                    ),
+                    "roll_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Normal, advantage, or disadvantage.",
+                    ),
+                    "spend_fortune_on_failure": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Explicit reroll policy.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "check_resolved",
+                "entropy_trace",
+                "resource_changed",
+            ],
+            consumes_entropy: true,
+        ),
+        "fortune_test": (
+            id: "fortune_test",
+            title: "Resolve a Fortune test",
+            description: "Roll below current Fortune without critical or fumble semantics.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "roll_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Normal, advantage, or disadvantage.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "fortune_test_resolved",
+            ],
+            consumes_entropy: true,
+        ),
+        "group_check": (
+            id: "group_check",
+            title: "Resolve a group check",
+            description: "Resolve each explicit participant independently; the group succeeds only with more successes than failures.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "difficulty": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(18.0),
+                        ),
+                        required: true,
+                        description: "Total each participant must exceed.",
+                    ),
+                    "participants": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "object",
+                                fields: {
+                                    "id": (
+                                        type: (
+                                            kind: "string",
+                                            min_length: 1,
+                                            max_length: 128,
+                                        ),
+                                        required: true,
+                                        description: "Participant identifier.",
+                                    ),
+                                    "modifier": (
+                                        type: (
+                                            kind: "number",
+                                            integer: true,
+                                            minimum: Some(-12.0),
+                                            maximum: Some(12.0),
+                                        ),
+                                        required: true,
+                                        description: "Situational modifier.",
+                                    ),
+                                    "rating": (
+                                        type: (
+                                            kind: "number",
+                                            integer: true,
+                                            minimum: Some(0.0),
+                                            maximum: Some(12.0),
+                                        ),
+                                        required: true,
+                                        description: "Relevant participant rating.",
+                                    ),
+                                    "roll_mode": (
+                                        type: (
+                                            kind: "symbol",
+                                            values: [
+                                                "advantage",
+                                                "disadvantage",
+                                                "normal",
+                                            ],
+                                        ),
+                                        required: true,
+                                        description: "Participant roll mode.",
+                                    ),
+                                },
+                            ),
+                            min_items: 1,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "Explicit group participants.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "group_check_resolved",
+            ],
+            consumes_entropy: true,
+        ),
+        "initiative": (
+            id: "initiative",
+            title: "Draw card initiative",
+            description: "Draw without replacement from a portable 54-card representation and order by rank, then Spades, Hearts, Clubs, and Diamonds; jokers have no value.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "participants": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 128,
+                            ),
+                            min_items: 1,
+                            max_items: 54,
+                        ),
+                        required: true,
+                        description: "Unique participant identifiers.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "initiative_ordered",
+            ],
+            consumes_entropy: true,
+        ),
+        "take_damage": (
+            id: "take_damage",
+            title: "Apply damage",
+            description: "Reduce current Survivability, mark the character wounded at zero, and mark further positive damage as fatal.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "amount": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(100.0),
+                        ),
+                        required: true,
+                        description: "Explicit incoming damage.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "damage_applied",
+                "resource_changed",
+            ],
+            consumes_entropy: false,
+        ),
+    },
+    event_types: {
+        "attack_resolved": (
+            kind: "object",
+            fields: {
+                "critical": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural critical flag.",
+                ),
+                "damage": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Outgoing damage.",
+                ),
+                "fumble": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural fumble flag.",
+                ),
+                "hit": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the target was hit.",
+                ),
+                "jammed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the ranged item jammed.",
+                ),
+                "self_damage": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Damage applied to the attacker.",
+                ),
+                "total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Attack total.",
+                ),
+                "weapon_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 120,
+                    ),
+                    required: true,
+                    description: "Explicit weapon identifier.",
+                ),
+            },
+        ),
+        "chase_resolved": (
+            kind: "object",
+            fields: {
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "caught",
+                            "escaped",
+                            "stalemate",
+                        ],
+                    ),
+                    required: true,
+                    description: "Chase outcome.",
+                ),
+                "rounds": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "ChaseRound",
+                        ),
+                        min_items: 1,
+                        max_items: 3,
+                    ),
+                    required: true,
+                    description: "Resolved rounds.",
+                ),
+            },
+        ),
+        "check_resolved": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "agility",
+                            "brains",
+                            "brawn",
+                            "wits",
+                        ],
+                    ),
+                    required: true,
+                    description: "Checked attribute.",
+                ),
+                "critical": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural critical flag.",
+                ),
+                "die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Final selected die.",
+                ),
+                "fumble": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural fumble flag.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "critical_success",
+                            "failure",
+                            "fumble",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Final check outcome.",
+                ),
+                "rerolled": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether Fortune replaced the first result.",
+                ),
+                "total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Final check total.",
+                ),
+            },
+        ),
+        "damage_applied": (
+            kind: "object",
+            fields: {
+                "amount": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(100.0),
+                    ),
+                    required: true,
+                    description: "Incoming damage.",
+                ),
+                "dead": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Fatal state.",
+                ),
+                "remaining": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(18.0),
+                    ),
+                    required: true,
+                    description: "Remaining Survivability.",
+                ),
+                "wounded": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Wounded state.",
+                ),
+            },
+        ),
+        "entropy_trace": (
+            kind: "object",
+            fields: {
+                "cursor_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor after.",
+                ),
+                "cursor_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor before.",
+                ),
+                "draws": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(4294967295.0),
+                        ),
+                        min_items: 0,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Raw bounded draws.",
+                ),
+                "operation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Resolver operation.",
+                ),
+            },
+        ),
+        "fortune_test_resolved": (
+            kind: "object",
+            fields: {
+                "die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Selected d6 result.",
+                ),
+                "fortune": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Current Fortune threshold.",
+                ),
+                "success": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether die is below Fortune.",
+                ),
+            },
+        ),
+        "group_check_resolved": (
+            kind: "object",
+            fields: {
+                "failures": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Individual failures.",
+                ),
+                "results": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "GroupResult",
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Ordered participant results.",
+                ),
+                "success": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether successes outnumber failures.",
+                ),
+                "successes": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Individual successes.",
+                ),
+            },
+        ),
+        "initiative_ordered": (
+            kind: "object",
+            fields: {
+                "entries": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "InitiativeEntry",
+                        ),
+                        min_items: 1,
+                        max_items: 54,
+                    ),
+                    required: true,
+                    description: "Highest-first initiative order.",
+                ),
+            },
+        ),
+        "resource_changed": (
+            kind: "object",
+            fields: {
+                "dead": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Fatal state.",
+                ),
+                "fortune_remaining": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Remaining Fortune.",
+                ),
+                "survivability_current": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(18.0),
+                    ),
+                    required: true,
+                    description: "Remaining Survivability.",
+                ),
+                "wounded": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Wounded state.",
+                ),
+            },
+        ),
+    },
+    visibility: (
+        runtime: [
+            public,
+        ],
+        authoring: [
+            public,
+            authoring,
+        ],
+        authority_host: [
+            public,
+            authoring,
+            host_only,
+        ],
+    ),
+    migrations: [],
+    provenance: (
+        source_class: verified_cc0,
+        source_url: "https://distilledproductions.itch.io/plug-and-play",
+        exact_artifact: "Plug-And-Play Rules.pdf",
+        revision: "PDF metadata 2024-11-27; official release files retrieved 2026-08-24",
+        retrieved_on: "2026-08-24",
+        sha256: "4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e",
+        license: "CC0-1.0",
+        license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        covered_files_or_sections: [
+            "d6, d3, and d2 terminology",
+            "checks, difficulty, criticals, fumbles, advantage, and disadvantage",
+            "combat hit, damage, healing boundary, and wounds",
+            "character ratings, Fortune, Survivability, balanced modifiers, and inventory",
+            "group checks, card initiative, and bounded chases",
+        ],
+        exclusions: [
+            community_supplements,
+            logos,
+            trade_dress,
+            artwork,
+            layout,
+            unverified_assets,
+        ],
+        attribution: "Compatibility implementation for Plug-And-Play by Olav Jakobson Digranes, distributed under CC0-1.0 by Distilled Productions Limited. Adapter code, fixtures, prose, and scenarios are independently authored for Weave.",
+        required_license_text: (
+            artifact: "LICENSE-CC0-1.0.txt",
+            sha256: "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        ),
+        additional_artifacts: [
+            (
+                source_url: "https://distilledproductions.itch.io/plug-and-play",
+                exact_artifact: "Plug-And-Play Character Sheet.pdf",
+                revision: "PDF metadata 2024-11-27; official release file retrieved 2026-08-24",
+                retrieved_on: "2026-08-24",
+                sha256: "dfaf6f01a25773aa311f3662dff2c975096544b675c11dac5f4bf0ac42938d8b",
+                media_type: "application/pdf",
+                purpose: "Verify the official field inventory: name, age, four regular attributes, Fortune, Survivability, two modifiers, inventory, and notes.",
+                redistributed: false,
+            ),
+        ],
+        notices: [
+            "The official PDFs are hash-pinned inputs and are not redistributed with Weave.",
+            "Factual compatibility naming does not imply sponsorship or endorsement.",
+        ],
+        compatibility_statement: "This adapter is an independent compatibility implementation for the CC0 Plug-And-Play rules. It does not bundle the official PDFs, branding, artwork, or layout and is not endorsed by the original creator.",
+    ),
+)

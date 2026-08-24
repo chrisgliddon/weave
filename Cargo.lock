@@ -8762,13 +8762,17 @@ dependencies = [
  "bevy",
  "ron",
  "weave-core",
+ "weave-domain",
+ "weave-tabletop",
 ]
 
 [[package]]
 name = "weave-example-standalone"
 version = "0.1.0"
 dependencies = [
+ "ron",
  "weave-compiler",
+ "weave-core",
  "weave-runtime",
 ]
 

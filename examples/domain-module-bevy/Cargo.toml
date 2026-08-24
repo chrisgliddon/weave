@@ -11,6 +11,8 @@ publish = false
 bevy.workspace = true
 ron.workspace = true
 weave-core = { path = "../../crates/weave-core" }
+weave-domain = { path = "../../crates/weave-domain" }
+weave-tabletop = { path = "../../crates/weave-tabletop" }
 
 [lints]
 workspace = true

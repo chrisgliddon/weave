@@ -1,0 +1,442 @@
+{
+  "pack_format_version": 1,
+  "id": "ember_vale",
+  "version": "1.0.0",
+  "title": "Ember Vale Plug-And-Play Projection",
+  "module": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "=1.0.0"
+  },
+  "dependencies": [],
+  "values": {
+    "adapter": {
+      "kind": "object",
+      "value": {
+        "content_sha256": {
+          "kind": "string",
+          "value": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+        },
+        "id": {
+          "kind": "string",
+          "value": "org.weave.tabletop.plug_and_play"
+        },
+        "schema_version": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "version": {
+          "kind": "string",
+          "value": "1.0.0"
+        }
+      }
+    },
+    "capabilities": {
+      "kind": "object",
+      "value": {
+        "character_creation": {
+          "kind": "bool",
+          "value": true
+        },
+        "checks_and_conflicts": {
+          "kind": "bool",
+          "value": true
+        },
+        "derived_values": {
+          "kind": "bool",
+          "value": true
+        },
+        "encounters": {
+          "kind": "bool",
+          "value": true
+        },
+        "equipment_and_abilities": {
+          "kind": "bool",
+          "value": true
+        },
+        "resources_and_conditions": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    "definition": {
+      "kind": "object",
+      "value": {
+        "age": {
+          "kind": "number",
+          "value": 31.0
+        },
+        "assignment": {
+          "kind": "object",
+          "value": {
+            "agility": {
+              "kind": "number",
+              "value": 3.0
+            },
+            "brains": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "brawn": {
+              "kind": "number",
+              "value": 0.0
+            },
+            "wits": {
+              "kind": "number",
+              "value": 2.0
+            }
+          }
+        },
+        "base_attributes": {
+          "kind": "object",
+          "value": {
+            "agility": {
+              "kind": "number",
+              "value": 6.0
+            },
+            "brains": {
+              "kind": "number",
+              "value": 2.0
+            },
+            "brawn": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "wits": {
+              "kind": "number",
+              "value": 2.0
+            }
+          }
+        },
+        "base_fortune": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "creation_mode": {
+          "kind": "symbol",
+          "value": "rolled"
+        },
+        "creation_seed": {
+          "kind": "string",
+          "value": "2026082401"
+        },
+        "effective_attributes": {
+          "kind": "object",
+          "value": {
+            "agility": {
+              "kind": "number",
+              "value": 7.0
+            },
+            "brains": {
+              "kind": "number",
+              "value": 3.0
+            },
+            "brawn": {
+              "kind": "number",
+              "value": 0.0
+            },
+            "wits": {
+              "kind": "number",
+              "value": 1.0
+            }
+          }
+        },
+        "fortune_initial": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "inventory": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "field knife"
+            },
+            {
+              "kind": "string",
+              "value": "signal pistol"
+            },
+            {
+              "kind": "string",
+              "value": "weather cloak"
+            }
+          ]
+        },
+        "modifiers": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "object",
+              "value": {
+                "attributes": {
+                  "kind": "object",
+                  "value": {
+                    "agility": {
+                      "kind": "number",
+                      "value": 0.0
+                    },
+                    "brains": {
+                      "kind": "number",
+                      "value": 1.0
+                    },
+                    "brawn": {
+                      "kind": "number",
+                      "value": 0.0
+                    },
+                    "wits": {
+                      "kind": "number",
+                      "value": -1.0
+                    }
+                  }
+                },
+                "explanation": {
+                  "kind": "string",
+                  "value": "Practiced analysis is offset by slower improvisation."
+                },
+                "fortune": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "id": {
+                  "kind": "string",
+                  "value": "field_medic"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Field medic"
+                }
+              }
+            },
+            {
+              "kind": "object",
+              "value": {
+                "attributes": {
+                  "kind": "object",
+                  "value": {
+                    "agility": {
+                      "kind": "number",
+                      "value": 1.0
+                    },
+                    "brains": {
+                      "kind": "number",
+                      "value": 0.0
+                    },
+                    "brawn": {
+                      "kind": "number",
+                      "value": -1.0
+                    },
+                    "wits": {
+                      "kind": "number",
+                      "value": 0.0
+                    }
+                  }
+                },
+                "explanation": {
+                  "kind": "string",
+                  "value": "Fast movement is offset by a lighter frame."
+                },
+                "fortune": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "id": {
+                  "kind": "string",
+                  "value": "rooftop_runner"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Rooftop runner"
+                }
+              }
+            }
+          ]
+        },
+        "name": {
+          "kind": "string",
+          "value": "Ember Vale"
+        },
+        "roll_sets": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "object",
+              "value": {
+                "d3": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "d6": {
+                  "kind": "list",
+                  "value": [
+                    {
+                      "kind": "number",
+                      "value": 1.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 3.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 1.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 2.0
+                    }
+                  ]
+                },
+                "entropy_end": {
+                  "kind": "number",
+                  "value": 5.0
+                },
+                "entropy_start": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "index": {
+                  "kind": "number",
+                  "value": 0.0
+                }
+              }
+            },
+            {
+              "kind": "object",
+              "value": {
+                "d3": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "d6": {
+                  "kind": "list",
+                  "value": [
+                    {
+                      "kind": "number",
+                      "value": 1.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 2.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 2.0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 6.0
+                    }
+                  ]
+                },
+                "entropy_end": {
+                  "kind": "number",
+                  "value": 10.0
+                },
+                "entropy_start": {
+                  "kind": "number",
+                  "value": 5.0
+                },
+                "index": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          ]
+        },
+        "selected_set": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "survivability": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "survivability_body": {
+          "kind": "symbol",
+          "value": "brawn"
+        },
+        "survivability_mind": {
+          "kind": "symbol",
+          "value": "brains"
+        }
+      }
+    },
+    "state": {
+      "kind": "object",
+      "value": {
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "fortune_remaining": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "field knife"
+            },
+            {
+              "kind": "string",
+              "value": "signal pistol"
+            },
+            {
+              "kind": "string",
+              "value": "weather cloak"
+            }
+          ]
+        },
+        "jammed_items": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": "take_damage"
+        },
+        "survivability_current": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "wounded": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "adapter_source",
+        "kind": "public_source",
+        "url": "https://distilledproductions.itch.io/plug-and-play",
+        "revision": "PDF metadata 2024-11-27; official release files retrieved 2026-08-24",
+        "sha256": "4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "attribution": "Compatibility implementation for Plug-And-Play by Olav Jakobson Digranes, distributed under CC0-1.0 by Distilled Productions Limited. Adapter code, fixtures, prose, and scenarios are independently authored for Weave.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "values.adapter": [
+        "adapter_source"
+      ],
+      "values.capabilities": [
+        "adapter_source"
+      ],
+      "values.definition": [
+        "adapter_source"
+      ],
+      "values.state": [
+        "adapter_source"
+      ]
+    }
+  }
+}

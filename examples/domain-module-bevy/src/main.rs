@@ -3,6 +3,10 @@ use std::io;
 
 use bevy::prelude::*;
 use weave_core::ir::{DomainValueIr, StoryIr};
+use weave_domain::DomainValue;
+use weave_tabletop::{
+    EventVisibility, ResolutionReceipt, plug_and_play_manifest, validate_resolution_receipt,
+};
 
 const TRACER_STORY: &str = include_str!("../../domain-modules/contract/tracer.story.ron");
 const WORLD_STORIES: [&str; 4] = [
@@ -20,6 +24,10 @@ const CHARACTER_STORY: &str =
 const TEMPORAL_CHARACTER_STORY: &str = include_str!(
     "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.ron"
 );
+const TABLETOP_STORY: &str =
+    include_str!("../../tabletop-adapters/plug-and-play/runtime/ember-vale.story.ron");
+const TABLETOP_RECEIPT: &str =
+    include_str!("../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json");
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -170,6 +178,24 @@ struct ExpressionReading {
     pack_version: String,
     pack_sha256: String,
     canonical_personality_write_back: bool,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct TabletopReading {
+    adapter_id: String,
+    adapter_version: String,
+    adapter_sha256: String,
+    character_name: String,
+    attributes: [f64; 4],
+    fortune: f64,
+    survivability: f64,
+    wounded: bool,
+    operation: String,
+    outcome: String,
+    total: f64,
+    rerolled: bool,
+    request_sha256: String,
+    hidden_entropy_sha256: String,
 }
 
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
@@ -1069,6 +1095,148 @@ fn string_list(
         .collect()
 }
 
+fn tabletop_reading(
+    story: &StoryIr,
+    receipt: &ResolutionReceipt,
+) -> Result<TabletopReading, io::Error> {
+    validate_resolution_receipt(receipt, &plug_and_play_manifest()).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Plug-And-Play receipt contract is invalid",
+        )
+    })?;
+    let module = story
+        .modules
+        .get("rules")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "rules module is absent"))?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let number = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Number(value)) if value.is_finite() => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let boolean = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Bool(value)) => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let adapter_id = string(&["adapter", "id"], "tabletop adapter id is invalid")?;
+    let adapter_version = string(
+        &["adapter", "version"],
+        "tabletop adapter version is invalid",
+    )?;
+    let adapter_sha256 = string(
+        &["adapter", "content_sha256"],
+        "tabletop adapter fingerprint is invalid",
+    )?;
+    if receipt.adapter.id != adapter_id
+        || receipt.adapter.version != adapter_version
+        || receipt.adapter.content_sha256 != adapter_sha256
+        || !is_sha256(&adapter_sha256)
+        || !is_sha256(&receipt.request_sha256)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "tabletop story and receipt coordinates disagree",
+        ));
+    }
+    let check = receipt
+        .events
+        .iter()
+        .find(|event| event.kind == "check_resolved")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "check event is absent"))?;
+    let DomainValue::Object(check) = check.payload.as_ref().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidData, "public check payload is absent")
+    })?
+    else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "public check payload is invalid",
+        ));
+    };
+    let outcome = match check.get("outcome") {
+        Some(DomainValue::Symbol(value)) => value.clone(),
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "public check outcome is invalid",
+            ));
+        }
+    };
+    let total = match check.get("total") {
+        Some(DomainValue::Number(value)) if value.is_finite() => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "public check total is invalid",
+            ));
+        }
+    };
+    let rerolled = match check.get("rerolled") {
+        Some(DomainValue::Bool(value)) => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "public Fortune-reroll flag is invalid",
+            ));
+        }
+    };
+    let entropy = receipt
+        .events
+        .iter()
+        .find(|event| event.kind == "entropy_trace")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "entropy audit is absent"))?;
+    if entropy.visibility != EventVisibility::HostOnly
+        || entropy.payload.is_some()
+        || !is_sha256(&entropy.payload_sha256)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "runtime entropy audit visibility is invalid",
+        ));
+    }
+    Ok(TabletopReading {
+        adapter_id,
+        adapter_version,
+        adapter_sha256,
+        character_name: string(
+            &["definition", "name"],
+            "tabletop character name is invalid",
+        )?,
+        attributes: [
+            number(
+                &["definition", "effective_attributes", "agility"],
+                "Agility is invalid",
+            )?,
+            number(
+                &["definition", "effective_attributes", "brains"],
+                "Brains is invalid",
+            )?,
+            number(
+                &["definition", "effective_attributes", "brawn"],
+                "Brawn is invalid",
+            )?,
+            number(
+                &["definition", "effective_attributes", "wits"],
+                "Wits is invalid",
+            )?,
+        ],
+        fortune: number(&["state", "fortune_remaining"], "Fortune is invalid")?,
+        survivability: number(
+            &["state", "survivability_current"],
+            "Survivability is invalid",
+        )?,
+        wounded: boolean(&["state", "wounded"], "wound state is invalid")?,
+        operation: receipt.operation.clone(),
+        outcome,
+        total,
+        rerolled,
+        request_sha256: receipt.request_sha256.clone(),
+        hidden_entropy_sha256: entropy.payload_sha256.clone(),
+    })
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -1179,6 +1347,26 @@ fn report_expression(reading: Res<ExpressionReading>) {
     );
 }
 
+fn report_tabletop(reading: Res<TabletopReading>) {
+    println!(
+        "Bevy read {} in {}@{} ({}): A/Bn/Bw/W {:?}, Fortune {}, Survivability {}, wounded={}; {} resolved {} at total {} (rerolled={}, request={}, hidden entropy={})",
+        reading.character_name,
+        reading.adapter_id,
+        reading.adapter_version,
+        reading.adapter_sha256,
+        reading.attributes,
+        reading.fortune,
+        reading.survivability,
+        reading.wounded,
+        reading.operation,
+        reading.outcome,
+        reading.total,
+        reading.rerolled,
+        reading.request_sha256,
+        reading.hidden_entropy_sha256,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -1202,6 +1390,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let expression = expression_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let temporal_character =
         temporal_character_reading(&ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)?)?;
+    let tabletop_receipt = ResolutionReceipt::from_json(TABLETOP_RECEIPT)?;
+    let tabletop = tabletop_reading(
+        &ron::from_str::<StoryIr>(TABLETOP_STORY)?,
+        &tabletop_receipt,
+    )?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
@@ -1213,6 +1406,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(relationship_graph)
         .insert_resource(expression)
         .insert_resource(temporal_character)
+        .insert_resource(tabletop)
         .add_systems(
             Startup,
             (
@@ -1225,6 +1419,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_relationship_graph,
                 report_expression,
                 report_temporal_character,
+                report_tabletop,
             ),
         );
     app.update();
@@ -1539,5 +1734,22 @@ mod tests {
                 && cue.fact_source_ids == ["apollo_11_wikidata"]
                 && cue.cue_source_ids == ["weave_historical_cues"]
         }));
+    }
+
+    #[test]
+    fn reads_plug_and_play_story_and_redacted_receipt_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(TABLETOP_STORY).expect("checked tabletop story RON");
+        let receipt =
+            ResolutionReceipt::from_json(TABLETOP_RECEIPT).expect("checked tabletop receipt JSON");
+        let reading = tabletop_reading(&story, &receipt).expect("read tabletop presentation");
+        assert_eq!(reading.adapter_id, "org.weave.tabletop.plug_and_play");
+        assert_eq!(reading.adapter_version, "1.0.0");
+        assert_eq!(reading.character_name, "Ember Vale");
+        assert!(reading.attributes.iter().all(|value| value.is_finite()));
+        assert!(reading.fortune >= 0.0);
+        assert!(reading.survivability >= 0.0);
+        assert_eq!(reading.operation, "check");
+        assert!(is_sha256(&reading.request_sha256));
+        assert!(is_sha256(&reading.hidden_entropy_sha256));
     }
 }

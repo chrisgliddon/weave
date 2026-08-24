@@ -1,0 +1,50 @@
+{
+  "creation_format_version": 1,
+  "character_id": "org.weave.character.ember_vale",
+  "name": "Ember Vale",
+  "age": 31,
+  "seed": 2026082401,
+  "stat_source": {
+    "kind": "rolled",
+    "selected_set": 1,
+    "assignment": {
+      "agility": 3,
+      "brains": 1,
+      "brawn": 0,
+      "wits": 2
+    }
+  },
+  "survivability_body": "brawn",
+  "survivability_mind": "brains",
+  "modifiers": [
+    {
+      "id": "field_medic",
+      "label": "Field medic",
+      "attributes": {
+        "agility": 0,
+        "brains": 1,
+        "brawn": 0,
+        "wits": -1
+      },
+      "fortune": 0,
+      "explanation": "Practiced analysis is offset by slower improvisation."
+    },
+    {
+      "id": "rooftop_runner",
+      "label": "Rooftop runner",
+      "attributes": {
+        "agility": 1,
+        "brains": 0,
+        "brawn": -1,
+        "wits": 0
+      },
+      "fortune": 0,
+      "explanation": "Fast movement is offset by a lighter frame."
+    }
+  ],
+  "inventory": [
+    "field knife",
+    "signal pistol",
+    "weather cloak"
+  ]
+}

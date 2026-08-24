@@ -1,0 +1,28 @@
+module rules {
+    id: "org.weave.tabletop.plug_and_play"
+    version: "=1.0.0"
+    pack: "ember_vale@=1.0.0"
+}
+
+VAR adapter_id = rules.adapter.id
+VAR adapter_version = rules.adapter.version
+VAR adapter_sha256 = rules.adapter.content_sha256
+VAR checks_supported = rules.capabilities.checks_and_conflicts
+VAR encounters_supported = rules.capabilities.encounters
+VAR character_name = rules.definition.name
+VAR agility = rules.definition.effective_attributes.agility
+VAR brains = rules.definition.effective_attributes.brains
+VAR brawn = rules.definition.effective_attributes.brawn
+VAR wits = rules.definition.effective_attributes.wits
+VAR fortune = rules.state.fortune_remaining
+VAR survivability = rules.state.survivability_current
+VAR wounded = rules.state.wounded
+
+=== start ===
+{checks_supported && encounters_supported:
+    {character_name} enters play with Agility {agility}, Brains {brains}, Brawn {brawn}, Wits {wits}, Fortune {fortune}, and Survivability {survivability}.
+    The active rules are {adapter_id}@{adapter_version} ({adapter_sha256}); wounded is {wounded}.
+- else:
+    This branch is unreachable because the selected adapter declares checks and encounters.
+}
+-> END

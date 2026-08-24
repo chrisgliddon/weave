@@ -1,0 +1,63 @@
+{
+  "state_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+  },
+  "owner_id": "org.weave.character.ember_vale",
+  "definition_sha256": "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+  "revision": 7,
+  "entropy": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 2026082401,
+    "cursor": 30
+  },
+  "value": {
+    "kind": "object",
+    "value": {
+      "dead": {
+        "kind": "bool",
+        "value": false
+      },
+      "fortune_remaining": {
+        "kind": "number",
+        "value": 1.0
+      },
+      "inventory": {
+        "kind": "list",
+        "value": [
+          {
+            "kind": "string",
+            "value": "field knife"
+          },
+          {
+            "kind": "string",
+            "value": "signal pistol"
+          },
+          {
+            "kind": "string",
+            "value": "weather cloak"
+          }
+        ]
+      },
+      "jammed_items": {
+        "kind": "list",
+        "value": []
+      },
+      "last_operation": {
+        "kind": "string",
+        "value": "take_damage"
+      },
+      "survivability_current": {
+        "kind": "number",
+        "value": 0.0
+      },
+      "wounded": {
+        "kind": "bool",
+        "value": true
+      }
+    }
+  }
+}

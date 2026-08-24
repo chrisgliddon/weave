@@ -411,6 +411,7 @@ def compile_examples() -> None:
     }
     domain_tabletop_sources = {
         ROOT / "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
+        ROOT / "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
     }
     sources = [
         source
@@ -3721,6 +3722,7 @@ def verify_tabletop_contract() -> None:
     tool = tabletop_tool_binary()
     compiler = compiler_binary()
     fixture = ROOT / "examples/tabletop-adapters/contract"
+    plug_fixture = ROOT / "examples/tabletop-adapters/plug-and-play"
     manifest_json = fixture / "synthetic.tabletop-adapter.json"
     manifest_ron = fixture / "synthetic.tabletop-adapter.ron"
     selection_json = fixture / "selection.tabletop-selection.json"
@@ -3743,6 +3745,21 @@ def verify_tabletop_contract() -> None:
             "weave-tabletop",
             "--example",
             "tabletop_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-tabletop",
+            "--example",
+            "plug_and_play_fixture",
             "--",
             "--check",
         ],
@@ -3829,6 +3846,12 @@ def verify_tabletop_contract() -> None:
         "state": "weave-tabletop-state-v1.schema.json",
         "request": "weave-tabletop-resolution-request-v1.schema.json",
         "receipt": "weave-tabletop-resolution-receipt-v1.schema.json",
+        "plug-and-play-creation-request": (
+            "weave-tabletop-plug-and-play-creation-request-v1.schema.json"
+        ),
+        "plug-and-play-creation-preview": (
+            "weave-tabletop-plug-and-play-creation-preview-v1.schema.json"
+        ),
     }
     with tempfile.TemporaryDirectory(prefix="weave-tabletop-contract-") as temporary:
         workspace = Path(temporary)
@@ -3870,12 +3893,40 @@ def verify_tabletop_contract() -> None:
         )
         if compiled.read_bytes() != (fixture / "runtime/lantern-trail.story.json").read_bytes():
             raise DocsError("checked tabletop source projection is stale")
+        plug_compiled = workspace / "ember-vale.story.json"
+        run(
+            [
+                str(compiler),
+                str((plug_fixture / "runtime/ember-vale.weave").relative_to(ROOT)),
+                "--module-manifest",
+                str((plug_fixture / "runtime/module.weave-module.json").relative_to(ROOT)),
+                "--module-pack",
+                str((plug_fixture / "runtime/ember_vale.weave-domain.json").relative_to(ROOT)),
+                "--format",
+                "json",
+                "--output",
+                str(plug_compiled),
+            ]
+        )
+        if plug_compiled.read_bytes() != (
+            plug_fixture / "runtime/ember-vale.story.json"
+        ).read_bytes():
+            raise DocsError("checked Plug-And-Play source projection is stale")
 
     manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
     selection = json.loads(selection_json.read_text(encoding="utf-8"))
     projection = json.loads(projection_json.read_text(encoding="utf-8"))
     runtime = json.loads(
         (fixture / "runtime.tabletop-receipt.json").read_text(encoding="utf-8")
+    )
+    plug_manifest = json.loads(
+        (plug_fixture / "plug-and-play.tabletop-adapter.json").read_text(encoding="utf-8")
+    )
+    plug_projection = json.loads(
+        (plug_fixture / "character.tabletop-projection.json").read_text(encoding="utf-8")
+    )
+    plug_runtime = json.loads(
+        (plug_fixture / "runtime.tabletop-receipt.json").read_text(encoding="utf-8")
     )
     if (
         manifest.get("extension_surface", {}).get("kind")
@@ -3885,12 +3936,17 @@ def verify_tabletop_contract() -> None:
         or projection.get("canonical_character_write_back") is not False
         or sum(event.get("payload") is not None for event in runtime.get("events", []))
         != 1
+        or plug_manifest.get("provenance", {}).get("license") != "CC0-1.0"
+        or len(plug_manifest.get("provenance", {}).get("additional_artifacts", [])) != 1
+        or plug_projection.get("canonical_character_write_back") is not False
+        or sum(event.get("payload") is not None for event in plug_runtime.get("events", []))
+        != 1
     ):
         raise DocsError(
             "tabletop fixture omitted declarative isolation, exact selection, write-back prohibition, or runtime redaction"
         )
     print(
-        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixture, typed event visibility, and source-license gate",
+        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixtures, typed event visibility, Plug-And-Play creation/play portability, and source-license gate",
         flush=True,
     )
 
@@ -4052,6 +4108,8 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-tabletop-state-v1.schema.json",
         "weave-tabletop-resolution-request-v1.schema.json",
         "weave-tabletop-resolution-receipt-v1.schema.json",
+        "weave-tabletop-plug-and-play-creation-request-v1.schema.json",
+        "weave-tabletop-plug-and-play-creation-preview-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

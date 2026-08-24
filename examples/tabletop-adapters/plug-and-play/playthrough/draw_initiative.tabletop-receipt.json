@@ -1,0 +1,207 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+  },
+  "operation": "initiative",
+  "capability": "encounters",
+  "request_sha256": "71e8ebdbd1425de761f9ba2666f1e8de9925e198e9f2157446d098f0ad693932",
+  "before_state_sha256": "a8f549fa34636315a099d852d0c7d26b829dc8bd7af30739eb10da1d9edbf002",
+  "before_revision": 4,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 2026082401,
+    "cursor": 21
+  },
+  "after_state_sha256": "94984fc8506cec562bea3bfca7ce6256f8953fc2fd6621f66d093b6b6df387b4",
+  "entropy_consumed": 3,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+    },
+    "owner_id": "org.weave.character.ember_vale",
+    "definition_sha256": "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+    "revision": 5,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 2026082401,
+      "cursor": 24
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "fortune_remaining": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "field knife"
+            },
+            {
+              "kind": "string",
+              "value": "signal pistol"
+            },
+            {
+              "kind": "string",
+              "value": "weather cloak"
+            }
+          ]
+        },
+        "jammed_items": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": "initiative"
+        },
+        "survivability_current": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "wounded": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "initiative_ordered",
+      "capability": "encounters",
+      "visibility": "public",
+      "payload_sha256": "205f516a5ebf0c20910277129bc1964b78fb013a9921cbed1b032d3de1cd3b43",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "entries": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "object",
+                "value": {
+                  "label": {
+                    "kind": "string",
+                    "value": "9 hearts"
+                  },
+                  "participant": {
+                    "kind": "string",
+                    "value": "warden"
+                  },
+                  "rank": {
+                    "kind": "number",
+                    "value": 9.0
+                  },
+                  "suit": {
+                    "kind": "symbol",
+                    "value": "hearts"
+                  }
+                }
+              },
+              {
+                "kind": "object",
+                "value": {
+                  "label": {
+                    "kind": "string",
+                    "value": "4 diamonds"
+                  },
+                  "participant": {
+                    "kind": "string",
+                    "value": "ember"
+                  },
+                  "rank": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "suit": {
+                    "kind": "symbol",
+                    "value": "diamonds"
+                  }
+                }
+              },
+              {
+                "kind": "object",
+                "value": {
+                  "label": {
+                    "kind": "string",
+                    "value": "Joker"
+                  },
+                  "participant": {
+                    "kind": "string",
+                    "value": "rook"
+                  },
+                  "rank": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "suit": {
+                    "kind": "symbol",
+                    "value": "joker"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "entropy_trace",
+      "capability": "encounters",
+      "visibility": "host_only",
+      "payload_sha256": "5f603078949c2663d07d1354a1eed8c4cfcb78248faa152dbad8a8eae2afb146",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "cursor_after": {
+            "kind": "number",
+            "value": 24.0
+          },
+          "cursor_before": {
+            "kind": "number",
+            "value": 21.0
+          },
+          "draws": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 8.0
+              },
+              {
+                "kind": "number",
+                "value": 52.0
+              },
+              {
+                "kind": "number",
+                "value": 29.0
+              }
+            ]
+          },
+          "operation": {
+            "kind": "string",
+            "value": "initiative"
+          }
+        }
+      }
+    }
+  ]
+}

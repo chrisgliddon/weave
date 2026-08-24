@@ -1,0 +1,854 @@
+(
+    contract_version: 1,
+    pack_format_version: 1,
+    id: "org.weave.tabletop.plug_and_play",
+    version: "1.0.0",
+    namespace: "plug_and_play",
+    title: "Plug-And-Play compatible adapter",
+    summary: "An independently implemented, deterministic adapter for quick d6 character creation, checks, Fortune, combat, group action, card initiative, and bounded chases.",
+    authors: [
+        (
+            name: "Declared adapter source steward",
+            url: Some("https://distilledproductions.itch.io/plug-and-play"),
+        ),
+    ],
+    license: "CC0-1.0",
+    license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+    weave_version: ">=0.1.0, <0.2.0",
+    capabilities: [
+        (
+            id: "data",
+            version: 1,
+        ),
+        (
+            id: "editor_schema",
+            version: 1,
+        ),
+        (
+            id: "operations",
+            version: 1,
+        ),
+        (
+            id: "state",
+            version: 1,
+        ),
+    ],
+    dependencies: [],
+    types: {
+        "Assignment": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Agility roll index.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Brains roll index.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Brawn roll index.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Wits roll index.",
+                ),
+            },
+        ),
+        "AttributeAdjustments": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Agility adjustment.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Brains adjustment.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Brawn adjustment.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Wits adjustment.",
+                ),
+            },
+        ),
+        "Attributes": (
+            kind: "object",
+            fields: {
+                "agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Agility rating.",
+                ),
+                "brains": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Brains rating.",
+                ),
+                "brawn": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Brawn rating.",
+                ),
+                "wits": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Effective Wits rating.",
+                ),
+            },
+        ),
+        "ChaseRound": (
+            kind: "object",
+            fields: {
+                "opponent_die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Opponent selected die.",
+                ),
+                "opponent_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Opponent total.",
+                ),
+                "player_die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Player selected die.",
+                ),
+                "player_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Player total.",
+                ),
+                "round": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "One-based chase round.",
+                ),
+                "winner": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "opponent",
+                            "player",
+                            "tie",
+                        ],
+                    ),
+                    required: true,
+                    description: "Round winner.",
+                ),
+            },
+        ),
+        "GroupResult": (
+            kind: "object",
+            fields: {
+                "critical": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural critical flag.",
+                ),
+                "die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Selected d6 result.",
+                ),
+                "fumble": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Natural fumble flag.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identifier.",
+                ),
+                "success": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Individual outcome.",
+                ),
+                "total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-32.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Resolved individual total.",
+                ),
+            },
+        ),
+        "InitiativeEntry": (
+            kind: "object",
+            fields: {
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 32,
+                    ),
+                    required: true,
+                    description: "Portable card label.",
+                ),
+                "participant": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identifier.",
+                ),
+                "rank": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(14.0),
+                    ),
+                    required: true,
+                    description: "Numeric rank; zero is a joker.",
+                ),
+                "suit": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "clubs",
+                            "diamonds",
+                            "hearts",
+                            "joker",
+                            "spades",
+                        ],
+                    ),
+                    required: true,
+                    description: "Portable suit identity.",
+                ),
+            },
+        ),
+        "Modifier": (
+            kind: "object",
+            fields: {
+                "attributes": (
+                    type: (
+                        kind: "named",
+                        name: "AttributeAdjustments",
+                    ),
+                    required: true,
+                    description: "Balanced regular-attribute adjustments.",
+                ),
+                "explanation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Original author-facing adjustment explanation.",
+                ),
+                "fortune": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-6.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Balanced Fortune adjustment.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable modifier identifier.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Author-facing modifier label.",
+                ),
+            },
+        ),
+        "RollSet": (
+            kind: "object",
+            fields: {
+                "d3": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Raw Fortune die result.",
+                ),
+                "d6": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 4,
+                        max_items: 4,
+                    ),
+                    required: true,
+                    description: "Four assignable regular-attribute results.",
+                ),
+                "entropy_end": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Cursor after this set.",
+                ),
+                "entropy_start": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Cursor before this set.",
+                ),
+                "index": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "Creation set index.",
+                ),
+            },
+        ),
+    },
+    exports: {
+        "adapter": (
+            type: (
+                kind: "object",
+                fields: {
+                    "content_sha256": (
+                        type: (
+                            kind: "string",
+                            min_length: 64,
+                            max_length: 64,
+                        ),
+                        required: true,
+                        description: "Exact validated manifest SHA-256.",
+                    ),
+                    "id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 255,
+                        ),
+                        required: true,
+                        description: "Globally namespaced adapter id.",
+                    ),
+                    "schema_version": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(4294967295.0),
+                        ),
+                        required: true,
+                        description: "Mutable state schema version.",
+                    ),
+                    "version": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 64,
+                        ),
+                        required: true,
+                        description: "Exact adapter semantic version.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Exact adapter coordinate.",
+        ),
+        "capabilities": (
+            type: (
+                kind: "object",
+                fields: {
+                    "character_creation": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                    "checks_and_conflicts": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                    "derived_values": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                    "encounters": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                    "equipment_and_abilities": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                    "resources_and_conditions": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Exact declared adapter capability.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Only capabilities explicitly declared by this adapter release.",
+        ),
+        "definition": (
+            type: (
+                kind: "object",
+                fields: {
+                    "age": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(300.0),
+                        ),
+                        required: true,
+                        description: "Explicit fictional age.",
+                    ),
+                    "assignment": (
+                        type: (
+                            kind: "named",
+                            name: "Assignment",
+                        ),
+                        required: false,
+                        description: "Explicit assignment for rolled creation.",
+                    ),
+                    "base_attributes": (
+                        type: (
+                            kind: "named",
+                            name: "Attributes",
+                        ),
+                        required: true,
+                        description: "Unmodified accepted ratings.",
+                    ),
+                    "base_fortune": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(3.0),
+                        ),
+                        required: true,
+                        description: "Unmodified accepted Fortune rating.",
+                    ),
+                    "creation_mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "authored",
+                                "rolled",
+                            ],
+                        ),
+                        required: true,
+                        description: "Explicit creation mode.",
+                    ),
+                    "creation_seed": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 20,
+                        ),
+                        required: true,
+                        description: "Exact decimal deterministic seed.",
+                    ),
+                    "effective_attributes": (
+                        type: (
+                            kind: "named",
+                            name: "Attributes",
+                        ),
+                        required: true,
+                        description: "Ratings after both balanced modifiers.",
+                    ),
+                    "fortune_initial": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(6.0),
+                        ),
+                        required: true,
+                        description: "Fortune after balanced modifiers.",
+                    ),
+                    "inventory": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 120,
+                            ),
+                            min_items: 0,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "Initial carried item names.",
+                    ),
+                    "modifiers": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "Modifier",
+                            ),
+                            min_items: 2,
+                            max_items: 2,
+                        ),
+                        required: true,
+                        description: "Exactly two balanced modifiers.",
+                    ),
+                    "name": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Explicit fictional display name.",
+                    ),
+                    "roll_sets": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "RollSet",
+                            ),
+                            min_items: 0,
+                            max_items: 2,
+                        ),
+                        required: true,
+                        description: "Deterministic raw creation options.",
+                    ),
+                    "selected_set": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(1.0),
+                        ),
+                        required: false,
+                        description: "Explicitly accepted rolled set.",
+                    ),
+                    "survivability": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(18.0),
+                        ),
+                        required: true,
+                        description: "Derived starting Survivability.",
+                    ),
+                    "survivability_body": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "agility",
+                                "brawn",
+                            ],
+                        ),
+                        required: true,
+                        description: "Whole physical contribution.",
+                    ),
+                    "survivability_mind": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "brains",
+                                "wits",
+                            ],
+                        ),
+                        required: true,
+                        description: "Rounded-up half mental contribution.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Immutable adapter-owned character definition.",
+        ),
+        "state": (
+            type: (
+                kind: "object",
+                fields: {
+                    "dead": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Whether further play is unavailable.",
+                    ),
+                    "fortune_remaining": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(6.0),
+                        ),
+                        required: true,
+                        description: "Unspent Fortune points.",
+                    ),
+                    "inventory": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 120,
+                            ),
+                            min_items: 0,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "Current carried items.",
+                    ),
+                    "jammed_items": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 120,
+                            ),
+                            min_items: 0,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "Ranged items jammed by a fumble.",
+                    ),
+                    "last_operation": (
+                        type: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Most recently resolved operation.",
+                    ),
+                    "survivability_current": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(18.0),
+                        ),
+                        required: true,
+                        description: "Current Survivability.",
+                    ),
+                    "wounded": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Wounded state at zero Survivability.",
+                    ),
+                },
+            ),
+            required: true,
+            source: state,
+            description: "Versioned mutable adapter-owned state.",
+        ),
+    },
+    authoring: (
+        entity_collections: [],
+        read_only_paths: [
+            (
+                path: [
+                    "adapter",
+                ],
+                reason: "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow.",
+            ),
+            (
+                path: [
+                    "capabilities",
+                ],
+                reason: "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow.",
+            ),
+            (
+                path: [
+                    "definition",
+                ],
+                reason: "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow.",
+            ),
+        ],
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "adapter_source",
+                kind: public_source,
+                url: "https://distilledproductions.itch.io/plug-and-play",
+                revision: "PDF metadata 2024-11-27; official release files retrieved 2026-08-24",
+                sha256: Some("4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e"),
+                license: "CC0-1.0",
+                license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+                attribution: "Compatibility implementation for Plug-And-Play by Olav Jakobson Digranes, distributed under CC0-1.0 by Distilled Productions Limited. Adapter code, fixtures, prose, and scenarios are independently authored for Weave.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "manifest": [
+                "adapter_source",
+            ],
+        },
+    ),
+)

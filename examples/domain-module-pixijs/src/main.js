@@ -7,6 +7,8 @@ import newZealandStory from "../../domain-modules/weave-world/reference-place.st
 import composedWorldStory from "../../domain-modules/weave-world/composed-setting.story.json";
 import characterStory from "../../domain-modules/weave-character/ari-vale.story.json";
 import temporalCharacterStory from "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json";
+import tabletopStory from "../../tabletop-adapters/plug-and-play/runtime/ember-vale.story.json";
+import tabletopReceipt from "../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json";
 
 import {
   alignmentCharacterPresentation,
@@ -18,6 +20,7 @@ import {
 } from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
+import { tabletopPresentation } from "./tabletop-presentation.js";
 
 const status = document.querySelector("#status");
 const canvasHost = document.querySelector("#canvas");
@@ -41,6 +44,7 @@ try {
   const alignmentCharacter = alignmentCharacterPresentation(characterStory);
   const projectionCharacter = projectionCharacterPresentation(characterStory);
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
+  const tabletop = tabletopPresentation(tabletopStory, tabletopReceipt);
 
   const app = new Application();
   await app.init({
@@ -54,7 +58,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
@@ -68,7 +72,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read portable World and Character exports; projection labels retain exact review lineage and no write-back authority, approved alignment stays non-diagnostic, temporal fact/cue lineage stays separate, and OCEAN remains visibly derived and lossy.";
+    "PixiJS read portable World, Character, and Plug-And-Play exports; tabletop play retains exact adapter/request hashes and a redacted entropy audit envelope, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

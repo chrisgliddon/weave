@@ -1,0 +1,234 @@
+{
+  "$defs": {
+    "PlugAndPlayAttributes": {
+      "additionalProperties": false,
+      "description": "Four base or effective regular attributes.",
+      "properties": {
+        "agility": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "brains": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "brawn": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "wits": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agility",
+        "brains",
+        "brawn",
+        "wits"
+      ],
+      "type": "object"
+    },
+    "PlugAndPlayMentalAttribute": {
+      "description": "Attribute used for the rounded-up half contribution to Survivability.",
+      "enum": [
+        "brains",
+        "wits"
+      ],
+      "type": "string"
+    },
+    "PlugAndPlayModifier": {
+      "additionalProperties": false,
+      "description": "One balanced occupation, background, class, ancestry, or similarly scoped modifier.",
+      "properties": {
+        "attributes": {
+          "$ref": "#/$defs/PlugAndPlayAttributes"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "fortune": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "attributes",
+        "fortune",
+        "explanation"
+      ],
+      "type": "object"
+    },
+    "PlugAndPlayPhysicalAttribute": {
+      "description": "Attribute used for the whole contribution to Survivability.",
+      "enum": [
+        "agility",
+        "brawn"
+      ],
+      "type": "string"
+    },
+    "PlugAndPlayRollAssignment": {
+      "additionalProperties": false,
+      "description": "Assignment of the selected four d6 results to the four regular attributes.",
+      "properties": {
+        "agility": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "brains": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "brawn": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "wits": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agility",
+        "brains",
+        "brawn",
+        "wits"
+      ],
+      "type": "object"
+    },
+    "PlugAndPlayStatSource": {
+      "description": "Source of the base ratings in a creation request.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Generate two deterministic sets, then accept and assign one explicitly.",
+          "properties": {
+            "assignment": {
+              "$ref": "#/$defs/PlugAndPlayRollAssignment"
+            },
+            "kind": {
+              "const": "rolled",
+              "type": "string"
+            },
+            "selected_set": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "selected_set",
+            "assignment"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Supply the four d6-range ratings and d3-range Fortune value directly.",
+          "properties": {
+            "attributes": {
+              "$ref": "#/$defs/PlugAndPlayAttributes"
+            },
+            "fortune": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "attributes",
+            "fortune"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-plug-and-play-creation-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete, versioned input to deterministic Plug-And-Play character creation.",
+  "properties": {
+    "age": {
+      "format": "uint16",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "character_id": {
+      "type": "string"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "inventory": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "modifiers": {
+      "items": {
+        "$ref": "#/$defs/PlugAndPlayModifier"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "stat_source": {
+      "$ref": "#/$defs/PlugAndPlayStatSource"
+    },
+    "survivability_body": {
+      "$ref": "#/$defs/PlugAndPlayPhysicalAttribute"
+    },
+    "survivability_mind": {
+      "$ref": "#/$defs/PlugAndPlayMentalAttribute"
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "character_id",
+    "name",
+    "age",
+    "seed",
+    "stat_source",
+    "survivability_body",
+    "survivability_mind",
+    "modifiers",
+    "inventory"
+  ],
+  "title": "Weave Plug-And-Play Creation Request v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

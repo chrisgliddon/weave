@@ -8,7 +8,9 @@ license.workspace = true
 publish = false
 
 [dependencies]
+ron.workspace = true
 weave-compiler = { path = "../../crates/weave-compiler" }
+weave-core = { path = "../../crates/weave-core" }
 weave-runtime = { path = "../../crates/weave-runtime" }
 
 [lints]

@@ -1,0 +1,142 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+  },
+  "operation": "take_damage",
+  "capability": "resources_and_conditions",
+  "request_sha256": "a8dfd0baa4836954959dddacc850fee2c8a654285d02765b4b8192a6c5fa4670",
+  "before_state_sha256": "34ea83f2aba55b52ccbeaf8c0c44d22ca0c9b204df67098ba841b2d447ffdd19",
+  "before_revision": 6,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 2026082401,
+    "cursor": 30
+  },
+  "after_state_sha256": "962635b705d3b020874b76ccee019153ac6c1eb16f2e926a15088e59c2f669d5",
+  "entropy_consumed": 0,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+    },
+    "owner_id": "org.weave.character.ember_vale",
+    "definition_sha256": "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+    "revision": 7,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 2026082401,
+      "cursor": 30
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "fortune_remaining": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "field knife"
+            },
+            {
+              "kind": "string",
+              "value": "signal pistol"
+            },
+            {
+              "kind": "string",
+              "value": "weather cloak"
+            }
+          ]
+        },
+        "jammed_items": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": "take_damage"
+        },
+        "survivability_current": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "wounded": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "damage_applied",
+      "capability": "resources_and_conditions",
+      "visibility": "public",
+      "payload_sha256": "ebd7ba15094b8f49b4956c00b5884781352483084983be1ef93c2292566728f9",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "amount": {
+            "kind": "number",
+            "value": 99.0
+          },
+          "dead": {
+            "kind": "bool",
+            "value": false
+          },
+          "remaining": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "wounded": {
+            "kind": "bool",
+            "value": true
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "resource_changed",
+      "capability": "resources_and_conditions",
+      "visibility": "authoring",
+      "payload_sha256": "245d3ffba98162b2155486e2735800b87fb347b7438ed8f722ed32004749bff1",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "dead": {
+            "kind": "bool",
+            "value": false
+          },
+          "fortune_remaining": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "survivability_current": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "wounded": {
+            "kind": "bool",
+            "value": true
+          }
+        }
+      }
+    }
+  ]
+}

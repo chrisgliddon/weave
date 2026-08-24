@@ -1,0 +1,413 @@
+{
+  "$defs": {
+    "AdapterCharacterDefinition": {
+      "additionalProperties": false,
+      "description": "Active immutable adapter-owned character definition.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "completed_creation_steps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "definition": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "definition_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "definition",
+        "definition_sha256",
+        "completed_creation_steps"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EntropyState": {
+      "additionalProperties": false,
+      "description": "Serializable deterministic entropy cursor.",
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "cursor": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "algorithm",
+        "seed",
+        "cursor"
+      ],
+      "type": "object"
+    },
+    "PlugAndPlayAttributes": {
+      "additionalProperties": false,
+      "description": "Four base or effective regular attributes.",
+      "properties": {
+        "agility": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "brains": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "brawn": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "wits": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agility",
+        "brains",
+        "brawn",
+        "wits"
+      ],
+      "type": "object"
+    },
+    "PlugAndPlayRollSet": {
+      "additionalProperties": false,
+      "description": "One of the two reproducible raw creation sets.",
+      "properties": {
+        "d3": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "d6": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "entropy_end": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "entropy_start": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "index": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "index",
+        "d6",
+        "d3",
+        "entropy_start",
+        "entropy_end"
+      ],
+      "type": "object"
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "TabletopState": {
+      "additionalProperties": false,
+      "description": "Adapter-owned mutable state kept outside the immutable definition and Character canon.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "definition_sha256": {
+          "type": "string"
+        },
+        "entropy": {
+          "$ref": "#/$defs/EntropyState"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValue"
+        }
+      },
+      "required": [
+        "state_format_version",
+        "adapter",
+        "owner_id",
+        "definition_sha256",
+        "revision",
+        "entropy",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-plug-and-play-creation-preview:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explainable result of creation before it is exported as a projection and mutable state.",
+  "properties": {
+    "adapter": {
+      "$ref": "#/$defs/ResolvedAdapter"
+    },
+    "base_attributes": {
+      "$ref": "#/$defs/PlugAndPlayAttributes"
+    },
+    "base_fortune": {
+      "format": "int32",
+      "type": "integer"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "definition": {
+      "$ref": "#/$defs/AdapterCharacterDefinition"
+    },
+    "effective_attributes": {
+      "$ref": "#/$defs/PlugAndPlayAttributes"
+    },
+    "effective_fortune": {
+      "format": "int32",
+      "type": "integer"
+    },
+    "explanations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "initial_state": {
+      "$ref": "#/$defs/TabletopState"
+    },
+    "request_sha256": {
+      "type": "string"
+    },
+    "roll_sets": {
+      "items": {
+        "$ref": "#/$defs/PlugAndPlayRollSet"
+      },
+      "type": "array"
+    },
+    "selected_set": {
+      "format": "uint8",
+      "maximum": 255,
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "survivability": {
+      "format": "int32",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "request_sha256",
+    "adapter",
+    "roll_sets",
+    "base_attributes",
+    "base_fortune",
+    "effective_attributes",
+    "effective_fortune",
+    "survivability",
+    "definition",
+    "initial_state",
+    "explanations"
+  ],
+  "title": "Weave Plug-And-Play Creation Preview v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

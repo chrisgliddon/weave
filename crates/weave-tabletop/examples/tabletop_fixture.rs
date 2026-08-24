@@ -434,6 +434,7 @@ fn synthetic_manifest() -> AdapterManifest {
                 artifact: "LICENSE".to_owned(),
                 sha256: sha256_bytes(LICENSE_BYTES),
             },
+            additional_artifacts: Vec::new(),
             notices: vec![
                 "Factual compatibility labels must not imply endorsement.".to_owned(),
             ],

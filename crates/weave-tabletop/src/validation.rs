@@ -118,6 +118,41 @@ pub fn verify_adapter_source(
     Ok(())
 }
 
+/// Verify the primary source, every declared companion artifact, and the retained license text.
+///
+/// Map keys are the exact project-relative names recorded in
+/// [`AdapterProvenance::additional_artifacts`](crate::AdapterProvenance::additional_artifacts).
+/// Callers are expected to acquire those bytes through an explicit review workflow; this function
+/// performs no network access.
+pub fn verify_adapter_source_bundle(
+    manifest: &AdapterManifest,
+    source_bytes: &[u8],
+    additional_source_bytes: &BTreeMap<String, Vec<u8>>,
+    license_text_bytes: &[u8],
+) -> Result<(), TabletopError> {
+    verify_adapter_source(manifest, source_bytes, license_text_bytes)?;
+    if additional_source_bytes.len() != manifest.provenance.additional_artifacts.len() {
+        return Err(invalid(
+            "provenance.additional_artifacts",
+            "companion source artifact set is incomplete",
+        ));
+    }
+    for artifact in &manifest.provenance.additional_artifacts {
+        let Some(bytes) = additional_source_bytes.get(&artifact.exact_artifact) else {
+            return Err(invalid(
+                "provenance.additional_artifacts",
+                "companion source artifact set is incomplete",
+            ));
+        };
+        if sha256_bytes(bytes) != artifact.sha256 {
+            return Err(TabletopError::ContentHashMismatch {
+                path: "provenance.additional_artifacts.sha256",
+            });
+        }
+    }
+    Ok(())
+}
+
 /// Validate an installed set and its zero-or-one primary selection against exact manifests.
 pub fn validate_adapter_selection(
     selection: &AdapterSelection,
@@ -739,6 +774,49 @@ fn validate_adapter_provenance(provenance: &AdapterProvenance) -> Result<(), Tab
         "provenance.required_license_text.sha256",
         &provenance.required_license_text.sha256,
     )?;
+    let mut previous_artifact = None;
+    for artifact in &provenance.additional_artifacts {
+        validate_https(
+            "provenance.additional_artifacts.source_url",
+            &artifact.source_url,
+        )?;
+        validate_artifact_path(
+            "provenance.additional_artifacts.exact_artifact",
+            &artifact.exact_artifact,
+        )?;
+        if artifact.exact_artifact == provenance.exact_artifact
+            || previous_artifact
+                .as_ref()
+                .is_some_and(|previous| previous >= &artifact.exact_artifact)
+        {
+            return Err(invalid(
+                "provenance.additional_artifacts",
+                "expected unique companion artifacts ordered by exact name",
+            ));
+        }
+        previous_artifact = Some(artifact.exact_artifact.clone());
+        validate_text(
+            "provenance.additional_artifacts.revision",
+            &artifact.revision,
+            1,
+            256,
+        )?;
+        validate_date(
+            "provenance.additional_artifacts.retrieved_on",
+            &artifact.retrieved_on,
+        )?;
+        validate_sha256("provenance.additional_artifacts.sha256", &artifact.sha256)?;
+        validate_media_type(
+            "provenance.additional_artifacts.media_type",
+            &artifact.media_type,
+        )?;
+        validate_text(
+            "provenance.additional_artifacts.purpose",
+            &artifact.purpose,
+            1,
+            512,
+        )?;
+    }
     if provenance.notices.len() > 128 {
         return Err(invalid("provenance.notices", "too many notices"));
     }
@@ -759,6 +837,20 @@ fn validate_adapter_provenance(provenance: &AdapterProvenance) -> Result<(), Tab
         1,
         1_024,
     )
+}
+
+fn validate_media_type(path: &str, value: &str) -> Result<(), TabletopError> {
+    if value.len() > 127
+        || !value.contains('/')
+        || value.bytes().any(|byte| {
+            !(byte.is_ascii_lowercase()
+                || byte.is_ascii_digit()
+                || matches!(byte, b'/' | b'.' | b'+' | b'-'))
+        })
+    {
+        return Err(invalid(path, "expected a lowercase media type"));
+    }
+    Ok(())
 }
 
 fn validate_character_definition(

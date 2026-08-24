@@ -7,6 +7,7 @@
 
 mod domain;
 mod model;
+mod plug_and_play;
 mod resolver;
 mod validation;
 
@@ -15,6 +16,7 @@ use serde::Deserialize;
 
 pub use domain::{tabletop_domain_manifest, tabletop_domain_pack};
 pub use model::*;
+pub use plug_and_play::*;
 pub use resolver::{
     EntropyStream, ResolverRegistry, TabletopResolver, preview_adapter_switch,
     project_receipt_for_audience,
@@ -24,6 +26,7 @@ pub use validation::{
     validate_adapter_manifest, validate_adapter_selection, validate_character_projection,
     validate_resolution_receipt, validate_resolution_receipt_for_request,
     validate_resolution_request, validate_tabletop_state, verify_adapter_source,
+    verify_adapter_source_bundle,
 };
 
 /// Redaction-safe tabletop contract failure with a stable diagnostic code.

@@ -68,7 +68,10 @@ pub use state::{
     menu_definitions,
 };
 pub use sync::{CanonicalProjectModel, GraphEdit, GraphSync, SyncConflict, TextSync};
-pub use tabletop::{TabletopEditorCatalog, TabletopPanelInspection};
+pub use tabletop::{
+    PlugAndPlayCreationSession, PlugAndPlaySeedLineage, TabletopEditorCatalog,
+    TabletopPanelInspection,
+};
 pub use temporal_context::TemporalContextSession;
 pub use text_editor::{SyntaxKind, SyntaxToken, TextBuffer, highlight_source};
 pub use text_view::TextSurface;

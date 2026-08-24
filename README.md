@@ -171,7 +171,7 @@ VAR omen = weather_omens.spread.day_omen.draw()
 
 Reusable third-party systems use the strict, data-only [community package format](docs/community_patterns.md). The `weave-pattern` CLI validates, stages, installs, and indexes packages; `weavec --pattern-registry ... --pattern 'id@version'` embeds an explicitly selected package into ordinary story IR without executing package code or contacting a remote registry.
 
-Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, protected read-only paths, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add permitted typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), follow the four-preset [Weave World guide](docs/world_module.md), follow the [Weave Character guide](docs/character_module.md) from a provenance-aware six-factor/24-facet profile through guided questionnaires, explicit conflict review, reviewed enrichments, read-only corpus health, and portable hosts, or inspect the [selectable tabletop adapter contract](docs/tabletop_adapters.md) for exact capability discovery, isolated state, deterministic replay, event visibility, switching, and the MIT/CC0/Apache public-source gate. Portable fixtures remain data-only and do not load third-party code or depend on the editor.
+Pluggable world, character, and ruleset data share the declarative [domain-module contract](docs/domain_modules.md). The host-independent `weave-domain` crate defines closed manifests, typed packs and maps, protected read-only paths, stable entity metadata, immutable registries, bounded project discovery, exact locks, deterministic dependency ordering, and machine-readable provenance. A text-first `module` declaration activates a compatible installed release and may add permitted typed fictional `override` values without mutating pack provenance; the compiler and editor discover only approved project-relative artifacts, type-check their paths, and embed effective values plus authored lineage in IR 4. Build one with the [third-party tutorial](docs/domain_module_tutorial.md), follow the four-preset [Weave World guide](docs/world_module.md), follow the [Weave Character guide](docs/character_module.md) from a provenance-aware six-factor/24-facet profile through guided questionnaires, explicit conflict review, reviewed enrichments, read-only corpus health, and portable hosts, or inspect the [selectable tabletop adapter contract](docs/tabletop_adapters.md) for exact capability discovery, isolated state, deterministic replay, event visibility, switching, the MIT/CC0/Apache public-source gate, and the verified end-to-end Plug-And-Play implementation. Portable fixtures remain data-only and do not load third-party code or depend on the editor.
 
 ---
 
@@ -302,7 +302,7 @@ weave/
 │   ├── domain-modules/      # Contract fixtures and compiled synthetic tracer
 │   ├── domain-module-bevy/  # Portable tracer/composed World RON consumed as Bevy resources
 │   ├── domain-module-pixijs/ # Portable tracer/composed World JSON rendered with PixiJS
-│   ├── tabletop-adapters/   # Portable adapter contract and synthetic conformance fixtures
+│   ├── tabletop-adapters/   # Synthetic contract plus verified Plug-And-Play fixtures
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples
@@ -507,7 +507,7 @@ weavec story.weave --watch            # recompile on file change
 - [x] Shared module manifests, namespaces, compatibility, and provenance contract
 - [x] Weave World: reference-place shorthand, climate and environment data, named places, and layered rules
 - [ ] Weave Character: personality, date context, relationships, expression, and guided authoring
-- [ ] Selectable tabletop ruleset adapters with isolated, versioned state
+- [x] Selectable tabletop ruleset adapters with isolated, versioned state
 - [x] Portable RON and JSON domain packs with Bevy and PixiJS examples
 
 ---

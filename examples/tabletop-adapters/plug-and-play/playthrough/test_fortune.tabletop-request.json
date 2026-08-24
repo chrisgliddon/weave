@@ -1,0 +1,326 @@
+{
+  "resolver_format_version": 1,
+  "request_id": "test_fortune",
+  "adapter": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+  },
+  "operation": "fortune_test",
+  "capability": "resources_and_conditions",
+  "definition_sha256": "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+  "definition": {
+    "kind": "object",
+    "value": {
+      "age": {
+        "kind": "number",
+        "value": 31.0
+      },
+      "assignment": {
+        "kind": "object",
+        "value": {
+          "agility": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "brains": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "brawn": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "wits": {
+            "kind": "number",
+            "value": 2.0
+          }
+        }
+      },
+      "base_attributes": {
+        "kind": "object",
+        "value": {
+          "agility": {
+            "kind": "number",
+            "value": 6.0
+          },
+          "brains": {
+            "kind": "number",
+            "value": 2.0
+          },
+          "brawn": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "wits": {
+            "kind": "number",
+            "value": 2.0
+          }
+        }
+      },
+      "base_fortune": {
+        "kind": "number",
+        "value": 2.0
+      },
+      "creation_mode": {
+        "kind": "symbol",
+        "value": "rolled"
+      },
+      "creation_seed": {
+        "kind": "string",
+        "value": "2026082401"
+      },
+      "effective_attributes": {
+        "kind": "object",
+        "value": {
+          "agility": {
+            "kind": "number",
+            "value": 7.0
+          },
+          "brains": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "brawn": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "wits": {
+            "kind": "number",
+            "value": 1.0
+          }
+        }
+      },
+      "fortune_initial": {
+        "kind": "number",
+        "value": 2.0
+      },
+      "inventory": {
+        "kind": "list",
+        "value": [
+          {
+            "kind": "string",
+            "value": "field knife"
+          },
+          {
+            "kind": "string",
+            "value": "signal pistol"
+          },
+          {
+            "kind": "string",
+            "value": "weather cloak"
+          }
+        ]
+      },
+      "modifiers": {
+        "kind": "list",
+        "value": [
+          {
+            "kind": "object",
+            "value": {
+              "attributes": {
+                "kind": "object",
+                "value": {
+                  "agility": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "brains": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "brawn": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "wits": {
+                    "kind": "number",
+                    "value": -1.0
+                  }
+                }
+              },
+              "explanation": {
+                "kind": "string",
+                "value": "Practiced analysis is offset by slower improvisation."
+              },
+              "fortune": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "id": {
+                "kind": "string",
+                "value": "field_medic"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Field medic"
+              }
+            }
+          },
+          {
+            "kind": "object",
+            "value": {
+              "attributes": {
+                "kind": "object",
+                "value": {
+                  "agility": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "brains": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "brawn": {
+                    "kind": "number",
+                    "value": -1.0
+                  },
+                  "wits": {
+                    "kind": "number",
+                    "value": 0.0
+                  }
+                }
+              },
+              "explanation": {
+                "kind": "string",
+                "value": "Fast movement is offset by a lighter frame."
+              },
+              "fortune": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "id": {
+                "kind": "string",
+                "value": "rooftop_runner"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Rooftop runner"
+              }
+            }
+          }
+        ]
+      },
+      "name": {
+        "kind": "string",
+        "value": "Ember Vale"
+      },
+      "roll_sets": {
+        "kind": "list",
+        "value": [
+          {
+            "kind": "object",
+            "value": {
+              "d3": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "d6": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                ]
+              },
+              "entropy_end": {
+                "kind": "number",
+                "value": 5.0
+              },
+              "entropy_start": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "index": {
+                "kind": "number",
+                "value": 0.0
+              }
+            }
+          },
+          {
+            "kind": "object",
+            "value": {
+              "d3": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "d6": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 6.0
+                  }
+                ]
+              },
+              "entropy_end": {
+                "kind": "number",
+                "value": 10.0
+              },
+              "entropy_start": {
+                "kind": "number",
+                "value": 5.0
+              },
+              "index": {
+                "kind": "number",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "selected_set": {
+        "kind": "number",
+        "value": 1.0
+      },
+      "survivability": {
+        "kind": "number",
+        "value": 2.0
+      },
+      "survivability_body": {
+        "kind": "symbol",
+        "value": "brawn"
+      },
+      "survivability_mind": {
+        "kind": "symbol",
+        "value": "brains"
+      }
+    }
+  },
+  "expected_state_sha256": "5260a0d6d51c2b72d669c9c63d2d25e81e0d3959f4e672d38cf21a9bcb055f03",
+  "input": {
+    "kind": "object",
+    "value": {
+      "roll_mode": {
+        "kind": "symbol",
+        "value": "normal"
+      }
+    }
+  }
+}

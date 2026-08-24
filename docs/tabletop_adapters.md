@@ -139,6 +139,49 @@ hashes, before revision and entropy cursor, entropy consumed, complete next stat
 typed event stream. Receipt validation takes the exact request artifact and independently checks
 that lineage. Invalid output leaves the caller's prior state unchanged.
 
+## Verified Plug-And-Play implementation
+
+The checked [Plug-And-Play fixture](https://github.com/chrisgliddon/weave/tree/main/examples/tabletop-adapters/plug-and-play)
+applies the contract to the public CC0-1.0 Plug-And-Play release. It is an independently authored
+compatibility implementation, not an endorsement. The official Rules and Character Sheet PDFs
+are exact hash-pinned review inputs and are not redistributed; the official plain-text CC0 legal
+code is retained verbatim. `SOURCE.lock.json` records both PDF upload identities, filenames,
+retrieval date, media types, hashes, redistribution decisions, reviewed behavior boundary, and
+excluded visual/community material.
+
+One versioned creation request supports either authored ratings or two deterministic candidate
+sets of four d6 plus one d3. Rolled creation keeps both sets, the selected set, an explicit
+one-to-one attribute assignment, seed, and per-set entropy cursors. Both paths require exactly two
+independently zero-sum modifiers, bounded unique inventory, an explicit physical and mental basis
+for Survivability, and visible base/effective values. The editor session previews every value,
+records old/new seeds and request fingerprints on reroll, requires explicit acceptance, and exports
+the same strict JSON/RON artifact used by CLI and runtime.
+
+The trusted resolver implements and tests:
+
+- ordinary checks that exceed the explicit difficulty, natural 6 criticals, natural 1 fumbles,
+  advantage/disadvantage, and a mandatory replacement roll after spending one Fortune;
+- Fortune tests that succeed below remaining Fortune and deliberately have no critical/fumble
+  semantics;
+- attacks using d6 + rating + half-rating, maximum critical damage, rolled ordinary damage,
+  unarmed damage, melee-fumble self-damage, ranged jams, inventory enforcement, wounds at zero,
+  the -5 wounded physical-check penalty, and death on later positive damage;
+- group success only when individual successes outnumber failures;
+- 54-card initiative without replacement, Ace high, suit order
+  Spades > Hearts > Clubs > Diamonds, and valueless Jokers; and
+- opposed chases bounded to one through three checks with immediate natural-result termination.
+
+Spending three Fortune for story-scale narrative direction remains a human/authority-host decision,
+not an automatic state-writing resolver operation. Hosts can record that decision in their own
+reviewed narrative workflow without granting the adapter Character write-back authority.
+
+The generated playthrough exercises every operation, independently replays every receipt, saves
+the final state, lowers the accepted character to the ordinary domain-module contract, and compiles
+the same story for standalone Rust, Bevy 0.18, and PixiJS v8. Bevy loads it as a `Resource` in the
+`Startup` schedule. PixiJS validates the portable JSON before creating static `Text`; both hosts
+show the public result and exact audit fingerprints while keeping the host-only entropy payload
+redacted.
+
 ## Event visibility
 
 Each event contains sequence, kind, capability, visibility, payload SHA-256, and an optional typed
@@ -177,7 +220,7 @@ authority.
 Every adapter records all of the following, even when independently authored:
 
 - public HTTPS source URL;
-- exact artifact plus revision, release, tag, commit, or authored revision;
+- exact primary and companion artifacts plus revision, release, tag, commit, or authored revision;
 - retrieval date and SHA-256 of the exact covered source bytes;
 - source class, exact SPDX expression, and public license URL;
 - covered files or sections;
@@ -201,7 +244,8 @@ assets. System names may appear only as courteous factual compatibility labels a
 affiliation, sponsorship, or endorsement.
 
 Validation is offline. Acquiring or updating an upstream artifact is a separate reviewed process;
-the validator checks only explicitly supplied bytes and never follows a URL.
+the validator checks only explicitly supplied primary bytes, every manifest-declared companion,
+and the retained license text, and never follows a URL.
 
 ## Diagnostics and schemas
 
@@ -210,17 +254,20 @@ capabilities, or lifecycle failures without echoing source payloads. Invalid sel
 fingerprints, licenses, schemas, write-back, stale state, resolver registrations, events, entropy,
 and replay all fail before state publication.
 
-Six checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
+Eight checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
 [selection](downloads/weave-tabletop-adapter-selection-v1.schema.json),
 [Character projection](downloads/weave-tabletop-character-projection-v1.schema.json),
 [mutable state](downloads/weave-tabletop-state-v1.schema.json),
 [request](downloads/weave-tabletop-resolution-request-v1.schema.json), and
-[receipt/events](downloads/weave-tabletop-resolution-receipt-v1.schema.json).
+[receipt/events](downloads/weave-tabletop-resolution-receipt-v1.schema.json), plus the
+[Plug-And-Play creation request](downloads/weave-tabletop-plug-and-play-creation-request-v1.schema.json)
+and [explainable creation preview](downloads/weave-tabletop-plug-and-play-creation-preview-v1.schema.json).
 
 ## Reference commands
 
 ```bash
 cargo run -p weave-tabletop --example tabletop_fixture -- --check
+cargo run -p weave-tabletop --example plug_and_play_fixture -- --check
 
 cargo run -p weave-tabletop -- validate selection \
   examples/tabletop-adapters/contract/selection.tabletop-selection.json \
@@ -241,8 +288,20 @@ cargo run -p weave-tabletop -- validate receipt \
   examples/tabletop-adapters/contract/receipt.tabletop-receipt.json \
   --manifest examples/tabletop-adapters/contract/synthetic.tabletop-adapter.json \
   --request examples/tabletop-adapters/contract/request.tabletop-request.json
+
+cargo run -p weave-tabletop -- plug-and-play-create \
+  examples/tabletop-adapters/plug-and-play/creation.tabletop-creation.json \
+  --output target/plug-and-play-preview.ron
+
+cargo run -p weave-tabletop -- plug-and-play-resolve \
+  examples/tabletop-adapters/plug-and-play/request.tabletop-request.json \
+  --state examples/tabletop-adapters/plug-and-play/state.tabletop-state.json \
+  --output target/plug-and-play-receipt.json
 ```
 
 The checked [Lantern Trail fixture](https://github.com/chrisgliddon/weave/tree/main/examples/tabletop-adapters/contract)
 provides equivalent RON/JSON, exact source and license hashes, deterministic replay, all three
 visibility levels, and invalid artifacts for conflicts, versions, and undeclared capabilities.
+The checked Plug-And-Play fixture adds a complete CC0 public-source audit, concrete creation/editor
+workflow, all supported mechanics, sequential save/reload playthrough, and standalone/Bevy/PixiJS
+consumption without adapter-specific compiler syntax.

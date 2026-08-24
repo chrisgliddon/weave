@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -5,13 +6,17 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand, ValueEnum};
 use tempfile::NamedTempFile;
 use weave_tabletop::{
-    AdapterManifest, AdapterSelection, HostAudience, ResolutionReceipt, ResolutionRequest,
-    TabletopCharacterProjection, TabletopError, TabletopState, adapter_manifest_schema,
-    adapter_selection_schema, canonical_fingerprint, character_projection_schema,
-    project_receipt_for_audience, resolution_receipt_schema, resolution_request_schema,
-    tabletop_state_schema, validate_adapter_manifest, validate_adapter_selection,
-    validate_character_projection, validate_resolution_receipt_for_request,
-    validate_resolution_request, validate_tabletop_state, verify_adapter_source,
+    AdapterManifest, AdapterSelection, HostAudience, PlugAndPlayCreationPreview,
+    PlugAndPlayCreationRequest, PlugAndPlayResolver, ResolutionReceipt, ResolutionRequest,
+    ResolverRegistry, TabletopCharacterProjection, TabletopError, TabletopState,
+    adapter_manifest_schema, adapter_selection_schema, canonical_fingerprint,
+    character_projection_schema, create_plug_and_play_character,
+    plug_and_play_creation_preview_schema, plug_and_play_creation_request_schema,
+    plug_and_play_manifest, project_receipt_for_audience, resolution_receipt_schema,
+    resolution_request_schema, tabletop_state_schema, validate_adapter_manifest,
+    validate_adapter_selection, validate_character_projection,
+    validate_plug_and_play_creation_preview, validate_resolution_receipt_for_request,
+    validate_resolution_request, validate_tabletop_state, verify_adapter_source_bundle,
 };
 
 #[derive(Debug, Parser)]
@@ -46,6 +51,9 @@ enum Command {
         manifest: PathBuf,
         #[arg(long)]
         source_artifact: PathBuf,
+        /// Companion source artifact; repeat for every manifest-declared companion.
+        #[arg(long = "companion-artifact")]
+        companion_artifacts: Vec<PathBuf>,
         #[arg(long)]
         license_text: PathBuf,
     },
@@ -68,6 +76,20 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Create one deterministic Plug-And-Play character preview from JSON or RON.
+    PlugAndPlayCreate {
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Resolve one Plug-And-Play request against an exact saved state.
+    PlugAndPlayResolve {
+        request: PathBuf,
+        #[arg(long)]
+        state: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -78,6 +100,8 @@ enum ArtifactKind {
     State,
     Request,
     Receipt,
+    PlugAndPlayCreationRequest,
+    PlugAndPlayCreationPreview,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -88,6 +112,8 @@ enum SchemaKind {
     State,
     Request,
     Receipt,
+    PlugAndPlayCreationRequest,
+    PlugAndPlayCreationPreview,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -163,18 +189,38 @@ fn run(cli: Cli) -> Result<(), CliError> {
                     exactly_one(&manifests)?,
                     &read_request(request.as_deref().ok_or(CliError::MissingCompanion)?)?,
                 )?,
+                ArtifactKind::PlugAndPlayCreationRequest => {
+                    create_plug_and_play_character(&read_plug_and_play_creation_request(&input)?)?;
+                }
+                ArtifactKind::PlugAndPlayCreationPreview => {
+                    validate_plug_and_play_creation_preview(&read_plug_and_play_creation_preview(
+                        &input,
+                    )?)?;
+                }
             }
             println!("valid tabletop {}", kind_name(kind));
         }
         Command::LicenseGate {
             manifest,
             source_artifact,
+            companion_artifacts,
             license_text,
         } => {
             let manifest = read_manifest(&manifest)?;
             let source = fs::read(source_artifact)?;
             let license = fs::read(license_text)?;
-            verify_adapter_source(&manifest, &source, &license)?;
+            let companions = companion_artifacts
+                .into_iter()
+                .map(|path| {
+                    let name = path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .ok_or(CliError::UnsupportedFormat)?
+                        .to_owned();
+                    Ok((name, fs::read(path)?))
+                })
+                .collect::<Result<BTreeMap<_, _>, CliError>>()?;
+            verify_adapter_source_bundle(&manifest, &source, &companions, &license)?;
             println!("adapter source policy passed");
         }
         Command::Fingerprint { manifest } => {
@@ -190,6 +236,8 @@ fn run(cli: Cli) -> Result<(), CliError> {
                 SchemaKind::State => tabletop_state_schema(),
                 SchemaKind::Request => resolution_request_schema(),
                 SchemaKind::Receipt => resolution_receipt_schema(),
+                SchemaKind::PlugAndPlayCreationRequest => plug_and_play_creation_request_schema(),
+                SchemaKind::PlugAndPlayCreationPreview => plug_and_play_creation_preview_schema(),
             }?;
             write_atomic(&output, schema)?;
         }
@@ -203,6 +251,27 @@ fn run(cli: Cli) -> Result<(), CliError> {
             let receipt = read_receipt(&receipt)?;
             let projected = project_receipt_for_audience(&receipt, &manifest, audience.into())?;
             write_atomic(&output, serialize_receipt(&projected, &output)?)?;
+        }
+        Command::PlugAndPlayCreate { input, output } => {
+            let request = read_plug_and_play_creation_request(&input)?;
+            let preview = create_plug_and_play_character(&request)?;
+            write_atomic(
+                &output,
+                serialize_plug_and_play_creation_preview(&preview, &output)?,
+            )?;
+        }
+        Command::PlugAndPlayResolve {
+            request,
+            state,
+            output,
+        } => {
+            let manifest = plug_and_play_manifest();
+            let request = read_request(&request)?;
+            let state = read_state(&state)?;
+            let mut registry = ResolverRegistry::new();
+            registry.register(&manifest, PlugAndPlayResolver)?;
+            let receipt = registry.execute(&manifest, &request, &state)?;
+            write_atomic(&output, serialize_receipt(&receipt, &output)?)?;
         }
     }
     Ok(())
@@ -223,6 +292,8 @@ fn kind_name(kind: ArtifactKind) -> &'static str {
         ArtifactKind::State => "state",
         ArtifactKind::Request => "request",
         ArtifactKind::Receipt => "receipt",
+        ArtifactKind::PlugAndPlayCreationRequest => "Plug-And-Play creation request",
+        ArtifactKind::PlugAndPlayCreationPreview => "Plug-And-Play creation preview",
     }
 }
 
@@ -266,6 +337,26 @@ fn read_receipt(path: &Path) -> Result<ResolutionReceipt, CliError> {
     )
 }
 
+fn read_plug_and_play_creation_request(
+    path: &Path,
+) -> Result<PlugAndPlayCreationRequest, CliError> {
+    parse(
+        path,
+        PlugAndPlayCreationRequest::from_json,
+        PlugAndPlayCreationRequest::from_ron,
+    )
+}
+
+fn read_plug_and_play_creation_preview(
+    path: &Path,
+) -> Result<PlugAndPlayCreationPreview, CliError> {
+    parse(
+        path,
+        PlugAndPlayCreationPreview::from_json,
+        PlugAndPlayCreationPreview::from_ron,
+    )
+}
+
 fn parse<T>(
     path: &Path,
     json: fn(&str) -> Result<T, TabletopError>,
@@ -282,6 +373,16 @@ fn serialize_receipt(receipt: &ResolutionReceipt, path: &Path) -> Result<String,
     match artifact_format(path)? {
         ArtifactFormat::Json => Ok(receipt.to_json()?),
         ArtifactFormat::Ron => Ok(receipt.to_ron()?),
+    }
+}
+
+fn serialize_plug_and_play_creation_preview(
+    preview: &PlugAndPlayCreationPreview,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(preview.to_json()?),
+        ArtifactFormat::Ron => Ok(preview.to_ron()?),
     }
 }
 

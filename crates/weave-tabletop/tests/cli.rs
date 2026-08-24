@@ -14,6 +14,12 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
+fn plug_and_play_fixture(name: &str) -> PathBuf {
+    root()
+        .join("examples/tabletop-adapters/plug-and-play")
+        .join(name)
+}
+
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-tabletop"))
         .args(arguments)
@@ -176,4 +182,84 @@ fn invalid_inputs_report_stable_codes_without_partial_output() {
     ]);
     assert!(!output.status.success());
     assert!(!destination.exists());
+}
+
+#[test]
+fn plug_and_play_create_validate_resolve_and_schemas_match_goldens() {
+    let directory = tempdir().unwrap();
+    let preview = directory.path().join("preview.ron");
+    let output = run(&[
+        "plug-and-play-create",
+        path(&plug_and_play_fixture("creation.tabletop-creation.json")),
+        "--output",
+        path(&preview),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&preview).unwrap(),
+        fs::read_to_string(plug_and_play_fixture(
+            "preview.tabletop-creation-preview.ron"
+        ))
+        .unwrap()
+    );
+
+    for (kind, artifact) in [
+        (
+            "plug-and-play-creation-request",
+            "creation.tabletop-creation.json",
+        ),
+        (
+            "plug-and-play-creation-preview",
+            "preview.tabletop-creation-preview.ron",
+        ),
+    ] {
+        let output = run(&["validate", kind, path(&plug_and_play_fixture(artifact))]);
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    let receipt = directory.path().join("receipt.json");
+    let output = run(&[
+        "plug-and-play-resolve",
+        path(&plug_and_play_fixture("request.tabletop-request.json")),
+        "--state",
+        path(&plug_and_play_fixture("state.tabletop-state.ron")),
+        "--output",
+        path(&receipt),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&receipt).unwrap(),
+        fs::read_to_string(plug_and_play_fixture("receipt.tabletop-receipt.json")).unwrap()
+    );
+
+    for (kind, checked) in [
+        (
+            "plug-and-play-creation-request",
+            "weave-tabletop-plug-and-play-creation-request-v1.schema.json",
+        ),
+        (
+            "plug-and-play-creation-preview",
+            "weave-tabletop-plug-and-play-creation-preview-v1.schema.json",
+        ),
+    ] {
+        let generated = directory.path().join(checked);
+        let output = run(&["schema", kind, "--output", path(&generated)]);
+        assert!(output.status.success());
+        assert_eq!(
+            fs::read_to_string(generated).unwrap(),
+            fs::read_to_string(root().join("schemas").join(checked)).unwrap()
+        );
+    }
 }

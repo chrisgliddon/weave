@@ -1,0 +1,247 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+  },
+  "operation": "chase",
+  "capability": "encounters",
+  "request_sha256": "3a1065022d7047e820406a9a6929d470359c149d2b61b9d3c73feaa218d4a002",
+  "before_state_sha256": "94984fc8506cec562bea3bfca7ce6256f8953fc2fd6621f66d093b6b6df387b4",
+  "before_revision": 5,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 2026082401,
+    "cursor": 24
+  },
+  "after_state_sha256": "34ea83f2aba55b52ccbeaf8c0c44d22ca0c9b204df67098ba841b2d447ffdd19",
+  "entropy_consumed": 6,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
+    },
+    "owner_id": "org.weave.character.ember_vale",
+    "definition_sha256": "700b7c80b327aac7165176e52c83cccb72dbd429cd06017bc95bdc3b4796f45a",
+    "revision": 6,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 2026082401,
+      "cursor": 30
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "fortune_remaining": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "field knife"
+            },
+            {
+              "kind": "string",
+              "value": "signal pistol"
+            },
+            {
+              "kind": "string",
+              "value": "weather cloak"
+            }
+          ]
+        },
+        "jammed_items": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": "chase"
+        },
+        "survivability_current": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "wounded": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "chase_resolved",
+      "capability": "encounters",
+      "visibility": "public",
+      "payload_sha256": "18eb6d89a2b23ed42fc19abd64e764104497923938517bfecaf84899a70be831",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "outcome": {
+            "kind": "symbol",
+            "value": "escaped"
+          },
+          "rounds": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "object",
+                "value": {
+                  "opponent_die": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "opponent_total": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "player_die": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "player_total": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "winner": {
+                    "kind": "symbol",
+                    "value": "player"
+                  }
+                }
+              },
+              {
+                "kind": "object",
+                "value": {
+                  "opponent_die": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "opponent_total": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "player_die": {
+                    "kind": "number",
+                    "value": 5.0
+                  },
+                  "player_total": {
+                    "kind": "number",
+                    "value": 12.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "winner": {
+                    "kind": "symbol",
+                    "value": "player"
+                  }
+                }
+              },
+              {
+                "kind": "object",
+                "value": {
+                  "opponent_die": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "opponent_total": {
+                    "kind": "number",
+                    "value": 8.0
+                  },
+                  "player_die": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "player_total": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "winner": {
+                    "kind": "symbol",
+                    "value": "player"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "entropy_trace",
+      "capability": "encounters",
+      "visibility": "host_only",
+      "payload_sha256": "231d649c0c75645402fe785ec1087f09bece98b6811c6ff8998966bca3f71644",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "cursor_after": {
+            "kind": "number",
+            "value": 30.0
+          },
+          "cursor_before": {
+            "kind": "number",
+            "value": 24.0
+          },
+          "draws": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 4.0
+              },
+              {
+                "kind": "number",
+                "value": 2.0
+              },
+              {
+                "kind": "number",
+                "value": 5.0
+              },
+              {
+                "kind": "number",
+                "value": 2.0
+              },
+              {
+                "kind": "number",
+                "value": 4.0
+              },
+              {
+                "kind": "number",
+                "value": 4.0
+              }
+            ]
+          },
+          "operation": {
+            "kind": "string",
+            "value": "chase"
+          }
+        }
+      }
+    }
+  ]
+}
