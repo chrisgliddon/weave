@@ -56,6 +56,12 @@ pack-owned paths, field differences, template migration
 effects, the recomputed derived view, and blocking alignment/date-context invalidations. A final
 accepted review is unavailable while blocking diagnostics remain. See the [Character guide](character_module.md#guided-authoring-and-conflict-review) and the checked [authoring corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/authoring).
 
+## Assisted Character development
+
+`CharacterAssistanceSession` opens an exact Character collection, versioned assistance template, and pinned request through the same contract used by the `weave-character assistance-*` commands. Preview exposes every disclosed field, serialized value, known character id, provider coordinate, template hash, setting, seed, and expected response contract without invoking an adapter. Approval fingerprints that exact preview. The built-in offline adapter then creates inspectable typed candidates; a host may instead supply an adapter implementation whose credentials stay outside every serializable artifact.
+
+Candidate evidence and deterministic advisory scores, issues, and proposed edits remain separate from author decisions. The author must accept, edit, reject, defer, or request regeneration for every immutable candidate. Dry-run reproduces the full receipt without changing the session. Commit adds accepted values only to the pending suggestion queue, increments the collection revision once, and leaves canon, extensions, and derived values unchanged. A stale profile or review fails atomically and preserves the selected collection. See the [assistance contract](character_module.md#provider-neutral-assisted-character-development) and checked [JSON/RON corpus](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/assistance).
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source and updates `weave.lock` for a configured domain project. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:

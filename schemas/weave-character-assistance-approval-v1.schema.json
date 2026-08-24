@@ -1,0 +1,41 @@
+{
+  "$id": "urn:weave:schema:character-assistance-approval:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explicit approval of one already-rendered scope. No raw credential can be represented here.",
+  "properties": {
+    "allow_provider_call": {
+      "type": "boolean"
+    },
+    "approval_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "author": {
+      "type": "string"
+    },
+    "parent_batch_preview_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preview_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_format_version",
+    "preview_sha256",
+    "allow_provider_call",
+    "author",
+    "rationale"
+  ],
+  "title": "Weave Character Assistance Execution Approval v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

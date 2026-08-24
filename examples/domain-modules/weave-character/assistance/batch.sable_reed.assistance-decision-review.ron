@@ -1,0 +1,18 @@
+(
+    review_format_version: 1,
+    id: "org.weave.character.assistance.glasswind_batch.target_793e9312aa405a8a.candidates.author_review",
+    candidate_set_sha256: "76da0502e4f96e864b4ce06405a163fde54cd3ab4ca0c3f6ed9bef123b24a241",
+    input_profile_sha256: "795854fa6f0e81779a9027d5e1099eda2502f760612a12c5d4d7fb1709d57b25",
+    author: "org.weave.reviewer.fixture",
+    rationale: "Keep every synthetic batch option visible as a pending suggestion.",
+    decisions: {
+        "biography_g0_1": (
+            decision: "accept",
+            rationale: "Retain this synthetic candidate for explicit later review.",
+        ),
+        "motivation_g0_1": (
+            decision: "accept",
+            rationale: "Retain this synthetic candidate for explicit later review.",
+        ),
+    },
+)

@@ -1,0 +1,163 @@
+(
+    template_format_version: 1,
+    id: "org.weave.character.assistance.glasswind_development",
+    version: "1.0.0",
+    title: "Glasswind Character Development",
+    description: "Original structured prompts for optional, review-gated character development suggestions in offline or adapter-backed workflows.",
+    compatible_profile_versions: [
+        1,
+    ],
+    offline_scaffold_version: 1,
+    fields: {
+        biography: (
+            kind: biography,
+            instructions: "Suggest a concise biography thread and identify the formative thread it opens.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.biography",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        motivation: (
+            kind: motivation,
+            instructions: "Suggest one optional objective and a distinct reason the character may pursue it.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.motivation",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        fear: (
+            kind: fear,
+            instructions: "Suggest one optional concern and a concrete situation that could bring it forward.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.fear",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        guarded_truth: (
+            kind: guarded_truth,
+            instructions: "Suggest one truth the character might guard and a reason for that caution.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.guarded_truth",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        tension: (
+            kind: tension,
+            instructions: "Suggest a dramatic premise and a distinct pressure that pulls against it.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.tension",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        narrative_hook: (
+            kind: narrative_hook,
+            instructions: "Suggest a scene-ready hook and explicit stakes without asserting new canon.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.narrative_hook",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        presentation_cue: (
+            kind: presentation_cue,
+            instructions: "Suggest a repeatable presentation cue and explain its limited narrative purpose.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.presentation_cue",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        role_idea: (
+            kind: role_idea,
+            instructions: "Suggest an optional role label and explain how it could support a scene.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.role_idea",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        relationship_cue: (
+            kind: relationship_cue,
+            instructions: "Suggest a reversible relationship cue and explain what it could help explore.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.relationship_cue",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        context_reaction: (
+            kind: context_reaction,
+            instructions: "Suggest a context and a possible reaction while keeping both non-canonical.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.context_reaction",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+        expression_example: (
+            kind: expression_example,
+            instructions: "Suggest a bounded dialogue context and an original example line for author review.",
+            required_inputs: [
+                display_name,
+            ],
+            target_path: "suggestions.expression_example",
+            minimum_text_chars: 20,
+            maximum_text_chars: 2048,
+            maximum_candidates: 4,
+        ),
+    },
+    safety: (
+        reject_placeholders: true,
+        reject_credential_shapes: true,
+        reject_control_characters: true,
+        require_known_references: true,
+        maximum_total_response_chars: 1048576,
+    ),
+    license: "MIT",
+    license_url: "https://opensource.org/license/mit/",
+    provenance: (
+        sources: [
+            (
+                id: "assistance_template_original",
+                kind: original,
+                url: "https://weave.dev/character/assistance",
+                revision: "1",
+                license: "MIT",
+                license_url: "https://opensource.org/license/mit/",
+                attribution: "Original synthetic Weave assistance prompts and offline scaffold contract.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "template": [
+                "assistance_template_original",
+            ],
+        },
+    ),
+)

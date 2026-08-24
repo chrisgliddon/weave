@@ -1,0 +1,73 @@
+(
+    request_format_version: 1,
+    id: "org.weave.character.assistance.ari_vale",
+    profile_id: "org.weave.character.ari_vale",
+    expected_profile_sha256: "ae2e95222dc111e9da7b173ca0c2788ff54b216447ac0a4f95c7502ed88ba74f",
+    template: (
+        id: "org.weave.character.assistance.glasswind_development",
+        version: "1.0.0",
+        sha256: "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71",
+    ),
+    provider: (
+        adapter_id: "org.weave.character.assistance.offline",
+        adapter_version: "1.0.0",
+        engine_id: "glasswind_scaffold_v1",
+        mode: offline,
+        supports_seed: true,
+        credential_required: false,
+    ),
+    fields: [
+        biography,
+        motivation,
+        fear,
+        guarded_truth,
+        tension,
+        narrative_hook,
+        presentation_cue,
+        role_idea,
+        relationship_cue,
+        context_reaction,
+        expression_example,
+    ],
+    included_inputs: [
+        display_name,
+        personality,
+        inner_life,
+        voice,
+        relationships,
+    ],
+    settings: (
+        candidates_per_field: 1,
+        language: "en-US",
+        creativity_micros: 350000,
+        maximum_output_chars: 200000,
+        provider_parameters: {
+            "quality": (
+                kind: symbol,
+                value: "balanced",
+            ),
+        },
+    ),
+    seed: Some(20260824),
+    generation: 0,
+    provenance: (
+        sources: [
+            (
+                id: "assistance_request_original",
+                kind: original,
+                url: "https://weave.dev/character/assistance",
+                revision: "1",
+                license: "MIT",
+                license_url: "https://opensource.org/license/mit/",
+                attribution: "Original synthetic assistance request fixture.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "request": [
+                "assistance_request_original",
+            ],
+        },
+    ),
+)

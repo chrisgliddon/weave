@@ -1,0 +1,7 @@
+{
+  "approval_format_version": 1,
+  "preview_sha256": "8ec41410b5853c1cc11c957c611ad17d8996acbda27e49f64fe2076bdd3f5c26",
+  "allow_provider_call": true,
+  "author": "org.weave.reviewer.fixture",
+  "rationale": "Approve every exact per-character disclosure in the deterministic offline fixture batch."
+}

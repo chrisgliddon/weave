@@ -1,0 +1,601 @@
+{
+  "$defs": {
+    "AssistanceBatchBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_candidates": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "maximum_characters": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "maximum_input_chars": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "maximum_provider_calls": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maximum_characters",
+        "maximum_provider_calls",
+        "maximum_candidates",
+        "maximum_input_chars"
+      ],
+      "type": "object"
+    },
+    "AssistanceBatchFilter": {
+      "additionalProperties": false,
+      "description": "Explicit batch filter. Empty id and prefix lists mean every collection profile is eligible.",
+      "properties": {
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "fields_missing_suggestions": {
+          "items": {
+            "$ref": "#/$defs/AssistanceFieldKind"
+          },
+          "type": "array"
+        },
+        "id_prefixes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "character_ids",
+        "id_prefixes",
+        "fields_missing_suggestions"
+      ],
+      "type": "object"
+    },
+    "AssistanceCachePolicy": {
+      "enum": [
+        "disabled",
+        "job_local"
+      ],
+      "type": "string"
+    },
+    "AssistanceFieldKind": {
+      "description": "One requested development surface. Each variant has its own typed candidate value.",
+      "enum": [
+        "biography",
+        "motivation",
+        "fear",
+        "guarded_truth",
+        "tension",
+        "narrative_hook",
+        "presentation_cue",
+        "role_idea",
+        "relationship_cue",
+        "context_reaction",
+        "expression_example"
+      ],
+      "type": "string"
+    },
+    "AssistanceInputField": {
+      "description": "Closed profile input surfaces which may be disclosed by an explicit request.",
+      "enum": [
+        "display_name",
+        "aliases",
+        "personality",
+        "inner_life",
+        "voice",
+        "birth_context",
+        "presentation",
+        "projections",
+        "relationships",
+        "date_context",
+        "expression"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderFailureCode": {
+      "enum": [
+        "unavailable",
+        "rate_limited",
+        "timeout",
+        "authentication",
+        "budget",
+        "internal"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderMode": {
+      "enum": [
+        "offline",
+        "external"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderRef": {
+      "additionalProperties": false,
+      "description": "Exact provider adapter coordinate and declared execution capabilities.",
+      "properties": {
+        "adapter_id": {
+          "type": "string"
+        },
+        "adapter_version": {
+          "type": "string"
+        },
+        "credential_required": {
+          "type": "boolean"
+        },
+        "engine_id": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/AssistanceProviderMode"
+        },
+        "supports_seed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "adapter_id",
+        "adapter_version",
+        "engine_id",
+        "mode",
+        "supports_seed",
+        "credential_required"
+      ],
+      "type": "object"
+    },
+    "AssistanceRetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_retries_per_character": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "retryable_codes": {
+          "items": {
+            "$ref": "#/$defs/AssistanceProviderFailureCode"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "maximum_retries_per_character",
+        "retryable_codes"
+      ],
+      "type": "object"
+    },
+    "AssistanceSettings": {
+      "additionalProperties": false,
+      "description": "Serializable settings are deliberately credential-free.",
+      "properties": {
+        "candidates_per_field": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "creativity_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "language": {
+          "type": "string"
+        },
+        "maximum_output_chars": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provider_parameters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DomainValue"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "candidates_per_field",
+        "language",
+        "creativity_micros",
+        "maximum_output_chars"
+      ],
+      "type": "object"
+    },
+    "AssistanceTemplateRef": {
+      "additionalProperties": false,
+      "description": "Exact template coordinate pinned by every request.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-assistance-batch-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact batch request. Rate limiting is deterministic: each resume call is one scheduling window.",
+  "properties": {
+    "batch_request_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "budget": {
+      "$ref": "#/$defs/AssistanceBatchBudget"
+    },
+    "cache_policy": {
+      "$ref": "#/$defs/AssistanceCachePolicy"
+    },
+    "collection_id": {
+      "type": "string"
+    },
+    "expected_collection_sha256": {
+      "type": "string"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/AssistanceFieldKind"
+      },
+      "type": "array"
+    },
+    "filter": {
+      "$ref": "#/$defs/AssistanceBatchFilter"
+    },
+    "id": {
+      "type": "string"
+    },
+    "included_inputs": {
+      "items": {
+        "$ref": "#/$defs/AssistanceInputField"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "provider": {
+      "$ref": "#/$defs/AssistanceProviderRef"
+    },
+    "rate_limit_calls_per_resume": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "retry": {
+      "$ref": "#/$defs/AssistanceRetryPolicy"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "settings": {
+      "$ref": "#/$defs/AssistanceSettings"
+    },
+    "template": {
+      "$ref": "#/$defs/AssistanceTemplateRef"
+    }
+  },
+  "required": [
+    "batch_request_format_version",
+    "id",
+    "collection_id",
+    "expected_collection_sha256",
+    "template",
+    "provider",
+    "fields",
+    "included_inputs",
+    "settings",
+    "filter",
+    "budget",
+    "retry",
+    "rate_limit_calls_per_resume",
+    "cache_policy",
+    "provenance"
+  ],
+  "title": "Weave Character Assistance Batch Request v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

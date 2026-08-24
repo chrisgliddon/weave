@@ -1,0 +1,198 @@
+{
+  "$defs": {
+    "AssistanceAdvisoryIssue": {
+      "additionalProperties": false,
+      "description": "One non-authoritative issue raised by an independent advisory pass.",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/AssistanceAdvisorySeverity"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "type": "object"
+    },
+    "AssistanceAdvisorySeverity": {
+      "enum": [
+        "note",
+        "caution",
+        "block"
+      ],
+      "type": "string"
+    },
+    "AssistanceComparisonEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "consistency_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "field": {
+          "$ref": "#/$defs/AssistanceFieldKind"
+        },
+        "issues": {
+          "items": {
+            "$ref": "#/$defs/AssistanceAdvisoryIssue"
+          },
+          "type": "array"
+        },
+        "provider": {
+          "$ref": "#/$defs/AssistanceProviderRef"
+        },
+        "relevance_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "safety_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "candidate_id",
+        "field",
+        "issues"
+      ],
+      "type": "object"
+    },
+    "AssistanceFieldKind": {
+      "description": "One requested development surface. Each variant has its own typed candidate value.",
+      "enum": [
+        "biography",
+        "motivation",
+        "fear",
+        "guarded_truth",
+        "tension",
+        "narrative_hook",
+        "presentation_cue",
+        "role_idea",
+        "relationship_cue",
+        "context_reaction",
+        "expression_example"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderMode": {
+      "enum": [
+        "offline",
+        "external"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderRef": {
+      "additionalProperties": false,
+      "description": "Exact provider adapter coordinate and declared execution capabilities.",
+      "properties": {
+        "adapter_id": {
+          "type": "string"
+        },
+        "adapter_version": {
+          "type": "string"
+        },
+        "credential_required": {
+          "type": "boolean"
+        },
+        "engine_id": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/AssistanceProviderMode"
+        },
+        "supports_seed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "adapter_id",
+        "adapter_version",
+        "engine_id",
+        "mode",
+        "supports_seed",
+        "credential_required"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-assistance-comparison:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Provider comparison is sorted by coordinate and id, never by an automatic winner.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "canonical_write_back": {
+      "type": "boolean"
+    },
+    "comparison_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/AssistanceComparisonEntry"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input_profile_sha256": {
+      "type": "string"
+    },
+    "order_basis": {
+      "type": "string"
+    },
+    "providers": {
+      "items": {
+        "$ref": "#/$defs/AssistanceProviderRef"
+      },
+      "type": "array"
+    },
+    "selected_candidate_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "comparison_format_version",
+    "id",
+    "input_profile_sha256",
+    "providers",
+    "entries",
+    "advisory_only",
+    "canonical_write_back",
+    "order_basis"
+  ],
+  "title": "Weave Character Assistance Comparison v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

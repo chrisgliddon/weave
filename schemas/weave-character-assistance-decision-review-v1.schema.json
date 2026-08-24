@@ -1,0 +1,383 @@
+{
+  "$defs": {
+    "AssistanceCandidateValue": {
+      "description": "Closed structured values returned for every supported development surface.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "formative_thread": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "biography",
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "summary",
+            "formative_thread"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "motivation",
+              "type": "string"
+            },
+            "objective": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "objective",
+            "reason"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "concern": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "fear",
+              "type": "string"
+            },
+            "trigger": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "concern",
+            "trigger"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "guarded_because": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "guarded_truth",
+              "type": "string"
+            },
+            "truth": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "truth",
+            "guarded_because"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "tension",
+              "type": "string"
+            },
+            "opposing_pressure": {
+              "type": "string"
+            },
+            "premise": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "premise",
+            "opposing_pressure"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "hook": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "narrative_hook",
+              "type": "string"
+            },
+            "stakes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "hook",
+            "stakes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "presentation_cue",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "cue",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "role_idea",
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "label",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "relationship_cue",
+              "type": "string"
+            },
+            "other_character_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "cue",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "context_reaction",
+              "type": "string"
+            },
+            "reaction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "context",
+            "reaction"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "expression_example",
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "context",
+            "text"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AssistanceDecision": {
+      "description": "Complete author disposition for one immutable candidate.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "accept",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "reject",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "edit",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/AssistanceCandidateValue"
+            }
+          },
+          "required": [
+            "decision",
+            "value",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "defer",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "const": "regenerate",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "rationale"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-assistance-decision-review:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "author": {
+      "type": "string"
+    },
+    "candidate_set_sha256": {
+      "type": "string"
+    },
+    "decisions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AssistanceDecision"
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input_profile_sha256": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "review_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "review_format_version",
+    "id",
+    "candidate_set_sha256",
+    "input_profile_sha256",
+    "author",
+    "rationale",
+    "decisions"
+  ],
+  "title": "Weave Character Assistance Decision Review v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

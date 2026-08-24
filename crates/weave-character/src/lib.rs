@@ -6,6 +6,7 @@
 //! workflows, RON/JSON interchange, and game-engine consumers without network or provider access.
 
 mod alignment;
+mod assistance;
 mod authoring;
 mod domain;
 mod expression;
@@ -24,6 +25,7 @@ use serde::de::DeserializeOwned;
 use weave_domain::{parse_strict_json, to_pretty_json, to_pretty_ron};
 
 pub use alignment::*;
+pub use assistance::*;
 pub use authoring::*;
 pub use domain::{
     CHARACTER_DOMAIN_MODULE_VERSION, CharacterDomainError, character_domain_pack,

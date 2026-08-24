@@ -1,0 +1,359 @@
+{
+  "$defs": {
+    "AssistanceFieldKind": {
+      "description": "One requested development surface. Each variant has its own typed candidate value.",
+      "enum": [
+        "biography",
+        "motivation",
+        "fear",
+        "guarded_truth",
+        "tension",
+        "narrative_hook",
+        "presentation_cue",
+        "role_idea",
+        "relationship_cue",
+        "context_reaction",
+        "expression_example"
+      ],
+      "type": "string"
+    },
+    "AssistanceInputField": {
+      "description": "Closed profile input surfaces which may be disclosed by an explicit request.",
+      "enum": [
+        "display_name",
+        "aliases",
+        "personality",
+        "inner_life",
+        "voice",
+        "birth_context",
+        "presentation",
+        "projections",
+        "relationships",
+        "date_context",
+        "expression"
+      ],
+      "type": "string"
+    },
+    "AssistanceSafetyContract": {
+      "additionalProperties": false,
+      "description": "Fail-closed output rules. V1 templates cannot disable a mandatory check.",
+      "properties": {
+        "maximum_total_response_chars": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reject_control_characters": {
+          "type": "boolean"
+        },
+        "reject_credential_shapes": {
+          "type": "boolean"
+        },
+        "reject_placeholders": {
+          "type": "boolean"
+        },
+        "require_known_references": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "reject_placeholders",
+        "reject_credential_shapes",
+        "reject_control_characters",
+        "require_known_references",
+        "maximum_total_response_chars"
+      ],
+      "type": "object"
+    },
+    "AssistanceTemplateField": {
+      "additionalProperties": false,
+      "description": "Per-field prompt, disclosure minimum, bounds, and eventual suggestion target.",
+      "properties": {
+        "instructions": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssistanceFieldKind"
+        },
+        "maximum_candidates": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "maximum_text_chars": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minimum_text_chars": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "required_inputs": {
+          "items": {
+            "$ref": "#/$defs/AssistanceInputField"
+          },
+          "type": "array"
+        },
+        "target_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "instructions",
+        "required_inputs",
+        "target_path",
+        "minimum_text_chars",
+        "maximum_text_chars",
+        "maximum_candidates"
+      ],
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-assistance-template:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Independently versioned request template shared by offline and adapter-backed generation.",
+  "properties": {
+    "compatible_profile_versions": {
+      "items": {
+        "format": "uint32",
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "description": {
+      "type": "string"
+    },
+    "fields": {
+      "additionalProperties": false,
+      "properties": {
+        "biography": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "context_reaction": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "expression_example": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "fear": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "guarded_truth": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "motivation": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "narrative_hook": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "presentation_cue": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "relationship_cue": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "role_idea": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        },
+        "tension": {
+          "$ref": "#/$defs/AssistanceTemplateField"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_url": {
+      "type": "string"
+    },
+    "offline_scaffold_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "safety": {
+      "$ref": "#/$defs/AssistanceSafetyContract"
+    },
+    "template_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "template_format_version",
+    "id",
+    "version",
+    "title",
+    "description",
+    "compatible_profile_versions",
+    "offline_scaffold_version",
+    "fields",
+    "safety",
+    "license",
+    "license_url",
+    "provenance"
+  ],
+  "title": "Weave Character Assistance Template v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

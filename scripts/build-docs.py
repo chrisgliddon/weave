@@ -591,6 +591,7 @@ def verify_domain_contract() -> None:
     character_presentation = character_fixture / "presentation"
     character_expression = character_fixture / "expression"
     character_projections = character_fixture / "projections"
+    character_assistance = character_fixture / "assistance"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
@@ -787,6 +788,21 @@ def verify_domain_contract() -> None:
             "weave-character",
             "--example",
             "character_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
+            "assistance_fixture",
             "--",
             "--check",
         ],
@@ -1053,6 +1069,36 @@ def verify_domain_contract() -> None:
             "projection-lock-revision": workspace
             / "weave-character-projection-lock-revision-v1.schema.json",
         }
+        generated_assistance_schemas = {
+            "assistance-template": workspace
+            / "weave-character-assistance-template-v1.schema.json",
+            "assistance-request": workspace
+            / "weave-character-assistance-request-v1.schema.json",
+            "assistance-preview": workspace
+            / "weave-character-assistance-preview-v1.schema.json",
+            "assistance-approval": workspace
+            / "weave-character-assistance-approval-v1.schema.json",
+            "assistance-provider-response": workspace
+            / "weave-character-assistance-provider-response-v1.schema.json",
+            "assistance-candidate-set": workspace
+            / "weave-character-assistance-candidate-set-v1.schema.json",
+            "assistance-advisory-review": workspace
+            / "weave-character-assistance-advisory-review-v1.schema.json",
+            "assistance-decision-review": workspace
+            / "weave-character-assistance-decision-review-v1.schema.json",
+            "assistance-receipt": workspace
+            / "weave-character-assistance-receipt-v1.schema.json",
+            "assistance-batch-request": workspace
+            / "weave-character-assistance-batch-request-v1.schema.json",
+            "assistance-batch-preview": workspace
+            / "weave-character-assistance-batch-preview-v1.schema.json",
+            "assistance-job": workspace
+            / "weave-character-assistance-job-v1.schema.json",
+            "assistance-batch-receipt": workspace
+            / "weave-character-assistance-batch-receipt-v1.schema.json",
+            "assistance-comparison": workspace
+            / "weave-character-assistance-comparison-v1.schema.json",
+        }
         generated_authoring_schemas = {
             "authoring-workspace": workspace
             / "weave-character-authoring-workspace-v1.schema.json",
@@ -1265,6 +1311,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_assistance_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for generated, checked in (
             (
                 generated_manifest_schema,
@@ -1408,6 +1459,44 @@ def verify_domain_contract() -> None:
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(
                     f"checked-in projection schema is stale: {checked.name}"
+                )
+        for generated in generated_assistance_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(
+                    f"checked-in assistance schema is stale: {checked.name}"
+                )
+
+        assistance_documents = {
+            "assistance-template": "glasswind.assistance-template",
+            "assistance-request": "single.assistance-request",
+            "assistance-preview": "single.assistance-preview",
+            "assistance-approval": "single.assistance-approval",
+            "assistance-provider-response": "single.assistance-provider-response",
+            "assistance-candidate-set": "single.assistance-candidate-set",
+            "assistance-advisory-review": "single.assistance-advisory-review",
+            "assistance-decision-review": "single.assistance-decision-review",
+            "assistance-receipt": "single.assistance-receipt",
+            "assistance-batch-request": "batch.assistance-request",
+            "assistance-batch-preview": "batch.assistance-preview",
+            "assistance-job": "batch.assistance-job",
+            "assistance-batch-receipt": "batch.assistance-receipt",
+            "assistance-comparison": "providers.assistance-comparison",
+        }
+        for kind, stem in assistance_documents.items():
+            for extension in ("json", "ron"):
+                run(
+                    [
+                        str(character_tool),
+                        "validate",
+                        kind,
+                        str(
+                            (character_assistance / f"{stem}.{extension}").relative_to(
+                                ROOT
+                            )
+                        ),
+                    ],
+                    capture=True,
                 )
 
         for kind, source in (
@@ -3487,7 +3576,7 @@ def verify_domain_contract() -> None:
         environment=cargo_environment(),
     )
     print(
-        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/presentation catalogs/explainable alignment/reviewed temporal context/domain projection, authored hierarchy, and optional naming pack",
+        "verified domain schemas, packaging, locks, tutorial, tracer, four-preset World corpus, deterministic World composition/exports, Character contract/synthesis/presentation catalogs/explainable alignment/reviewed temporal context/provider-neutral assistance/domain projection, authored hierarchy, and optional naming pack",
         flush=True,
     )
 
@@ -3801,6 +3890,26 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-questionnaire-review-v1.schema.json",
         "weave-character-questionnaire-receipt-v1.schema.json",
         "weave-character-final-review-v1.schema.json",
+        "weave-character-projection-pack-v1.schema.json",
+        "weave-character-projection-config-v1.schema.json",
+        "weave-character-projection-proposal-v1.schema.json",
+        "weave-character-projection-review-v1.schema.json",
+        "weave-character-projection-receipt-v1.schema.json",
+        "weave-character-projection-lock-revision-v1.schema.json",
+        "weave-character-assistance-template-v1.schema.json",
+        "weave-character-assistance-request-v1.schema.json",
+        "weave-character-assistance-preview-v1.schema.json",
+        "weave-character-assistance-approval-v1.schema.json",
+        "weave-character-assistance-provider-response-v1.schema.json",
+        "weave-character-assistance-candidate-set-v1.schema.json",
+        "weave-character-assistance-advisory-review-v1.schema.json",
+        "weave-character-assistance-decision-review-v1.schema.json",
+        "weave-character-assistance-receipt-v1.schema.json",
+        "weave-character-assistance-batch-request-v1.schema.json",
+        "weave-character-assistance-batch-preview-v1.schema.json",
+        "weave-character-assistance-job-v1.schema.json",
+        "weave-character-assistance-batch-receipt-v1.schema.json",
+        "weave-character-assistance-comparison-v1.schema.json",
         "weave-tabletop-adapter-manifest-v1.schema.json",
         "weave-tabletop-adapter-selection-v1.schema.json",
         "weave-tabletop-character-projection-v1.schema.json",

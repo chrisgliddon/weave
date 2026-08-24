@@ -1,0 +1,56 @@
+{
+  "biography_g0_1": {
+    "decision": "accept",
+    "rationale": "Keep this candidate in the non-canonical review queue."
+  },
+  "context_reaction_g0_1": {
+    "decision": "edit",
+    "value": {
+      "kind": "context_reaction",
+      "context": "A familiar plan is interrupted by an unexpected witness.",
+      "reaction": "Ari Vale names what remains known, asks one clarifying question, and keeps an untested route open for review."
+    },
+    "rationale": "Retain this structured value as an explicit author edit."
+  },
+  "expression_example_g0_1": {
+    "decision": "reject",
+    "rationale": "This direction does not fit the current fixture draft."
+  },
+  "fear_g0_1": {
+    "decision": "defer",
+    "rationale": "Revisit this direction after another outline pass."
+  },
+  "guarded_truth_g0_1": {
+    "decision": "regenerate",
+    "rationale": "Request another bounded option for this field."
+  },
+  "motivation_g0_1": {
+    "decision": "accept",
+    "rationale": "Keep this candidate in the non-canonical review queue."
+  },
+  "narrative_hook_g0_1": {
+    "decision": "edit",
+    "value": {
+      "kind": "narrative_hook",
+      "hook": "A new message asks Ari Vale to revisit an untested route before anyone else sees the full pattern.",
+      "stakes": "Ignoring it leaves an unexpected witness to define the outcome; answering it risks a trusted arrangement."
+    },
+    "rationale": "Retain this structured value as an explicit author edit."
+  },
+  "presentation_cue_g0_1": {
+    "decision": "reject",
+    "rationale": "This direction does not fit the current fixture draft."
+  },
+  "relationship_cue_g0_1": {
+    "decision": "defer",
+    "rationale": "Revisit this direction after another outline pass."
+  },
+  "role_idea_g0_1": {
+    "decision": "regenerate",
+    "rationale": "Request another bounded option for this field."
+  },
+  "tension_g0_1": {
+    "decision": "accept",
+    "rationale": "Keep this candidate in the non-canonical review queue."
+  }
+}

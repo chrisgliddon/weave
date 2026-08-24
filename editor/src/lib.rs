@@ -2,6 +2,7 @@
 
 pub mod alignment;
 pub mod app;
+pub mod assistance;
 pub mod character;
 pub mod character_authoring;
 pub mod character_presentation;
@@ -25,6 +26,7 @@ pub mod theme;
 
 pub use alignment::AlignmentSession;
 pub use app::{LaunchMode, StartupError, launch};
+pub use assistance::{CharacterAssistanceSession, CharacterAssistanceSessionError};
 pub use character::CharacterCorpusSession;
 pub use character_authoring::{
     CHARACTER_AUTHORING_CONTROLS, CharacterAuthoringAccessibility, CharacterAuthoringControl,

@@ -1,0 +1,373 @@
+{
+  "batch_preview_format_version": 1,
+  "request": {
+    "batch_request_format_version": 1,
+    "id": "org.weave.character.assistance.glasswind_batch",
+    "collection_id": "org.weave.character.collection.glasswind",
+    "expected_collection_sha256": "cc61f604b3694dc8c604786b293ac44dfd8380a1e19e51011ba90bb5c9f9ce7d",
+    "template": {
+      "id": "org.weave.character.assistance.glasswind_development",
+      "version": "1.0.0",
+      "sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71"
+    },
+    "provider": {
+      "adapter_id": "org.weave.character.assistance.offline",
+      "adapter_version": "1.0.0",
+      "engine_id": "glasswind_scaffold_v1",
+      "mode": "offline",
+      "supports_seed": true,
+      "credential_required": false
+    },
+    "fields": [
+      "biography",
+      "motivation"
+    ],
+    "included_inputs": [
+      "display_name"
+    ],
+    "settings": {
+      "candidates_per_field": 1,
+      "language": "en-US",
+      "creativity_micros": 350000,
+      "maximum_output_chars": 200000,
+      "provider_parameters": {
+        "quality": {
+          "kind": "symbol",
+          "value": "balanced"
+        }
+      }
+    },
+    "seed": 20260825,
+    "filter": {
+      "character_ids": [],
+      "id_prefixes": [
+        "org.weave.character"
+      ],
+      "fields_missing_suggestions": [
+        "biography"
+      ]
+    },
+    "budget": {
+      "maximum_characters": 64,
+      "maximum_provider_calls": 128,
+      "maximum_candidates": 4096,
+      "maximum_input_chars": 1048576
+    },
+    "retry": {
+      "maximum_retries_per_character": 2,
+      "retryable_codes": [
+        "rate_limited",
+        "timeout"
+      ]
+    },
+    "rate_limit_calls_per_resume": 1,
+    "cache_policy": "job_local",
+    "provenance": {
+      "sources": [
+        {
+          "id": "assistance_batch_request_original",
+          "kind": "original",
+          "url": "https://weave.dev/character/assistance",
+          "revision": "1",
+          "license": "MIT",
+          "license_url": "https://opensource.org/license/mit/",
+          "attribution": "Original synthetic assistance batch request fixture.",
+          "modified": false
+        }
+      ],
+      "transformations": [],
+      "claims": {
+        "batch_request": [
+          "assistance_batch_request_original"
+        ]
+      }
+    }
+  },
+  "request_sha256": "095e7147f2ca754cccec93d77199c91e46a21ffccfc39d73abeba57fbc40b3ab",
+  "template_sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71",
+  "ordered_target_ids": [
+    "org.weave.character.ari_vale",
+    "org.weave.character.sable_reed"
+  ],
+  "previews": {
+    "org.weave.character.ari_vale": {
+      "preview_format_version": 1,
+      "request": {
+        "request_format_version": 1,
+        "id": "org.weave.character.assistance.glasswind_batch.target_df187c13707e547a",
+        "profile_id": "org.weave.character.ari_vale",
+        "expected_profile_sha256": "ae2e95222dc111e9da7b173ca0c2788ff54b216447ac0a4f95c7502ed88ba74f",
+        "template": {
+          "id": "org.weave.character.assistance.glasswind_development",
+          "version": "1.0.0",
+          "sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71"
+        },
+        "provider": {
+          "adapter_id": "org.weave.character.assistance.offline",
+          "adapter_version": "1.0.0",
+          "engine_id": "glasswind_scaffold_v1",
+          "mode": "offline",
+          "supports_seed": true,
+          "credential_required": false
+        },
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "included_inputs": [
+          "display_name"
+        ],
+        "settings": {
+          "candidates_per_field": 1,
+          "language": "en-US",
+          "creativity_micros": 350000,
+          "maximum_output_chars": 200000,
+          "provider_parameters": {
+            "quality": {
+              "kind": "symbol",
+              "value": "balanced"
+            }
+          }
+        },
+        "seed": 12571791590027196706,
+        "generation": 0,
+        "provenance": {
+          "sources": [
+            {
+              "id": "assistance_batch_request_original",
+              "kind": "original",
+              "url": "https://weave.dev/character/assistance",
+              "revision": "1",
+              "license": "MIT",
+              "license_url": "https://opensource.org/license/mit/",
+              "attribution": "Original synthetic assistance batch request fixture.",
+              "modified": false
+            }
+          ],
+          "transformations": [],
+          "claims": {
+            "batch_request": [
+              "assistance_batch_request_original"
+            ]
+          }
+        }
+      },
+      "request_sha256": "7d4a2ad1d7c890585479aa0647db3a0482c36593807e6228767a575b2cd380bc",
+      "template_sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71",
+      "scope": {
+        "profile_id": "org.weave.character.ari_vale",
+        "input_profile_sha256": "ae2e95222dc111e9da7b173ca0c2788ff54b216447ac0a4f95c7502ed88ba74f",
+        "included_values": {
+          "display_name": {
+            "kind": "string",
+            "value": "Ari Vale"
+          }
+        },
+        "known_character_ids": [
+          "org.weave.character.ari_vale",
+          "org.weave.character.sable_reed"
+        ],
+        "serialized_character_count": 74
+      },
+      "payload": {
+        "payload_format_version": 1,
+        "request_id": "org.weave.character.assistance.glasswind_batch.target_df187c13707e547a",
+        "profile_id": "org.weave.character.ari_vale",
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "instructions": {
+          "biography": "Suggest a concise biography thread and identify the formative thread it opens.",
+          "motivation": "Suggest one optional objective and a distinct reason the character may pursue it."
+        },
+        "required_evidence": {
+          "biography": [
+            "canon.identity.display_name"
+          ],
+          "motivation": [
+            "canon.identity.display_name"
+          ]
+        },
+        "included_values": {
+          "display_name": {
+            "kind": "string",
+            "value": "Ari Vale"
+          }
+        },
+        "known_character_ids": [
+          "org.weave.character.ari_vale",
+          "org.weave.character.sable_reed"
+        ],
+        "settings": {
+          "candidates_per_field": 1,
+          "language": "en-US",
+          "creativity_micros": 350000,
+          "maximum_output_chars": 200000,
+          "provider_parameters": {
+            "quality": {
+              "kind": "symbol",
+              "value": "balanced"
+            }
+          }
+        },
+        "seed": 12571791590027196706,
+        "generation": 0,
+        "expected_response_schema": "urn:weave:schema:character-assistance-provider-response:1"
+      },
+      "expected_output": {
+        "response_format_version": 1,
+        "schema_id": "urn:weave:schema:character-assistance-provider-response:1",
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "maximum_candidates_per_field": 1,
+        "maximum_output_chars": 200000
+      },
+      "provider_called": false,
+      "credential_value_stored": false
+    },
+    "org.weave.character.sable_reed": {
+      "preview_format_version": 1,
+      "request": {
+        "request_format_version": 1,
+        "id": "org.weave.character.assistance.glasswind_batch.target_793e9312aa405a8a",
+        "profile_id": "org.weave.character.sable_reed",
+        "expected_profile_sha256": "795854fa6f0e81779a9027d5e1099eda2502f760612a12c5d4d7fb1709d57b25",
+        "template": {
+          "id": "org.weave.character.assistance.glasswind_development",
+          "version": "1.0.0",
+          "sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71"
+        },
+        "provider": {
+          "adapter_id": "org.weave.character.assistance.offline",
+          "adapter_version": "1.0.0",
+          "engine_id": "glasswind_scaffold_v1",
+          "mode": "offline",
+          "supports_seed": true,
+          "credential_required": false
+        },
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "included_inputs": [
+          "display_name"
+        ],
+        "settings": {
+          "candidates_per_field": 1,
+          "language": "en-US",
+          "creativity_micros": 350000,
+          "maximum_output_chars": 200000,
+          "provider_parameters": {
+            "quality": {
+              "kind": "symbol",
+              "value": "balanced"
+            }
+          }
+        },
+        "seed": 6686149026728728609,
+        "generation": 0,
+        "provenance": {
+          "sources": [
+            {
+              "id": "assistance_batch_request_original",
+              "kind": "original",
+              "url": "https://weave.dev/character/assistance",
+              "revision": "1",
+              "license": "MIT",
+              "license_url": "https://opensource.org/license/mit/",
+              "attribution": "Original synthetic assistance batch request fixture.",
+              "modified": false
+            }
+          ],
+          "transformations": [],
+          "claims": {
+            "batch_request": [
+              "assistance_batch_request_original"
+            ]
+          }
+        }
+      },
+      "request_sha256": "5a82dd40e30f084c7c95b3bc39e34661d31580ac8346f751dbaca25923907a23",
+      "template_sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71",
+      "scope": {
+        "profile_id": "org.weave.character.sable_reed",
+        "input_profile_sha256": "795854fa6f0e81779a9027d5e1099eda2502f760612a12c5d4d7fb1709d57b25",
+        "included_values": {
+          "display_name": {
+            "kind": "string",
+            "value": "Sable Reed"
+          }
+        },
+        "known_character_ids": [
+          "org.weave.character.ari_vale",
+          "org.weave.character.sable_reed"
+        ],
+        "serialized_character_count": 76
+      },
+      "payload": {
+        "payload_format_version": 1,
+        "request_id": "org.weave.character.assistance.glasswind_batch.target_793e9312aa405a8a",
+        "profile_id": "org.weave.character.sable_reed",
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "instructions": {
+          "biography": "Suggest a concise biography thread and identify the formative thread it opens.",
+          "motivation": "Suggest one optional objective and a distinct reason the character may pursue it."
+        },
+        "required_evidence": {
+          "biography": [
+            "canon.identity.display_name"
+          ],
+          "motivation": [
+            "canon.identity.display_name"
+          ]
+        },
+        "included_values": {
+          "display_name": {
+            "kind": "string",
+            "value": "Sable Reed"
+          }
+        },
+        "known_character_ids": [
+          "org.weave.character.ari_vale",
+          "org.weave.character.sable_reed"
+        ],
+        "settings": {
+          "candidates_per_field": 1,
+          "language": "en-US",
+          "creativity_micros": 350000,
+          "maximum_output_chars": 200000,
+          "provider_parameters": {
+            "quality": {
+              "kind": "symbol",
+              "value": "balanced"
+            }
+          }
+        },
+        "seed": 6686149026728728609,
+        "generation": 0,
+        "expected_response_schema": "urn:weave:schema:character-assistance-provider-response:1"
+      },
+      "expected_output": {
+        "response_format_version": 1,
+        "schema_id": "urn:weave:schema:character-assistance-provider-response:1",
+        "fields": [
+          "biography",
+          "motivation"
+        ],
+        "maximum_candidates_per_field": 1,
+        "maximum_output_chars": 200000
+      },
+      "provider_called": false,
+      "credential_value_stored": false
+    }
+  },
+  "total_input_chars": 150,
+  "provider_called": false,
+  "credential_value_stored": false
+}

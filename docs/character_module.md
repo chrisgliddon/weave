@@ -16,6 +16,8 @@ Relationship graphs have separate generated schemas for the immutable [kind pack
 
 Reusable expression and dialogue have generated schemas for the immutable [expression pack](downloads/weave-character-expression-pack-v1.schema.json), normalized [direct revision](downloads/weave-character-expression-revision-v1.schema.json), exact [assignment request](downloads/weave-character-expression-assignment-request-v1.schema.json), replayable [assignment receipt](downloads/weave-character-expression-assignment-receipt-v1.schema.json), typed [resolution request](downloads/weave-character-expression-resolution-request-v1.schema.json), deterministic [resolution](downloads/weave-character-expression-resolution-v1.schema.json), non-mutating [lint report](downloads/weave-character-expression-lint-v1.schema.json), and [coverage report](downloads/weave-character-expression-coverage-v1.schema.json).
 
+Provider-neutral assistance has generated schemas for its versioned [template](downloads/weave-character-assistance-template-v1.schema.json), pinned [request](downloads/weave-character-assistance-request-v1.schema.json), credential-free [preview](downloads/weave-character-assistance-preview-v1.schema.json), explicit [approval](downloads/weave-character-assistance-approval-v1.schema.json), strict [provider response](downloads/weave-character-assistance-provider-response-v1.schema.json), immutable [candidate set](downloads/weave-character-assistance-candidate-set-v1.schema.json), [advisory review](downloads/weave-character-assistance-advisory-review-v1.schema.json), complete [author decision review](downloads/weave-character-assistance-decision-review-v1.schema.json), reproducible [receipt](downloads/weave-character-assistance-receipt-v1.schema.json), [batch request](downloads/weave-character-assistance-batch-request-v1.schema.json), complete [batch preview](downloads/weave-character-assistance-batch-preview-v1.schema.json), resumable [job](downloads/weave-character-assistance-job-v1.schema.json), atomic [batch receipt](downloads/weave-character-assistance-batch-receipt-v1.schema.json), and advisory-only [provider comparison](downloads/weave-character-assistance-comparison-v1.schema.json).
+
 ## Trust and data boundaries
 
 A `CharacterProfile` has four deliberately separate layers:
@@ -189,6 +191,66 @@ Apply replays the entire proposal and review against the current collection befo
 The JSON/RON CLI and `ProjectionSession` editor service call the same host-independent functions. `projection-propose` selects a pack/config/seed, `projection-inspect` returns the complete evidence/threshold/capacity/tie trace, `projection-review` validates a complete decision source document, `projection-apply` supports dry-run or atomic output plus a receipt, and `projection-lock` validates or commits a lock revision. Editor propose, inspect, review, dry-run/commit, lock, config, seed, and rebalance produce the same artifacts. `.weave` source reads only already-approved domain-pack values; it cannot bypass the review by overriding `profile.projections`.
 
 The original MIT-licensed [Glasswind Lenses fixtures](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/projections) exercise three characters, four taxonomies, signed weights, two calibration vectors, explicit eligibility, capacity one per entry, one reservation, deterministic batch allocation, all five review decisions, a locked accepted value, an editorial override, unlock, and rebalance. The domain projection exposes approved values through typed `profile.projections.values` and exact `source_packs`. Its `write_back` object contains all-false `hexaco`, `ocean`, `alignment`, `identity`, `birth`, `relationships`, and `ruleset` fields. The checked Bevy and PixiJS consumers validate those labels, explanations, rationales, input paths, fingerprints, locks, and authority markers directly from Story IR.
+
+## Provider-neutral assisted Character development
+
+Assistance is an optional authoring workflow for biographies, motivations, fears, guarded truths, dramatic tensions, narrative hooks, presentation cues, role ideas, relationship cues, contextual reactions, and expression examples. It is complete without any service: the built-in offline provider produces deterministic, inspectable scaffolds from the exact approved inputs. The core crate defines a small adapter trait but contains no network client or provider SDK, so a host can add an adapter without changing the artifacts or review rules.
+
+An `AssistanceTemplate` pins its identity, semantic version, hashable instructions, required inputs, target paths, text and candidate bounds, offline scaffold version, safety contract, license, and provenance. An `AssistanceRequest` additionally pins the exact profile fingerprint, provider adapter/version/engine/mode, requested fields, disclosed input vocabulary, settings, optional seed, generation number, and provenance. Provider parameters are ordinary bounded public settings; credentials are never part of the request.
+
+Preview is the mandatory privacy boundary. It renders the exact provider payload, every included structured value, known character ids, serialized character count, and expected response contract while recording `provider_called: false` and `credential_value_stored: false`. Execution requires a separately authored approval whose SHA-256 references that exact preview. An adapter obtains any credential through a host-owned secret channel and reports only `not_required`, `configured`, or `missing`. Secret formatting replaces the whole value with exactly `[REDACTED]`; no request, cache, artifact, error, or comparison contains credential material.
+
+Responses pass through a strict, unknown-field-denying JSON contract and normalize into typed immutable candidates. Validation enforces field/template agreement, target paths, candidate counts, public-text bounds, placeholder and credential-shape rejection, control-character rejection, known relationship references, disclosed-input evidence hashes, and a complete safety receipt. Malformed output and provider failures expose only stable codes and static safe messages; raw response bodies are not retained.
+
+Candidate generation and judgment remain separate. A deterministic offline advisory may attach relevance, consistency, and safety scores in integer millionths, structured issues, or a safe proposed edit, but it is marked advisory-only and cannot rank a winner or write any value. The author must explicitly accept, edit, reject, defer, or request regeneration for every candidate in the exact set. A complete decision review fingerprints both the set and input profile. Accepted or edited values become pending `CharacterSuggestion` records only; canon, extensions, derived values, and runtime domain-pack exports remain unchanged. Apply is independently reproducible, idempotent for its exact output, and fails closed when the profile, template, preview, approval, candidate set, or review is stale.
+
+Batch requests reuse the same per-profile contract with explicit id/prefix/missing-suggestion filters, deterministic target ordering, hard character/call/candidate/input-character budgets, bounded retry codes, a scheduling-window rate limit, an optional job-local payload cache, and an exact collection fingerprint. Jobs serialize their cursor, counters, completed prefix, safe failures, candidate sets, and cancellation rationale, so they can stop and resume without duplicating accepted suggestions. Atomic batch apply requires complete reviews for every successful target. Provider comparison aligns candidate sets for one exact profile by provider coordinate and candidate id; it exposes advisory evidence without selecting or applying a winner.
+
+The CLI follows the same boundary. This complete credential-free offline path reproduces the checked fixture:
+
+```bash
+cargo run -p weave-character -- assistance-preview \
+  examples/domain-modules/weave-character/assistance/input.character-collection.json \
+  examples/domain-modules/weave-character/assistance/glasswind.assistance-template.json \
+  examples/domain-modules/weave-character/assistance/single.assistance-request.json \
+  --output target/single.assistance-preview.json
+
+cargo run -p weave-character -- assistance-approve \
+  target/single.assistance-preview.json \
+  --author org.weave.reviewer.fixture \
+  --rationale "Approve the exact visible offline scope for this original synthetic fixture." \
+  --output target/single.assistance-approval.json
+
+cargo run -p weave-character -- assistance-generate-offline \
+  examples/domain-modules/weave-character/assistance/input.character-collection.json \
+  examples/domain-modules/weave-character/assistance/glasswind.assistance-template.json \
+  target/single.assistance-preview.json \
+  target/single.assistance-approval.json \
+  --output target/single.assistance-candidate-set.json
+
+cargo run -p weave-character -- assistance-advise \
+  target/single.assistance-candidate-set.json \
+  --reviewer org.weave.reviewer.advisory \
+  --output target/single.assistance-advisory-review.json
+
+cargo run -p weave-character -- assistance-review \
+  target/single.assistance-candidate-set.json \
+  examples/domain-modules/weave-character/assistance/single.assistance-decisions.json \
+  --author org.weave.reviewer.fixture \
+  --rationale "Exercise accept, edit, reject, defer, and regenerate as explicit fixture decisions." \
+  --output target/single.assistance-decision-review.json
+
+cargo run -p weave-character -- assistance-apply \
+  examples/domain-modules/weave-character/profile.character.json \
+  target/single.assistance-candidate-set.json \
+  target/single.assistance-decision-review.json \
+  --advisory target/single.assistance-advisory-review.json \
+  --dry-run \
+  --receipt-output target/single.assistance-receipt.json \
+  --profile-output target/single.applied-character.json
+```
+
+`assistance-inspect` exposes one exact candidate and its evidence, `assistance-compare` builds the advisory-only provider view, and `assistance-batch-*` previews, approves, starts, resumes, cancels, and atomically applies bounded jobs. The editor's `CharacterAssistanceSession` calls these same library functions for preview, approval, adapter execution, evidence inspection, advisory review, complete author decisions, dry-run, and atomic commit. The original MIT-licensed [assistance fixture guide](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/assistance) documents every JSON/RON artifact and batch command.
 
 ## Optional extension records
 
@@ -687,12 +749,13 @@ VAR projection_write_back = character.profile.projections.write_back.hexaco
 
 ## Canonical fixtures and commands
 
-The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The projection fixtures add an original pack, four taxonomies, signed fixed-point weights, calibration vectors, a three-character capacity-limited batch, reservation, complete traces and distribution, every review decision, locks, unlock, and rebalance. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression lineage, incomplete alignment/temporal/relationship reviews, a malformed proposal, a bad relationship, restricted expression placeholders, and derived canonical evidence.
+The public fixture is a wholly synthetic character named Ari Vale. It includes every factor and facet, a full date, attributed identity presentation, inner-life and voice records, every typed extension family, a pending suggestion, one locked field, a reviewed override, and an unknown opaque extension preserved at version 99. The projection fixtures add an original pack, four taxonomies, signed fixed-point weights, calibration vectors, a three-character capacity-limited batch, reservation, complete traces and distribution, every review decision, locks, unlock, and rebalance. The assistance fixtures add an original template, complete offline typed scaffolds, exact disclosure/approval artifacts, strict provider-response normalization, evidence, advisory and all five author decisions, suggestion-only application, a second credential-free coordinate, provider comparison, and a rate-limited resumable two-character batch with atomic receipt. The expression fixtures add an original immutable pack, direct normalization/revision, explicit exact assignment, every record family, all four typed context predicate families, clean lint/coverage, deterministic contextual and fallback resolutions, and source-located placeholder failure. The relationship fixtures add a three-character roster, immutable kind pack and policy, directed/symmetric/inverse authored graph, imported edge, four-source affinity scorer, computed and suggested candidates, all six review decisions, atomic receipt, conflict reconciliation, and review-only CSV. The presentation fixtures add Sable Reed, an exact catalog/seed/asset inventory, balanced capacity-limited allocation, transparent traces, a complete review, one explicit override, a locked avatar, an unlock revision, and replayable JSON/RON output. The collection fixtures add a bidirectional relationship, an exact rename request, a payload-free interrupted cursor, the byte-stable proposal and review, and the atomically renamed result. The alignment fixtures add an original five-axis pack, exact provider hash, calibration boundaries, every review action, an independently reproducible receipt, and an approved-only profile. The context fixtures add three exact offline packs, selected/downgraded/skipped coverage, four decisions, an independently reproducible receipt, the enriched profile, and a separately locked temporal runtime story. Invalid fixtures and deterministic fake-adapter tests cover unsupported versions, duplicate aliases, missing presentation assets, invalid palette slots, incompatible presentation overrides, conflicting overlays, stale input/review/progress/presentation/alignment/temporal/relationship/expression/assistance lineage, incomplete alignment/temporal/relationship/assistance reviews, malformed proposals or provider responses, bad relationships, restricted expression placeholders, credential-shaped assistance values, and derived canonical evidence.
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --check
 cargo run -p weave-character --example expression_fixture -- --check
 cargo run -p weave-character --example projection_fixture -- --check
+cargo run -p weave-character --example assistance_fixture -- --check
 
 cargo run -p weave-character -- schema profile \
   --output target/weave-character-profile-v1.schema.json
@@ -809,4 +872,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale-temporal.story.json
 ```
 
-Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.
+Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, assistance, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks assistance templates/requests/previews/approvals/provider responses/candidate sets/reviews/jobs/receipts/comparisons, projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run, stale, redaction, and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.

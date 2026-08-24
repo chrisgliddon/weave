@@ -67,6 +67,23 @@ use weave_character::{
     temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
     validate_expression_profile, validate_relationship_graph,
 };
+use weave_character::{
+    AssistanceAdvisoryReview, AssistanceBatchPreview, AssistanceBatchReceipt,
+    AssistanceBatchRequest, AssistanceCandidateSet, AssistanceComparisonReport, AssistanceDecision,
+    AssistanceDecisionReview, AssistanceExecutionApproval, AssistanceJob, AssistancePreview,
+    AssistanceProviderResponse, AssistanceReceipt, AssistanceRequest, AssistanceTemplate,
+    OfflineAssistanceProvider, apply_assistance_batch_reviews, apply_assistance_review,
+    approve_assistance_batch_preview, approve_assistance_preview,
+    assistance_advisory_review_schema, assistance_approval_schema, assistance_batch_preview_schema,
+    assistance_batch_receipt_schema, assistance_batch_request_schema,
+    assistance_candidate_set_fingerprint, assistance_candidate_set_schema,
+    assistance_comparison_schema, assistance_decision_review_schema, assistance_job_schema,
+    assistance_preview_schema, assistance_provider_response_schema, assistance_receipt_schema,
+    assistance_request_schema, assistance_template_schema, cancel_assistance_job,
+    compare_assistance_providers, create_assistance_decision_review, execute_assistance_request,
+    preview_assistance_batch, preview_assistance_request, resume_assistance_job,
+    review_assistance_candidates_offline, start_assistance_job,
+};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -719,6 +736,169 @@ enum Command {
         #[arg(long, value_enum)]
         format: Option<OutputFormat>,
     },
+    /// Render one exact credential-free disclosure and output contract without a provider call.
+    AssistancePreview {
+        collection: PathBuf,
+        template: PathBuf,
+        request: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Approve one already-rendered single-profile assistance scope.
+    AssistanceApprove {
+        preview: PathBuf,
+        #[arg(long)]
+        author: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Generate typed candidates through the built-in deterministic offline adapter.
+    AssistanceGenerateOffline {
+        collection: PathBuf,
+        template: PathBuf,
+        preview: PathBuf,
+        approval: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Inspect one immutable typed assistance candidate and its evidence.
+    AssistanceInspect {
+        candidates: PathBuf,
+        candidate_id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Produce a deterministic advisory-only assessment of one candidate set.
+    AssistanceAdvise {
+        candidates: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create a complete author decision review from a candidate-decision map.
+    AssistanceReview {
+        candidates: PathBuf,
+        decisions: PathBuf,
+        #[arg(long)]
+        author: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Reproduce author decisions and optionally commit their pending suggestions to one profile.
+    AssistanceApply {
+        profile: PathBuf,
+        candidates: PathBuf,
+        review: PathBuf,
+        #[arg(long = "advisory")]
+        advisories: Vec<PathBuf>,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        receipt_output: PathBuf,
+        #[arg(long)]
+        profile_output: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
+    /// Compare candidate sets in stable advisory order without selecting or applying a winner.
+    AssistanceCompare {
+        #[arg(long = "candidates", required = true)]
+        candidate_sets: Vec<PathBuf>,
+        #[arg(long = "advisory")]
+        advisories: Vec<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Render every exact per-character batch disclosure without a provider call.
+    AssistanceBatchPreview {
+        collection: PathBuf,
+        template: PathBuf,
+        request: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Approve one already-rendered complete batch disclosure.
+    AssistanceBatchApprove {
+        preview: PathBuf,
+        #[arg(long)]
+        author: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Start one serializable assistance batch job after explicit approval.
+    AssistanceBatchStart {
+        collection: PathBuf,
+        template: PathBuf,
+        preview: PathBuf,
+        approval: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Advance one deterministic scheduling window through the built-in offline adapter.
+    AssistanceBatchResumeOffline {
+        collection: PathBuf,
+        job: PathBuf,
+        #[arg(long, default_value_t = 100)]
+        max_attempts: usize,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Cancel a resumable assistance job without invoking its provider.
+    AssistanceBatchCancel {
+        job: PathBuf,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Atomically apply complete reviews for every successful batch target.
+    AssistanceBatchApply {
+        collection: PathBuf,
+        job: PathBuf,
+        #[arg(long = "review", required = true)]
+        reviews: Vec<PathBuf>,
+        #[arg(long = "advisory")]
+        advisories: Vec<PathBuf>,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        receipt_output: PathBuf,
+        #[arg(long)]
+        collection_output: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
     /// Score one exact original narrative-questionnaire pack.
     QuestionnairePropose {
         profile: PathBuf,
@@ -823,6 +1003,20 @@ enum DocumentKind {
     ProjectionReview,
     ProjectionReceipt,
     ProjectionLockRevision,
+    AssistanceTemplate,
+    AssistanceRequest,
+    AssistancePreview,
+    AssistanceApproval,
+    AssistanceProviderResponse,
+    AssistanceCandidateSet,
+    AssistanceAdvisoryReview,
+    AssistanceDecisionReview,
+    AssistanceReceipt,
+    AssistanceBatchRequest,
+    AssistanceBatchPreview,
+    AssistanceJob,
+    AssistanceBatchReceipt,
+    AssistanceComparison,
     QuestionnairePack,
     QuestionnaireAnswers,
     QuestionnaireProposal,
@@ -990,6 +1184,20 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::ProjectionReview => projection_review_schema()?,
                 DocumentKind::ProjectionReceipt => projection_receipt_schema()?,
                 DocumentKind::ProjectionLockRevision => projection_lock_revision_schema()?,
+                DocumentKind::AssistanceTemplate => assistance_template_schema()?,
+                DocumentKind::AssistanceRequest => assistance_request_schema()?,
+                DocumentKind::AssistancePreview => assistance_preview_schema()?,
+                DocumentKind::AssistanceApproval => assistance_approval_schema()?,
+                DocumentKind::AssistanceProviderResponse => assistance_provider_response_schema()?,
+                DocumentKind::AssistanceCandidateSet => assistance_candidate_set_schema()?,
+                DocumentKind::AssistanceAdvisoryReview => assistance_advisory_review_schema()?,
+                DocumentKind::AssistanceDecisionReview => assistance_decision_review_schema()?,
+                DocumentKind::AssistanceReceipt => assistance_receipt_schema()?,
+                DocumentKind::AssistanceBatchRequest => assistance_batch_request_schema()?,
+                DocumentKind::AssistanceBatchPreview => assistance_batch_preview_schema()?,
+                DocumentKind::AssistanceJob => assistance_job_schema()?,
+                DocumentKind::AssistanceBatchReceipt => assistance_batch_receipt_schema()?,
+                DocumentKind::AssistanceComparison => assistance_comparison_schema()?,
                 DocumentKind::QuestionnairePack => character_questionnaire_pack_schema()?,
                 DocumentKind::QuestionnaireAnswers => character_questionnaire_answers_schema()?,
                 DocumentKind::QuestionnaireProposal => character_questionnaire_proposal_schema()?,
@@ -1159,6 +1367,48 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::ProjectionLockRevision => {
                     parse_projection_lock_revision(&input, &source)?;
+                }
+                DocumentKind::AssistanceTemplate => {
+                    parse_assistance_template(&input, &source)?;
+                }
+                DocumentKind::AssistanceRequest => {
+                    parse_assistance_request(&input, &source)?;
+                }
+                DocumentKind::AssistancePreview => {
+                    parse_assistance_preview(&input, &source)?;
+                }
+                DocumentKind::AssistanceApproval => {
+                    parse_assistance_approval(&input, &source)?;
+                }
+                DocumentKind::AssistanceProviderResponse => {
+                    parse_assistance_provider_response(&input, &source)?;
+                }
+                DocumentKind::AssistanceCandidateSet => {
+                    parse_assistance_candidate_set(&input, &source)?;
+                }
+                DocumentKind::AssistanceAdvisoryReview => {
+                    parse_assistance_advisory(&input, &source)?;
+                }
+                DocumentKind::AssistanceDecisionReview => {
+                    parse_assistance_decision_review(&input, &source)?;
+                }
+                DocumentKind::AssistanceReceipt => {
+                    parse_assistance_receipt(&input, &source)?;
+                }
+                DocumentKind::AssistanceBatchRequest => {
+                    parse_assistance_batch_request(&input, &source)?;
+                }
+                DocumentKind::AssistanceBatchPreview => {
+                    parse_assistance_batch_preview(&input, &source)?;
+                }
+                DocumentKind::AssistanceJob => {
+                    parse_assistance_job(&input, &source)?;
+                }
+                DocumentKind::AssistanceBatchReceipt => {
+                    parse_assistance_batch_receipt(&input, &source)?;
+                }
+                DocumentKind::AssistanceComparison => {
+                    parse_assistance_comparison(&input, &source)?;
                 }
                 DocumentKind::QuestionnairePack => {
                     parse_questionnaire_pack(&input, &source)?;
@@ -2354,6 +2604,338 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 println!("validated Character projection lock revision dry-run");
             }
         }
+        Command::AssistancePreview {
+            collection,
+            template,
+            request,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let template = read_assistance_template(&template)?;
+            let request = read_assistance_request(&request)?;
+            let preview = preview_assistance_request(&collection, &template, &request)?;
+            let serialized = match format {
+                OutputFormat::Json => preview.to_json()?,
+                OutputFormat::Ron => preview.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote credential-free assistance preview {}",
+                output.display()
+            );
+        }
+        Command::AssistanceApprove {
+            preview,
+            author,
+            rationale,
+            format,
+            output,
+        } => {
+            let preview = read_assistance_preview(&preview)?;
+            let approval = approve_assistance_preview(&preview, author, rationale)?;
+            let serialized = match format {
+                OutputFormat::Json => approval.to_json()?,
+                OutputFormat::Ron => approval.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote explicit assistance approval {}", output.display());
+        }
+        Command::AssistanceGenerateOffline {
+            collection,
+            template,
+            preview,
+            approval,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let template = read_assistance_template(&template)?;
+            let preview = read_assistance_preview(&preview)?;
+            let approval = read_assistance_approval(&approval)?;
+            let mut provider = OfflineAssistanceProvider;
+            let candidates = execute_assistance_request(
+                &collection,
+                &template,
+                &preview,
+                &approval,
+                &mut provider,
+            )?;
+            let serialized = match format {
+                OutputFormat::Json => candidates.to_json()?,
+                OutputFormat::Ron => candidates.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote offline assistance candidates {}", output.display());
+        }
+        Command::AssistanceInspect {
+            candidates,
+            candidate_id,
+            format,
+            output,
+        } => {
+            let candidates = read_assistance_candidate_set(&candidates)?;
+            let candidate = candidates
+                .candidates
+                .get(&candidate_id)
+                .ok_or("assistance candidate was not found")?;
+            write_or_print(output.as_deref(), &serialize_value(candidate, format)?)?;
+        }
+        Command::AssistanceAdvise {
+            candidates,
+            reviewer,
+            format,
+            output,
+        } => {
+            let candidates = read_assistance_candidate_set(&candidates)?;
+            let advisory = review_assistance_candidates_offline(&candidates, reviewer)?;
+            let serialized = match format {
+                OutputFormat::Json => advisory.to_json()?,
+                OutputFormat::Ron => advisory.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote advisory-only assistance review {}", output.display());
+        }
+        Command::AssistanceReview {
+            candidates,
+            decisions,
+            author,
+            rationale,
+            format,
+            output,
+        } => {
+            let candidates = read_assistance_candidate_set(&candidates)?;
+            let decisions = read_assistance_decisions(&decisions)?;
+            let review =
+                create_assistance_decision_review(&candidates, author, rationale, decisions)?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote complete assistance decision review {}",
+                output.display()
+            );
+        }
+        Command::AssistanceApply {
+            profile,
+            candidates,
+            review,
+            advisories,
+            dry_run,
+            receipt_output,
+            profile_output,
+            format,
+        } => {
+            let profile = read_profile(&profile)?;
+            let candidates = read_assistance_candidate_set(&candidates)?;
+            let review = read_assistance_decision_review(&review)?;
+            let advisories = advisories
+                .iter()
+                .map(|path| read_assistance_advisory(path))
+                .collect::<Result<Vec<_>, _>>()?;
+            let receipt = apply_assistance_review(&profile, &candidates, &review, &advisories)?;
+            let serialized_receipt = match format {
+                OutputFormat::Json => receipt.to_json()?,
+                OutputFormat::Ron => receipt.to_ron()?,
+            };
+            atomic_write(&receipt_output, serialized_receipt.as_bytes())?;
+            if !dry_run {
+                let serialized_profile = match format {
+                    OutputFormat::Json => receipt.output_profile.to_json()?,
+                    OutputFormat::Ron => receipt.output_profile.to_ron()?,
+                };
+                atomic_write(&profile_output, serialized_profile.as_bytes())?;
+            }
+            println!("replayed assistance receipt {}", receipt_output.display());
+        }
+        Command::AssistanceCompare {
+            candidate_sets,
+            advisories,
+            format,
+            output,
+        } => {
+            let candidate_sets = candidate_sets
+                .iter()
+                .map(|path| read_assistance_candidate_set(path))
+                .collect::<Result<Vec<_>, _>>()?;
+            let advisories = advisories
+                .iter()
+                .map(|path| read_assistance_advisory(path))
+                .collect::<Result<Vec<_>, _>>()?;
+            let comparison = compare_assistance_providers(&candidate_sets, &advisories)?;
+            let serialized = match format {
+                OutputFormat::Json => comparison.to_json()?,
+                OutputFormat::Ron => comparison.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote advisory-only provider comparison {}",
+                output.display()
+            );
+        }
+        Command::AssistanceBatchPreview {
+            collection,
+            template,
+            request,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let template = read_assistance_template(&template)?;
+            let request = read_assistance_batch_request(&request)?;
+            let preview = preview_assistance_batch(&collection, &template, &request)?;
+            let serialized = match format {
+                OutputFormat::Json => preview.to_json()?,
+                OutputFormat::Ron => preview.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote complete assistance batch preview {}",
+                output.display()
+            );
+        }
+        Command::AssistanceBatchApprove {
+            preview,
+            author,
+            rationale,
+            format,
+            output,
+        } => {
+            let preview = read_assistance_batch_preview(&preview)?;
+            let approval = approve_assistance_batch_preview(&preview, author, rationale)?;
+            let serialized = match format {
+                OutputFormat::Json => approval.to_json()?,
+                OutputFormat::Ron => approval.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!(
+                "wrote explicit assistance batch approval {}",
+                output.display()
+            );
+        }
+        Command::AssistanceBatchStart {
+            collection,
+            template,
+            preview,
+            approval,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let template = read_assistance_template(&template)?;
+            let preview = read_assistance_batch_preview(&preview)?;
+            let approval = read_assistance_approval(&approval)?;
+            let job = start_assistance_job(&collection, &template, &preview, &approval)?;
+            let serialized = match format {
+                OutputFormat::Json => job.to_json()?,
+                OutputFormat::Ron => job.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("started assistance batch job {}", output.display());
+        }
+        Command::AssistanceBatchResumeOffline {
+            collection,
+            job,
+            max_attempts,
+            format,
+            output,
+        } => {
+            let collection = read_collection(&collection)?;
+            let job = read_assistance_job(&job)?;
+            let mut provider = OfflineAssistanceProvider;
+            let resumed = resume_assistance_job(&collection, &job, &mut provider, max_attempts)?;
+            let serialized = match format {
+                OutputFormat::Json => resumed.to_json()?,
+                OutputFormat::Ron => resumed.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("advanced assistance batch job {}", output.display());
+        }
+        Command::AssistanceBatchCancel {
+            job,
+            rationale,
+            format,
+            output,
+        } => {
+            let job = read_assistance_job(&job)?;
+            let cancelled = cancel_assistance_job(&job, rationale)?;
+            let serialized = match format {
+                OutputFormat::Json => cancelled.to_json()?,
+                OutputFormat::Ron => cancelled.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("cancelled assistance batch job {}", output.display());
+        }
+        Command::AssistanceBatchApply {
+            collection,
+            job,
+            reviews,
+            advisories,
+            dry_run,
+            receipt_output,
+            collection_output,
+            format,
+        } => {
+            let collection = read_collection(&collection)?;
+            let job = read_assistance_job(&job)?;
+            let mut reviews_by_profile = BTreeMap::new();
+            for path in &reviews {
+                let review = read_assistance_decision_review(path)?;
+                let profile_id = job
+                    .candidate_sets
+                    .iter()
+                    .find_map(|(profile_id, set)| {
+                        (assistance_candidate_set_fingerprint(set).ok().as_deref()
+                            == Some(review.candidate_set_sha256.as_str()))
+                        .then(|| profile_id.clone())
+                    })
+                    .ok_or("batch assistance review references no job candidate set")?;
+                if reviews_by_profile.insert(profile_id, review).is_some() {
+                    return Err("duplicate batch assistance review".into());
+                }
+            }
+            let mut advisories_by_profile = BTreeMap::<String, Vec<_>>::new();
+            for path in &advisories {
+                let advisory = read_assistance_advisory(path)?;
+                let profile_id = job
+                    .candidate_sets
+                    .iter()
+                    .find_map(|(profile_id, set)| {
+                        (assistance_candidate_set_fingerprint(set).ok().as_deref()
+                            == Some(advisory.candidate_set_sha256.as_str()))
+                        .then(|| profile_id.clone())
+                    })
+                    .ok_or("batch assistance advisory references no job candidate set")?;
+                advisories_by_profile
+                    .entry(profile_id)
+                    .or_default()
+                    .push(advisory);
+            }
+            let receipt = apply_assistance_batch_reviews(
+                &collection,
+                &job,
+                &reviews_by_profile,
+                &advisories_by_profile,
+            )?;
+            let serialized_receipt = match format {
+                OutputFormat::Json => receipt.to_json()?,
+                OutputFormat::Ron => receipt.to_ron()?,
+            };
+            atomic_write(&receipt_output, serialized_receipt.as_bytes())?;
+            if !dry_run {
+                let serialized_collection = match format {
+                    OutputFormat::Json => receipt.output_collection.to_json()?,
+                    OutputFormat::Ron => receipt.output_collection.to_ron()?,
+                };
+                atomic_write(&collection_output, serialized_collection.as_bytes())?;
+            }
+            println!(
+                "replayed assistance batch receipt {}",
+                receipt_output.display()
+            );
+        }
         Command::QuestionnairePropose {
             profile,
             pack,
@@ -3009,6 +3591,36 @@ fn parse_projection_lock_revision(
     }
 }
 
+macro_rules! assistance_parser {
+    ($name:ident, $type:ty) => {
+        fn $name(path: &Path, source: &str) -> Result<$type, weave_character::CharacterError> {
+            if is_ron(path) {
+                <$type>::from_ron(source)
+            } else {
+                <$type>::from_json(source)
+            }
+        }
+    };
+}
+
+assistance_parser!(parse_assistance_template, AssistanceTemplate);
+assistance_parser!(parse_assistance_request, AssistanceRequest);
+assistance_parser!(parse_assistance_preview, AssistancePreview);
+assistance_parser!(parse_assistance_approval, AssistanceExecutionApproval);
+assistance_parser!(
+    parse_assistance_provider_response,
+    AssistanceProviderResponse
+);
+assistance_parser!(parse_assistance_candidate_set, AssistanceCandidateSet);
+assistance_parser!(parse_assistance_advisory, AssistanceAdvisoryReview);
+assistance_parser!(parse_assistance_decision_review, AssistanceDecisionReview);
+assistance_parser!(parse_assistance_receipt, AssistanceReceipt);
+assistance_parser!(parse_assistance_batch_request, AssistanceBatchRequest);
+assistance_parser!(parse_assistance_batch_preview, AssistanceBatchPreview);
+assistance_parser!(parse_assistance_job, AssistanceJob);
+assistance_parser!(parse_assistance_batch_receipt, AssistanceBatchReceipt);
+assistance_parser!(parse_assistance_comparison, AssistanceComparisonReport);
+
 fn parse_questionnaire_answers(
     path: &Path,
     source: &str,
@@ -3128,6 +3740,82 @@ fn read_provenance(path: &Path) -> Result<weave_domain::Provenance, Box<dyn std:
 
 fn read_collection(path: &Path) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
     Ok(parse_collection(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_template(path: &Path) -> Result<AssistanceTemplate, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_template(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_request(path: &Path) -> Result<AssistanceRequest, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_request(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_preview(path: &Path) -> Result<AssistancePreview, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_preview(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_approval(
+    path: &Path,
+) -> Result<AssistanceExecutionApproval, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_approval(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_candidate_set(
+    path: &Path,
+) -> Result<AssistanceCandidateSet, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_candidate_set(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_assistance_advisory(
+    path: &Path,
+) -> Result<AssistanceAdvisoryReview, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_advisory(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_decision_review(
+    path: &Path,
+) -> Result<AssistanceDecisionReview, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_decision_review(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_assistance_batch_request(
+    path: &Path,
+) -> Result<AssistanceBatchRequest, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_batch_request(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_assistance_batch_preview(
+    path: &Path,
+) -> Result<AssistanceBatchPreview, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_batch_preview(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_assistance_job(path: &Path) -> Result<AssistanceJob, Box<dyn std::error::Error>> {
+    Ok(parse_assistance_job(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_assistance_decisions(
+    path: &Path,
+) -> Result<BTreeMap<String, AssistanceDecision>, Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid assistance decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid assistance decision JSON".into())
+    }
 }
 
 fn read_request(path: &Path) -> Result<CharacterOperationRequest, Box<dyn std::error::Error>> {

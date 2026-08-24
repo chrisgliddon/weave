@@ -18,6 +18,7 @@ The canonical pairs are:
 - `context/`: three offline temporal packs, deterministic ranking configuration, complete proposal/review/receipt pairs, enriched output, and a separately locked runtime projection with fact/cue lineage split.
 - `alignment/`: an original pluggable alignment pack, exact project selection, complete five-action review, independently reproducible receipt, and approved-only output profile.
 - `projections/`: the original Glasswind Lenses pack, fixed-point classification and role scoring, capacity/reservation/eligible-pool batch allocation, complete evidence traces, all review actions, locks, and deterministic rebalance.
+- `assistance/`: an original provider-neutral template, exact credential-free previews and approvals, deterministic offline typed candidates, advisory and author review, suggestion-only receipts, provider comparison, and a resumable bounded batch.
 - `presentation/`: attributed identity presentation, an original catalog and SVG assets, deterministic balanced allocation, complete review, explicit override, lock/unlock, and atomic output.
 - `expression/`: original normalized lexicon, preferences, vocabulary pools, behavioral signatures, voice constraints, a reusable dialogue template, exact pack assignment, lint/coverage reports, contextual resolution, and a stable fallback.
 
@@ -32,6 +33,8 @@ cargo run -p weave-character --example expression_fixture -- --write
 cargo run -p weave-character --example expression_fixture -- --check
 cargo run -p weave-character --example projection_fixture -- --write
 cargo run -p weave-character --example projection_fixture -- --check
+cargo run -p weave-character --example assistance_fixture -- --write
+cargo run -p weave-character --example assistance_fixture -- --check
 ```
 
 Validate or reproduce individual artifacts:
@@ -74,6 +77,19 @@ cargo run -p weave-character -- projection-inspect \
   org.weave.character.ari_vale \
   org.weave.projection.glasswind_lenses.narrative_role
 
+cargo run -p weave-character -- assistance-preview \
+  examples/domain-modules/weave-character/assistance/input.character-collection.json \
+  examples/domain-modules/weave-character/assistance/glasswind.assistance-template.json \
+  examples/domain-modules/weave-character/assistance/single.assistance-request.json \
+  --output target/single.assistance-preview.json
+
+cargo run -p weave-character -- assistance-generate-offline \
+  examples/domain-modules/weave-character/assistance/input.character-collection.json \
+  examples/domain-modules/weave-character/assistance/glasswind.assistance-template.json \
+  examples/domain-modules/weave-character/assistance/single.assistance-preview.json \
+  examples/domain-modules/weave-character/assistance/single.assistance-approval.json \
+  --output target/single.assistance-candidate-set.json
+
 cargo run -p weave-character -- collection-propose \
   examples/domain-modules/weave-character/operations/collection.character-collection.json \
   examples/domain-modules/weave-character/operations/rename.character-request.json \
@@ -114,4 +130,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale.story.json
 ```
 
-See the [projection fixture guide](projections/README.md), [expression fixture guide](expression/README.md), [presentation fixture guide](presentation/README.md), [alignment fixture guide](alignment/README.md), and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, reusable expression/dialogue, typed presentation, explainable projections, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.
+See the [assistance fixture guide](assistance/README.md), [projection fixture guide](projections/README.md), [expression fixture guide](expression/README.md), [presentation fixture guide](presentation/README.md), [alignment fixture guide](alignment/README.md), and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, provider-neutral assistance, reusable expression/dialogue, typed presentation, explainable projections, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.

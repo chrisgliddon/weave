@@ -1,0 +1,318 @@
+{
+  "$defs": {
+    "AssistanceCandidateValue": {
+      "description": "Closed structured values returned for every supported development surface.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "formative_thread": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "biography",
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "summary",
+            "formative_thread"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "motivation",
+              "type": "string"
+            },
+            "objective": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "objective",
+            "reason"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "concern": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "fear",
+              "type": "string"
+            },
+            "trigger": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "concern",
+            "trigger"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "guarded_because": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "guarded_truth",
+              "type": "string"
+            },
+            "truth": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "truth",
+            "guarded_because"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "tension",
+              "type": "string"
+            },
+            "opposing_pressure": {
+              "type": "string"
+            },
+            "premise": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "premise",
+            "opposing_pressure"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "hook": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "narrative_hook",
+              "type": "string"
+            },
+            "stakes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "hook",
+            "stakes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "presentation_cue",
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "cue",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "role_idea",
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "label",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "relationship_cue",
+              "type": "string"
+            },
+            "other_character_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rationale": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "cue",
+            "rationale"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "context_reaction",
+              "type": "string"
+            },
+            "reaction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "context",
+            "reaction"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "expression_example",
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "context",
+            "text"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AssistanceFieldKind": {
+      "description": "One requested development surface. Each variant has its own typed candidate value.",
+      "enum": [
+        "biography",
+        "motivation",
+        "fear",
+        "guarded_truth",
+        "tension",
+        "narrative_hook",
+        "presentation_cue",
+        "role_idea",
+        "relationship_cue",
+        "context_reaction",
+        "expression_example"
+      ],
+      "type": "string"
+    },
+    "AssistanceProviderCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "evidence_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "field": {
+          "$ref": "#/$defs/AssistanceFieldKind"
+        },
+        "value": {
+          "$ref": "#/$defs/AssistanceCandidateValue"
+        }
+      },
+      "required": [
+        "character_id",
+        "field",
+        "value",
+        "evidence_paths"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-assistance-provider-response:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed adapter response before Weave assigns stable ids, evidence hashes, and review metadata.",
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/AssistanceProviderCandidate"
+      },
+      "type": "array"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "response_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "response_format_version",
+    "request_id",
+    "candidates"
+  ],
+  "title": "Weave Character Assistance Provider Response v1",
+  "type": "object",
+  "x-weave-character-assistance-contract-version": 1
+}

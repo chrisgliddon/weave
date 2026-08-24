@@ -1,0 +1,3655 @@
+{
+  "preview_format_version": 1,
+  "request": {
+    "request_format_version": 1,
+    "id": "org.weave.character.assistance.ari_vale",
+    "profile_id": "org.weave.character.ari_vale",
+    "expected_profile_sha256": "ae2e95222dc111e9da7b173ca0c2788ff54b216447ac0a4f95c7502ed88ba74f",
+    "template": {
+      "id": "org.weave.character.assistance.glasswind_development",
+      "version": "1.0.0",
+      "sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71"
+    },
+    "provider": {
+      "adapter_id": "org.weave.character.assistance.offline",
+      "adapter_version": "1.0.0",
+      "engine_id": "glasswind_scaffold_v1",
+      "mode": "offline",
+      "supports_seed": true,
+      "credential_required": false
+    },
+    "fields": [
+      "biography",
+      "motivation",
+      "fear",
+      "guarded_truth",
+      "tension",
+      "narrative_hook",
+      "presentation_cue",
+      "role_idea",
+      "relationship_cue",
+      "context_reaction",
+      "expression_example"
+    ],
+    "included_inputs": [
+      "display_name",
+      "personality",
+      "inner_life",
+      "voice",
+      "relationships"
+    ],
+    "settings": {
+      "candidates_per_field": 1,
+      "language": "en-US",
+      "creativity_micros": 350000,
+      "maximum_output_chars": 200000,
+      "provider_parameters": {
+        "quality": {
+          "kind": "symbol",
+          "value": "balanced"
+        }
+      }
+    },
+    "seed": 20260824,
+    "generation": 0,
+    "provenance": {
+      "sources": [
+        {
+          "id": "assistance_request_original",
+          "kind": "original",
+          "url": "https://weave.dev/character/assistance",
+          "revision": "1",
+          "license": "MIT",
+          "license_url": "https://opensource.org/license/mit/",
+          "attribution": "Original synthetic assistance request fixture.",
+          "modified": false
+        }
+      ],
+      "transformations": [],
+      "claims": {
+        "request": [
+          "assistance_request_original"
+        ]
+      }
+    }
+  },
+  "request_sha256": "4016debc2ed1bb435ef2f8d4982bc2784e7fe040164bd323d4d10d7115c7b83f",
+  "template_sha256": "0959fd155d4f00d00ec18fd514601f5926200420974f87fd4211904deda40c71",
+  "scope": {
+    "profile_id": "org.weave.character.ari_vale",
+    "input_profile_sha256": "ae2e95222dc111e9da7b173ca0c2788ff54b216447ac0a4f95c7502ed88ba74f",
+    "included_values": {
+      "display_name": {
+        "kind": "string",
+        "value": "Ari Vale"
+      },
+      "personality": {
+        "kind": "object",
+        "value": {
+          "agreeableness": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.63
+                      }
+                    }
+                  }
+                }
+              },
+              "flexibility": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.59
+                      }
+                    }
+                  }
+                }
+              },
+              "forgivingness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.55
+                      }
+                    }
+                  }
+                }
+              },
+              "gentleness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.71
+                      }
+                    }
+                  }
+                }
+              },
+              "patience": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.67
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "conscientiousness": {
+            "kind": "object",
+            "value": {
+              "diligence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.84
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.78
+                      }
+                    }
+                  }
+                }
+              },
+              "organization": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.75
+                      }
+                    }
+                  }
+                }
+              },
+              "perfectionism": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.69
+                      }
+                    }
+                  }
+                }
+              },
+              "prudence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "locked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.82
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "emotionality": {
+            "kind": "object",
+            "value": {
+              "anxiety": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.58
+                      }
+                    }
+                  }
+                }
+              },
+              "dependence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.49
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.57
+                      }
+                    }
+                  }
+                }
+              },
+              "fearfulness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.42
+                      }
+                    }
+                  }
+                }
+              },
+              "sentimentality": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.79
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "extraversion": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.68
+                      }
+                    }
+                  }
+                }
+              },
+              "liveliness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.74
+                      }
+                    }
+                  }
+                }
+              },
+              "sociability": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.64
+                      }
+                    }
+                  }
+                }
+              },
+              "social_boldness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.61
+                      }
+                    }
+                  }
+                }
+              },
+              "social_self_esteem": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.73
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "honesty_humility": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.72
+                      }
+                    }
+                  }
+                }
+              },
+              "fairness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.81
+                      }
+                    }
+                  }
+                }
+              },
+              "greed_avoidance": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.66
+                      }
+                    }
+                  }
+                }
+              },
+              "modesty": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.65
+                      }
+                    }
+                  }
+                }
+              },
+              "sincerity": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.76
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "openness": {
+            "kind": "object",
+            "value": {
+              "aesthetic_appreciation": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.88
+                      }
+                    }
+                  }
+                }
+              },
+              "creativity": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.86
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.83
+                      }
+                    }
+                  }
+                }
+              },
+              "inquisitiveness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.81
+                      }
+                    }
+                  }
+                }
+              },
+              "unconventionality": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.77
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "inner_life": {
+        "kind": "object",
+        "value": {
+          "keeps_promises": {
+            "kind": "object",
+            "value": {
+              "category": {
+                "kind": "string",
+                "value": "value"
+              },
+              "content": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "string",
+                    "value": "Promises become paths Ari can follow through uncertainty."
+                  }
+                }
+              },
+              "id": {
+                "kind": "string",
+                "value": "keeps_promises"
+              }
+            }
+          }
+        }
+      },
+      "voice": {
+        "kind": "object",
+        "value": {
+          "measured_warmth": {
+            "kind": "object",
+            "value": {
+              "category": {
+                "kind": "string",
+                "value": "cadence"
+              },
+              "content": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "string",
+                    "value": "Short observations followed by one generous question."
+                  }
+                }
+              },
+              "id": {
+                "kind": "string",
+                "value": "measured_warmth"
+              }
+            }
+          }
+        }
+      },
+      "relationships": {
+        "kind": "object",
+        "value": {
+          "kind": {
+            "kind": "string",
+            "value": "relationships"
+          },
+          "record": {
+            "kind": "object",
+            "value": {
+              "header": {
+                "kind": "object",
+                "value": {
+                  "authority": {
+                    "kind": "string",
+                    "value": "org.weave.character.contract"
+                  },
+                  "canonical_personality_write_back": {
+                    "kind": "string",
+                    "value": "forbidden"
+                  },
+                  "extension_version": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "weave_expression_glasswind_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "namespace": {
+                    "kind": "string",
+                    "value": "org.weave.character.relationships"
+                  },
+                  "rationale": {
+                    "kind": "string",
+                    "value": "Explicit optional projection authored for the synthetic fixture."
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "accepted"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "reviewed"
+                  }
+                }
+              },
+              "value": {
+                "kind": "object",
+                "value": {
+                  "edges": {
+                    "kind": "object",
+                    "value": {
+                      "mentor_sable": {
+                        "kind": "object",
+                        "value": {
+                          "confidence": {
+                            "kind": "string",
+                            "value": "high"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "mentor_sable"
+                          },
+                          "kind": {
+                            "kind": "string",
+                            "value": "org.weave.relationship.mentor"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "weave_expression_glasswind_original"
+                              }
+                            ]
+                          },
+                          "notes": {
+                            "kind": "object",
+                            "value": {
+                              "fixture_context": {
+                                "kind": "object",
+                                "value": {
+                                  "content": {
+                                    "kind": "string",
+                                    "value": "Explicit synthetic relationship context for portable tests."
+                                  },
+                                  "id": {
+                                    "kind": "string",
+                                    "value": "fixture_context"
+                                  },
+                                  "lineage": {
+                                    "kind": "list",
+                                    "value": [
+                                      {
+                                        "kind": "string",
+                                        "value": "character_original"
+                                      },
+                                      {
+                                        "kind": "string",
+                                        "value": "weave_expression_glasswind_original"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Authored only for the public synthetic Character fixture."
+                          },
+                          "source_character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "target_character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.sable_reed"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "kind_pack": {
+                    "kind": "object",
+                    "value": {
+                      "id": {
+                        "kind": "string",
+                        "value": "org.weave.relationship.reference"
+                      },
+                      "sha256": {
+                        "kind": "string",
+                        "value": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019"
+                      },
+                      "version": {
+                        "kind": "string",
+                        "value": "1.0.0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "known_character_ids": [
+      "org.weave.character.ari_vale",
+      "org.weave.character.sable_reed"
+    ],
+    "serialized_character_count": 47886
+  },
+  "payload": {
+    "payload_format_version": 1,
+    "request_id": "org.weave.character.assistance.ari_vale",
+    "profile_id": "org.weave.character.ari_vale",
+    "fields": [
+      "biography",
+      "motivation",
+      "fear",
+      "guarded_truth",
+      "tension",
+      "narrative_hook",
+      "presentation_cue",
+      "role_idea",
+      "relationship_cue",
+      "context_reaction",
+      "expression_example"
+    ],
+    "instructions": {
+      "biography": "Suggest a concise biography thread and identify the formative thread it opens.",
+      "motivation": "Suggest one optional objective and a distinct reason the character may pursue it.",
+      "fear": "Suggest one optional concern and a concrete situation that could bring it forward.",
+      "guarded_truth": "Suggest one truth the character might guard and a reason for that caution.",
+      "tension": "Suggest a dramatic premise and a distinct pressure that pulls against it.",
+      "narrative_hook": "Suggest a scene-ready hook and explicit stakes without asserting new canon.",
+      "presentation_cue": "Suggest a repeatable presentation cue and explain its limited narrative purpose.",
+      "role_idea": "Suggest an optional role label and explain how it could support a scene.",
+      "relationship_cue": "Suggest a reversible relationship cue and explain what it could help explore.",
+      "context_reaction": "Suggest a context and a possible reaction while keeping both non-canonical.",
+      "expression_example": "Suggest a bounded dialogue context and an original example line for author review."
+    },
+    "required_evidence": {
+      "biography": [
+        "canon.identity.display_name"
+      ],
+      "motivation": [
+        "canon.identity.display_name"
+      ],
+      "fear": [
+        "canon.identity.display_name"
+      ],
+      "guarded_truth": [
+        "canon.identity.display_name"
+      ],
+      "tension": [
+        "canon.identity.display_name"
+      ],
+      "narrative_hook": [
+        "canon.identity.display_name"
+      ],
+      "presentation_cue": [
+        "canon.identity.display_name"
+      ],
+      "role_idea": [
+        "canon.identity.display_name"
+      ],
+      "relationship_cue": [
+        "canon.identity.display_name"
+      ],
+      "context_reaction": [
+        "canon.identity.display_name"
+      ],
+      "expression_example": [
+        "canon.identity.display_name"
+      ]
+    },
+    "included_values": {
+      "display_name": {
+        "kind": "string",
+        "value": "Ari Vale"
+      },
+      "personality": {
+        "kind": "object",
+        "value": {
+          "agreeableness": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.63
+                      }
+                    }
+                  }
+                }
+              },
+              "flexibility": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.59
+                      }
+                    }
+                  }
+                }
+              },
+              "forgivingness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.55
+                      }
+                    }
+                  }
+                }
+              },
+              "gentleness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.71
+                      }
+                    }
+                  }
+                }
+              },
+              "patience": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.67
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "conscientiousness": {
+            "kind": "object",
+            "value": {
+              "diligence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.84
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.78
+                      }
+                    }
+                  }
+                }
+              },
+              "organization": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.75
+                      }
+                    }
+                  }
+                }
+              },
+              "perfectionism": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.69
+                      }
+                    }
+                  }
+                }
+              },
+              "prudence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "locked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.82
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "emotionality": {
+            "kind": "object",
+            "value": {
+              "anxiety": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.58
+                      }
+                    }
+                  }
+                }
+              },
+              "dependence": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.49
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.57
+                      }
+                    }
+                  }
+                }
+              },
+              "fearfulness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.42
+                      }
+                    }
+                  }
+                }
+              },
+              "sentimentality": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.79
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "extraversion": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.68
+                      }
+                    }
+                  }
+                }
+              },
+              "liveliness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.74
+                      }
+                    }
+                  }
+                }
+              },
+              "sociability": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.64
+                      }
+                    }
+                  }
+                }
+              },
+              "social_boldness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.61
+                      }
+                    }
+                  }
+                }
+              },
+              "social_self_esteem": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.73
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "honesty_humility": {
+            "kind": "object",
+            "value": {
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.72
+                      }
+                    }
+                  }
+                }
+              },
+              "fairness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.81
+                      }
+                    }
+                  }
+                }
+              },
+              "greed_avoidance": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.66
+                      }
+                    }
+                  }
+                }
+              },
+              "modesty": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.65
+                      }
+                    }
+                  }
+                }
+              },
+              "sincerity": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.76
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "openness": {
+            "kind": "object",
+            "value": {
+              "aesthetic_appreciation": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.88
+                      }
+                    }
+                  }
+                }
+              },
+              "creativity": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.86
+                      }
+                    }
+                  }
+                }
+              },
+              "factor": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.83
+                      }
+                    }
+                  }
+                }
+              },
+              "inquisitiveness": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.81
+                      }
+                    }
+                  }
+                }
+              },
+              "unconventionality": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "object",
+                    "value": {
+                      "form": {
+                        "kind": "string",
+                        "value": "score"
+                      },
+                      "score": {
+                        "kind": "number",
+                        "value": 0.77
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "inner_life": {
+        "kind": "object",
+        "value": {
+          "keeps_promises": {
+            "kind": "object",
+            "value": {
+              "category": {
+                "kind": "string",
+                "value": "value"
+              },
+              "content": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "string",
+                    "value": "Promises become paths Ari can follow through uncertainty."
+                  }
+                }
+              },
+              "id": {
+                "kind": "string",
+                "value": "keeps_promises"
+              }
+            }
+          }
+        }
+      },
+      "voice": {
+        "kind": "object",
+        "value": {
+          "measured_warmth": {
+            "kind": "object",
+            "value": {
+              "category": {
+                "kind": "string",
+                "value": "cadence"
+              },
+              "content": {
+                "kind": "object",
+                "value": {
+                  "confidence": {
+                    "kind": "string",
+                    "value": "high"
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "not_required"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "authored"
+                  },
+                  "value": {
+                    "kind": "string",
+                    "value": "Short observations followed by one generous question."
+                  }
+                }
+              },
+              "id": {
+                "kind": "string",
+                "value": "measured_warmth"
+              }
+            }
+          }
+        }
+      },
+      "relationships": {
+        "kind": "object",
+        "value": {
+          "kind": {
+            "kind": "string",
+            "value": "relationships"
+          },
+          "record": {
+            "kind": "object",
+            "value": {
+              "header": {
+                "kind": "object",
+                "value": {
+                  "authority": {
+                    "kind": "string",
+                    "value": "org.weave.character.contract"
+                  },
+                  "canonical_personality_write_back": {
+                    "kind": "string",
+                    "value": "forbidden"
+                  },
+                  "extension_version": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "freshness": {
+                    "kind": "string",
+                    "value": "current"
+                  },
+                  "lineage": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "character_original"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "weave_expression_glasswind_original"
+                      }
+                    ]
+                  },
+                  "lock": {
+                    "kind": "string",
+                    "value": "unlocked"
+                  },
+                  "namespace": {
+                    "kind": "string",
+                    "value": "org.weave.character.relationships"
+                  },
+                  "rationale": {
+                    "kind": "string",
+                    "value": "Explicit optional projection authored for the synthetic fixture."
+                  },
+                  "review": {
+                    "kind": "string",
+                    "value": "accepted"
+                  },
+                  "state": {
+                    "kind": "string",
+                    "value": "reviewed"
+                  }
+                }
+              },
+              "value": {
+                "kind": "object",
+                "value": {
+                  "edges": {
+                    "kind": "object",
+                    "value": {
+                      "mentor_sable": {
+                        "kind": "object",
+                        "value": {
+                          "confidence": {
+                            "kind": "string",
+                            "value": "high"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "mentor_sable"
+                          },
+                          "kind": {
+                            "kind": "string",
+                            "value": "org.weave.relationship.mentor"
+                          },
+                          "lineage": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "weave_expression_glasswind_original"
+                              }
+                            ]
+                          },
+                          "notes": {
+                            "kind": "object",
+                            "value": {
+                              "fixture_context": {
+                                "kind": "object",
+                                "value": {
+                                  "content": {
+                                    "kind": "string",
+                                    "value": "Explicit synthetic relationship context for portable tests."
+                                  },
+                                  "id": {
+                                    "kind": "string",
+                                    "value": "fixture_context"
+                                  },
+                                  "lineage": {
+                                    "kind": "list",
+                                    "value": [
+                                      {
+                                        "kind": "string",
+                                        "value": "character_original"
+                                      },
+                                      {
+                                        "kind": "string",
+                                        "value": "weave_expression_glasswind_original"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Authored only for the public synthetic Character fixture."
+                          },
+                          "source_character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "target_character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.sable_reed"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "kind_pack": {
+                    "kind": "object",
+                    "value": {
+                      "id": {
+                        "kind": "string",
+                        "value": "org.weave.relationship.reference"
+                      },
+                      "sha256": {
+                        "kind": "string",
+                        "value": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019"
+                      },
+                      "version": {
+                        "kind": "string",
+                        "value": "1.0.0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "known_character_ids": [
+      "org.weave.character.ari_vale",
+      "org.weave.character.sable_reed"
+    ],
+    "settings": {
+      "candidates_per_field": 1,
+      "language": "en-US",
+      "creativity_micros": 350000,
+      "maximum_output_chars": 200000,
+      "provider_parameters": {
+        "quality": {
+          "kind": "symbol",
+          "value": "balanced"
+        }
+      }
+    },
+    "seed": 20260824,
+    "generation": 0,
+    "expected_response_schema": "urn:weave:schema:character-assistance-provider-response:1"
+  },
+  "expected_output": {
+    "response_format_version": 1,
+    "schema_id": "urn:weave:schema:character-assistance-provider-response:1",
+    "fields": [
+      "biography",
+      "motivation",
+      "fear",
+      "guarded_truth",
+      "tension",
+      "narrative_hook",
+      "presentation_cue",
+      "role_idea",
+      "relationship_cue",
+      "context_reaction",
+      "expression_example"
+    ],
+    "maximum_candidates_per_field": 1,
+    "maximum_output_chars": 200000
+  },
+  "provider_called": false,
+  "credential_value_stored": false
+}

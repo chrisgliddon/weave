@@ -1,0 +1,139 @@
+(
+    response_format_version: 1,
+    request_id: "org.weave.character.assistance.ari_vale",
+    candidates: [
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: biography,
+            value: (
+                kind: "biography",
+                summary: "Ari Vale has learned to approach a fragile alliance through patient observation and deliberate choices.",
+                formative_thread: "A prior encounter with uncertain evidence still shapes which questions feel worth pursuing.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: motivation,
+            value: (
+                kind: "motivation",
+                objective: "Ari Vale wants to bring an unfinished promise to a clear and useful conclusion.",
+                reason: "Doing so would turn experience with limited time into a choice that helps someone else.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: fear,
+            value: (
+                kind: "fear",
+                concern: "Ari Vale worries that acting too quickly could make a fragile alliance harder to repair.",
+                trigger: "The concern sharpens when uncertain evidence prevents a careful check.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: guarded_truth,
+            value: (
+                kind: "guarded_truth",
+                truth: "Ari Vale privately doubts whether the usual answer to a difficult question is still adequate.",
+                guarded_because: "Sharing the doubt before understanding conflicting loyalties could close off needed cooperation.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: tension,
+            value: (
+                kind: "tension",
+                premise: "Ari Vale values a measured response to an untested route.",
+                opposing_pressure: "The situation demands visible movement while an unexpected witness makes certainty impossible.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: narrative_hook,
+            value: (
+                kind: "narrative_hook",
+                hook: "A new message asks Ari Vale to revisit an untested route before anyone else sees the full pattern.",
+                stakes: "Ignoring it leaves an unexpected witness to define the outcome; answering it risks a trusted arrangement.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: presentation_cue,
+            value: (
+                kind: "presentation_cue",
+                cue: "When considering an unfinished promise, show Ari Vale pausing to align one small object before speaking.",
+                rationale: "The repeatable action makes deliberation visible without treating limited time as personality evidence.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: role_idea,
+            value: (
+                kind: "role_idea",
+                label: "Route Witness",
+                rationale: "This optional role frames how Ari Vale might help a scene involving an untested route; it is not a personality fact.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: relationship_cue,
+            value: (
+                kind: "relationship_cue",
+                cue: "Invite a conversation where Ari Vale asks what the other person needs before addressing an unfinished promise.",
+                other_character_id: Some("org.weave.character.sable_reed"),
+                rationale: "The cue creates room to explore trust under limited time without asserting a relationship change.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: context_reaction,
+            value: (
+                kind: "context_reaction",
+                context: "A familiar plan is interrupted by an unexpected witness.",
+                reaction: "Ari Vale names what remains known, asks one clarifying question, and keeps an untested route open for review.",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+        (
+            character_id: "org.weave.character.ari_vale",
+            field: expression_example,
+            value: (
+                kind: "expression_example",
+                context: "When the group reaches an untested route while facing an unexpected witness",
+                text: "Ari Vale says, “Let’s mark what we know, then choose the next question together.”",
+            ),
+            evidence_paths: [
+                "canon.identity.display_name",
+            ],
+        ),
+    ],
+)

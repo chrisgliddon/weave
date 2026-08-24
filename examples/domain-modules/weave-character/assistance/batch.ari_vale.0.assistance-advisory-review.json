@@ -1,0 +1,27 @@
+{
+  "advisory_format_version": 1,
+  "id": "org.weave.character.assistance.glasswind_batch.target_df187c13707e547a.candidates.offline_advisory",
+  "candidate_set_sha256": "7d71c44490b9a7c4e6f419635eae93c1e43a54d751f34bb6fafd06b0292a0cc9",
+  "reviewer": "org.weave.reviewer.advisory",
+  "method": "org.weave.character.assistance.offline_advisory_v1",
+  "advisory_only": true,
+  "canonical_write_back": false,
+  "assessments": {
+    "biography_g0_1": {
+      "candidate_id": "biography_g0_1",
+      "relevance_micros": 869400,
+      "consistency_micros": 799950,
+      "safety_micros": 936900,
+      "issues": [],
+      "explanation": "Offline advisory scores are deterministic review aids derived from the immutable candidate id; they do not rank or select authoring content."
+    },
+    "motivation_g0_1": {
+      "candidate_id": "motivation_g0_1",
+      "relevance_micros": 871500,
+      "consistency_micros": 864950,
+      "safety_micros": 961800,
+      "issues": [],
+      "explanation": "Offline advisory scores are deterministic review aids derived from the immutable candidate id; they do not rank or select authoring content."
+    }
+  }
+}
