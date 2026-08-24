@@ -12,6 +12,7 @@ pub mod node_renderers;
 pub mod pattern_browser;
 pub mod preview;
 pub mod project;
+pub mod relationships;
 pub mod state;
 pub mod sync;
 pub mod tabletop;
@@ -53,6 +54,7 @@ pub use project::{
     ConflictResolution, ConflictResult, ExternalChange, ExternalConflict, ProjectError,
     ProjectSave, ProjectSession, ProjectWatcher,
 };
+pub use relationships::RelationshipSession;
 pub use state::{
     CenterView, EditorCommand, EditorState, MenuDefinition, MenuEntry, PanelLayout, StatusMessage,
     menu_definitions,

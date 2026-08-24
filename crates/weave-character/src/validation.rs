@@ -15,8 +15,10 @@ use crate::model::{
     IdentityContextNote, IdentityPresentation, OceanView, OpaqueExtensionData,
     OpaqueInterpretation, PresentationAssetReference, PresentationCatalogAssignment,
     PresentationCatalogRef, PresentationCatalogValue, PresentationPalette, PronounSet,
-    RelationshipEdges, ReviewState, RoleProjections, TraitMeasurement, ValueState,
-    VersionedExtension, VoiceDirection,
+    RelationshipConsent, RelationshipConsentState, RelationshipDate, RelationshipEdge,
+    RelationshipEdgeOrigin, RelationshipEdges, RelationshipKindPackRef, ReviewState,
+    RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceDirection,
+    relationship_graph_format_version,
 };
 
 const MAX_TEXT: usize = 65_536;
@@ -391,7 +393,7 @@ fn validate_extension(
         }
         CharacterExtension::Relationships(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_relationships(namespace, profile_id, &record.value)
+            validate_relationships(namespace, profile_id, &record.value, lineage)
         }
         CharacterExtension::AlignmentView(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
@@ -802,9 +804,27 @@ fn validate_relationships(
     namespace: &str,
     profile_id: &str,
     value: &RelationshipEdges,
+    lineage: &BTreeSet<&str>,
 ) -> Result<(), CharacterError> {
+    let root = format!("extensions.{namespace}.value");
+    if value.graph_format_version != relationship_graph_format_version() {
+        return Err(error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{root}.graph_format_version"),
+            "unsupported relationship graph value version",
+        ));
+    }
+    if let Some(pack) = &value.kind_pack {
+        validate_relationship_kind_pack_ref(&format!("{root}.kind_pack"), pack)?;
+    }
+    if value.edges.len() > 65_536 {
+        return Err(invalid_value(
+            format!("{root}.edges"),
+            "relationship graph contains too many edges",
+        ));
+    }
     for (id, edge) in &value.edges {
-        let path = format!("extensions.{namespace}.value.edges.{id}");
+        let path = format!("{root}.edges.{id}");
         validate_local_id(&path, id)?;
         if edge.id != *id || edge.source_character_id != profile_id {
             return Err(error(
@@ -817,14 +837,290 @@ fn validate_relationships(
             &format!("{path}.target_character_id"),
             &edge.target_character_id,
         )?;
-        if edge.target_character_id == profile_id {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                format!("{path}.target_character_id"),
-                "relationship edge cannot target its owning character",
+        validate_namespaced_id(&format!("{path}.kind"), &edge.kind)?;
+        validate_relationship_edge(&path, edge, lineage)?;
+    }
+    Ok(())
+}
+
+fn validate_relationship_kind_pack_ref(
+    path: &str,
+    value: &RelationshipKindPackRef,
+) -> Result<(), CharacterError> {
+    validate_namespaced_id(&format!("{path}.id"), &value.id)?;
+    validate_semver(&format!("{path}.version"), &value.version)?;
+    validate_sha256(&format!("{path}.sha256"), &value.sha256)
+}
+
+fn validate_relationship_edge(
+    path: &str,
+    edge: &RelationshipEdge,
+    profile_lineage: &BTreeSet<&str>,
+) -> Result<(), CharacterError> {
+    if let Some(validity) = &edge.validity {
+        if validity.start.is_none() && validity.end.is_none() {
+            return Err(invalid_value(
+                format!("{path}.validity"),
+                "relationship validity requires at least one date bound",
             ));
         }
-        validate_namespaced_id(&format!("{path}.kind"), &edge.kind)?;
+        if let Some(start) = validity.start {
+            validate_relationship_date(&format!("{path}.validity.start"), start)?;
+        }
+        if let Some(end) = validity.end {
+            validate_relationship_date(&format!("{path}.validity.end"), end)?;
+        }
+        if matches!((validity.start, validity.end), (Some(start), Some(end)) if start > end) {
+            return Err(invalid_value(
+                format!("{path}.validity"),
+                "relationship validity start must not follow its end",
+            ));
+        }
+    }
+    if let Some(inverse_edge_id) = &edge.inverse_edge_id {
+        validate_local_id(&format!("{path}.inverse_edge_id"), inverse_edge_id)?;
+    }
+    for (id, note) in &edge.notes {
+        let note_path = format!("{path}.notes.{id}");
+        validate_local_id(&note_path, id)?;
+        if note.id != *id {
+            return Err(error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{note_path}.id"),
+                "relationship note id must equal its containing map key",
+            ));
+        }
+        validate_text(&format!("{note_path}.content"), &note.content, 1, 4_096)?;
+        validate_optional_lineage(
+            &format!("{note_path}.lineage"),
+            &note.lineage,
+            profile_lineage,
+        )?;
+    }
+    if let Some(consent) = &edge.consent {
+        validate_relationship_consent(&format!("{path}.consent"), consent, profile_lineage)?;
+    }
+    for (id, exception) in &edge.safeguard_exceptions {
+        let exception_path = format!("{path}.safeguard_exceptions.{id}");
+        validate_local_id(&exception_path, id)?;
+        if exception.id != *id
+            || !matches!(exception.code.as_str(), "R107" | "R108" | "R109" | "R110")
+        {
+            return Err(invalid_value(
+                exception_path,
+                "relationship safeguard exception id or code is invalid",
+            ));
+        }
+        validate_namespaced_id(
+            &format!("{path}.safeguard_exceptions.{id}.reviewer"),
+            &exception.reviewer,
+        )?;
+        validate_text(
+            &format!("{path}.safeguard_exceptions.{id}.rationale"),
+            &exception.rationale,
+            1,
+            2_048,
+        )?;
+        validate_optional_lineage(
+            &format!("{path}.safeguard_exceptions.{id}.lineage"),
+            &exception.lineage,
+            profile_lineage,
+        )?;
+    }
+    if edge
+        .affinity_score_micros
+        .is_some_and(|score| score > 1_000_000)
+    {
+        return Err(invalid_value(
+            format!("{path}.affinity_score_micros"),
+            "relationship advisory score must be bounded millionths",
+        ));
+    }
+    if edge.evidence.len() > 256 {
+        return Err(invalid_value(
+            format!("{path}.evidence"),
+            "relationship edge contains too many evidence contributions",
+        ));
+    }
+    let mut evidence_ids = BTreeSet::new();
+    for (index, evidence) in edge.evidence.iter().enumerate() {
+        let evidence_path = format!("{path}.evidence[{index}]");
+        validate_local_id(&format!("{evidence_path}.id"), &evidence.id)?;
+        if !evidence_ids.insert(evidence.id.as_str()) {
+            return Err(invalid_value(
+                format!("{evidence_path}.id"),
+                "relationship evidence ids must be unique while order is retained",
+            ));
+        }
+        if evidence.contribution_micros.unsigned_abs() > 1_000_000 {
+            return Err(invalid_value(
+                format!("{evidence_path}.contribution_micros"),
+                "relationship evidence contribution must be bounded millionths",
+            ));
+        }
+        validate_sorted_relationship_paths(
+            &format!("{evidence_path}.input_paths"),
+            &evidence.input_paths,
+        )?;
+        validate_sha256(
+            &format!("{evidence_path}.input_sha256"),
+            &evidence.input_sha256,
+        )?;
+        validate_text(
+            &format!("{evidence_path}.explanation"),
+            &evidence.explanation,
+            1,
+            2_048,
+        )?;
+    }
+    validate_optional_lineage(&format!("{path}.lineage"), &edge.lineage, profile_lineage)?;
+    if let Some(rationale) = &edge.rationale {
+        validate_text(&format!("{path}.rationale"), rationale, 1, 2_048)?;
+    }
+    match edge.origin {
+        RelationshipEdgeOrigin::Authored => {
+            if !matches!(
+                edge.review,
+                ReviewState::NotRequired | ReviewState::Accepted
+            ) {
+                return Err(invalid_value(
+                    format!("{path}.review"),
+                    "authored relationship review state is invalid",
+                ));
+            }
+        }
+        RelationshipEdgeOrigin::Imported => {
+            if edge.rationale.is_none()
+                || !matches!(
+                    edge.review,
+                    ReviewState::NotRequired | ReviewState::Accepted
+                )
+            {
+                return Err(invalid_value(
+                    path,
+                    "imported relationships require rationale and a resolved review state",
+                ));
+            }
+        }
+        RelationshipEdgeOrigin::ComputedAffinity => {
+            if edge.affinity_score_micros.is_none()
+                || edge.evidence.is_empty()
+                || edge.review != ReviewState::Accepted
+            {
+                return Err(invalid_value(
+                    path,
+                    "applied computed affinity requires accepted review, score, and evidence",
+                ));
+            }
+        }
+        RelationshipEdgeOrigin::SuggestedNarrative => {
+            if edge.rationale.is_none()
+                || !matches!(edge.review, ReviewState::Pending | ReviewState::Rejected)
+            {
+                return Err(invalid_value(
+                    path,
+                    "narrative suggestion requires rationale and a pending or rejected review",
+                ));
+            }
+        }
+        RelationshipEdgeOrigin::ReviewedSuggestion => {
+            if edge.rationale.is_none() || edge.review != ReviewState::Accepted {
+                return Err(invalid_value(
+                    path,
+                    "reviewed narrative suggestion requires accepted review and rationale",
+                ));
+            }
+        }
+    }
+    if !edge.safeguard_exceptions.is_empty() && edge.review != ReviewState::Accepted {
+        return Err(invalid_value(
+            format!("{path}.safeguard_exceptions"),
+            "safeguard exceptions require an accepted review",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_relationship_consent(
+    path: &str,
+    consent: &RelationshipConsent,
+    profile_lineage: &BTreeSet<&str>,
+) -> Result<(), CharacterError> {
+    if consent.state == RelationshipConsentState::Affirmed {
+        validate_namespaced_id(
+            &format!("{path}.reviewed_by"),
+            consent.reviewed_by.as_deref().unwrap_or_default(),
+        )?;
+        validate_text(
+            &format!("{path}.rationale"),
+            consent.rationale.as_deref().unwrap_or_default(),
+            1,
+            2_048,
+        )?;
+    } else {
+        if let Some(reviewer) = &consent.reviewed_by {
+            validate_namespaced_id(&format!("{path}.reviewed_by"), reviewer)?;
+        }
+        if let Some(rationale) = &consent.rationale {
+            validate_text(&format!("{path}.rationale"), rationale, 1, 2_048)?;
+        }
+    }
+    validate_optional_lineage(
+        &format!("{path}.lineage"),
+        &consent.lineage,
+        profile_lineage,
+    )
+}
+
+fn validate_optional_lineage(
+    path: &str,
+    values: &[String],
+    lineage: &BTreeSet<&str>,
+) -> Result<(), CharacterError> {
+    if values.is_empty() {
+        Ok(())
+    } else {
+        validate_lineage(path, values, lineage)
+    }
+}
+
+fn validate_sorted_relationship_paths(path: &str, values: &[String]) -> Result<(), CharacterError> {
+    if values.is_empty() || values.len() > 4_096 {
+        return Err(invalid_value(
+            path,
+            "relationship evidence requires bounded input paths",
+        ));
+    }
+    let mut prior = None;
+    for value in values {
+        validate_text(path, value, 1, 1_024)?;
+        if prior.is_some_and(|prior: &str| prior >= value.as_str()) {
+            return Err(invalid_value(
+                path,
+                "relationship input paths must be unique and sorted",
+            ));
+        }
+        prior = Some(value.as_str());
+    }
+    Ok(())
+}
+
+fn validate_relationship_date(path: &str, value: RelationshipDate) -> Result<(), CharacterError> {
+    let valid_day = match value.month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => value.day <= 31,
+        4 | 6 | 9 | 11 => value.day <= 30,
+        2 => {
+            let leap = value.year.rem_euclid(4) == 0
+                && (value.year.rem_euclid(100) != 0 || value.year.rem_euclid(400) == 0);
+            value.day <= if leap { 29 } else { 28 }
+        }
+        _ => false,
+    };
+    if !(-999_999..=999_999).contains(&value.year) || value.day == 0 || !valid_day {
+        return Err(invalid_value(
+            path,
+            "relationship date is not a valid proleptic-Gregorian date",
+        ));
     }
     Ok(())
 }

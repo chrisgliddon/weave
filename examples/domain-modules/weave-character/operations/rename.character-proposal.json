@@ -2,9 +2,9 @@
   "proposal_format_version": 1,
   "id": "org.weave.character.operation.rename_ari.proposal",
   "collection_id": "org.weave.character.collection.glasswind",
-  "input_sha256": "241906d3d910765dd767df17e950b84c6fe41832f7fb7bcd4c1df1a3e444fd1a",
-  "request_sha256": "6dd5fb4a33df7a65452d3b27dbbf9776fe961db3dabac3c6a50c8c56dc2ce079",
-  "output_sha256": "29e36762bcb1138226effa402e968a116aa8d4d3fabd85d9809e1591b1054973",
+  "input_sha256": "9fdf8030061b1f6c5e04c35d96ec2de2708440b107be32048fa942bb890f05d8",
+  "request_sha256": "06fb9dc86cc8a49994836679f7c919f375a8c69cb246ddedaf14472bfcc95ce7",
+  "output_sha256": "474187a66078e79ec1ef5d5829e1bdb1c54055ab60f3623182e3a02753e3f64e",
   "seed": 4271,
   "selected_ids": [
     "org.weave.character.ari_vale",
@@ -12,12 +12,12 @@
   ],
   "changes": [
     {
-      "id": "change_84d8bfe417e265abc311ada6",
+      "id": "change_0a8d5147b1cf4bb09aa92abc",
       "kind": "renamed",
       "before_id": "org.weave.character.ari_vale",
       "after_id": "org.weave.character.ari_vale_wayfinder",
-      "before_sha256": "19b3034ba8e07240116ac152759f75bf514cab47859c08be5a568bd34444618c",
-      "after_sha256": "677641234491aaed8d8c74aae1d3792caf36976a3c601e571bf6736b3940f2b3",
+      "before_sha256": "2232efdeeb3ee22a4d7f30a5e0103acace7b9f0ed47a276e82a81849f8049ecc",
+      "after_sha256": "07edccc0cf1141b4b3f439f117bee53fda328627e023853e4ad7eef6efc67ee8",
       "affected_references": [
         {
           "owner_character_id": "org.weave.character.ari_vale_wayfinder",
@@ -26,12 +26,12 @@
       ]
     },
     {
-      "id": "change_f34cfcaa29c5e5da803394ed",
+      "id": "change_189c86a3072966239a5d6a0e",
       "kind": "reference_updated",
       "before_id": "org.weave.character.sable_reed",
       "after_id": "org.weave.character.sable_reed",
-      "before_sha256": "121d61f1dd36aa3f65744c2f06fc6df7cdbd0623ad03398cb0e93910e052218b",
-      "after_sha256": "7873c37e42d48ae9ead4eeb63d3eb5b59bd94e3f28f348b09a7ab1d2b9d53db2",
+      "before_sha256": "e256570969f94ddc2ec53e8f16dc19daa648a1adbf3423c67494ecf093461dd2",
+      "after_sha256": "b22ed7315aeb0f2587f23d8ffe9f69232666ab0f25f3aae8cd55b2131d8131ac",
       "affected_references": [
         {
           "owner_character_id": "org.weave.character.sable_reed",
@@ -577,7 +577,7 @@
                 "lock": "unlocked",
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_361b86102edd3c9a",
+                  "alignment_apply_2171b3adb49f9384",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -641,8 +641,8 @@
                   "canon.personality.openness.factor",
                   "canon.personality.openness.inquisitiveness"
                 ],
-                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
-                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6"
+                "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d"
               }
             }
           },
@@ -901,8 +901,8 @@
                         "palette_slot": "accent",
                         "color": "#D6A24A"
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -933,8 +933,8 @@
                           "alt_text": "Geometric cedar and gold wayfinder avatar."
                         }
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -960,8 +960,8 @@
                         "category": "org.weave.appearance.silhouette",
                         "descriptor": "Long layered travel coat with a narrow shoulder line."
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -986,8 +986,8 @@
                         "kind": "style_tag",
                         "tag": "river_glass"
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -1021,13 +1021,31 @@
                 "canonical_personality_write_back": "forbidden"
               },
               "value": {
+                "kind_pack": {
+                  "id": "org.weave.relationship.reference",
+                  "version": "1.0.0",
+                  "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019"
+                },
                 "edges": {
                   "mentor_sable": {
                     "id": "mentor_sable",
                     "source_character_id": "org.weave.character.ari_vale_wayfinder",
                     "target_character_id": "org.weave.character.sable_reed",
                     "kind": "org.weave.relationship.mentor",
-                    "confidence": "high"
+                    "confidence": "high",
+                    "notes": {
+                      "fixture_context": {
+                        "id": "fixture_context",
+                        "content": "Explicit synthetic relationship context for portable tests.",
+                        "lineage": [
+                          "character_original"
+                        ]
+                      }
+                    },
+                    "lineage": [
+                      "character_original"
+                    ],
+                    "rationale": "Authored only for the public synthetic Character fixture."
                   }
                 }
               }
@@ -1186,6 +1204,16 @@
               "modified": false
             },
             {
+              "id": "weave_relationship_reference_pack",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "relationship-graph-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+              "modified": false
+            },
+            {
               "id": "weave_wayfinder_compass",
               "kind": "original",
               "url": "https://github.com/chrisgliddon/weave",
@@ -1198,7 +1226,7 @@
           ],
           "transformations": [
             {
-              "id": "alignment_apply_361b86102edd3c9a",
+              "id": "alignment_apply_2171b3adb49f9384",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -1220,7 +1248,10 @@
               "weave_glasswind_presentation"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_361b86102edd3c9a"
+              "alignment_apply_2171b3adb49f9384"
+            ],
+            "extensions.org.weave.character.relationships": [
+              "weave_relationship_reference_pack"
             ],
             "inputs": [
               "weave_wayfinder_compass"
@@ -1768,7 +1799,7 @@
                 "lock": "unlocked",
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_361b86102edd3c9a",
+                  "alignment_apply_2171b3adb49f9384",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -1832,8 +1863,8 @@
                   "canon.personality.openness.factor",
                   "canon.personality.openness.inquisitiveness"
                 ],
-                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
-                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6"
+                "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d"
               }
             }
           },
@@ -2092,8 +2123,8 @@
                         "palette_slot": "accent",
                         "color": "#7C5CFF"
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "authored",
                     "confidence": "high",
@@ -2124,8 +2155,8 @@
                           "alt_text": "Geometric blue and silver routekeeper avatar."
                         }
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -2151,8 +2182,8 @@
                         "category": "org.weave.appearance.silhouette",
                         "descriptor": "Short route cape over a compact travel silhouette."
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -2177,8 +2208,8 @@
                         "kind": "style_tag",
                         "tag": "cedar_ink"
                       },
-                      "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                      "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe"
+                      "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                      "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
                     },
                     "state": "reviewed",
                     "confidence": "high",
@@ -2212,13 +2243,31 @@
                 "canonical_personality_write_back": "forbidden"
               },
               "value": {
+                "kind_pack": {
+                  "id": "org.weave.relationship.reference",
+                  "version": "1.0.0",
+                  "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019"
+                },
                 "edges": {
                   "mentor_sable": {
                     "id": "mentor_sable",
                     "source_character_id": "org.weave.character.sable_reed",
                     "target_character_id": "org.weave.character.ari_vale_wayfinder",
                     "kind": "org.weave.relationship.mentor",
-                    "confidence": "high"
+                    "confidence": "high",
+                    "notes": {
+                      "fixture_context": {
+                        "id": "fixture_context",
+                        "content": "Explicit synthetic relationship context for portable tests.",
+                        "lineage": [
+                          "character_original"
+                        ]
+                      }
+                    },
+                    "lineage": [
+                      "character_original"
+                    ],
+                    "rationale": "Authored only for the public synthetic Character fixture."
                   }
                 }
               }
@@ -2377,6 +2426,16 @@
               "modified": false
             },
             {
+              "id": "weave_relationship_reference_pack",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "relationship-graph-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+              "modified": false
+            },
+            {
               "id": "weave_wayfinder_compass",
               "kind": "original",
               "url": "https://github.com/chrisgliddon/weave",
@@ -2389,7 +2448,7 @@
           ],
           "transformations": [
             {
-              "id": "alignment_apply_361b86102edd3c9a",
+              "id": "alignment_apply_2171b3adb49f9384",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -2411,7 +2470,10 @@
               "weave_glasswind_presentation"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_361b86102edd3c9a"
+              "alignment_apply_2171b3adb49f9384"
+            ],
+            "extensions.org.weave.character.relationships": [
+              "weave_relationship_reference_pack"
             ],
             "inputs": [
               "weave_wayfinder_compass"
@@ -2433,7 +2495,7 @@
   "request": {
     "request_format_version": 1,
     "id": "org.weave.character.operation.rename_ari",
-    "expected_input_sha256": "241906d3d910765dd767df17e950b84c6fe41832f7fb7bcd4c1df1a3e444fd1a",
+    "expected_input_sha256": "9fdf8030061b1f6c5e04c35d96ec2de2708440b107be32048fa942bb890f05d8",
     "seed": 4271,
     "scope": {
       "kind": "characters",

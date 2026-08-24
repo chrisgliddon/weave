@@ -1067,7 +1067,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_361b86102edd3c9a",
+                  "alignment_apply_2171b3adb49f9384",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -1078,7 +1078,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -1093,7 +1093,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -1406,9 +1406,27 @@
                     "confidence": "high",
                     "id": "mentor_sable",
                     "kind": "org.weave.relationship.mentor",
+                    "lineage": [
+                      "character_original"
+                    ],
+                    "notes": {
+                      "fixture_context": {
+                        "content": "Explicit synthetic relationship context for portable tests.",
+                        "id": "fixture_context",
+                        "lineage": [
+                          "character_original"
+                        ]
+                      }
+                    },
+                    "rationale": "Authored only for the public synthetic Character fixture.",
                     "source_character_id": "org.weave.character.ari_vale",
                     "target_character_id": "org.weave.character.sable_reed"
                   }
+                },
+                "kind_pack": {
+                  "id": "org.weave.relationship.reference",
+                  "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                  "version": "1.0.0"
                 }
               }
             }
@@ -1489,7 +1507,10 @@
               "weave_wayfinder_compass"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_361b86102edd3c9a"
+              "alignment_apply_2171b3adb49f9384"
+            ],
+            "extensions.org.weave.character.relationships": [
+              "weave_relationship_reference_pack"
             ],
             "inputs": [
               "weave_wayfinder_compass"
@@ -1513,6 +1534,16 @@
               "url": "https://github.com/chrisgliddon/weave"
             },
             {
+              "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+              "id": "weave_relationship_reference_pack",
+              "kind": "original",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "modified": false,
+              "revision": "relationship-graph-v1",
+              "url": "https://github.com/chrisgliddon/weave"
+            },
+            {
               "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
               "id": "weave_wayfinder_compass",
               "kind": "original",
@@ -1526,7 +1557,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_361b86102edd3c9a",
+              "id": "alignment_apply_2171b3adb49f9384",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -2125,7 +2156,7 @@
                 "extension_version": 1,
                 "freshness": "current",
                 "lineage": [
-                  "alignment_apply_361b86102edd3c9a",
+                  "alignment_apply_2171b3adb49f9384",
                   "character_original",
                   "weave_wayfinder_compass"
                 ],
@@ -2136,7 +2167,7 @@
                 "state": "reviewed"
               },
               "value": {
-                "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                 "input_paths": [
                   "canon.personality.agreeableness.factor",
                   "canon.personality.conscientiousness.factor",
@@ -2151,7 +2182,7 @@
                   "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                   "version": "1.0.0"
                 },
-                "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
                 "values": {
                   "horizon": {
                     "coverage_micros": 1000000,
@@ -2464,9 +2495,27 @@
                     "confidence": "high",
                     "id": "mentor_sable",
                     "kind": "org.weave.relationship.mentor",
+                    "lineage": [
+                      "character_original"
+                    ],
+                    "notes": {
+                      "fixture_context": {
+                        "content": "Explicit synthetic relationship context for portable tests.",
+                        "id": "fixture_context",
+                        "lineage": [
+                          "character_original"
+                        ]
+                      }
+                    },
+                    "rationale": "Authored only for the public synthetic Character fixture.",
                     "source_character_id": "org.weave.character.sable_reed",
                     "target_character_id": "org.weave.character.ari_vale"
                   }
+                },
+                "kind_pack": {
+                  "id": "org.weave.relationship.reference",
+                  "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                  "version": "1.0.0"
                 }
               }
             }
@@ -2547,7 +2596,10 @@
               "weave_wayfinder_compass"
             ],
             "extensions.org.weave.character.alignment": [
-              "alignment_apply_361b86102edd3c9a"
+              "alignment_apply_2171b3adb49f9384"
+            ],
+            "extensions.org.weave.character.relationships": [
+              "weave_relationship_reference_pack"
             ],
             "inputs": [
               "weave_wayfinder_compass"
@@ -2571,6 +2623,16 @@
               "url": "https://github.com/chrisgliddon/weave"
             },
             {
+              "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+              "id": "weave_relationship_reference_pack",
+              "kind": "original",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "modified": false,
+              "revision": "relationship-graph-v1",
+              "url": "https://github.com/chrisgliddon/weave"
+            },
+            {
               "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
               "id": "weave_wayfinder_compass",
               "kind": "original",
@@ -2584,7 +2646,7 @@
           "transformations": [
             {
               "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-              "id": "alignment_apply_361b86102edd3c9a",
+              "id": "alignment_apply_2171b3adb49f9384",
               "inputs": [
                 "character_original",
                 "weave_wayfinder_compass"
@@ -2635,7 +2697,7 @@
       "org.weave.character.ari_vale",
       "org.weave.character.sable_reed"
     ],
-    "expected_input_sha256": "ff19b4c4ce41846e13a1a1bd1b76537d6cb5f3b9b368c5bfba6c333885d53c66",
+    "expected_input_sha256": "3a7faa70ca6588b43930ad374a273aeda64246722d756ce6e182d457dc8ccc46",
     "id": "org.weave.character.presentation.glasswind_allocation",
     "mode": "fill_missing",
     "request_format_version": 1,
@@ -2647,5 +2709,5 @@
       "visual_tone"
     ]
   },
-  "request_sha256": "793d3bcc746ec4c472a7b61e85f3b6ba38f7ee32f972490c6b95a455022f8260"
+  "request_sha256": "28a78436e9260849626ffe953a846b35ec865b073ad484c75fa5bb4cbac6e96e"
 }

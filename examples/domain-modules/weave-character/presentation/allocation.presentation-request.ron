@@ -1,7 +1,7 @@
 (
     request_format_version: 1,
     id: "org.weave.character.presentation.glasswind_allocation",
-    expected_input_sha256: "ff19b4c4ce41846e13a1a1bd1b76537d6cb5f3b9b368c5bfba6c333885d53c66",
+    expected_input_sha256: "3a7faa70ca6588b43930ad374a273aeda64246722d756ce6e182d457dc8ccc46",
     catalog: (
         id: "org.weave.character.presentation.glasswind",
         version: "1.0.0",

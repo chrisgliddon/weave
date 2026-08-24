@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "RelationshipDate": {
+      "additionalProperties": false,
+      "description": "Proleptic-Gregorian date used only for graph validity and safeguards.",
+      "properties": {
+        "day": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "month": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "year": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month",
+        "day"
+      ],
+      "type": "object"
+    },
+    "RelationshipSafeguards": {
+      "additionalProperties": false,
+      "description": "Project-defined age, kinship, partnership, and consent policy.",
+      "properties": {
+        "allow_reviewed_exceptions": {
+          "type": "boolean"
+        },
+        "forbid_close_kin_partnership": {
+          "type": "boolean"
+        },
+        "maximum_concurrent_partnerships": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "minimum_partnership_age_years": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "require_affirmed_partnership_consent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "forbid_close_kin_partnership",
+        "require_affirmed_partnership_consent",
+        "allow_reviewed_exceptions"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-relationship-policy:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact project policy used by list, inspect, validation, reconciliation, and CSV views.",
+  "properties": {
+    "policy_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reference_date": {
+      "$ref": "#/$defs/RelationshipDate"
+    },
+    "safeguards": {
+      "$ref": "#/$defs/RelationshipSafeguards"
+    }
+  },
+  "required": [
+    "policy_format_version",
+    "reference_date",
+    "safeguards"
+  ],
+  "title": "Weave Character Relationship Graph Policy v1",
+  "type": "object",
+  "x-weave-character-relationship-version": 1
+}

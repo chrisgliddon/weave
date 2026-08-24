@@ -15,12 +15,15 @@ use crate::{
     DateContextCueKind, DateContextDecision, DateContextSensitivity, DateContextUncertainty,
     DerivedTrait, Freshness, HexacoProfile, IdentityContextKind, IdentityPresentation, LockState,
     OceanView, PresentationAssetKind, PresentationAssetReference, PresentationCatalogAssignment,
-    PresentationCatalogRef, PresentationCatalogValue, ReviewState, TraitBand, TraitMeasurement,
-    ValueState, validate_profile,
+    PresentationCatalogRef, PresentationCatalogValue, RelationshipConsent,
+    RelationshipConsentState, RelationshipDate, RelationshipEdge, RelationshipEdgeOrigin,
+    RelationshipEvidenceContribution, RelationshipEvidenceKind, RelationshipKindPackRef,
+    RelationshipNote, RelationshipSafeguardException, RelationshipValidityPeriod, ReviewState,
+    TraitBand, TraitMeasurement, ValueState, validate_profile,
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.3.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.4.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -135,6 +138,42 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             "CharacterPresentationAssignment".to_owned(),
             character_presentation_assignment_type(),
         ),
+        (
+            "CharacterRelationshipConsent".to_owned(),
+            character_relationship_consent_type(),
+        ),
+        (
+            "CharacterRelationshipDate".to_owned(),
+            character_relationship_date_type(),
+        ),
+        (
+            "CharacterRelationshipEdge".to_owned(),
+            character_relationship_edge_type(),
+        ),
+        (
+            "CharacterRelationshipEvidence".to_owned(),
+            character_relationship_evidence_type(),
+        ),
+        (
+            "CharacterRelationshipGraph".to_owned(),
+            character_relationship_graph_type(),
+        ),
+        (
+            "CharacterRelationshipKindPack".to_owned(),
+            character_relationship_kind_pack_type(),
+        ),
+        (
+            "CharacterRelationshipNote".to_owned(),
+            character_relationship_note_type(),
+        ),
+        (
+            "CharacterRelationshipSafeguardException".to_owned(),
+            character_relationship_safeguard_exception_type(),
+        ),
+        (
+            "CharacterRelationshipValidity".to_owned(),
+            character_relationship_validity_type(),
+        ),
         ("CharacterProfile".to_owned(), runtime_profile_type()),
         (
             "CharacterProvenance".to_owned(),
@@ -182,7 +221,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         version: CHARACTER_DOMAIN_MODULE_VERSION.to_owned(),
         namespace: "character".to_owned(),
         title: "Weave Character".to_owned(),
-        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
+        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
         authors: vec![ModuleAuthor {
             name: "Weave Contributors".to_owned(),
             url: Some("https://github.com/chrisgliddon/weave".to_owned()),
@@ -223,6 +262,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
                 (vec!["profile", "presentation", "catalog_assignments"], "Reviewed catalog assignments retain exact proposal, review, catalog, and lock metadata; revise them through the presentation review workflow."),
                 (vec!["profile", "profile_format_version"], "The profile contract version is fixed by the selected pack."),
                 (vec!["profile", "provenance"], "Pack provenance is immutable and cannot be replaced by story source."),
+                (vec!["profile", "relationships"], "Relationship layers, reviews, locks, safeguard exceptions, and advisory evidence are changed only through a fingerprinted relationship revision or complete proposal review."),
             ]
             .into_iter()
             .map(|(path, reason)| ReadOnlyPathDeclaration {
@@ -376,6 +416,9 @@ pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue
     if let Some(presentation) = identity_presentation_value(profile) {
         fields.insert("presentation".to_owned(), presentation);
     }
+    if let Some(relationships) = relationship_graph_value(profile) {
+        fields.insert("relationships".to_owned(), relationships);
+    }
     DomainValue::Object(fields)
 }
 
@@ -384,7 +427,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v4";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v5";
     if input
         .transformations
         .iter()
@@ -400,7 +443,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -1428,6 +1471,432 @@ fn character_alignment_view_type() -> TypeExpression {
     }
 }
 
+fn character_relationship_kind_pack_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact relationship-kind pack identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact relationship-kind pack SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(text(1, 256), true, "Exact relationship-kind pack version."),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_date_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "day".to_owned(),
+                field(number(true, 1.0, 31.0), true, "Gregorian day."),
+            ),
+            (
+                "month".to_owned(),
+                field(number(true, 1.0, 12.0), true, "Gregorian month."),
+            ),
+            (
+                "year".to_owned(),
+                field(
+                    number(true, -999_999.0, 999_999.0),
+                    true,
+                    "Proleptic-Gregorian year.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_validity_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "end".to_owned(),
+                field(
+                    named("CharacterRelationshipDate"),
+                    false,
+                    "Inclusive optional end date.",
+                ),
+            ),
+            (
+                "start".to_owned(),
+                field(
+                    named("CharacterRelationshipDate"),
+                    false,
+                    "Inclusive optional start date.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_note_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "content".to_owned(),
+                field(text(1, 4_096), true, "Author-facing relationship note."),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable note identifier."),
+            ),
+            (
+                "lineage".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted source or transformation identifiers.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_consent_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "lineage".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted consent review lineage.",
+                ),
+            ),
+            (
+                "rationale".to_owned(),
+                field(text(1, 2_048), false, "Optional consent review rationale."),
+            ),
+            (
+                "reviewed_by".to_owned(),
+                field(text(3, 256), false, "Optional stable reviewer identity."),
+            ),
+            (
+                "state".to_owned(),
+                field(
+                    symbol(&["affirmed", "not_applicable", "unknown", "withheld"]),
+                    true,
+                    "Explicit consent metadata state; absence never implies consent.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_evidence_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "available".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Whether this input was present.",
+                ),
+            ),
+            (
+                "contribution_micros".to_owned(),
+                field(
+                    number(true, -1_000_000.0, 1_000_000.0),
+                    true,
+                    "Exact signed advisory contribution in millionths.",
+                ),
+            ),
+            (
+                "explanation".to_owned(),
+                field(
+                    text(1, 2_048),
+                    true,
+                    "Inspectably describes this subjective authoring signal.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable ordered evidence-rule id."),
+            ),
+            (
+                "input_paths".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 1_024)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Exact sorted profile paths used by the contribution.",
+                ),
+            ),
+            (
+                "input_sha256".to_owned(),
+                field(text(64, 64), true, "Exact contribution input fingerprint."),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&[
+                        "existing_canon",
+                        "preference_overlap",
+                        "shared_context",
+                        "trait_similarity",
+                    ]),
+                    true,
+                    "Approved relationship evidence family.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_safeguard_exception_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "code".to_owned(),
+                field(
+                    text(4, 4),
+                    true,
+                    "Exact public relationship safeguard code.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable exception identifier."),
+            ),
+            (
+                "lineage".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted reviewed exception lineage.",
+                ),
+            ),
+            (
+                "rationale".to_owned(),
+                field(text(1, 2_048), true, "Explicit author exception rationale."),
+            ),
+            (
+                "reviewer".to_owned(),
+                field(text(3, 256), true, "Stable exception reviewer identity."),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_edge_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "affinity_score_micros".to_owned(),
+                field(
+                    number(true, 0.0, 1_000_000.0),
+                    false,
+                    "Optional subjective advisory affinity score in millionths.",
+                ),
+            ),
+            (
+                "confidence".to_owned(),
+                field(
+                    symbol(&["high", "low", "moderate", "unknown"]),
+                    true,
+                    "Confidence in this relationship representation.",
+                ),
+            ),
+            (
+                "consent".to_owned(),
+                field(
+                    named("CharacterRelationshipConsent"),
+                    false,
+                    "Optional explicit project consent metadata.",
+                ),
+            ),
+            (
+                "evidence".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterRelationshipEvidence")),
+                        min_items: 0,
+                        max_items: 256,
+                    },
+                    true,
+                    "Ordered inspectable evidence contributions.",
+                ),
+            ),
+            (
+                "freshness".to_owned(),
+                field(
+                    symbol(&["current", "stale"]),
+                    true,
+                    "Whether exact upstream relationship inputs remain current.",
+                ),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable local relationship edge id."),
+            ),
+            (
+                "inverse_edge_id".to_owned(),
+                field(
+                    text(1, 128),
+                    false,
+                    "Exact reciprocal edge id when inverse-paired.",
+                ),
+            ),
+            (
+                "kind".to_owned(),
+                field(text(3, 256), true, "Namespaced relationship kind."),
+            ),
+            (
+                "lineage".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted edge source and transformation lineage.",
+                ),
+            ),
+            (
+                "lock".to_owned(),
+                field(symbol(&["locked", "unlocked"]), true, "Author lock state."),
+            ),
+            (
+                "notes".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterRelationshipNote")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Stable author-facing notes.",
+                ),
+            ),
+            (
+                "origin".to_owned(),
+                field(
+                    symbol(&[
+                        "authored",
+                        "computed_affinity",
+                        "imported",
+                        "reviewed_suggestion",
+                        "suggested_narrative",
+                    ]),
+                    true,
+                    "Explicit authority layer; advisory values never collapse into canon.",
+                ),
+            ),
+            (
+                "rationale".to_owned(),
+                field(
+                    text(1, 2_048),
+                    false,
+                    "Optional review or authorship rationale.",
+                ),
+            ),
+            (
+                "review".to_owned(),
+                field(
+                    symbol(&["accepted", "not_required", "pending", "rejected"]),
+                    true,
+                    "Editorial review state.",
+                ),
+            ),
+            (
+                "safeguard_exceptions".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterRelationshipSafeguardException")),
+                        min_entries: 0,
+                        max_entries: 4_096,
+                    },
+                    true,
+                    "Explicit reviewed project-safeguard exceptions.",
+                ),
+            ),
+            (
+                "source_character_id".to_owned(),
+                field(text(3, 256), true, "Stable source character id."),
+            ),
+            (
+                "target_character_id".to_owned(),
+                field(text(3, 256), true, "Stable target character id."),
+            ),
+            (
+                "validity".to_owned(),
+                field(
+                    named("CharacterRelationshipValidity"),
+                    false,
+                    "Optional inclusive relationship validity interval.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_relationship_graph_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "canonical_personality_write_back".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; relationships cannot modify canonical personality evidence.",
+                ),
+            ),
+            (
+                "edges".to_owned(),
+                field(
+                    TypeExpression::Map {
+                        values: Box::new(named("CharacterRelationshipEdge")),
+                        min_entries: 0,
+                        max_entries: 65_536,
+                    },
+                    true,
+                    "Layered outgoing relationship edges keyed by exact local id.",
+                ),
+            ),
+            (
+                "graph_format_version".to_owned(),
+                field(
+                    number(true, 1.0, 1.0),
+                    true,
+                    "Exact relationship graph version.",
+                ),
+            ),
+            (
+                "kind_pack".to_owned(),
+                field(
+                    named("CharacterRelationshipKindPack"),
+                    false,
+                    "Exact pack coordinate used to validate graph semantics.",
+                ),
+            ),
+        ]),
+    }
+}
+
 fn runtime_profile_type() -> TypeExpression {
     TypeExpression::Object {
         fields: BTreeMap::from([
@@ -1493,6 +1962,14 @@ fn runtime_profile_type() -> TypeExpression {
                     named("CharacterProvenance"),
                     true,
                     "Profile source and transformation identifiers.",
+                ),
+            ),
+            (
+                "relationships".to_owned(),
+                field(
+                    named("CharacterRelationshipGraph"),
+                    false,
+                    "Optional layered relationship graph with review, safeguards, and advisory evidence kept explicit.",
                 ),
             ),
         ]),
@@ -1829,6 +2306,261 @@ const fn presentation_asset_kind(value: PresentationAssetKind) -> &'static str {
         PresentationAssetKind::Sprite => "sprite",
         PresentationAssetKind::Model => "model",
         PresentationAssetKind::Illustration => "illustration",
+    }
+}
+
+fn relationship_graph_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::Relationships(extension) = profile
+        .extensions
+        .get(crate::RELATIONSHIP_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    let value = &extension.value;
+    let mut fields = BTreeMap::from([
+        (
+            "canonical_personality_write_back".to_owned(),
+            DomainValue::Bool(false),
+        ),
+        (
+            "edges".to_owned(),
+            DomainValue::Object(
+                value
+                    .edges
+                    .iter()
+                    .map(|(id, edge)| (id.clone(), relationship_edge_value(edge)))
+                    .collect(),
+            ),
+        ),
+        (
+            "graph_format_version".to_owned(),
+            DomainValue::Number(f64::from(value.graph_format_version)),
+        ),
+    ]);
+    if let Some(pack) = &value.kind_pack {
+        fields.insert("kind_pack".to_owned(), relationship_kind_pack_value(pack));
+    }
+    Some(DomainValue::Object(fields))
+}
+
+fn relationship_kind_pack_value(value: &RelationshipKindPackRef) -> DomainValue {
+    object([
+        ("id", DomainValue::String(value.id.clone())),
+        ("sha256", DomainValue::String(value.sha256.clone())),
+        ("version", DomainValue::String(value.version.clone())),
+    ])
+}
+
+fn relationship_edge_value(value: &RelationshipEdge) -> DomainValue {
+    let mut fields = BTreeMap::from([
+        (
+            "confidence".to_owned(),
+            DomainValue::Symbol(confidence(value.confidence).to_owned()),
+        ),
+        (
+            "evidence".to_owned(),
+            DomainValue::List(
+                value
+                    .evidence
+                    .iter()
+                    .map(relationship_evidence_value)
+                    .collect(),
+            ),
+        ),
+        (
+            "freshness".to_owned(),
+            DomainValue::Symbol(freshness(value.freshness).to_owned()),
+        ),
+        ("id".to_owned(), DomainValue::String(value.id.clone())),
+        ("kind".to_owned(), DomainValue::String(value.kind.clone())),
+        ("lineage".to_owned(), string_list(value.lineage.iter())),
+        (
+            "lock".to_owned(),
+            DomainValue::Symbol(lock(value.lock).to_owned()),
+        ),
+        (
+            "notes".to_owned(),
+            DomainValue::Object(
+                value
+                    .notes
+                    .iter()
+                    .map(|(id, note)| (id.clone(), relationship_note_value(note)))
+                    .collect(),
+            ),
+        ),
+        (
+            "origin".to_owned(),
+            DomainValue::Symbol(relationship_origin(value.origin).to_owned()),
+        ),
+        (
+            "review".to_owned(),
+            DomainValue::Symbol(review(value.review).to_owned()),
+        ),
+        (
+            "safeguard_exceptions".to_owned(),
+            DomainValue::Object(
+                value
+                    .safeguard_exceptions
+                    .iter()
+                    .map(|(id, exception)| (id.clone(), relationship_exception_value(exception)))
+                    .collect(),
+            ),
+        ),
+        (
+            "source_character_id".to_owned(),
+            DomainValue::String(value.source_character_id.clone()),
+        ),
+        (
+            "target_character_id".to_owned(),
+            DomainValue::String(value.target_character_id.clone()),
+        ),
+    ]);
+    if let Some(score) = value.affinity_score_micros {
+        fields.insert(
+            "affinity_score_micros".to_owned(),
+            DomainValue::Number(f64::from(score)),
+        );
+    }
+    if let Some(consent) = &value.consent {
+        fields.insert("consent".to_owned(), relationship_consent_value(consent));
+    }
+    if let Some(inverse_edge_id) = &value.inverse_edge_id {
+        fields.insert(
+            "inverse_edge_id".to_owned(),
+            DomainValue::String(inverse_edge_id.clone()),
+        );
+    }
+    if let Some(rationale) = &value.rationale {
+        fields.insert(
+            "rationale".to_owned(),
+            DomainValue::String(rationale.clone()),
+        );
+    }
+    if let Some(validity) = &value.validity {
+        fields.insert("validity".to_owned(), relationship_validity_value(validity));
+    }
+    DomainValue::Object(fields)
+}
+
+fn relationship_validity_value(value: &RelationshipValidityPeriod) -> DomainValue {
+    let mut fields = BTreeMap::new();
+    if let Some(start) = value.start {
+        fields.insert("start".to_owned(), relationship_date_value(start));
+    }
+    if let Some(end) = value.end {
+        fields.insert("end".to_owned(), relationship_date_value(end));
+    }
+    DomainValue::Object(fields)
+}
+
+fn relationship_date_value(value: RelationshipDate) -> DomainValue {
+    object([
+        ("day", DomainValue::Number(f64::from(value.day))),
+        ("month", DomainValue::Number(f64::from(value.month))),
+        ("year", DomainValue::Number(f64::from(value.year))),
+    ])
+}
+
+fn relationship_note_value(value: &RelationshipNote) -> DomainValue {
+    object([
+        ("content", DomainValue::String(value.content.clone())),
+        ("id", DomainValue::String(value.id.clone())),
+        ("lineage", string_list(value.lineage.iter())),
+    ])
+}
+
+fn relationship_consent_value(value: &RelationshipConsent) -> DomainValue {
+    let mut fields = BTreeMap::from([
+        ("lineage".to_owned(), string_list(value.lineage.iter())),
+        (
+            "state".to_owned(),
+            DomainValue::Symbol(relationship_consent_state(value.state).to_owned()),
+        ),
+    ]);
+    if let Some(rationale) = &value.rationale {
+        fields.insert(
+            "rationale".to_owned(),
+            DomainValue::String(rationale.clone()),
+        );
+    }
+    if let Some(reviewer) = &value.reviewed_by {
+        fields.insert(
+            "reviewed_by".to_owned(),
+            DomainValue::String(reviewer.clone()),
+        );
+    }
+    DomainValue::Object(fields)
+}
+
+fn relationship_evidence_value(value: &RelationshipEvidenceContribution) -> DomainValue {
+    object([
+        ("available", DomainValue::Bool(value.available)),
+        (
+            "contribution_micros",
+            DomainValue::Number(f64::from(value.contribution_micros)),
+        ),
+        (
+            "explanation",
+            DomainValue::String(value.explanation.clone()),
+        ),
+        ("id", DomainValue::String(value.id.clone())),
+        ("input_paths", string_list(value.input_paths.iter())),
+        (
+            "input_sha256",
+            DomainValue::String(value.input_sha256.clone()),
+        ),
+        (
+            "kind",
+            DomainValue::Symbol(relationship_evidence_kind(value.kind).to_owned()),
+        ),
+    ])
+}
+
+fn relationship_exception_value(value: &RelationshipSafeguardException) -> DomainValue {
+    object([
+        ("code", DomainValue::String(value.code.clone())),
+        ("id", DomainValue::String(value.id.clone())),
+        ("lineage", string_list(value.lineage.iter())),
+        ("rationale", DomainValue::String(value.rationale.clone())),
+        ("reviewer", DomainValue::String(value.reviewer.clone())),
+    ])
+}
+
+fn string_list<'a>(values: impl IntoIterator<Item = &'a String>) -> DomainValue {
+    DomainValue::List(
+        values
+            .into_iter()
+            .cloned()
+            .map(DomainValue::String)
+            .collect(),
+    )
+}
+
+const fn relationship_origin(value: RelationshipEdgeOrigin) -> &'static str {
+    match value {
+        RelationshipEdgeOrigin::Authored => "authored",
+        RelationshipEdgeOrigin::Imported => "imported",
+        RelationshipEdgeOrigin::ComputedAffinity => "computed_affinity",
+        RelationshipEdgeOrigin::SuggestedNarrative => "suggested_narrative",
+        RelationshipEdgeOrigin::ReviewedSuggestion => "reviewed_suggestion",
+    }
+}
+
+const fn relationship_consent_state(value: RelationshipConsentState) -> &'static str {
+    match value {
+        RelationshipConsentState::Affirmed => "affirmed",
+        RelationshipConsentState::NotApplicable => "not_applicable",
+        RelationshipConsentState::Unknown => "unknown",
+        RelationshipConsentState::Withheld => "withheld",
+    }
+}
+
+const fn relationship_evidence_kind(value: RelationshipEvidenceKind) -> &'static str {
+    match value {
+        RelationshipEvidenceKind::TraitSimilarity => "trait_similarity",
+        RelationshipEvidenceKind::PreferenceOverlap => "preference_overlap",
+        RelationshipEvidenceKind::SharedContext => "shared_context",
+        RelationshipEvidenceKind::ExistingCanon => "existing_canon",
     }
 }
 

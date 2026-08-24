@@ -1,0 +1,204 @@
+(
+    report_format_version: 1,
+    id: "org.weave.character.relationship_reference_roster.relationship_reconciliation",
+    input_sha256: "3bae3fe24a2b595edf2fe15d86a32b9b5aef6a7374903410bbcaff579a58e595",
+    kind_pack: (
+        id: "org.weave.relationship.reference",
+        version: "1.0.0",
+        sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+    ),
+    reference_date: (
+        year: 2035,
+        month: 6,
+        day: 15,
+    ),
+    edges: [
+        (
+            owner_character_id: "org.weave.character.ari_vale",
+            edge: (
+                id: "friend_ari_tavi",
+                source_character_id: "org.weave.character.ari_vale",
+                target_character_id: "org.weave.character.tavi_quill",
+                kind: "org.weave.relationship.friend",
+                confidence: high,
+                notes: {
+                    "fixture_context": (
+                        id: "fixture_context",
+                        content: "Explicit synthetic relationship context for portable tests.",
+                        lineage: [
+                            "weave_relationship_revision",
+                        ],
+                    ),
+                },
+                lineage: [
+                    "weave_relationship_revision",
+                ],
+                rationale: Some("Authored only for the public synthetic relationship fixture."),
+            ),
+            family: friendship,
+            directionality: (
+                mode: "symmetric",
+            ),
+        ),
+        (
+            owner_character_id: "org.weave.character.ari_vale",
+            edge: (
+                id: "friend_ari_tavi_duplicate",
+                source_character_id: "org.weave.character.ari_vale",
+                target_character_id: "org.weave.character.tavi_quill",
+                kind: "org.weave.relationship.friend",
+                confidence: high,
+                notes: {
+                    "fixture_context": (
+                        id: "fixture_context",
+                        content: "Explicit synthetic relationship context for portable tests.",
+                        lineage: [
+                            "weave_relationship_revision",
+                        ],
+                    ),
+                },
+                lineage: [
+                    "weave_relationship_revision",
+                ],
+                rationale: Some("Authored only for the public synthetic relationship fixture."),
+            ),
+            family: friendship,
+            directionality: (
+                mode: "symmetric",
+            ),
+        ),
+        (
+            owner_character_id: "org.weave.character.ari_vale",
+            edge: (
+                id: "mentor_ari_sable",
+                source_character_id: "org.weave.character.ari_vale",
+                target_character_id: "org.weave.character.sable_reed",
+                kind: "org.weave.relationship.mentor",
+                confidence: high,
+                origin: imported,
+                review: accepted,
+                freshness: stale,
+                notes: {
+                    "fixture_context": (
+                        id: "fixture_context",
+                        content: "Explicit synthetic relationship context for portable tests.",
+                        lineage: [
+                            "weave_relationship_revision",
+                        ],
+                    ),
+                },
+                lineage: [
+                    "weave_relationship_revision",
+                ],
+                rationale: Some("Authored only for the public synthetic relationship fixture."),
+            ),
+            family: mentorship,
+            directionality: (
+                mode: "directed",
+            ),
+        ),
+        (
+            owner_character_id: "org.weave.character.sable_reed",
+            edge: (
+                id: "parent_sable_tavi",
+                source_character_id: "org.weave.character.sable_reed",
+                target_character_id: "org.weave.character.tavi_quill",
+                kind: "org.weave.relationship.parent_of",
+                confidence: high,
+                inverse_edge_id: Some("child_tavi_sable"),
+                notes: {
+                    "fixture_context": (
+                        id: "fixture_context",
+                        content: "Explicit synthetic relationship context for portable tests.",
+                        lineage: [
+                            "weave_relationship_revision",
+                        ],
+                    ),
+                },
+                lineage: [
+                    "weave_relationship_revision",
+                ],
+                rationale: Some("Authored only for the public synthetic relationship fixture."),
+            ),
+            family: kinship,
+            directionality: (
+                mode: "inverse_paired",
+                inverse_kind_id: "org.weave.relationship.child_of",
+            ),
+        ),
+    ],
+    diagnostics: [
+        (
+            code: R106,
+            severity: error,
+            path: "characters.org.weave.character.ari_vale.relationships.edges.friend_ari_tavi",
+            message: "relationship graph contains a duplicate or forbidden concurrent edge",
+        ),
+        (
+            code: R106,
+            severity: error,
+            path: "characters.org.weave.character.ari_vale.relationships.edges.friend_ari_tavi_duplicate",
+            message: "relationship graph contains a duplicate or forbidden concurrent edge",
+        ),
+        (
+            code: R105,
+            severity: error,
+            path: "characters.org.weave.character.ari_vale.relationships.edges.mentor_ari_sable.freshness",
+            message: "relationship edge is explicitly marked stale and requires review",
+        ),
+        (
+            code: R102,
+            severity: error,
+            path: "characters.org.weave.character.sable_reed.relationships.edges.parent_sable_tavi.inverse_edge_id",
+            message: "inverse-paired relationship does not resolve to an exact reciprocal edge",
+        ),
+    ],
+    repairs: [
+        (
+            id: "repair_298291d47e789f1e6689",
+            action: (
+                action: "review_safeguard",
+                diagnostic_code: R105,
+            ),
+            rationale: "Review the redaction-safe diagnostic and author a separate explicit revision or exception if appropriate.",
+        ),
+        (
+            id: "repair_duplicate_eae60fc195decdaa2d3f",
+            action: (
+                action: "remove_duplicate",
+                owner_character_id: "org.weave.character.ari_vale",
+                edge_id: "friend_ari_tavi_duplicate",
+            ),
+            rationale: "Review and remove the later duplicate through a fingerprinted graph revision.",
+        ),
+        (
+            id: "repair_inverse_6c388592110e5ce30a72",
+            action: (
+                action: "add_inverse",
+                owner_character_id: "org.weave.character.tavi_quill",
+                edge: (
+                    id: "child_tavi_sable",
+                    source_character_id: "org.weave.character.tavi_quill",
+                    target_character_id: "org.weave.character.sable_reed",
+                    kind: "org.weave.relationship.child_of",
+                    confidence: high,
+                    inverse_edge_id: Some("parent_sable_tavi"),
+                    notes: {
+                        "fixture_context": (
+                            id: "fixture_context",
+                            content: "Explicit synthetic relationship context for portable tests.",
+                            lineage: [
+                                "weave_relationship_revision",
+                            ],
+                        ),
+                    },
+                    lineage: [
+                        "weave_relationship_revision",
+                    ],
+                    rationale: Some("Authored only for the public synthetic relationship fixture."),
+                ),
+            ),
+            rationale: "Author the missing explicit reciprocal edge declared by the immutable kind pack.",
+        ),
+    ],
+)

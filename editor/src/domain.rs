@@ -1220,7 +1220,7 @@ mod tests {
         assert_eq!(inspection.alias, "character");
         assert_eq!(inspection.id, "org.weave.character");
         assert_eq!(inspection.pack_id, "ari_vale");
-        assert_eq!(inspection.read_only_paths.len(), 9);
+        assert_eq!(inspection.read_only_paths.len(), 10);
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "alignment"].map(str::to_owned)
                 && declaration
@@ -1249,6 +1249,12 @@ mod tests {
                 ]
                 .map(str::to_owned)
                 && declaration.reason.contains("no write path")
+        }));
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "relationships"].map(str::to_owned)
+                && declaration
+                    .reason
+                    .contains("fingerprinted relationship revision")
         }));
         let profile = inspection
             .exports

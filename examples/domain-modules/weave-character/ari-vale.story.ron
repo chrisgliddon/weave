@@ -427,13 +427,170 @@ StoryIr(
                 ),
             ),
         ),
+        Instruction(
+            span: Span(
+                start: 1449,
+                end: 1540,
+                line: 24,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "mentor_target",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "edges",
+                            "mentor_sable",
+                            "target_character_id",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 1540,
+                end: 1614,
+                line: 25,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "mentor_kind",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "edges",
+                            "mentor_sable",
+                            "kind",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 1614,
+                end: 1683,
+                line: 26,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "relationship_pack",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "kind_pack",
+                            "id",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 1683,
+                end: 1765,
+                line: 27,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "relationship_pack_version",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "kind_pack",
+                            "version",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 1765,
+                end: 1845,
+                line: 28,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "relationship_pack_sha256",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "kind_pack",
+                            "sha256",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 1845,
+                end: 1951,
+                line: 29,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "relationship_personality_writeback",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "character",
+                            "profile",
+                            "relationships",
+                            "canonical_personality_write_back",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
     ],
     grammars: {},
     patterns: {},
     modules: {
         "character": DomainModuleIr(
             id: "org.weave.character",
-            version: "1.3.0",
+            version: "1.4.0",
             pack_id: "ari_vale",
             pack_version: "1.0.0",
             exports: {
@@ -447,7 +604,7 @@ StoryIr(
                                 value: {
                                     "applied_sha256": DomainValueIr(
                                         kind: string,
-                                        value: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                                        value: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                                     ),
                                     "canonical_personality_write_back": DomainValueIr(
                                         kind: bool,
@@ -505,7 +662,7 @@ StoryIr(
                                     ),
                                     "review_sha256": DomainValueIr(
                                         kind: string,
-                                        value: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                                        value: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
                                     ),
                                     "values": DomainValueIr(
                                         kind: object,
@@ -2366,7 +2523,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2378,7 +2535,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2454,7 +2611,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2466,7 +2623,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2559,7 +2716,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2571,7 +2728,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2647,7 +2804,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2659,7 +2816,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2989,6 +3146,10 @@ StoryIr(
                                             ),
                                             DomainValueIr(
                                                 kind: string,
+                                                value: "weave_relationship_reference_pack",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
                                                 value: "weave_wayfinder_compass",
                                             ),
                                         ],
@@ -2998,9 +3159,133 @@ StoryIr(
                                         value: [
                                             DomainValueIr(
                                                 kind: string,
-                                                value: "alignment_apply_361b86102edd3c9a",
+                                                value: "alignment_apply_2171b3adb49f9384",
                                             ),
                                         ],
+                                    ),
+                                },
+                            ),
+                            "relationships": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "canonical_personality_write_back": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "edges": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "mentor_sable": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "confidence": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "high",
+                                                    ),
+                                                    "evidence": DomainValueIr(
+                                                        kind: list,
+                                                        value: [],
+                                                    ),
+                                                    "freshness": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "current",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "mentor_sable",
+                                                    ),
+                                                    "kind": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.relationship.mentor",
+                                                    ),
+                                                    "lineage": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "notes": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "fixture_context": DomainValueIr(
+                                                                kind: object,
+                                                                value: {
+                                                                    "content": DomainValueIr(
+                                                                        kind: string,
+                                                                        value: "Explicit synthetic relationship context for portable tests.",
+                                                                    ),
+                                                                    "id": DomainValueIr(
+                                                                        kind: string,
+                                                                        value: "fixture_context",
+                                                                    ),
+                                                                    "lineage": DomainValueIr(
+                                                                        kind: list,
+                                                                        value: [
+                                                                            DomainValueIr(
+                                                                                kind: string,
+                                                                                value: "character_original",
+                                                                            ),
+                                                                        ],
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "rationale": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Authored only for the public synthetic Character fixture.",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "safeguard_exceptions": DomainValueIr(
+                                                        kind: object,
+                                                        value: {},
+                                                    ),
+                                                    "source_character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "target_character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.sable_reed",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "graph_format_version": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "kind_pack": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "org.weave.relationship.reference",
+                                            ),
+                                            "sha256": DomainValueIr(
+                                                kind: string,
+                                                value: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                                            ),
+                                            "version": DomainValueIr(
+                                                kind: string,
+                                                value: "1.0.0",
+                                            ),
+                                        },
                                     ),
                                 },
                             ),
@@ -3029,9 +3314,9 @@ StoryIr(
             content: [
                 Instruction(
                     span: Span(
-                        start: 1464,
-                        end: 1659,
-                        line: 26,
+                        start: 1966,
+                        end: 2161,
+                        line: 32,
                         column: 1,
                     ),
                     kind: InstructionKind(
@@ -3048,9 +3333,9 @@ StoryIr(
                                     body: [
                                         Instruction(
                                             span: Span(
-                                                start: 1505,
-                                                end: 1588,
-                                                line: 27,
+                                                start: 2007,
+                                                end: 2090,
+                                                line: 33,
                                                 column: 5,
                                             ),
                                             kind: InstructionKind(
@@ -3071,9 +3356,9 @@ StoryIr(
                             fallback: Some([
                                 Instruction(
                                     span: Span(
-                                        start: 1601,
-                                        end: 1657,
-                                        line: 29,
+                                        start: 2103,
+                                        end: 2159,
+                                        line: 35,
                                         column: 5,
                                     ),
                                     kind: InstructionKind(
@@ -3094,9 +3379,9 @@ StoryIr(
                 ),
                 Instruction(
                     span: Span(
-                        start: 1660,
-                        end: 2406,
-                        line: 31,
+                        start: 2162,
+                        end: 2908,
+                        line: 37,
                         column: 1,
                     ),
                     kind: InstructionKind(
@@ -3113,9 +3398,9 @@ StoryIr(
                                     body: [
                                         Instruction(
                                             span: Span(
-                                                start: 1698,
-                                                end: 1797,
-                                                line: 32,
+                                                start: 2200,
+                                                end: 2299,
+                                                line: 38,
                                                 column: 5,
                                             ),
                                             kind: InstructionKind(
@@ -3136,9 +3421,9 @@ StoryIr(
                             fallback: Some([
                                 Instruction(
                                     span: Span(
-                                        start: 1810,
-                                        end: 2404,
-                                        line: 34,
+                                        start: 2312,
+                                        end: 2906,
+                                        line: 40,
                                         column: 5,
                                     ),
                                     kind: InstructionKind(
@@ -3158,9 +3443,9 @@ StoryIr(
                                                     body: [
                                                         Instruction(
                                                             span: Span(
-                                                                start: 1850,
-                                                                end: 2333,
-                                                                line: 35,
+                                                                start: 2352,
+                                                                end: 2835,
+                                                                line: 41,
                                                                 column: 9,
                                                             ),
                                                             kind: InstructionKind(
@@ -3346,9 +3631,9 @@ StoryIr(
                                             fallback: Some([
                                                 Instruction(
                                                     span: Span(
-                                                        start: 2354,
-                                                        end: 2398,
-                                                        line: 37,
+                                                        start: 2856,
+                                                        end: 2900,
+                                                        line: 43,
                                                         column: 9,
                                                     ),
                                                     kind: InstructionKind(
@@ -3373,9 +3658,139 @@ StoryIr(
                 ),
                 Instruction(
                     span: Span(
-                        start: 2407,
-                        end: 2413,
-                        line: 40,
+                        start: 2909,
+                        end: 3196,
+                        line: 46,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: path,
+                                        value: [
+                                            "relationship_personality_writeback",
+                                        ],
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 2950,
+                                                end: 3034,
+                                                line: 47,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "This branch is unreachable because relationships cannot become personality evidence.",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 3047,
+                                        end: 3194,
+                                        line: 49,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "Runtime relationship query: ",
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "mentor_kind",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: " toward ",
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "mentor_target",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: " from ",
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "relationship_pack",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "@",
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "relationship_pack_version",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: " (",
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: expression,
+                                                    value: Expression(
+                                                        kind: path,
+                                                        value: [
+                                                            "relationship_pack_sha256",
+                                                        ],
+                                                    ),
+                                                ),
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: ").",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 3197,
+                        end: 3203,
+                        line: 51,
                         column: 1,
                     ),
                     kind: InstructionKind(

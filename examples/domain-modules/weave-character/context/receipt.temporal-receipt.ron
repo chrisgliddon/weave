@@ -531,7 +531,7 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "alignment_apply_361b86102edd3c9a",
+                            "alignment_apply_2171b3adb49f9384",
                             "character_original",
                             "weave_wayfinder_compass",
                         ],
@@ -595,8 +595,8 @@
                             "canon.personality.openness.factor",
                             "canon.personality.openness.inquisitiveness",
                         ],
-                        review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
-                        applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                        review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                        applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                     ),
                 ),
             ),
@@ -828,8 +828,8 @@
                                         palette_slot: "accent",
                                         color: "#D6A24A",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -860,8 +860,8 @@
                                             alt_text: "Geometric cedar and gold wayfinder avatar.",
                                         ),
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -887,8 +887,8 @@
                                         category: "org.weave.appearance.silhouette",
                                         descriptor: "Long layered travel coat with a narrow shoulder line.",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -913,8 +913,8 @@
                                         kind: "style_tag",
                                         tag: "river_glass",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -948,6 +948,11 @@
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        kind_pack: Some((
+                            id: "org.weave.relationship.reference",
+                            version: "1.0.0",
+                            sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                        )),
                         edges: {
                             "mentor_sable": (
                                 id: "mentor_sable",
@@ -955,6 +960,19 @@
                                 target_character_id: "org.weave.character.sable_reed",
                                 kind: "org.weave.relationship.mentor",
                                 confidence: high,
+                                notes: {
+                                    "fixture_context": (
+                                        id: "fixture_context",
+                                        content: "Explicit synthetic relationship context for portable tests.",
+                                        lineage: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                                lineage: [
+                                    "character_original",
+                                ],
+                                rationale: Some("Authored only for the public synthetic Character fixture."),
                             ),
                         },
                     ),
@@ -1113,6 +1131,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_relationship_reference_pack",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "relationship-graph-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                    modified: false,
+                ),
+                (
                     id: "weave_wayfinder_compass",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -1125,7 +1153,7 @@
             ],
             transformations: [
                 (
-                    id: "alignment_apply_361b86102edd3c9a",
+                    id: "alignment_apply_2171b3adb49f9384",
                     inputs: [
                         "character_original",
                         "weave_wayfinder_compass",
@@ -1147,7 +1175,10 @@
                     "weave_glasswind_presentation",
                 ],
                 "extensions.org.weave.character.alignment": [
-                    "alignment_apply_361b86102edd3c9a",
+                    "alignment_apply_2171b3adb49f9384",
+                ],
+                "extensions.org.weave.character.relationships": [
+                    "weave_relationship_reference_pack",
                 ],
                 "inputs": [
                     "weave_wayfinder_compass",
@@ -1828,7 +1859,7 @@
     proposal: (
         proposal_format_version: 1,
         profile_id: "org.weave.character.ari_vale",
-        profile_sha256: "f6d063ef60bbfea4350f75ec5e9df11368e0c4f51e9d82c28502fbf7764f7995",
+        profile_sha256: "3504ee80c00a45f8de0e0b2d18659a311d39a9be2937ddb2da987aa8f3cc8844",
         birth_date: (
             precision: "full",
             calendar: proleptic_gregorian,
@@ -2179,8 +2210,8 @@
     ),
     review: (
         review_format_version: 1,
-        proposal_sha256: "6c3252d9866100957f94fdc2f504df4891dbfbb92e0606fa254e2b74475e37ff",
-        profile_sha256: "f6d063ef60bbfea4350f75ec5e9df11368e0c4f51e9d82c28502fbf7764f7995",
+        proposal_sha256: "a013e862b29744df639affb8e71750d662877e5fafcb2857bd659d44da0834a5",
+        profile_sha256: "3504ee80c00a45f8de0e0b2d18659a311d39a9be2937ddb2da987aa8f3cc8844",
         reviewer: "org.weave.reviewer.fixture",
         rationale: "Review every ranked temporal cue, preserve fact and fictional-cue lineage separately, and keep all accepted material outside canon.",
         decisions: {
@@ -2216,9 +2247,9 @@
             ),
         },
     ),
-    proposal_sha256: "6c3252d9866100957f94fdc2f504df4891dbfbb92e0606fa254e2b74475e37ff",
-    review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
-    output_profile_sha256: "994c5aa3e02fe61d4732beb155554a8d4c7add160abd29fb08b6a4f09bdb1b04",
+    proposal_sha256: "a013e862b29744df639affb8e71750d662877e5fafcb2857bd659d44da0834a5",
+    review_sha256: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
+    output_profile_sha256: "9d6b82a61033a3b56f7b510d77ab6a4c4a4a5f12de95a3a085a891a3c860c0eb",
     output_profile: (
         profile_format_version: 1,
         id: "org.weave.character.ari_vale",
@@ -2750,7 +2781,7 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "alignment_apply_361b86102edd3c9a",
+                            "alignment_apply_2171b3adb49f9384",
                             "character_original",
                             "weave_wayfinder_compass",
                         ],
@@ -2814,8 +2845,8 @@
                             "canon.personality.openness.factor",
                             "canon.personality.openness.inquisitiveness",
                         ],
-                        review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
-                        applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                        review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                        applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                     ),
                 ),
             ),
@@ -2861,7 +2892,7 @@
                         freshness: current,
                         lineage: [
                             "apollo_11_wikidata",
-                            "temporal_review_c6654f203fed5adb",
+                            "temporal_review_04e90e799e201548",
                             "weave_calendar_cues",
                             "weave_calendar_facts",
                             "weave_historical_cues",
@@ -2916,7 +2947,7 @@
                                     "weave_world_cues",
                                     "weave_world_projection",
                                 ],
-                                review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                review_sha256: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                             ),
                             "cue_7eafd04a34c7f45247e358f5": (
                                 id: "cue_7eafd04a34c7f45247e358f5",
@@ -2942,7 +2973,7 @@
                                     "weave_calendar_cues",
                                     "weave_calendar_facts",
                                 ],
-                                review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                review_sha256: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                             ),
                             "cue_afa4e07801cd5172193f83f1": (
                                 id: "cue_afa4e07801cd5172193f83f1",
@@ -2968,7 +2999,7 @@
                                     "apollo_11_wikidata",
                                     "weave_historical_cues",
                                 ],
-                                review_sha256: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                review_sha256: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                             ),
                         },
                     ),
@@ -3174,8 +3205,8 @@
                                         palette_slot: "accent",
                                         color: "#D6A24A",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -3206,8 +3237,8 @@
                                             alt_text: "Geometric cedar and gold wayfinder avatar.",
                                         ),
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -3233,8 +3264,8 @@
                                         category: "org.weave.appearance.silhouette",
                                         descriptor: "Long layered travel coat with a narrow shoulder line.",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -3259,8 +3290,8 @@
                                         kind: "style_tag",
                                         tag: "river_glass",
                                     ),
-                                    proposal_sha256: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                                    review_sha256: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                    proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                    review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                 ),
                                 state: reviewed,
                                 confidence: high,
@@ -3294,6 +3325,11 @@
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        kind_pack: Some((
+                            id: "org.weave.relationship.reference",
+                            version: "1.0.0",
+                            sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                        )),
                         edges: {
                             "mentor_sable": (
                                 id: "mentor_sable",
@@ -3301,6 +3337,19 @@
                                 target_character_id: "org.weave.character.sable_reed",
                                 kind: "org.weave.relationship.mentor",
                                 confidence: high,
+                                notes: {
+                                    "fixture_context": (
+                                        id: "fixture_context",
+                                        content: "Explicit synthetic relationship context for portable tests.",
+                                        lineage: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                                lineage: [
+                                    "character_original",
+                                ],
+                                rationale: Some("Authored only for the public synthetic Character fixture."),
                             ),
                         },
                     ),
@@ -3386,7 +3435,7 @@
                     lock: unlocked,
                     freshness: current,
                     lineage: [
-                        "temporal_review_c6654f203fed5adb",
+                        "temporal_review_04e90e799e201548",
                         "weave_world_cues",
                         "weave_world_projection",
                     ],
@@ -3407,7 +3456,7 @@
                     lock: unlocked,
                     freshness: current,
                     lineage: [
-                        "temporal_review_c6654f203fed5adb",
+                        "temporal_review_04e90e799e201548",
                         "weave_calendar_cues",
                         "weave_calendar_facts",
                     ],
@@ -3429,7 +3478,7 @@
                     freshness: current,
                     lineage: [
                         "apollo_11_wikidata",
-                        "temporal_review_c6654f203fed5adb",
+                        "temporal_review_04e90e799e201548",
                         "weave_historical_cues",
                     ],
                     rationale: Some("Reviewed temporal context remains a pending fictional authoring suggestion until a separate canonical authoring operation accepts it."),
@@ -3563,6 +3612,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_relationship_reference_pack",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "relationship-graph-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                    modified: false,
+                ),
+                (
                     id: "weave_wayfinder_compass",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -3595,7 +3654,7 @@
             ],
             transformations: [
                 (
-                    id: "alignment_apply_361b86102edd3c9a",
+                    id: "alignment_apply_2171b3adb49f9384",
                     inputs: [
                         "character_original",
                         "weave_wayfinder_compass",
@@ -3603,7 +3662,7 @@
                     description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
                 ),
                 (
-                    id: "temporal_review_c6654f203fed5adb",
+                    id: "temporal_review_04e90e799e201548",
                     inputs: [
                         "apollo_11_wikidata",
                         "weave_calendar_cues",
@@ -3629,10 +3688,13 @@
                     "weave_glasswind_presentation",
                 ],
                 "extensions.org.weave.character.alignment": [
-                    "alignment_apply_361b86102edd3c9a",
+                    "alignment_apply_2171b3adb49f9384",
                 ],
                 "extensions.org.weave.character.date_context": [
-                    "temporal_review_c6654f203fed5adb",
+                    "temporal_review_04e90e799e201548",
+                ],
+                "extensions.org.weave.character.relationships": [
+                    "weave_relationship_reference_pack",
                 ],
                 "inputs": [
                     "weave_wayfinder_compass",
@@ -3665,13 +3727,13 @@
                     "weave_glasswind_presentation",
                 ],
                 "suggestions.date_context_54a72f798cf8211963d263ba": [
-                    "temporal_review_c6654f203fed5adb",
+                    "temporal_review_04e90e799e201548",
                 ],
                 "suggestions.date_context_7eafd04a34c7f45247e358f5": [
-                    "temporal_review_c6654f203fed5adb",
+                    "temporal_review_04e90e799e201548",
                 ],
                 "suggestions.date_context_afa4e07801cd5172193f83f1": [
-                    "temporal_review_c6654f203fed5adb",
+                    "temporal_review_04e90e799e201548",
                 ],
             },
         ),

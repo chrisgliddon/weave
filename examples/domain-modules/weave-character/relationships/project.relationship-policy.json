@@ -1,0 +1,15 @@
+{
+  "policy_format_version": 1,
+  "reference_date": {
+    "year": 2035,
+    "month": 6,
+    "day": 15
+  },
+  "safeguards": {
+    "minimum_partnership_age_years": 18,
+    "forbid_close_kin_partnership": true,
+    "require_affirmed_partnership_consent": true,
+    "maximum_concurrent_partnerships": 1,
+    "allow_reviewed_exceptions": true
+  }
+}

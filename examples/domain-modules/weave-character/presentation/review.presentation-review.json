@@ -1,6 +1,6 @@
 {
   "review_format_version": 1,
-  "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+  "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
   "reviewer": "org.weave.reviewer.presentation_fixture",
   "rationale": "Review every synthetic presentation allocation; retain catalog coordinates, balance traces, locks, and explicit override rationale.",
   "decisions": {

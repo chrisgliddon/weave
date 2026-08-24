@@ -196,3 +196,62 @@ export function temporalCharacterPresentation(story) {
     cues,
   };
 }
+
+export function relationshipCharacterPresentation(story) {
+  const graph = readModuleExport(story, "character", ["profile", "relationships"]);
+  const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  if (
+    !isObject(graph) ||
+    graph.canonical_personality_write_back !== false ||
+    graph.graph_format_version !== 1 ||
+    !isObject(graph.edges)
+  ) {
+    throw new TypeError("invalid Character relationship graph");
+  }
+  const kindPack = graph.kind_pack;
+  if (
+    !isObject(kindPack) ||
+    typeof kindPack.id !== "string" ||
+    typeof kindPack.version !== "string" ||
+    typeof kindPack.sha256 !== "string" ||
+    !/^[0-9a-f]{64}$/u.test(kindPack.sha256)
+  ) {
+    throw new TypeError("invalid Character relationship kind-pack coordinate");
+  }
+  const edges = Object.entries(graph.edges)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([edgeId, edge]) => {
+      if (
+        !isObject(edge) ||
+        edge.id !== edgeId ||
+        typeof edge.source_character_id !== "string" ||
+        typeof edge.target_character_id !== "string" ||
+        typeof edge.kind !== "string" ||
+        !["authored", "imported", "computed_affinity", "suggested_narrative", "reviewed_suggestion"].includes(
+          edge.origin,
+        ) ||
+        !["not_required", "pending", "accepted", "rejected"].includes(edge.review) ||
+        !["unlocked", "locked"].includes(edge.lock) ||
+        !Array.isArray(edge.evidence)
+      ) {
+        throw new TypeError("invalid Character relationship edge");
+      }
+      return {
+        id: edge.id,
+        sourceCharacterId: edge.source_character_id,
+        targetCharacterId: edge.target_character_id,
+        kind: edge.kind,
+        origin: edge.origin,
+        review: edge.review,
+        lock: edge.lock,
+        affinityScoreMicros: edge.affinity_score_micros,
+        evidenceCount: edge.evidence.length,
+      };
+    });
+  return {
+    canonicalPersonalityWriteBack: graph.canonical_personality_write_back,
+    graphFormatVersion: graph.graph_format_version,
+    kindPack,
+    edges,
+  };
+}

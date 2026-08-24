@@ -1,8 +1,8 @@
 {
   "progress_format_version": 1,
   "collection_id": "org.weave.character.collection.glasswind",
-  "input_sha256": "241906d3d910765dd767df17e950b84c6fe41832f7fb7bcd4c1df1a3e444fd1a",
-  "request_sha256": "6dd5fb4a33df7a65452d3b27dbbf9776fe961db3dabac3c6a50c8c56dc2ce079",
+  "input_sha256": "9fdf8030061b1f6c5e04c35d96ec2de2708440b107be32048fa942bb890f05d8",
+  "request_sha256": "06fb9dc86cc8a49994836679f7c919f375a8c69cb246ddedaf14472bfcc95ce7",
   "total": 2,
   "next_index": 1,
   "completed_target_ids": [

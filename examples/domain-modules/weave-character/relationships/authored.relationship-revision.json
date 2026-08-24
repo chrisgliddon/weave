@@ -1,0 +1,129 @@
+{
+  "revision_format_version": 1,
+  "id": "org.weave.relationship.reference_authored_graph",
+  "expected_input_sha256": "3eccc660585c10497f3f6f57c8a3eb8625f534c97971c8648e1fa246e532f48d",
+  "kind_pack": {
+    "id": "org.weave.relationship.reference",
+    "version": "1.0.0",
+    "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019"
+  },
+  "reference_date": {
+    "year": 2035,
+    "month": 6,
+    "day": 15
+  },
+  "safeguards": {
+    "minimum_partnership_age_years": 18,
+    "forbid_close_kin_partnership": true,
+    "require_affirmed_partnership_consent": true,
+    "maximum_concurrent_partnerships": 1,
+    "allow_reviewed_exceptions": true
+  },
+  "additions": [
+    {
+      "id": "friend_ari_tavi",
+      "source_character_id": "org.weave.character.ari_vale",
+      "target_character_id": "org.weave.character.tavi_quill",
+      "kind": "org.weave.relationship.friend",
+      "confidence": "high",
+      "notes": {
+        "fixture_context": {
+          "id": "fixture_context",
+          "content": "Explicit synthetic relationship context for portable tests.",
+          "lineage": [
+            "weave_relationship_revision"
+          ]
+        }
+      },
+      "lineage": [
+        "weave_relationship_revision"
+      ],
+      "rationale": "Authored only for the public synthetic relationship fixture."
+    },
+    {
+      "id": "mentor_ari_sable",
+      "source_character_id": "org.weave.character.ari_vale",
+      "target_character_id": "org.weave.character.sable_reed",
+      "kind": "org.weave.relationship.mentor",
+      "confidence": "high",
+      "origin": "imported",
+      "review": "accepted",
+      "notes": {
+        "fixture_context": {
+          "id": "fixture_context",
+          "content": "Explicit synthetic relationship context for portable tests.",
+          "lineage": [
+            "weave_relationship_revision"
+          ]
+        }
+      },
+      "lineage": [
+        "weave_relationship_revision"
+      ],
+      "rationale": "Authored only for the public synthetic relationship fixture."
+    },
+    {
+      "id": "parent_sable_tavi",
+      "source_character_id": "org.weave.character.sable_reed",
+      "target_character_id": "org.weave.character.tavi_quill",
+      "kind": "org.weave.relationship.parent_of",
+      "confidence": "high",
+      "inverse_edge_id": "child_tavi_sable",
+      "notes": {
+        "fixture_context": {
+          "id": "fixture_context",
+          "content": "Explicit synthetic relationship context for portable tests.",
+          "lineage": [
+            "weave_relationship_revision"
+          ]
+        }
+      },
+      "lineage": [
+        "weave_relationship_revision"
+      ],
+      "rationale": "Authored only for the public synthetic relationship fixture."
+    },
+    {
+      "id": "child_tavi_sable",
+      "source_character_id": "org.weave.character.tavi_quill",
+      "target_character_id": "org.weave.character.sable_reed",
+      "kind": "org.weave.relationship.child_of",
+      "confidence": "high",
+      "inverse_edge_id": "parent_sable_tavi",
+      "notes": {
+        "fixture_context": {
+          "id": "fixture_context",
+          "content": "Explicit synthetic relationship context for portable tests.",
+          "lineage": [
+            "weave_relationship_revision"
+          ]
+        }
+      },
+      "lineage": [
+        "weave_relationship_revision"
+      ],
+      "rationale": "Authored only for the public synthetic relationship fixture."
+    }
+  ],
+  "rationale": "Author a synthetic graph containing directed, symmetric, and inverse-paired kinds while keeping imported and authored layers explicit.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_relationship_revision",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "relationship-graph-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic authored and imported relationship graph fixture.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "relationships": [
+        "weave_relationship_revision"
+      ]
+    }
+  }
+}

@@ -567,7 +567,7 @@
           "extension_version": 1,
           "freshness": "current",
           "lineage": [
-            "alignment_apply_361b86102edd3c9a",
+            "alignment_apply_2171b3adb49f9384",
             "character_original",
             "weave_wayfinder_compass"
           ],
@@ -578,7 +578,7 @@
           "state": "reviewed"
         },
         "value": {
-          "applied_sha256": "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+          "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
           "input_paths": [
             "canon.personality.agreeableness.factor",
             "canon.personality.conscientiousness.factor",
@@ -593,7 +593,7 @@
             "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
             "version": "1.0.0"
           },
-          "review_sha256": "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+          "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
           "values": {
             "horizon": {
               "coverage_micros": 1000000,
@@ -811,8 +811,8 @@
                   "version": "1.0.0"
                 },
                 "entry_id": "amber_accent",
-                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                 "slot_id": "accent_color",
                 "value": {
                   "color": "#D6A24A",
@@ -838,8 +838,8 @@
                   "version": "1.0.0"
                 },
                 "entry_id": "ari_avatar",
-                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                 "slot_id": "avatar",
                 "value": {
                   "asset": {
@@ -870,8 +870,8 @@
                   "version": "1.0.0"
                 },
                 "entry_id": "long_coat",
-                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                 "slot_id": "silhouette",
                 "value": {
                   "category": "org.weave.appearance.silhouette",
@@ -897,8 +897,8 @@
                   "version": "1.0.0"
                 },
                 "entry_id": "river_glass",
-                "proposal_sha256": "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
-                "review_sha256": "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                 "slot_id": "visual_tone",
                 "value": {
                   "kind": "style_tag",
@@ -1020,9 +1020,27 @@
               "confidence": "high",
               "id": "mentor_sable",
               "kind": "org.weave.relationship.mentor",
+              "lineage": [
+                "character_original"
+              ],
+              "notes": {
+                "fixture_context": {
+                  "content": "Explicit synthetic relationship context for portable tests.",
+                  "id": "fixture_context",
+                  "lineage": [
+                    "character_original"
+                  ]
+                }
+              },
+              "rationale": "Authored only for the public synthetic Character fixture.",
               "source_character_id": "org.weave.character.ari_vale",
               "target_character_id": "org.weave.character.sable_reed"
             }
+          },
+          "kind_pack": {
+            "id": "org.weave.relationship.reference",
+            "sha256": "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+            "version": "1.0.0"
           }
         }
       }
@@ -1109,7 +1127,10 @@
         "weave_glasswind_presentation"
       ],
       "extensions.org.weave.character.alignment": [
-        "alignment_apply_361b86102edd3c9a"
+        "alignment_apply_2171b3adb49f9384"
+      ],
+      "extensions.org.weave.character.relationships": [
+        "weave_relationship_reference_pack"
       ],
       "inputs": [
         "weave_wayfinder_compass"
@@ -1146,6 +1167,16 @@
         "url": "https://github.com/chrisgliddon/weave"
       },
       {
+        "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+        "id": "weave_relationship_reference_pack",
+        "kind": "original",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "modified": false,
+        "revision": "relationship-graph-v1",
+        "url": "https://github.com/chrisgliddon/weave"
+      },
+      {
         "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
         "id": "weave_wayfinder_compass",
         "kind": "original",
@@ -1159,7 +1190,7 @@
     "transformations": [
       {
         "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
-        "id": "alignment_apply_361b86102edd3c9a",
+        "id": "alignment_apply_2171b3adb49f9384",
         "inputs": [
           "character_original",
           "weave_wayfinder_compass"

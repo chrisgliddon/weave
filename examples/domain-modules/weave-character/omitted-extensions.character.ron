@@ -582,6 +582,16 @@
                 modified: false,
             ),
             (
+                id: "weave_relationship_reference_pack",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "relationship-graph-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                modified: false,
+            ),
+            (
                 id: "weave_wayfinder_compass",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -594,7 +604,7 @@
         ],
         transformations: [
             (
-                id: "alignment_apply_361b86102edd3c9a",
+                id: "alignment_apply_2171b3adb49f9384",
                 inputs: [
                     "character_original",
                     "weave_wayfinder_compass",
@@ -616,7 +626,10 @@
                 "weave_glasswind_presentation",
             ],
             "extensions.org.weave.character.alignment": [
-                "alignment_apply_361b86102edd3c9a",
+                "alignment_apply_2171b3adb49f9384",
+            ],
+            "extensions.org.weave.character.relationships": [
+                "weave_relationship_reference_pack",
             ],
             "inputs": [
                 "weave_wayfinder_compass",

@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.3.0"
+    version: "=1.4.0"
     pack: "ari_vale@=1.0.0"
     override profile.identity.display_name.value: "Ari Vale, Wayfinder"
 }
@@ -21,6 +21,12 @@ VAR presentation_avatar = character.profile.presentation.assets.authored_avatar.
 VAR presentation_catalog = character.profile.presentation.catalog_assignments.avatar.catalog.id
 VAR presentation_catalog_sha256 = character.profile.presentation.catalog_assignments.avatar.catalog.sha256
 VAR presentation_personality_writeback = character.profile.presentation.canonical_personality_write_back
+VAR mentor_target = character.profile.relationships.edges.mentor_sable.target_character_id
+VAR mentor_kind = character.profile.relationships.edges.mentor_sable.kind
+VAR relationship_pack = character.profile.relationships.kind_pack.id
+VAR relationship_pack_version = character.profile.relationships.kind_pack.version
+VAR relationship_pack_sha256 = character.profile.relationships.kind_pack.sha256
+VAR relationship_personality_writeback = character.profile.relationships.canonical_personality_write_back
 
 === start ===
 {presentation_personality_writeback:
@@ -36,5 +42,10 @@ VAR presentation_personality_writeback = character.profile.presentation.canonica
     - else:
         The compatibility projection is unavailable.
     }
+}
+{relationship_personality_writeback:
+    This branch is unreachable because relationships cannot become personality evidence.
+- else:
+    Runtime relationship query: {mentor_kind} toward {mentor_target} from {relationship_pack}@{relationship_pack_version} ({relationship_pack_sha256}).
 }
 -> END

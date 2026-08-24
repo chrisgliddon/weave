@@ -110,6 +110,27 @@ struct TemporalCharacterReading {
     cues: Vec<TemporalCueReading>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct RelationshipEdgeReading {
+    id: String,
+    source_character_id: String,
+    target_character_id: String,
+    kind: String,
+    origin: String,
+    review: String,
+    lock: String,
+    evidence_count: usize,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct RelationshipGraphReading {
+    canonical_personality_write_back: bool,
+    kind_pack_id: String,
+    kind_pack_version: String,
+    kind_pack_sha256: String,
+    edges: Vec<RelationshipEdgeReading>,
+}
+
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
     let module = story.modules.get("constellation").ok_or_else(|| {
         io::Error::new(io::ErrorKind::InvalidData, "constellation module is absent")
@@ -601,6 +622,118 @@ fn alignment_character_reading(story: &StoryIr) -> Result<AlignmentCharacterRead
     })
 }
 
+fn relationship_graph_reading(story: &StoryIr) -> Result<RelationshipGraphReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let Some(DomainValueIr::Object(graph)) = module.value(&["profile", "relationships"]) else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Character relationship graph is invalid",
+        ));
+    };
+    let canonical_personality_write_back = match graph.get("canonical_personality_write_back") {
+        Some(DomainValueIr::Bool(value)) => *value,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "relationship write-back marker is invalid",
+            ));
+        }
+    };
+    let Some(DomainValueIr::Object(kind_pack)) = graph.get("kind_pack") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "relationship kind-pack coordinate is invalid",
+        ));
+    };
+    let kind_pack_string = |name: &str| match kind_pack.get(name) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "relationship kind-pack field is invalid",
+        )),
+    };
+    let kind_pack_id = kind_pack_string("id")?;
+    let kind_pack_version = kind_pack_string("version")?;
+    let kind_pack_sha256 = kind_pack_string("sha256")?;
+    if kind_pack_sha256.len() != 64
+        || !kind_pack_sha256
+            .bytes()
+            .all(|value| value.is_ascii_hexdigit() && !value.is_ascii_uppercase())
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "relationship kind-pack fingerprint is invalid",
+        ));
+    }
+    let Some(DomainValueIr::Object(raw_edges)) = graph.get("edges") else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "relationship edge map is invalid",
+        ));
+    };
+    let edges = raw_edges
+        .iter()
+        .map(|(edge_id, value)| {
+            let DomainValueIr::Object(fields) = value else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "relationship edge is invalid",
+                ));
+            };
+            let string = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::String(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "relationship edge string is invalid",
+                )),
+            };
+            let symbol = |name: &str| match fields.get(name) {
+                Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+                _ => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "relationship edge symbol is invalid",
+                )),
+            };
+            let id = string("id")?;
+            if id != *edge_id {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "relationship edge id does not match its map key",
+                ));
+            }
+            let evidence_count = match fields.get("evidence") {
+                Some(DomainValueIr::List(values)) => values.len(),
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "relationship evidence list is invalid",
+                    ));
+                }
+            };
+            Ok(RelationshipEdgeReading {
+                id,
+                source_character_id: string("source_character_id")?,
+                target_character_id: string("target_character_id")?,
+                kind: string("kind")?,
+                origin: symbol("origin")?,
+                review: symbol("review")?,
+                lock: symbol("lock")?,
+                evidence_count,
+            })
+        })
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    Ok(RelationshipGraphReading {
+        canonical_personality_write_back,
+        kind_pack_id,
+        kind_pack_version,
+        kind_pack_sha256,
+        edges,
+    })
+}
+
 fn string_list(
     value: Option<&DomainValueIr>,
     message: &'static str,
@@ -690,6 +823,16 @@ fn report_temporal_character(reading: Res<TemporalCharacterReading>) {
     );
 }
 
+fn report_relationship_graph(reading: Res<RelationshipGraphReading>) {
+    println!(
+        "Bevy read {} layered Character relationship edges from {}@{}; personality write-back={}",
+        reading.edges.len(),
+        reading.kind_pack_id,
+        reading.kind_pack_version,
+        reading.canonical_personality_write_back,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -706,6 +849,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let character = character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let alignment_character =
         alignment_character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
+    let relationship_graph =
+        relationship_graph_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let temporal_character =
         temporal_character_reading(&ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)?)?;
     let mut app = App::new();
@@ -715,6 +860,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(composed_world)
         .insert_resource(character)
         .insert_resource(alignment_character)
+        .insert_resource(relationship_graph)
         .insert_resource(temporal_character)
         .add_systems(
             Startup,
@@ -724,6 +870,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_composed_world,
                 report_character,
                 report_alignment_character,
+                report_relationship_graph,
                 report_temporal_character,
             ),
         );
@@ -880,6 +1027,29 @@ mod tests {
                 && value.id != "signal"
                 && value.id != "tempo"
         }));
+    }
+
+    #[test]
+    fn queries_layered_relationship_edges_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(CHARACTER_STORY).expect("checked Character RON");
+        let reading = relationship_graph_reading(&story).expect("read relationship graph");
+        assert!(!reading.canonical_personality_write_back);
+        assert_eq!(reading.kind_pack_id, "org.weave.relationship.reference");
+        assert_eq!(reading.kind_pack_version, "1.0.0");
+        assert_eq!(reading.kind_pack_sha256.len(), 64);
+        assert_eq!(
+            reading.edges,
+            vec![RelationshipEdgeReading {
+                id: "mentor_sable".to_owned(),
+                source_character_id: "org.weave.character.ari_vale".to_owned(),
+                target_character_id: "org.weave.character.sable_reed".to_owned(),
+                kind: "org.weave.relationship.mentor".to_owned(),
+                origin: "authored".to_owned(),
+                review: "not_required".to_owned(),
+                lock: "unlocked".to_owned(),
+                evidence_count: 0,
+            }]
+        );
     }
 
     #[test]

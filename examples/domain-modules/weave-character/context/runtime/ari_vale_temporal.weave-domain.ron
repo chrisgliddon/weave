@@ -5,7 +5,7 @@
     title: "Ari Vale Reviewed Temporal Context",
     module: (
         id: "org.weave.character",
-        version: "=1.3.0",
+        version: "=1.4.0",
     ),
     dependencies: [],
     values: {
@@ -17,7 +17,7 @@
                     value: {
                         "applied_sha256": (
                             kind: string,
-                            value: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                            value: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                         ),
                         "canonical_personality_write_back": (
                             kind: bool,
@@ -75,7 +75,7 @@
                         ),
                         "review_sha256": (
                             kind: string,
-                            value: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
+                            value: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
                         ),
                         "values": (
                             kind: object,
@@ -308,7 +308,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                            value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -371,7 +371,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                            value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -434,7 +434,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "c6654f203fed5adbd673141885a679abc52bf99027afc8d5d0a841e2b8ec7dee",
+                                            value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
                                         ),
                                         "sensitivity": (
                                             kind: symbol,
@@ -2168,7 +2168,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2180,7 +2180,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2256,7 +2256,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2268,7 +2268,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2361,7 +2361,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2373,7 +2373,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2449,7 +2449,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "d4f40d54aaccd43a383b88ff3ce9380cf65740f431a998efcc4e5e15f5137cb4",
+                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2461,7 +2461,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "38cb4491ed53c1416f09c7ee2322c41f3b8ba47d7a17e31331a16626cbcbc0fe",
+                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2807,6 +2807,10 @@
                                 ),
                                 (
                                     kind: string,
+                                    value: "weave_relationship_reference_pack",
+                                ),
+                                (
+                                    kind: string,
                                     value: "weave_wayfinder_compass",
                                 ),
                                 (
@@ -2824,13 +2828,137 @@
                             value: [
                                 (
                                     kind: string,
-                                    value: "alignment_apply_361b86102edd3c9a",
+                                    value: "alignment_apply_2171b3adb49f9384",
                                 ),
                                 (
                                     kind: string,
-                                    value: "temporal_review_c6654f203fed5adb",
+                                    value: "temporal_review_04e90e799e201548",
                                 ),
                             ],
+                        ),
+                    },
+                ),
+                "relationships": (
+                    kind: object,
+                    value: {
+                        "canonical_personality_write_back": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "edges": (
+                            kind: object,
+                            value: {
+                                "mentor_sable": (
+                                    kind: object,
+                                    value: {
+                                        "confidence": (
+                                            kind: symbol,
+                                            value: "high",
+                                        ),
+                                        "evidence": (
+                                            kind: list,
+                                            value: [],
+                                        ),
+                                        "freshness": (
+                                            kind: symbol,
+                                            value: "current",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "mentor_sable",
+                                        ),
+                                        "kind": (
+                                            kind: string,
+                                            value: "org.weave.relationship.mentor",
+                                        ),
+                                        "lineage": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "notes": (
+                                            kind: object,
+                                            value: {
+                                                "fixture_context": (
+                                                    kind: object,
+                                                    value: {
+                                                        "content": (
+                                                            kind: string,
+                                                            value: "Explicit synthetic relationship context for portable tests.",
+                                                        ),
+                                                        "id": (
+                                                            kind: string,
+                                                            value: "fixture_context",
+                                                        ),
+                                                        "lineage": (
+                                                            kind: list,
+                                                            value: [
+                                                                (
+                                                                    kind: string,
+                                                                    value: "character_original",
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Authored only for the public synthetic Character fixture.",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "safeguard_exceptions": (
+                                            kind: object,
+                                            value: {},
+                                        ),
+                                        "source_character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "target_character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.sable_reed",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "graph_format_version": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                        "kind_pack": (
+                            kind: object,
+                            value: {
+                                "id": (
+                                    kind: string,
+                                    value: "org.weave.relationship.reference",
+                                ),
+                                "sha256": (
+                                    kind: string,
+                                    value: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                                ),
+                                "version": (
+                                    kind: string,
+                                    value: "1.0.0",
+                                ),
+                            },
                         ),
                     },
                 ),
@@ -2901,6 +3029,16 @@
                 modified: false,
             ),
             (
+                id: "weave_relationship_reference_pack",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "relationship-graph-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                modified: false,
+            ),
+            (
                 id: "weave_wayfinder_compass",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -2933,7 +3071,7 @@
         ],
         transformations: [
             (
-                id: "alignment_apply_361b86102edd3c9a",
+                id: "alignment_apply_2171b3adb49f9384",
                 inputs: [
                     "character_original",
                     "weave_wayfinder_compass",
@@ -2941,7 +3079,7 @@
                 description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
             ),
             (
-                id: "temporal_review_c6654f203fed5adb",
+                id: "temporal_review_04e90e799e201548",
                 inputs: [
                     "apollo_11_wikidata",
                     "weave_calendar_cues",
@@ -2953,7 +3091,7 @@
                 description: "Recorded explicit editorial decisions over non-causal fictional temporal authoring cues; no dated fact was treated as personality evidence or written into canon.",
             ),
             (
-                id: "weave_character_domain_projection_v4",
+                id: "weave_character_domain_projection_v5",
                 inputs: [
                     "apollo_11_wikidata",
                     "character_original",
@@ -2961,16 +3099,17 @@
                     "weave_calendar_facts",
                     "weave_glasswind_presentation",
                     "weave_historical_cues",
+                    "weave_relationship_reference_pack",
                     "weave_wayfinder_compass",
                     "weave_world_cues",
                     "weave_world_projection",
                 ],
-                description: "Validated, deterministic projection of Character Profile identity, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
+                description: "Validated, deterministic projection of Character Profile identity, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
             ),
         ],
         claims: {
             "values.profile": [
-                "weave_character_domain_projection_v4",
+                "weave_character_domain_projection_v5",
             ],
         },
     ),

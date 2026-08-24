@@ -1,0 +1,651 @@
+{
+  "$defs": {
+    "Confidence": {
+      "description": "Bounded confidence vocabulary shared by evidence and projections.",
+      "enum": [
+        "unknown",
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "Freshness": {
+      "description": "Whether lineage still matches the exact upstream inputs.",
+      "enum": [
+        "current",
+        "stale"
+      ],
+      "type": "string"
+    },
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "RelationshipConsent": {
+      "additionalProperties": false,
+      "description": "Explicit consent metadata used by project safeguards; absence never means consent.",
+      "properties": {
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/RelationshipConsentState"
+        }
+      },
+      "required": [
+        "state",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "RelationshipConsentState": {
+      "description": "Closed consent states. Only `affirmed` satisfies a consent-required safeguard.",
+      "enum": [
+        "affirmed",
+        "not_applicable",
+        "unknown",
+        "withheld"
+      ],
+      "type": "string"
+    },
+    "RelationshipDate": {
+      "additionalProperties": false,
+      "description": "Proleptic-Gregorian date used only for graph validity and safeguards.",
+      "properties": {
+        "day": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "month": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "year": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month",
+        "day"
+      ],
+      "type": "object"
+    },
+    "RelationshipEdge": {
+      "additionalProperties": false,
+      "description": "One portable relationship edge with explicit layer, review, lock, and lineage.",
+      "properties": {
+        "affinity_score_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "consent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/RelationshipEvidenceContribution"
+          },
+          "type": "array"
+        },
+        "freshness": {
+          "$ref": "#/$defs/Freshness"
+        },
+        "id": {
+          "type": "string"
+        },
+        "inverse_edge_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState"
+        },
+        "notes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RelationshipNote"
+          },
+          "type": "object"
+        },
+        "origin": {
+          "$ref": "#/$defs/RelationshipEdgeOrigin",
+          "description": "Authored/imported facts, computed affinity, and narrative suggestions never collapse."
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "safeguard_exceptions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RelationshipSafeguardException"
+          },
+          "description": "Explicit author-reviewed safeguard exceptions keyed by stable local id.",
+          "type": "object"
+        },
+        "source_character_id": {
+          "type": "string"
+        },
+        "target_character_id": {
+          "type": "string"
+        },
+        "validity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipValidityPeriod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "source_character_id",
+        "target_character_id",
+        "kind",
+        "confidence"
+      ],
+      "type": "object"
+    },
+    "RelationshipEdgeOrigin": {
+      "description": "The authority layer of one relationship edge.",
+      "oneOf": [
+        {
+          "enum": [
+            "imported",
+            "computed_affinity",
+            "suggested_narrative",
+            "reviewed_suggestion"
+          ],
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Direct author statement; the default preserves the original v1 edge contract.",
+          "type": "string"
+        }
+      ]
+    },
+    "RelationshipEdgeRemoval": {
+      "additionalProperties": false,
+      "description": "Fingerprinted edge removal; locked edges require a deliberate reviewed override.",
+      "properties": {
+        "edge_id": {
+          "type": "string"
+        },
+        "expected_edge_sha256": {
+          "type": "string"
+        },
+        "override_locked": {
+          "type": "boolean"
+        },
+        "owner_character_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_character_id",
+        "edge_id",
+        "expected_edge_sha256",
+        "override_locked"
+      ],
+      "type": "object"
+    },
+    "RelationshipEvidenceContribution": {
+      "additionalProperties": false,
+      "description": "One inspectable input contribution retained on computed or suggested edges.",
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "contribution_micros": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_sha256": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/RelationshipEvidenceKind"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "contribution_micros",
+        "available",
+        "input_paths",
+        "input_sha256",
+        "explanation"
+      ],
+      "type": "object"
+    },
+    "RelationshipEvidenceKind": {
+      "description": "Approved evidence families supported by the offline affinity scorer.",
+      "enum": [
+        "trait_similarity",
+        "preference_overlap",
+        "shared_context",
+        "existing_canon"
+      ],
+      "type": "string"
+    },
+    "RelationshipKindPackRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable relationship-kind pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "RelationshipNote": {
+      "additionalProperties": false,
+      "description": "One author-facing note on an edge.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "content",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "RelationshipSafeguardException": {
+      "additionalProperties": false,
+      "description": "One retained project-safeguard exception. Codes use the public `R###` vocabulary.",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "reviewer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "reviewer",
+        "rationale",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "RelationshipSafeguards": {
+      "additionalProperties": false,
+      "description": "Project-defined age, kinship, partnership, and consent policy.",
+      "properties": {
+        "allow_reviewed_exceptions": {
+          "type": "boolean"
+        },
+        "forbid_close_kin_partnership": {
+          "type": "boolean"
+        },
+        "maximum_concurrent_partnerships": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "minimum_partnership_age_years": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "require_affirmed_partnership_consent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "forbid_close_kin_partnership",
+        "require_affirmed_partnership_consent",
+        "allow_reviewed_exceptions"
+      ],
+      "type": "object"
+    },
+    "RelationshipValidityPeriod": {
+      "additionalProperties": false,
+      "description": "Inclusive date bounds for a relationship assertion.",
+      "properties": {
+        "end": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipDate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "start": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipDate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ReviewState": {
+      "description": "Explicit editorial state.",
+      "enum": [
+        "not_required",
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:character-relationship-revision:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Direct authored/imported graph revision used by source, editor, and CLI surfaces.",
+  "properties": {
+    "additions": {
+      "items": {
+        "$ref": "#/$defs/RelationshipEdge"
+      },
+      "type": "array"
+    },
+    "expected_input_sha256": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind_pack": {
+      "$ref": "#/$defs/RelationshipKindPackRef"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "reference_date": {
+      "$ref": "#/$defs/RelationshipDate"
+    },
+    "removals": {
+      "items": {
+        "$ref": "#/$defs/RelationshipEdgeRemoval"
+      },
+      "type": "array"
+    },
+    "revision_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "safeguards": {
+      "$ref": "#/$defs/RelationshipSafeguards"
+    }
+  },
+  "required": [
+    "revision_format_version",
+    "id",
+    "expected_input_sha256",
+    "kind_pack",
+    "reference_date",
+    "safeguards",
+    "rationale",
+    "provenance"
+  ],
+  "title": "Weave Character Relationship Graph Revision v1",
+  "type": "object",
+  "x-weave-character-relationship-version": 1
+}

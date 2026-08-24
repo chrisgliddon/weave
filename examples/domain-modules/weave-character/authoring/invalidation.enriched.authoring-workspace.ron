@@ -673,6 +673,11 @@
                                     canonical_personality_write_back: forbidden,
                                 ),
                                 value: (
+                                    kind_pack: Some((
+                                        id: "org.weave.relationship.reference",
+                                        version: "1.0.0",
+                                        sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                                    )),
                                     edges: {
                                         "mentor_sable": (
                                             id: "mentor_sable",
@@ -680,6 +685,19 @@
                                             target_character_id: "org.weave.character.sable_reed",
                                             kind: "org.weave.relationship.mentor",
                                             confidence: high,
+                                            notes: {
+                                                "fixture_context": (
+                                                    id: "fixture_context",
+                                                    content: "Explicit synthetic relationship context for portable tests.",
+                                                    lineage: [
+                                                        "character_original",
+                                                    ],
+                                                ),
+                                            },
+                                            lineage: [
+                                                "character_original",
+                                            ],
+                                            rationale: Some("Authored only for the public synthetic Character fixture."),
                                         ),
                                     },
                                 ),
@@ -827,9 +845,22 @@
                                 attribution: "Original synthetic Weave Character contract fixture.",
                                 modified: false,
                             ),
+                            (
+                                id: "weave_relationship_reference_pack",
+                                kind: original,
+                                url: "https://github.com/chrisgliddon/weave",
+                                revision: "relationship-graph-v1",
+                                license: "MIT",
+                                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                                attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                                modified: false,
+                            ),
                         ],
                         transformations: [],
                         claims: {
+                            "extensions.org.weave.character.relationships": [
+                                "weave_relationship_reference_pack",
+                            ],
                             "profile": [
                                 "character_original",
                             ],
@@ -844,7 +875,7 @@
                 template: Some((
                     id: "org.weave.character.template.alignment_authoring",
                     version: "1.0.0",
-                    sha256: "262421ac154df08dc570e48fa455ce7d52851dc836d13700cb783e4c3e906490",
+                    sha256: "d768c849c950cf5fb2fd04695554b7d93bac5df4a563106d21c91c9c63766af8",
                 )),
                 operations: [
                     (
@@ -866,7 +897,7 @@
                                         lock: unlocked,
                                         freshness: current,
                                         lineage: [
-                                            "alignment_apply_361b86102edd3c9a",
+                                            "alignment_apply_2171b3adb49f9384",
                                             "character_original",
                                             "weave_wayfinder_compass",
                                         ],
@@ -930,8 +961,8 @@
                                             "canon.personality.openness.factor",
                                             "canon.personality.openness.inquisitiveness",
                                         ],
-                                        review_sha256: "308dd184a81ba698227b883723bb3407ab04d69f10d230f334f6f72bffc0ce55",
-                                        applied_sha256: "361b86102edd3c9a65b3df9d2a4dee5820d49fc928fda6459e2e6ac72bd8a3e6",
+                                        review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                                        applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
                                     ),
                                 ),
                             ),
@@ -951,6 +982,16 @@
                             modified: false,
                         ),
                         (
+                            id: "weave_relationship_reference_pack",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "relationship-graph-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                            modified: false,
+                        ),
+                        (
                             id: "weave_wayfinder_compass",
                             kind: original,
                             url: "https://github.com/chrisgliddon/weave",
@@ -963,7 +1004,7 @@
                     ],
                     transformations: [
                         (
-                            id: "alignment_apply_361b86102edd3c9a",
+                            id: "alignment_apply_2171b3adb49f9384",
                             inputs: [
                                 "character_original",
                                 "weave_wayfinder_compass",
@@ -979,7 +1020,10 @@
                             "weave_wayfinder_compass",
                         ],
                         "extensions.org.weave.character.alignment": [
-                            "alignment_apply_361b86102edd3c9a",
+                            "alignment_apply_2171b3adb49f9384",
+                        ],
+                        "extensions.org.weave.character.relationships": [
+                            "weave_relationship_reference_pack",
                         ],
                         "inputs": [
                             "weave_wayfinder_compass",

@@ -67,7 +67,7 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(from_ron, first.story);
     let character = &from_ron.modules["character"];
     assert_eq!(character.id, "org.weave.character");
-    assert_eq!(character.version, "1.3.0");
+    assert_eq!(character.version, "1.4.0");
     assert_eq!(character.pack_id, "ari_vale");
     assert_eq!(
         character.value(&["profile", "identity", "id"]),
@@ -115,6 +115,42 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
         character.value(&["profile", "alignment", "pack", "sha256"]),
         Some(DomainValueIr::String(value)) if value.len() == 64
     ));
+    assert_eq!(
+        character.value(&["profile", "relationships", "kind_pack", "id"]),
+        Some(&DomainValueIr::String(
+            "org.weave.relationship.reference".to_owned()
+        ))
+    );
+    assert_eq!(
+        character.value(&["profile", "relationships", "kind_pack", "version"]),
+        Some(&DomainValueIr::String("1.0.0".to_owned()))
+    );
+    assert!(matches!(
+        character.value(&["profile", "relationships", "kind_pack", "sha256"]),
+        Some(DomainValueIr::String(value)) if value.len() == 64
+    ));
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "relationships",
+            "edges",
+            "mentor_sable",
+            "target_character_id",
+        ]),
+        Some(&DomainValueIr::String(
+            "org.weave.character.sable_reed".to_owned()
+        ))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "relationships",
+            "edges",
+            "mentor_sable",
+            "origin",
+        ]),
+        Some(&DomainValueIr::Symbol("authored".to_owned()))
+    );
     assert_eq!(
         character.value(&["profile", "alignment", "values", "horizon", "label_id"]),
         Some(&DomainValueIr::String("seeking".to_owned()))
@@ -184,6 +220,14 @@ fn character_schema_paths_are_static_and_derived_evidence_is_read_only() {
         .expect_err("reviewed alignment bypass must fail");
     assert_eq!(error.diagnostics[0].code.0, "D140");
     assert!(error.diagnostics[0].message.contains("read-only path"));
+
+    let relationship_writeback = SOURCE.replace(
+        "override profile.identity.display_name.value: \"Ari Vale, Wayfinder\"",
+        "override profile.relationships.edges.mentor_sable.kind: \"org.weave.relationship.rival\"",
+    );
+    let error = compile_with_modules(&relationship_writeback, &options(), &catalog())
+        .expect_err("relationship workflow bypass must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
 }
 
 #[test]

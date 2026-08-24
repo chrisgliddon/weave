@@ -730,14 +730,32 @@ pub struct RoleProjection {
     pub input_paths: Vec<String>,
 }
 
-/// Character relationship references; richer graph semantics remain in the relationship extension.
+/// One layered, provenance-aware relationship graph owned by a character profile.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RelationshipEdges {
+    /// Serialized graph value version. Legacy v1 profiles default to the current value.
+    #[serde(
+        default = "relationship_graph_format_version",
+        skip_serializing_if = "relationship_graph_version_is_current"
+    )]
+    pub graph_format_version: u32,
+    /// Exact kind-pack coordinate when the graph was validated through the graph workflow.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind_pack: Option<RelationshipKindPackRef>,
     pub edges: BTreeMap<String, RelationshipEdge>,
 }
 
-/// One portable relationship edge.
+/// Exact immutable relationship-kind pack coordinate.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipKindPackRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// One portable relationship edge with explicit layer, review, lock, and lineage.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RelationshipEdge {
@@ -746,6 +764,182 @@ pub struct RelationshipEdge {
     pub target_character_id: String,
     pub kind: String,
     pub confidence: Confidence,
+    /// Authored/imported facts, computed affinity, and narrative suggestions never collapse.
+    #[serde(default, skip_serializing_if = "relationship_origin_is_authored")]
+    pub origin: RelationshipEdgeOrigin,
+    #[serde(
+        default = "relationship_review_not_required",
+        skip_serializing_if = "relationship_review_is_not_required"
+    )]
+    pub review: ReviewState,
+    #[serde(
+        default = "relationship_unlocked",
+        skip_serializing_if = "relationship_lock_is_unlocked"
+    )]
+    pub lock: LockState,
+    #[serde(
+        default = "relationship_current",
+        skip_serializing_if = "relationship_freshness_is_current"
+    )]
+    pub freshness: Freshness,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub validity: Option<RelationshipValidityPeriod>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inverse_edge_id: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub notes: BTreeMap<String, RelationshipNote>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub consent: Option<RelationshipConsent>,
+    /// Explicit author-reviewed safeguard exceptions keyed by stable local id.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub safeguard_exceptions: BTreeMap<String, RelationshipSafeguardException>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub affinity_score_micros: Option<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<RelationshipEvidenceContribution>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lineage: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
+}
+
+/// Relationship graph values are currently serialized as version 1.
+#[must_use]
+pub const fn relationship_graph_format_version() -> u32 {
+    1
+}
+
+const fn relationship_graph_version_is_current(value: &u32) -> bool {
+    *value == relationship_graph_format_version()
+}
+
+const fn relationship_review_not_required() -> ReviewState {
+    ReviewState::NotRequired
+}
+
+const fn relationship_unlocked() -> LockState {
+    LockState::Unlocked
+}
+
+const fn relationship_current() -> Freshness {
+    Freshness::Current
+}
+
+const fn relationship_origin_is_authored(value: &RelationshipEdgeOrigin) -> bool {
+    matches!(value, RelationshipEdgeOrigin::Authored)
+}
+
+const fn relationship_review_is_not_required(value: &ReviewState) -> bool {
+    matches!(value, ReviewState::NotRequired)
+}
+
+const fn relationship_lock_is_unlocked(value: &LockState) -> bool {
+    matches!(value, LockState::Unlocked)
+}
+
+const fn relationship_freshness_is_current(value: &Freshness) -> bool {
+    matches!(value, Freshness::Current)
+}
+
+/// The authority layer of one relationship edge.
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationshipEdgeOrigin {
+    /// Direct author statement; the default preserves the original v1 edge contract.
+    #[default]
+    Authored,
+    Imported,
+    ComputedAffinity,
+    SuggestedNarrative,
+    ReviewedSuggestion,
+}
+
+/// Inclusive date bounds for a relationship assertion.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipValidityPeriod {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start: Option<RelationshipDate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end: Option<RelationshipDate>,
+}
+
+/// Proleptic-Gregorian date used only for graph validity and safeguards.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipDate {
+    pub year: i32,
+    pub month: u8,
+    pub day: u8,
+}
+
+/// One author-facing note on an edge.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipNote {
+    pub id: String,
+    pub content: String,
+    pub lineage: Vec<String>,
+}
+
+/// Explicit consent metadata used by project safeguards; absence never means consent.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipConsent {
+    pub state: RelationshipConsentState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reviewed_by: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
+    pub lineage: Vec<String>,
+}
+
+/// Closed consent states. Only `affirmed` satisfies a consent-required safeguard.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationshipConsentState {
+    Affirmed,
+    NotApplicable,
+    Unknown,
+    Withheld,
+}
+
+/// One retained project-safeguard exception. Codes use the public `R###` vocabulary.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipSafeguardException {
+    pub id: String,
+    pub code: String,
+    pub reviewer: String,
+    pub rationale: String,
+    pub lineage: Vec<String>,
+}
+
+/// One inspectable input contribution retained on computed or suggested edges.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RelationshipEvidenceContribution {
+    pub id: String,
+    pub kind: RelationshipEvidenceKind,
+    pub contribution_micros: i32,
+    pub available: bool,
+    pub input_paths: Vec<String>,
+    pub input_sha256: String,
+    pub explanation: String,
+}
+
+/// Approved evidence families supported by the offline affinity scorer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationshipEvidenceKind {
+    TraitSimilarity,
+    PreferenceOverlap,
+    SharedContext,
+    ExistingCanon,
 }
 
 /// One reviewed, pluggable alignment view with declared authority and rationale in its header.

@@ -27,31 +27,46 @@ use weave_character::{
     PresentationCatalog, PresentationCatalogEntry, PresentationCatalogSlot,
     PresentationCatalogValue, PresentationCatalogValueKind, PresentationLockRevision,
     PresentationLockTarget, PresentationPalette, PresentationProposal, PresentationReceipt,
-    PresentationReview, PresentationReviewDecision, PronounSet, RelationshipEdge,
-    RelationshipEdges, ReviewState, RoleProjection, RoleProjections,
-    TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION, TEMPORAL_CONTEXT_PACK_FORMAT_VERSION,
-    TemporalAuthoringCue, TemporalAutoApprovePolicy, TemporalContextConfig, TemporalContextPack,
-    TemporalContextProposal, TemporalContextProvider, TemporalContextReceipt,
-    TemporalContextRecord, TemporalContextReview, TemporalDate, TemporalEvidenceClass,
-    TemporalExtent, TemporalPlaceScope, TemporalRecordKind, TemporalReferencePeriod,
-    TemporalResolution, TemporalReviewAction, TemporalReviewDecision, TemporalSensitivity,
-    TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState, VersionedExtension,
-    VoiceCategory, VoiceDirection, alignment_config_schema, alignment_pack_schema,
-    alignment_proposal_schema, alignment_provider_content_fingerprint, alignment_receipt_schema,
-    alignment_review_schema, apply_presentation_lock_revision, apply_presentation_review,
-    apply_reviewed_alignment, apply_reviewed_character_proposal, apply_reviewed_temporal_context,
-    character_collection_schema, character_diagnostic_schema, character_domain_pack,
-    character_module_manifest, character_operation_request_schema, character_overlay_schema,
-    character_profile_schema, character_progress_schema, character_proposal_schema,
-    character_review_schema, character_synthesis_schema, character_template_schema,
-    collection_fingerprint, create_alignment_review, create_temporal_context_review,
+    PresentationReview, PresentationReviewDecision, PronounSet, RELATIONSHIP_CONFIG_FORMAT_VERSION,
+    RELATIONSHIP_KIND_PACK_FORMAT_VERSION, RELATIONSHIP_POLICY_FORMAT_VERSION,
+    RELATIONSHIP_REVISION_FORMAT_VERSION, RelationshipConsent, RelationshipConsentRecord,
+    RelationshipConsentState, RelationshipDate, RelationshipDiagnosticCode,
+    RelationshipDirectionality, RelationshipEdge, RelationshipEdgeOrigin, RelationshipEdges,
+    RelationshipEvidenceRule, RelationshipGraphPolicy, RelationshipGraphRevision,
+    RelationshipKindDefinition, RelationshipKindFamily, RelationshipKindPack,
+    RelationshipKindPackRef, RelationshipKinshipSemantics, RelationshipMetadataRequirement,
+    RelationshipNote, RelationshipProposal, RelationshipProposalConfig, RelationshipProposalTarget,
+    RelationshipReceipt, RelationshipReconciliationReport, RelationshipReview,
+    RelationshipReviewDecision, RelationshipSafeguards, RelationshipValidityPeriod, ReviewState,
+    RoleProjection, RoleProjections, TEMPORAL_CONTEXT_CONFIG_FORMAT_VERSION,
+    TEMPORAL_CONTEXT_PACK_FORMAT_VERSION, TemporalAuthoringCue, TemporalAutoApprovePolicy,
+    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextProvider,
+    TemporalContextReceipt, TemporalContextRecord, TemporalContextReview, TemporalDate,
+    TemporalEvidenceClass, TemporalExtent, TemporalPlaceScope, TemporalRecordKind,
+    TemporalReferencePeriod, TemporalResolution, TemporalReviewAction, TemporalReviewDecision,
+    TemporalSensitivity, TemporalTimeZone, TemporalUncertainty, TraitMeasurement, ValueState,
+    VersionedExtension, VoiceCategory, VoiceDirection, alignment_config_schema,
+    alignment_pack_schema, alignment_proposal_schema, alignment_provider_content_fingerprint,
+    alignment_receipt_schema, alignment_review_schema, apply_presentation_lock_revision,
+    apply_presentation_review, apply_relationship_graph_revision, apply_reviewed_alignment,
+    apply_reviewed_character_proposal, apply_reviewed_relationships,
+    apply_reviewed_temporal_context, character_collection_schema, character_diagnostic_schema,
+    character_domain_pack, character_module_manifest, character_operation_request_schema,
+    character_overlay_schema, character_profile_schema, character_progress_schema,
+    character_proposal_schema, character_review_schema, character_synthesis_schema,
+    character_template_schema, collection_fingerprint, create_alignment_review,
+    create_relationship_review, create_temporal_context_review,
     presentation_allocation_request_schema, presentation_catalog_ref, presentation_catalog_schema,
     presentation_lock_revision_schema, presentation_proposal_schema, presentation_receipt_schema,
     presentation_review_schema, propose_alignment, propose_character_operation,
-    propose_presentation_allocations, propose_temporal_context, recompute_derived,
-    resume_character_operation, review_character_proposal, review_presentation_proposal,
-    synthesize_character, template_fingerprint, temporal_context_config_schema,
-    temporal_context_pack_schema, temporal_context_proposal_schema,
+    propose_presentation_allocations, propose_relationships, propose_temporal_context,
+    recompute_derived, reconcile_relationship_graph, relationship_config_schema,
+    relationship_dense_matrix_review_csv, relationship_edge_review_csv, relationship_kind_pack_ref,
+    relationship_kind_pack_schema, relationship_policy_schema, relationship_proposal_schema,
+    relationship_receipt_schema, relationship_reconciliation_schema, relationship_review_schema,
+    relationship_revision_schema, resume_character_operation, review_character_proposal,
+    review_presentation_proposal, synthesize_character, template_fingerprint,
+    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
     temporal_context_receipt_schema, temporal_context_review_schema,
     temporal_provider_content_fingerprint,
 };
@@ -129,6 +144,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "1.0.0",
         "Ari Vale Reviewed Temporal Context",
     )?;
+    let relationships = relationship_fixture(&profile)?;
 
     write_pair(&fixture, "profile.character", &profile, write)?;
     write_pair(&fixture, "template.character", &template, write)?;
@@ -336,6 +352,96 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         write,
     )?;
 
+    let relationship_dir = fixture.join("relationships");
+    write_pair(
+        &relationship_dir,
+        "blank.character-collection",
+        &relationships.blank_collection,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "reference.relationship-kind-pack",
+        &relationships.pack,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "project.relationship-policy",
+        &relationships.policy,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "authored.relationship-revision",
+        &relationships.revision,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "input.character-collection",
+        &relationships.input_collection,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "scoring.relationship-config",
+        &relationships.config,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "proposal.relationship-proposal",
+        &relationships.proposal,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "decisions.relationship-review",
+        &relationships.review.decisions,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "review.relationship-review",
+        &relationships.review,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "receipt.relationship-receipt",
+        &relationships.receipt,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "applied.character-collection",
+        &relationships.receipt.output_collection,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "conflicted.character-collection",
+        &relationships.conflicted_collection,
+        write,
+    )?;
+    write_pair(
+        &relationship_dir,
+        "reconciliation.relationship-reconciliation",
+        &relationships.reconciliation,
+        write,
+    )?;
+    write_or_check(
+        &relationship_dir.join("edges.review.csv"),
+        relationships.edge_csv.as_bytes(),
+        write,
+    )?;
+    write_or_check(
+        &relationship_dir.join("matrix.review.csv"),
+        relationships.matrix_csv.as_bytes(),
+        write,
+    )?;
+
     let mut stale_proposal = serde_json::to_value(&temporal.proposal)?;
     stale_proposal["profile_sha256"] = serde_json::Value::String("0".repeat(64));
     write_raw_json(
@@ -373,6 +479,26 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     write_raw_json(
         &fixture.join("invalid/incomplete-alignment-review.json"),
         &incomplete_alignment,
+        write,
+    )?;
+
+    let mut stale_relationship = serde_json::to_value(&relationships.proposal)?;
+    stale_relationship["input_sha256"] = serde_json::Value::String("0".repeat(64));
+    write_raw_json(
+        &fixture.join("invalid/stale-relationship-proposal.json"),
+        &stale_relationship,
+        write,
+    )?;
+    let mut incomplete_relationship = serde_json::to_value(&relationships.review)?;
+    if let Some(decisions) = incomplete_relationship["decisions"].as_object_mut() {
+        let first = decisions.keys().next().cloned();
+        if let Some(first) = first {
+            decisions.remove(&first);
+        }
+    }
+    write_raw_json(
+        &fixture.join("invalid/incomplete-relationship-review.json"),
+        &incomplete_relationship,
         write,
     )?;
 
@@ -478,13 +604,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     else {
         return Err("relationship fixture changed kind".into());
     };
-    relationships
+    let invalid_edge = relationships
         .value
         .edges
         .get_mut("mentor_sable")
-        .expect("relationship edge")
-        .target_character_id
-        .clone_from(&profile.id);
+        .expect("relationship edge");
+    invalid_edge.source_character_id = "org.weave.character.sable_reed".to_owned();
     write_raw_json(
         &invalid.join("invalid-reference.character.json"),
         &invalid_reference,
@@ -650,10 +775,679 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "weave-character-presentation-lock-revision-v1.schema.json",
             presentation_lock_revision_schema()?,
         ),
+        (
+            "weave-character-relationship-kind-pack-v1.schema.json",
+            relationship_kind_pack_schema()?,
+        ),
+        (
+            "weave-character-relationship-policy-v1.schema.json",
+            relationship_policy_schema()?,
+        ),
+        (
+            "weave-character-relationship-config-v1.schema.json",
+            relationship_config_schema()?,
+        ),
+        (
+            "weave-character-relationship-proposal-v1.schema.json",
+            relationship_proposal_schema()?,
+        ),
+        (
+            "weave-character-relationship-review-v1.schema.json",
+            relationship_review_schema()?,
+        ),
+        (
+            "weave-character-relationship-receipt-v1.schema.json",
+            relationship_receipt_schema()?,
+        ),
+        (
+            "weave-character-relationship-revision-v1.schema.json",
+            relationship_revision_schema()?,
+        ),
+        (
+            "weave-character-relationship-reconciliation-v1.schema.json",
+            relationship_reconciliation_schema()?,
+        ),
     ] {
         write_or_check(&schemas.join(name), contents.as_bytes(), write)?;
     }
     Ok(())
+}
+
+const RELATIONSHIP_ARI: &str = "org.weave.character.ari_vale";
+const RELATIONSHIP_SABLE: &str = "org.weave.character.sable_reed";
+const RELATIONSHIP_TAVI: &str = "org.weave.character.tavi_quill";
+
+struct RelationshipFixture {
+    blank_collection: CharacterCollection,
+    pack: RelationshipKindPack,
+    policy: RelationshipGraphPolicy,
+    revision: RelationshipGraphRevision,
+    input_collection: CharacterCollection,
+    config: RelationshipProposalConfig,
+    proposal: RelationshipProposal,
+    review: RelationshipReview,
+    receipt: RelationshipReceipt,
+    conflicted_collection: CharacterCollection,
+    reconciliation: RelationshipReconciliationReport,
+    edge_csv: String,
+    matrix_csv: String,
+}
+
+fn relationship_fixture(
+    base: &CharacterProfile,
+) -> Result<RelationshipFixture, Box<dyn std::error::Error>> {
+    let blank_collection = relationship_roster(base);
+    let pack = relationship_kind_pack();
+    let kind_pack = relationship_kind_pack_ref(&pack)?;
+    let safeguards = RelationshipSafeguards {
+        minimum_partnership_age_years: Some(18),
+        forbid_close_kin_partnership: true,
+        require_affirmed_partnership_consent: true,
+        maximum_concurrent_partnerships: Some(1),
+        allow_reviewed_exceptions: true,
+    };
+    let reference_date = RelationshipDate {
+        year: 2035,
+        month: 6,
+        day: 15,
+    };
+    let policy = RelationshipGraphPolicy {
+        policy_format_version: RELATIONSHIP_POLICY_FORMAT_VERSION,
+        reference_date,
+        safeguards: safeguards.clone(),
+    };
+
+    let mut parent = fixture_relationship_edge(
+        "parent_sable_tavi",
+        RELATIONSHIP_SABLE,
+        RELATIONSHIP_TAVI,
+        "org.weave.relationship.parent_of",
+        RelationshipEdgeOrigin::Authored,
+        ReviewState::NotRequired,
+    );
+    parent.inverse_edge_id = Some("child_tavi_sable".to_owned());
+    let mut child = fixture_relationship_edge(
+        "child_tavi_sable",
+        RELATIONSHIP_TAVI,
+        RELATIONSHIP_SABLE,
+        "org.weave.relationship.child_of",
+        RelationshipEdgeOrigin::Authored,
+        ReviewState::NotRequired,
+    );
+    child.inverse_edge_id = Some("parent_sable_tavi".to_owned());
+    let revision = RelationshipGraphRevision {
+        revision_format_version: RELATIONSHIP_REVISION_FORMAT_VERSION,
+        id: "org.weave.relationship.reference_authored_graph".to_owned(),
+        expected_input_sha256: collection_fingerprint(&blank_collection)?,
+        kind_pack: kind_pack.clone(),
+        reference_date,
+        safeguards: safeguards.clone(),
+        additions: vec![
+            fixture_relationship_edge(
+                "friend_ari_tavi",
+                RELATIONSHIP_ARI,
+                RELATIONSHIP_TAVI,
+                "org.weave.relationship.friend",
+                RelationshipEdgeOrigin::Authored,
+                ReviewState::NotRequired,
+            ),
+            fixture_relationship_edge(
+                "mentor_ari_sable",
+                RELATIONSHIP_ARI,
+                RELATIONSHIP_SABLE,
+                "org.weave.relationship.mentor",
+                RelationshipEdgeOrigin::Imported,
+                ReviewState::Accepted,
+            ),
+            parent,
+            child,
+        ],
+        removals: Vec::new(),
+        rationale: "Author a synthetic graph containing directed, symmetric, and inverse-paired kinds while keeping imported and authored layers explicit.".to_owned(),
+        provenance: relationship_provenance(
+            "weave_relationship_revision",
+            "relationships",
+            "Original synthetic authored and imported relationship graph fixture.",
+        ),
+    };
+    let input_collection = apply_relationship_graph_revision(&blank_collection, &pack, &revision)?;
+
+    let config_lineage = vec!["weave_relationship_config".to_owned()];
+    let validity = Some(RelationshipValidityPeriod {
+        start: Some(RelationshipDate {
+            year: 2035,
+            month: 1,
+            day: 1,
+        }),
+        end: None,
+    });
+    let target_note = |id: &str, content: &str| {
+        BTreeMap::from([(
+            id.to_owned(),
+            RelationshipNote {
+                id: id.to_owned(),
+                content: content.to_owned(),
+                lineage: config_lineage.clone(),
+            },
+        )])
+    };
+    let affirmed_consent = |id: &str, source: &str, target: &str| RelationshipConsentRecord {
+        id: id.to_owned(),
+        source_character_id: source.to_owned(),
+        target_character_id: target.to_owned(),
+        kind_id: "org.weave.relationship.partner".to_owned(),
+        consent: RelationshipConsent {
+            state: RelationshipConsentState::Affirmed,
+            reviewed_by: Some("org.weave.reviewer.fixture".to_owned()),
+            rationale: Some(
+                "Synthetic adults explicitly affirm this fictional partnership fixture.".to_owned(),
+            ),
+            lineage: config_lineage.clone(),
+        },
+    };
+    let config = RelationshipProposalConfig {
+        config_format_version: RELATIONSHIP_CONFIG_FORMAT_VERSION,
+        id: "org.weave.relationship.reference_scoring".to_owned(),
+        expected_input_sha256: collection_fingerprint(&input_collection)?,
+        kind_pack,
+        reference_date,
+        seed: 2_035_061_500,
+        roster: vec![
+            RELATIONSHIP_ARI.to_owned(),
+            RELATIONSHIP_SABLE.to_owned(),
+            RELATIONSHIP_TAVI.to_owned(),
+        ],
+        targets: vec![
+            RelationshipProposalTarget {
+                id: "affinity".to_owned(),
+                kind_id: "org.weave.relationship.shared_affinity".to_owned(),
+                origin: RelationshipEdgeOrigin::ComputedAffinity,
+                minimum_score_micros: 500_000,
+                maximum_candidates: None,
+                confidence: Confidence::Moderate,
+                validity: validity.clone(),
+                notes: target_note(
+                    "affinity_prompt",
+                    "This score is an inspectable authoring prompt, never objective interpersonal truth.",
+                ),
+                rationale: "Offer optional affinity prompts from only the four explicitly approved evidence rules.".to_owned(),
+            },
+            RelationshipProposalTarget {
+                id: "mentorship".to_owned(),
+                kind_id: "org.weave.relationship.mentor".to_owned(),
+                origin: RelationshipEdgeOrigin::SuggestedNarrative,
+                minimum_score_micros: 500_000,
+                maximum_candidates: None,
+                confidence: Confidence::Moderate,
+                validity: validity.clone(),
+                notes: target_note(
+                    "narrative_prompt",
+                    "Optional fictional mentorship direction for human review.",
+                ),
+                rationale: "Suggest a possible story direction without asserting canon or mutating canonical character evidence.".to_owned(),
+            },
+            RelationshipProposalTarget {
+                id: "partnership".to_owned(),
+                kind_id: "org.weave.relationship.partner".to_owned(),
+                origin: RelationshipEdgeOrigin::SuggestedNarrative,
+                minimum_score_micros: 500_000,
+                maximum_candidates: None,
+                confidence: Confidence::Low,
+                validity,
+                notes: target_note(
+                    "partnership_prompt",
+                    "Optional fictional partnership prompt subject to explicit project safeguards.",
+                ),
+                rationale: "Exercise age, kinship, concurrency, and affirmative-consent gates before any author decision.".to_owned(),
+            },
+        ],
+        evidence_rules: vec![
+            RelationshipEvidenceRule::TraitSimilarity {
+                id: "openness_similarity".to_owned(),
+                trait_id: HexacoTrait::Openness,
+                weight_micros: 250_000,
+            },
+            RelationshipEvidenceRule::PreferenceOverlap {
+                id: "communication_preference_overlap".to_owned(),
+                category: "org.weave.preference.communication".to_owned(),
+                weight_micros: 250_000,
+            },
+            RelationshipEvidenceRule::SharedContext {
+                id: "wayfinder_context".to_owned(),
+                context_ref: "org.weave.identity.wayfinder".to_owned(),
+                weight_micros: 250_000,
+            },
+            RelationshipEvidenceRule::ExistingCanon {
+                id: "existing_mentorship".to_owned(),
+                relationship_kind_id: "org.weave.relationship.mentor".to_owned(),
+                weight_micros: 250_000,
+            },
+        ],
+        consent_records: vec![
+            affirmed_consent(
+                "ari_tavi_partnership_consent",
+                RELATIONSHIP_ARI,
+                RELATIONSHIP_TAVI,
+            ),
+            affirmed_consent(
+                "sable_tavi_partnership_consent",
+                RELATIONSHIP_SABLE,
+                RELATIONSHIP_TAVI,
+            ),
+        ],
+        safeguards: safeguards.clone(),
+        provenance: relationship_provenance(
+            "weave_relationship_config",
+            "configuration",
+            "Original deterministic relationship scoring and safeguard fixture.",
+        ),
+    };
+    let proposal = propose_relationships(&input_collection, &pack, &config)?;
+    let decisions = proposal
+        .candidates
+        .iter()
+        .map(|(id, candidate)| {
+            let pair = (
+                candidate.source_character_id.as_str(),
+                candidate.target_character_id.as_str(),
+            );
+            let decision = match (candidate.target_id.as_str(), pair) {
+                ("affinity", (RELATIONSHIP_ARI, RELATIONSHIP_SABLE)) => {
+                    RelationshipReviewDecision::Accept {
+                        lock: LockState::Locked,
+                        rationale: Some(
+                            "Retain this transparent computed prompt as a reviewed optional edge."
+                                .to_owned(),
+                        ),
+                    }
+                }
+                ("affinity", (RELATIONSHIP_ARI, RELATIONSHIP_TAVI)) => {
+                    let mut edges = candidate.edges.clone();
+                    add_relationship_review_note(
+                        &mut edges,
+                        "edited_context",
+                        "The reviewer narrows this prompt to their shared route-planning scenes.",
+                    );
+                    RelationshipReviewDecision::Edit {
+                        edges,
+                        lock: LockState::Unlocked,
+                        rationale: "Edit metadata while preserving the exact proposed topology and evidence trace.".to_owned(),
+                    }
+                }
+                ("affinity", (RELATIONSHIP_SABLE, RELATIONSHIP_TAVI)) => {
+                    let mut edges = candidate.edges.clone();
+                    for edge in &mut edges {
+                        edge.confidence = Confidence::High;
+                    }
+                    add_relationship_review_note(
+                        &mut edges,
+                        "override_context",
+                        "The reviewer supplies project-specific confidence and context.",
+                    );
+                    RelationshipReviewDecision::Override {
+                        edges,
+                        replacements: Vec::new(),
+                        lock: LockState::Locked,
+                        rationale: "Override proposal metadata without claiming that the computed score is objective truth.".to_owned(),
+                    }
+                }
+                ("mentorship", (RELATIONSHIP_TAVI, RELATIONSHIP_ARI)) => {
+                    RelationshipReviewDecision::Accept {
+                        lock: LockState::Unlocked,
+                        rationale: Some(
+                            "Accept one optional narrative suggestion after explicit human review."
+                                .to_owned(),
+                        ),
+                    }
+                }
+                ("mentorship", _) => RelationshipReviewDecision::Reject {
+                    rationale: "Do not add this alternate mentorship direction to the current draft."
+                        .to_owned(),
+                },
+                ("partnership", (RELATIONSHIP_ARI, RELATIONSHIP_SABLE)) => {
+                    RelationshipReviewDecision::Exception {
+                        edges: candidate.edges.clone(),
+                        exception_codes: vec![RelationshipDiagnosticCode::ConsentSafeguard],
+                        replacements: Vec::new(),
+                        lock: LockState::Locked,
+                        rationale: "Exercise the explicit, retained author-exception path for a wholly synthetic fictional fixture.".to_owned(),
+                    }
+                }
+                ("partnership", (RELATIONSHIP_ARI, RELATIONSHIP_TAVI)) => {
+                    RelationshipReviewDecision::Withhold {
+                        rationale: "Keep this complete proposal in the authoring receipt without publishing an edge.".to_owned(),
+                    }
+                }
+                ("partnership", _) => RelationshipReviewDecision::Reject {
+                    rationale: "The reviewed partnership prompt does not serve this synthetic draft."
+                        .to_owned(),
+                },
+                _ => unreachable!("reference fixture covers every target and roster pair"),
+            };
+            (id.clone(), decision)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let review = create_relationship_review(
+        &proposal,
+        decisions,
+        "org.weave.reviewer.fixture",
+        "Review every deterministic candidate, preserve every rationale, and publish only explicit human decisions.",
+    )?;
+    let receipt = apply_reviewed_relationships(&input_collection, &proposal, &review)?;
+    let edge_csv = relationship_edge_review_csv(
+        &receipt.output_collection,
+        &pack,
+        reference_date,
+        &safeguards,
+        &Default::default(),
+    )?;
+    let matrix_csv = relationship_dense_matrix_review_csv(
+        &receipt.output_collection,
+        &pack,
+        reference_date,
+        &safeguards,
+        &Default::default(),
+    )?;
+
+    let mut conflicted_collection = input_collection.clone();
+    relationship_edges_mut(&mut conflicted_collection, RELATIONSHIP_TAVI)?
+        .edges
+        .remove("child_tavi_sable");
+    let ari_edges = relationship_edges_mut(&mut conflicted_collection, RELATIONSHIP_ARI)?;
+    ari_edges
+        .edges
+        .get_mut("mentor_ari_sable")
+        .ok_or("relationship fixture omitted imported mentor edge")?
+        .freshness = Freshness::Stale;
+    let mut duplicate = ari_edges
+        .edges
+        .get("friend_ari_tavi")
+        .cloned()
+        .ok_or("relationship fixture omitted authored friend edge")?;
+    duplicate.id = "friend_ari_tavi_duplicate".to_owned();
+    ari_edges.edges.insert(duplicate.id.clone(), duplicate);
+    let reconciliation =
+        reconcile_relationship_graph(&conflicted_collection, &pack, reference_date, &safeguards)?;
+
+    Ok(RelationshipFixture {
+        blank_collection,
+        pack,
+        policy,
+        revision,
+        input_collection,
+        config,
+        proposal,
+        review,
+        receipt,
+        conflicted_collection,
+        reconciliation,
+        edge_csv,
+        matrix_csv,
+    })
+}
+
+fn relationship_roster(base: &CharacterProfile) -> CharacterCollection {
+    let characters = [
+        (RELATIONSHIP_ARI, "Ari Vale"),
+        (RELATIONSHIP_SABLE, "Sable Reed"),
+        (RELATIONSHIP_TAVI, "Tavi Quill"),
+    ]
+    .into_iter()
+    .map(|(id, display_name)| {
+        let mut profile = base.clone();
+        profile.id = id.to_owned();
+        profile.canon.identity.display_name.value = display_name.to_owned();
+        profile.canon.identity.aliases = None;
+        let CharacterExtension::Relationships(relationships) = profile
+            .extensions
+            .get_mut("org.weave.character.relationships")
+            .expect("reference profile includes a relationship graph")
+        else {
+            unreachable!("reference relationship extension changed kind")
+        };
+        relationships.value.edges.clear();
+        (id.to_owned(), profile)
+    })
+    .collect();
+    CharacterCollection {
+        collection_format_version: CHARACTER_COLLECTION_FORMAT_VERSION,
+        id: "org.weave.character.relationship_reference_roster".to_owned(),
+        revision: 0,
+        characters,
+    }
+}
+
+fn relationship_kind_pack() -> RelationshipKindPack {
+    let parent = "org.weave.relationship.parent_of";
+    let child = "org.weave.relationship.child_of";
+    RelationshipKindPack {
+        pack_format_version: RELATIONSHIP_KIND_PACK_FORMAT_VERSION,
+        id: "org.weave.relationship.reference".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Weave Reference Relationship Kinds".to_owned(),
+        description: "Original, neutral relationship vocabulary for deterministic synthetic fixtures and offline tooling.".to_owned(),
+        independently_authored: true,
+        license: "MIT".to_owned(),
+        license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+        kinds: BTreeMap::from([
+            (
+                child.to_owned(),
+                relationship_kind_definition(
+                    child,
+                    "Child of",
+                    RelationshipKindFamily::Kinship,
+                    Some(RelationshipKinshipSemantics::ChildOf),
+                    RelationshipDirectionality::InversePaired {
+                        inverse_kind_id: parent.to_owned(),
+                    },
+                    false,
+                    false,
+                    vec![RelationshipMetadataRequirement::Confidence],
+                ),
+            ),
+            (
+                "org.weave.relationship.friend".to_owned(),
+                relationship_kind_definition(
+                    "org.weave.relationship.friend",
+                    "Friend",
+                    RelationshipKindFamily::Friendship,
+                    None,
+                    RelationshipDirectionality::Symmetric,
+                    false,
+                    true,
+                    Vec::new(),
+                ),
+            ),
+            (
+                "org.weave.relationship.mentor".to_owned(),
+                relationship_kind_definition(
+                    "org.weave.relationship.mentor",
+                    "Mentor",
+                    RelationshipKindFamily::Mentorship,
+                    None,
+                    RelationshipDirectionality::Directed,
+                    false,
+                    true,
+                    vec![RelationshipMetadataRequirement::Notes],
+                ),
+            ),
+            (
+                parent.to_owned(),
+                relationship_kind_definition(
+                    parent,
+                    "Parent of",
+                    RelationshipKindFamily::Kinship,
+                    Some(RelationshipKinshipSemantics::ParentOf),
+                    RelationshipDirectionality::InversePaired {
+                        inverse_kind_id: child.to_owned(),
+                    },
+                    false,
+                    false,
+                    vec![RelationshipMetadataRequirement::Confidence],
+                ),
+            ),
+            (
+                "org.weave.relationship.partner".to_owned(),
+                relationship_kind_definition(
+                    "org.weave.relationship.partner",
+                    "Partner",
+                    RelationshipKindFamily::Partnership,
+                    None,
+                    RelationshipDirectionality::Symmetric,
+                    false,
+                    false,
+                    vec![RelationshipMetadataRequirement::Validity],
+                ),
+            ),
+            (
+                "org.weave.relationship.shared_affinity".to_owned(),
+                relationship_kind_definition(
+                    "org.weave.relationship.shared_affinity",
+                    "Shared affinity",
+                    RelationshipKindFamily::Affinity,
+                    None,
+                    RelationshipDirectionality::Symmetric,
+                    false,
+                    true,
+                    vec![RelationshipMetadataRequirement::Evidence],
+                ),
+            ),
+            (
+                "org.weave.relationship.sibling".to_owned(),
+                relationship_kind_definition(
+                    "org.weave.relationship.sibling",
+                    "Sibling",
+                    RelationshipKindFamily::Kinship,
+                    Some(RelationshipKinshipSemantics::SiblingOf),
+                    RelationshipDirectionality::Symmetric,
+                    false,
+                    true,
+                    Vec::new(),
+                ),
+            ),
+        ]),
+        provenance: relationship_provenance(
+            "weave_relationship_reference_pack",
+            "kinds",
+            "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+        ),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn relationship_kind_definition(
+    id: &str,
+    label: &str,
+    family: RelationshipKindFamily,
+    kinship_semantics: Option<RelationshipKinshipSemantics>,
+    directionality: RelationshipDirectionality,
+    allows_self: bool,
+    allows_multiple_concurrent: bool,
+    required_metadata: Vec<RelationshipMetadataRequirement>,
+) -> RelationshipKindDefinition {
+    RelationshipKindDefinition {
+        id: id.to_owned(),
+        label: label.to_owned(),
+        description: format!(
+            "Original {label} relationship kind for fictional character graph authoring."
+        ),
+        family,
+        kinship_semantics,
+        directionality,
+        allows_self,
+        allows_multiple_concurrent,
+        required_metadata,
+        limitations: vec![
+            "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction.".to_owned(),
+        ],
+    }
+}
+
+fn fixture_relationship_edge(
+    id: &str,
+    source: &str,
+    target: &str,
+    kind: &str,
+    origin: RelationshipEdgeOrigin,
+    review: ReviewState,
+) -> RelationshipEdge {
+    RelationshipEdge {
+        id: id.to_owned(),
+        source_character_id: source.to_owned(),
+        target_character_id: target.to_owned(),
+        kind: kind.to_owned(),
+        confidence: Confidence::High,
+        origin,
+        review,
+        lock: LockState::Unlocked,
+        freshness: Freshness::Current,
+        validity: None,
+        inverse_edge_id: None,
+        notes: BTreeMap::from([(
+            "fixture_context".to_owned(),
+            RelationshipNote {
+                id: "fixture_context".to_owned(),
+                content: "Explicit synthetic relationship context for portable tests.".to_owned(),
+                lineage: vec!["weave_relationship_revision".to_owned()],
+            },
+        )]),
+        consent: None,
+        safeguard_exceptions: BTreeMap::new(),
+        affinity_score_micros: None,
+        evidence: Vec::new(),
+        lineage: vec!["weave_relationship_revision".to_owned()],
+        rationale: Some("Authored only for the public synthetic relationship fixture.".to_owned()),
+    }
+}
+
+fn add_relationship_review_note(edges: &mut [RelationshipEdge], id: &str, content: &str) {
+    for edge in edges {
+        edge.notes.insert(
+            id.to_owned(),
+            RelationshipNote {
+                id: id.to_owned(),
+                content: content.to_owned(),
+                lineage: vec!["weave_relationship_config".to_owned()],
+            },
+        );
+    }
+}
+
+fn relationship_edges_mut<'a>(
+    collection: &'a mut CharacterCollection,
+    character_id: &str,
+) -> Result<&'a mut RelationshipEdges, Box<dyn std::error::Error>> {
+    let extension = collection
+        .characters
+        .get_mut(character_id)
+        .and_then(|profile| {
+            profile
+                .extensions
+                .get_mut("org.weave.character.relationships")
+        })
+        .ok_or("relationship fixture omitted graph extension")?;
+    let CharacterExtension::Relationships(record) = extension else {
+        return Err("relationship fixture graph extension changed kind".into());
+    };
+    Ok(&mut record.value)
+}
+
+fn relationship_provenance(source_id: &str, claim: &str, attribution: &str) -> Provenance {
+    Provenance {
+        sources: vec![ProvenanceSource {
+            id: source_id.to_owned(),
+            kind: ProvenanceKind::Original,
+            url: "https://github.com/chrisgliddon/weave".to_owned(),
+            revision: "relationship-graph-v1".to_owned(),
+            sha256: None,
+            license: "MIT".to_owned(),
+            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE".to_owned(),
+            attribution: attribution.to_owned(),
+            modified: false,
+        }],
+        transformations: Vec::new(),
+        claims: BTreeMap::from([(claim.to_owned(), vec![source_id.to_owned()])]),
+    }
 }
 
 struct PresentationFixture {
@@ -2138,7 +2932,17 @@ fn complete_profile() -> CharacterProfile {
         .expect("prudence fixture")
         .lock = LockState::Locked;
 
-    let provenance = original_provenance("character_original", "profile");
+    let relationship_pack = relationship_kind_pack();
+    let relationship_pack_ref = relationship_kind_pack_ref(&relationship_pack)
+        .expect("reference relationship pack is valid");
+    let mut provenance = original_provenance("character_original", "profile");
+    provenance
+        .sources
+        .extend(relationship_pack.provenance.sources.clone());
+    provenance.claims.insert(
+        "extensions.org.weave.character.relationships".to_owned(),
+        vec!["weave_relationship_reference_pack".to_owned()],
+    );
     let mut profile = CharacterProfile {
         profile_format_version: CHARACTER_PROFILE_FORMAT_VERSION,
         id: "org.weave.character.ari_vale".to_owned(),
@@ -2183,7 +2987,7 @@ fn complete_profile() -> CharacterProfile {
                 },
             )]),
         },
-        extensions: extensions(&lineage),
+        extensions: extensions(&lineage, relationship_pack_ref),
         suggestions: BTreeMap::from([(
             "night_market_memory".to_owned(),
             CharacterSuggestion {
@@ -2206,7 +3010,10 @@ fn complete_profile() -> CharacterProfile {
     profile
 }
 
-fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
+fn extensions(
+    lineage: &[String],
+    relationship_kind_pack: RelationshipKindPackRef,
+) -> BTreeMap<String, CharacterExtension> {
     let identity_namespace = "org.weave.character.identity_presentation";
     let expression_namespace = "org.weave.character.expression";
     let behavior_namespace = "org.weave.character.behavioral_signatures";
@@ -2295,6 +3102,8 @@ fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
             CharacterExtension::Relationships(VersionedExtension {
                 header: extension_header(relationship_namespace, 1, lineage),
                 value: RelationshipEdges {
+                    graph_format_version: 1,
+                    kind_pack: Some(relationship_kind_pack),
                     edges: BTreeMap::from([(
                         "mentor_sable".to_owned(),
                         RelationshipEdge {
@@ -2303,6 +3112,30 @@ fn extensions(lineage: &[String]) -> BTreeMap<String, CharacterExtension> {
                             target_character_id: "org.weave.character.sable_reed".to_owned(),
                             kind: "org.weave.relationship.mentor".to_owned(),
                             confidence: Confidence::High,
+                            origin: weave_character::RelationshipEdgeOrigin::Authored,
+                            review: ReviewState::NotRequired,
+                            lock: LockState::Unlocked,
+                            freshness: Freshness::Current,
+                            validity: None,
+                            inverse_edge_id: None,
+                            notes: BTreeMap::from([(
+                                "fixture_context".to_owned(),
+                                RelationshipNote {
+                                    id: "fixture_context".to_owned(),
+                                    content: "Explicit synthetic relationship context for portable tests."
+                                        .to_owned(),
+                                    lineage: lineage.to_vec(),
+                                },
+                            )]),
+                            consent: None,
+                            safeguard_exceptions: BTreeMap::new(),
+                            affinity_score_micros: None,
+                            evidence: Vec::new(),
+                            lineage: lineage.to_vec(),
+                            rationale: Some(
+                                "Authored only for the public synthetic Character fixture."
+                                    .to_owned(),
+                            ),
                         },
                     )]),
                 },

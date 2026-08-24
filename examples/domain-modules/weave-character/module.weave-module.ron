@@ -2,10 +2,10 @@
     contract_version: 1,
     pack_format_version: 1,
     id: "org.weave.character",
-    version: "1.3.0",
+    version: "1.4.0",
     namespace: "character",
     title: "Weave Character",
-    summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
+    summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
     authors: [
         (
             name: "Weave Contributors",
@@ -1679,6 +1679,14 @@
                     required: true,
                     description: "Profile source and transformation identifiers.",
                 ),
+                "relationships": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipGraph",
+                    ),
+                    required: false,
+                    description: "Optional layered relationship graph with review, safeguards, and advisory evidence kept explicit.",
+                ),
             },
         ),
         "CharacterProvenance": (
@@ -1711,6 +1719,555 @@
                     ),
                     required: true,
                     description: "Sorted transformation identifiers retained from the profile.",
+                ),
+            },
+        ),
+        "CharacterRelationshipConsent": (
+            kind: "object",
+            fields: {
+                "lineage": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 256,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted consent review lineage.",
+                ),
+                "rationale": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: false,
+                    description: "Optional consent review rationale.",
+                ),
+                "reviewed_by": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: false,
+                    description: "Optional stable reviewer identity.",
+                ),
+                "state": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "affirmed",
+                            "not_applicable",
+                            "unknown",
+                            "withheld",
+                        ],
+                    ),
+                    required: true,
+                    description: "Explicit consent metadata state; absence never implies consent.",
+                ),
+            },
+        ),
+        "CharacterRelationshipDate": (
+            kind: "object",
+            fields: {
+                "day": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(31.0),
+                    ),
+                    required: true,
+                    description: "Gregorian day.",
+                ),
+                "month": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(12.0),
+                    ),
+                    required: true,
+                    description: "Gregorian month.",
+                ),
+                "year": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-999999.0),
+                        maximum: Some(999999.0),
+                    ),
+                    required: true,
+                    description: "Proleptic-Gregorian year.",
+                ),
+            },
+        ),
+        "CharacterRelationshipEdge": (
+            kind: "object",
+            fields: {
+                "affinity_score_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Optional subjective advisory affinity score in millionths.",
+                ),
+                "confidence": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "high",
+                            "low",
+                            "moderate",
+                            "unknown",
+                        ],
+                    ),
+                    required: true,
+                    description: "Confidence in this relationship representation.",
+                ),
+                "consent": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipConsent",
+                    ),
+                    required: false,
+                    description: "Optional explicit project consent metadata.",
+                ),
+                "evidence": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "CharacterRelationshipEvidence",
+                        ),
+                        min_items: 0,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Ordered inspectable evidence contributions.",
+                ),
+                "freshness": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "current",
+                            "stale",
+                        ],
+                    ),
+                    required: true,
+                    description: "Whether exact upstream relationship inputs remain current.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable local relationship edge id.",
+                ),
+                "inverse_edge_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    description: "Exact reciprocal edge id when inverse-paired.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Namespaced relationship kind.",
+                ),
+                "lineage": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 256,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted edge source and transformation lineage.",
+                ),
+                "lock": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "locked",
+                            "unlocked",
+                        ],
+                    ),
+                    required: true,
+                    description: "Author lock state.",
+                ),
+                "notes": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "CharacterRelationshipNote",
+                        ),
+                        min_entries: 0,
+                        max_entries: 4096,
+                    ),
+                    required: true,
+                    description: "Stable author-facing notes.",
+                ),
+                "origin": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "computed_affinity",
+                            "imported",
+                            "reviewed_suggestion",
+                            "suggested_narrative",
+                        ],
+                    ),
+                    required: true,
+                    description: "Explicit authority layer; advisory values never collapse into canon.",
+                ),
+                "rationale": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: false,
+                    description: "Optional review or authorship rationale.",
+                ),
+                "review": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "accepted",
+                            "not_required",
+                            "pending",
+                            "rejected",
+                        ],
+                    ),
+                    required: true,
+                    description: "Editorial review state.",
+                ),
+                "safeguard_exceptions": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "CharacterRelationshipSafeguardException",
+                        ),
+                        min_entries: 0,
+                        max_entries: 4096,
+                    ),
+                    required: true,
+                    description: "Explicit reviewed project-safeguard exceptions.",
+                ),
+                "source_character_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Stable source character id.",
+                ),
+                "target_character_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Stable target character id.",
+                ),
+                "validity": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipValidity",
+                    ),
+                    required: false,
+                    description: "Optional inclusive relationship validity interval.",
+                ),
+            },
+        ),
+        "CharacterRelationshipEvidence": (
+            kind: "object",
+            fields: {
+                "available": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether this input was present.",
+                ),
+                "contribution_micros": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Exact signed advisory contribution in millionths.",
+                ),
+                "explanation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Inspectably describes this subjective authoring signal.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable ordered evidence-rule id.",
+                ),
+                "input_paths": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 1024,
+                        ),
+                        min_items: 1,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Exact sorted profile paths used by the contribution.",
+                ),
+                "input_sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact contribution input fingerprint.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "existing_canon",
+                            "preference_overlap",
+                            "shared_context",
+                            "trait_similarity",
+                        ],
+                    ),
+                    required: true,
+                    description: "Approved relationship evidence family.",
+                ),
+            },
+        ),
+        "CharacterRelationshipGraph": (
+            kind: "object",
+            fields: {
+                "canonical_personality_write_back": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Always false; relationships cannot modify canonical personality evidence.",
+                ),
+                "edges": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "CharacterRelationshipEdge",
+                        ),
+                        min_entries: 0,
+                        max_entries: 65536,
+                    ),
+                    required: true,
+                    description: "Layered outgoing relationship edges keyed by exact local id.",
+                ),
+                "graph_format_version": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "Exact relationship graph version.",
+                ),
+                "kind_pack": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipKindPack",
+                    ),
+                    required: false,
+                    description: "Exact pack coordinate used to validate graph semantics.",
+                ),
+            },
+        ),
+        "CharacterRelationshipKindPack": (
+            kind: "object",
+            fields: {
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact relationship-kind pack identity.",
+                ),
+                "sha256": (
+                    type: (
+                        kind: "string",
+                        min_length: 64,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Exact relationship-kind pack SHA-256.",
+                ),
+                "version": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Exact relationship-kind pack version.",
+                ),
+            },
+        ),
+        "CharacterRelationshipNote": (
+            kind: "object",
+            fields: {
+                "content": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 4096,
+                    ),
+                    required: true,
+                    description: "Author-facing relationship note.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable note identifier.",
+                ),
+                "lineage": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 256,
+                        ),
+                        min_items: 0,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted source or transformation identifiers.",
+                ),
+            },
+        ),
+        "CharacterRelationshipSafeguardException": (
+            kind: "object",
+            fields: {
+                "code": (
+                    type: (
+                        kind: "string",
+                        min_length: 4,
+                        max_length: 4,
+                    ),
+                    required: true,
+                    description: "Exact public relationship safeguard code.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable exception identifier.",
+                ),
+                "lineage": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 256,
+                        ),
+                        min_items: 1,
+                        max_items: 4096,
+                    ),
+                    required: true,
+                    description: "Sorted reviewed exception lineage.",
+                ),
+                "rationale": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Explicit author exception rationale.",
+                ),
+                "reviewer": (
+                    type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 256,
+                    ),
+                    required: true,
+                    description: "Stable exception reviewer identity.",
+                ),
+            },
+        ),
+        "CharacterRelationshipValidity": (
+            kind: "object",
+            fields: {
+                "end": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipDate",
+                    ),
+                    required: false,
+                    description: "Inclusive optional end date.",
+                ),
+                "start": (
+                    type: (
+                        kind: "named",
+                        name: "CharacterRelationshipDate",
+                    ),
+                    required: false,
+                    description: "Inclusive optional start date.",
                 ),
             },
         ),
@@ -2318,6 +2875,13 @@
                     "provenance",
                 ],
                 reason: "Pack provenance is immutable and cannot be replaced by story source.",
+            ),
+            (
+                path: [
+                    "profile",
+                    "relationships",
+                ],
+                reason: "Relationship layers, reviews, locks, safeguard exceptions, and advisory evidence are changed only through a fingerprinted relationship revision or complete proposal review.",
             ),
         ],
     ),

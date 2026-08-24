@@ -1,0 +1,664 @@
+{
+  "$defs": {
+    "Confidence": {
+      "description": "Bounded confidence vocabulary shared by evidence and projections.",
+      "enum": [
+        "unknown",
+        "low",
+        "moderate",
+        "high"
+      ],
+      "type": "string"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "RelationshipConsent": {
+      "additionalProperties": false,
+      "description": "Explicit consent metadata used by project safeguards; absence never means consent.",
+      "properties": {
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/RelationshipConsentState"
+        }
+      },
+      "required": [
+        "state",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "RelationshipConsentRecord": {
+      "additionalProperties": false,
+      "description": "Exact author-reviewed consent record for one pair and kind.",
+      "properties": {
+        "consent": {
+          "$ref": "#/$defs/RelationshipConsent"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind_id": {
+          "type": "string"
+        },
+        "source_character_id": {
+          "type": "string"
+        },
+        "target_character_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source_character_id",
+        "target_character_id",
+        "kind_id",
+        "consent"
+      ],
+      "type": "object"
+    },
+    "RelationshipConsentState": {
+      "description": "Closed consent states. Only `affirmed` satisfies a consent-required safeguard.",
+      "enum": [
+        "affirmed",
+        "not_applicable",
+        "unknown",
+        "withheld"
+      ],
+      "type": "string"
+    },
+    "RelationshipDate": {
+      "additionalProperties": false,
+      "description": "Proleptic-Gregorian date used only for graph validity and safeguards.",
+      "properties": {
+        "day": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "month": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "year": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month",
+        "day"
+      ],
+      "type": "object"
+    },
+    "RelationshipEdgeOrigin": {
+      "description": "The authority layer of one relationship edge.",
+      "oneOf": [
+        {
+          "enum": [
+            "imported",
+            "computed_affinity",
+            "suggested_narrative",
+            "reviewed_suggestion"
+          ],
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Direct author statement; the default preserves the original v1 edge contract.",
+          "type": "string"
+        }
+      ]
+    },
+    "RelationshipEvidenceRule": {
+      "description": "One configurable, inspectable contribution to the advisory affinity score.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "trait_similarity",
+              "type": "string"
+            },
+            "trait_id": {
+              "$ref": "#/$defs/HexacoTrait"
+            },
+            "weight_micros": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "trait_id",
+            "weight_micros"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "preference_overlap",
+              "type": "string"
+            },
+            "weight_micros": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "category",
+            "weight_micros"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "context_ref": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "shared_context",
+              "type": "string"
+            },
+            "weight_micros": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "context_ref",
+            "weight_micros"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "existing_canon",
+              "type": "string"
+            },
+            "relationship_kind_id": {
+              "type": "string"
+            },
+            "weight_micros": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "relationship_kind_id",
+            "weight_micros"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RelationshipKindPackRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable relationship-kind pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "RelationshipNote": {
+      "additionalProperties": false,
+      "description": "One author-facing note on an edge.",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "content",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "RelationshipProposalTarget": {
+      "additionalProperties": false,
+      "description": "One relationship kind and advisory layer requested from the scorer.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind_id": {
+          "type": "string"
+        },
+        "maximum_candidates": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "minimum_score_micros": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "notes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RelationshipNote"
+          },
+          "type": "object"
+        },
+        "origin": {
+          "$ref": "#/$defs/RelationshipEdgeOrigin"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "validity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipValidityPeriod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind_id",
+        "origin",
+        "minimum_score_micros",
+        "confidence",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "RelationshipSafeguards": {
+      "additionalProperties": false,
+      "description": "Project-defined age, kinship, partnership, and consent policy.",
+      "properties": {
+        "allow_reviewed_exceptions": {
+          "type": "boolean"
+        },
+        "forbid_close_kin_partnership": {
+          "type": "boolean"
+        },
+        "maximum_concurrent_partnerships": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "minimum_partnership_age_years": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "require_affirmed_partnership_consent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "forbid_close_kin_partnership",
+        "require_affirmed_partnership_consent",
+        "allow_reviewed_exceptions"
+      ],
+      "type": "object"
+    },
+    "RelationshipValidityPeriod": {
+      "additionalProperties": false,
+      "description": "Inclusive date bounds for a relationship assertion.",
+      "properties": {
+        "end": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipDate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "start": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipDate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-relationship-config:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact, replayable configuration for deterministic relationship proposals.",
+  "properties": {
+    "config_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "consent_records": {
+      "description": "Explicit pair-specific consent assertions; absence never means consent.",
+      "items": {
+        "$ref": "#/$defs/RelationshipConsentRecord"
+      },
+      "type": "array"
+    },
+    "evidence_rules": {
+      "description": "Evidence rules are processed in declared order and must have unique ids.",
+      "items": {
+        "$ref": "#/$defs/RelationshipEvidenceRule"
+      },
+      "type": "array"
+    },
+    "expected_input_sha256": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind_pack": {
+      "$ref": "#/$defs/RelationshipKindPackRef"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "reference_date": {
+      "$ref": "#/$defs/RelationshipDate"
+    },
+    "roster": {
+      "description": "Exact sorted roster. No ambient character discovery is permitted.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "safeguards": {
+      "$ref": "#/$defs/RelationshipSafeguards"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "targets": {
+      "description": "Proposal targets are processed in declared order and must have unique ids.",
+      "items": {
+        "$ref": "#/$defs/RelationshipProposalTarget"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "config_format_version",
+    "id",
+    "expected_input_sha256",
+    "kind_pack",
+    "reference_date",
+    "seed",
+    "roster",
+    "targets",
+    "evidence_rules",
+    "safeguards",
+    "provenance"
+  ],
+  "title": "Weave Character Relationship Proposal Config v1",
+  "type": "object",
+  "x-weave-character-relationship-version": 1
+}

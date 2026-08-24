@@ -957,6 +957,24 @@ def verify_domain_contract() -> None:
         generated_alignment_receipt_schema = (
             workspace / "weave-character-alignment-receipt-v1.schema.json"
         )
+        generated_relationship_schemas = {
+            "relationship-kind-pack": workspace
+            / "weave-character-relationship-kind-pack-v1.schema.json",
+            "relationship-policy": workspace
+            / "weave-character-relationship-policy-v1.schema.json",
+            "relationship-config": workspace
+            / "weave-character-relationship-config-v1.schema.json",
+            "relationship-proposal": workspace
+            / "weave-character-relationship-proposal-v1.schema.json",
+            "relationship-review": workspace
+            / "weave-character-relationship-review-v1.schema.json",
+            "relationship-receipt": workspace
+            / "weave-character-relationship-receipt-v1.schema.json",
+            "relationship-revision": workspace
+            / "weave-character-relationship-revision-v1.schema.json",
+            "relationship-reconciliation": workspace
+            / "weave-character-relationship-reconciliation-v1.schema.json",
+        }
         generated_presentation_schemas = {
             "presentation-catalog": workspace
             / "weave-character-presentation-catalog-v1.schema.json",
@@ -1163,6 +1181,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_relationship_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for kind, output in generated_presentation_schemas.items():
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
@@ -1290,6 +1313,12 @@ def verify_domain_contract() -> None:
             checked = ROOT / "schemas" / generated.name
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in authoring schema is stale: {checked.name}")
+        for generated in generated_relationship_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(
+                    f"checked-in relationship schema is stale: {checked.name}"
+                )
         for generated in generated_presentation_schemas.values():
             checked = ROOT / "schemas" / generated.name
             if generated.read_bytes() != checked.read_bytes():
@@ -2499,6 +2528,18 @@ def verify_domain_contract() -> None:
         character_alignment_values = (
             character_alignment.get("values", {}).get("value", {})
         )
+        character_relationships = character_profile.get("relationships", {}).get(
+            "value", {}
+        )
+        character_mentor_edge = (
+            character_relationships.get("edges", {})
+            .get("value", {})
+            .get("mentor_sable", {})
+            .get("value", {})
+        )
+        character_relationship_pack = character_relationships.get(
+            "kind_pack", {}
+        ).get("value", {})
         character_presentation_value = (
             character_profile.get("presentation", {}).get("value", {})
         )
@@ -2510,7 +2551,7 @@ def verify_domain_contract() -> None:
         )
         if (
             character_story.get("version") != 4
-            or character_module.get("version") != "1.3.0"
+            or character_module.get("version") != "1.4.0"
             or character_profile.get("identity", {})
             .get("value", {})
             .get("id", {})
@@ -2567,6 +2608,20 @@ def verify_domain_contract() -> None:
             != 64
             or len(character_alignment.get("applied_sha256", {}).get("value", ""))
             != 64
+            or character_relationships.get(
+                "canonical_personality_write_back", {}
+            ).get("value")
+            is not False
+            or character_relationships.get("graph_format_version", {}).get("value")
+            != 1.0
+            or character_relationship_pack.get("id", {}).get("value")
+            != "org.weave.relationship.reference"
+            or character_relationship_pack.get("version", {}).get("value") != "1.0.0"
+            or len(character_relationship_pack.get("sha256", {}).get("value", ""))
+            != 64
+            or character_mentor_edge.get("target_character_id", {}).get("value")
+            != "org.weave.character.sable_reed"
+            or character_mentor_edge.get("origin", {}).get("value") != "authored"
             or character_presentation_value.get(
                 "canonical_personality_write_back", {}
             ).get("value")
@@ -2601,7 +2656,7 @@ def verify_domain_contract() -> None:
             != 64
         ):
             raise DocsError(
-                "compiled Character fixture omitted typed presentation, evidence, derivation labels, or approved alignment"
+                "compiled Character fixture omitted typed presentation, relationships, evidence, derivation labels, or approved alignment"
             )
 
         for encoding, output, checked in (
@@ -2674,7 +2729,7 @@ def verify_domain_contract() -> None:
         ]
         if (
             temporal_story.get("version") != 4
-            or temporal_module.get("version") != "1.3.0"
+            or temporal_module.get("version") != "1.4.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
             != [
@@ -3383,6 +3438,14 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-alignment-proposal-v1.schema.json",
         "weave-character-alignment-review-v1.schema.json",
         "weave-character-alignment-receipt-v1.schema.json",
+        "weave-character-relationship-kind-pack-v1.schema.json",
+        "weave-character-relationship-policy-v1.schema.json",
+        "weave-character-relationship-config-v1.schema.json",
+        "weave-character-relationship-proposal-v1.schema.json",
+        "weave-character-relationship-review-v1.schema.json",
+        "weave-character-relationship-receipt-v1.schema.json",
+        "weave-character-relationship-revision-v1.schema.json",
+        "weave-character-relationship-reconciliation-v1.schema.json",
         "weave-character-presentation-catalog-v1.schema.json",
         "weave-character-presentation-request-v1.schema.json",
         "weave-character-presentation-proposal-v1.schema.json",

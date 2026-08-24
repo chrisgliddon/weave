@@ -102,6 +102,52 @@ const PRESENTATION_LOCK_REVISION_JSON: &str = "examples/domain-modules/weave-cha
 unlock-avatar.presentation-lock-revision.json";
 const PRESENTATION_UNLOCKED_JSON: &str =
     "examples/domain-modules/weave-character/presentation/unlocked.character-collection.json";
+const RELATIONSHIP_BLANK_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/blank.character-collection.json";
+const RELATIONSHIP_BLANK_RON: &str =
+    "examples/domain-modules/weave-character/relationships/blank.character-collection.ron";
+const RELATIONSHIP_PACK_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/reference.relationship-kind-pack.json";
+const RELATIONSHIP_PACK_RON: &str =
+    "examples/domain-modules/weave-character/relationships/reference.relationship-kind-pack.ron";
+const RELATIONSHIP_POLICY_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/project.relationship-policy.json";
+const RELATIONSHIP_REVISION_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/authored.relationship-revision.json";
+const RELATIONSHIP_REVISION_RON: &str =
+    "examples/domain-modules/weave-character/relationships/authored.relationship-revision.ron";
+const RELATIONSHIP_INPUT_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/input.character-collection.json";
+const RELATIONSHIP_INPUT_RON: &str =
+    "examples/domain-modules/weave-character/relationships/input.character-collection.ron";
+const RELATIONSHIP_CONFIG_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/scoring.relationship-config.json";
+const RELATIONSHIP_CONFIG_RON: &str =
+    "examples/domain-modules/weave-character/relationships/scoring.relationship-config.ron";
+const RELATIONSHIP_PROPOSAL_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/proposal.relationship-proposal.json";
+const RELATIONSHIP_PROPOSAL_RON: &str =
+    "examples/domain-modules/weave-character/relationships/proposal.relationship-proposal.ron";
+const RELATIONSHIP_DECISIONS_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/decisions.relationship-review.json";
+const RELATIONSHIP_DECISIONS_RON: &str =
+    "examples/domain-modules/weave-character/relationships/decisions.relationship-review.ron";
+const RELATIONSHIP_REVIEW_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/review.relationship-review.json";
+const RELATIONSHIP_REVIEW_RON: &str =
+    "examples/domain-modules/weave-character/relationships/review.relationship-review.ron";
+const RELATIONSHIP_RECEIPT_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/receipt.relationship-receipt.json";
+const RELATIONSHIP_RECEIPT_RON: &str =
+    "examples/domain-modules/weave-character/relationships/receipt.relationship-receipt.ron";
+const RELATIONSHIP_APPLIED_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/applied.character-collection.json";
+const RELATIONSHIP_APPLIED_RON: &str =
+    "examples/domain-modules/weave-character/relationships/applied.character-collection.ron";
+const RELATIONSHIP_CONFLICTED_JSON: &str =
+    "examples/domain-modules/weave-character/relationships/conflicted.character-collection.json";
+const RELATIONSHIP_RECONCILIATION_JSON: &str = "examples/domain-modules/weave-character/relationships/\
+reconciliation.relationship-reconciliation.json";
 
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-character"))
@@ -265,6 +311,46 @@ fn validates_and_writes_every_collection_contract_schema_exactly() {
             "alignment-receipt",
             ALIGNMENT_RECEIPT,
             "schemas/weave-character-alignment-receipt-v1.schema.json",
+        ),
+        (
+            "relationship-kind-pack",
+            RELATIONSHIP_PACK_JSON,
+            "schemas/weave-character-relationship-kind-pack-v1.schema.json",
+        ),
+        (
+            "relationship-policy",
+            RELATIONSHIP_POLICY_JSON,
+            "schemas/weave-character-relationship-policy-v1.schema.json",
+        ),
+        (
+            "relationship-config",
+            RELATIONSHIP_CONFIG_JSON,
+            "schemas/weave-character-relationship-config-v1.schema.json",
+        ),
+        (
+            "relationship-proposal",
+            RELATIONSHIP_PROPOSAL_JSON,
+            "schemas/weave-character-relationship-proposal-v1.schema.json",
+        ),
+        (
+            "relationship-review",
+            RELATIONSHIP_REVIEW_JSON,
+            "schemas/weave-character-relationship-review-v1.schema.json",
+        ),
+        (
+            "relationship-receipt",
+            RELATIONSHIP_RECEIPT_JSON,
+            "schemas/weave-character-relationship-receipt-v1.schema.json",
+        ),
+        (
+            "relationship-revision",
+            RELATIONSHIP_REVISION_JSON,
+            "schemas/weave-character-relationship-revision-v1.schema.json",
+        ),
+        (
+            "relationship-reconciliation",
+            RELATIONSHIP_RECONCILIATION_JSON,
+            "schemas/weave-character-relationship-reconciliation-v1.schema.json",
         ),
         (
             "presentation-catalog",
@@ -1047,6 +1133,341 @@ fn invalid_presentation_inputs_fail_before_any_output() {
     ] {
         let result = run(&["validate", kind, path]);
         assert!(!result.status.success());
+        assert!(!String::from_utf8_lossy(&result.stderr).contains("Ari Vale"));
+    }
+}
+
+#[test]
+fn relationship_revision_list_inspect_validate_and_csv_share_one_graph_contract() {
+    let temporary = tempdir().expect("temporary output directory");
+    for (format, collection, pack, revision, expected) in [
+        (
+            "json",
+            RELATIONSHIP_BLANK_JSON,
+            RELATIONSHIP_PACK_JSON,
+            RELATIONSHIP_REVISION_JSON,
+            RELATIONSHIP_INPUT_JSON,
+        ),
+        (
+            "ron",
+            RELATIONSHIP_BLANK_RON,
+            RELATIONSHIP_PACK_RON,
+            RELATIONSHIP_REVISION_RON,
+            RELATIONSHIP_INPUT_RON,
+        ),
+    ] {
+        let output_path = temporary.path().join(format!("revised.{format}"));
+        let revised = run(&[
+            "relationship-revise",
+            collection,
+            pack,
+            revision,
+            "--format",
+            format,
+            "--output",
+            output_path.to_str().unwrap(),
+        ]);
+        assert!(
+            revised.status.success(),
+            "{}",
+            String::from_utf8_lossy(&revised.stderr)
+        );
+        assert_eq!(
+            fs::read(output_path).unwrap(),
+            fs::read(repository_root().join(expected)).unwrap()
+        );
+    }
+
+    let validated = run(&[
+        "relationship-validate",
+        RELATIONSHIP_INPUT_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+    ]);
+    assert!(
+        validated.status.success(),
+        "{}",
+        String::from_utf8_lossy(&validated.stderr)
+    );
+
+    let listed = run(&[
+        "relationship-list",
+        RELATIONSHIP_INPUT_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+        "--origin",
+        "imported",
+    ]);
+    assert!(
+        listed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&listed.stderr)
+    );
+    let values: serde_json::Value = serde_json::from_slice(&listed.stdout).unwrap();
+    assert_eq!(values.as_array().unwrap().len(), 1);
+    assert_eq!(values[0]["edge"]["id"], "mentor_ari_sable");
+    assert_eq!(values[0]["directionality"]["mode"], "directed");
+
+    let signed_date = run(&[
+        "relationship-list",
+        RELATIONSHIP_INPUT_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+        "--active-on=-0001-01-01",
+    ]);
+    assert!(
+        signed_date.status.success(),
+        "{}",
+        String::from_utf8_lossy(&signed_date.stderr)
+    );
+
+    let inspected = run(&[
+        "relationship-inspect",
+        RELATIONSHIP_INPUT_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+        "org.weave.character.ari_vale",
+        "mentor_ari_sable",
+    ]);
+    assert!(
+        inspected.status.success(),
+        "{}",
+        String::from_utf8_lossy(&inspected.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&inspected.stdout).unwrap();
+    assert_eq!(value["family"], "mentorship");
+    assert_eq!(value["edge"]["origin"], "imported");
+
+    for (format, checked) in [
+        (
+            "edge-csv",
+            "examples/domain-modules/weave-character/relationships/edges.review.csv",
+        ),
+        (
+            "matrix-csv",
+            "examples/domain-modules/weave-character/relationships/matrix.review.csv",
+        ),
+    ] {
+        let output_path = temporary.path().join(format!("{format}.csv"));
+        let exported = run(&[
+            "relationship-list",
+            RELATIONSHIP_APPLIED_JSON,
+            RELATIONSHIP_PACK_JSON,
+            RELATIONSHIP_POLICY_JSON,
+            "--format",
+            format,
+            "--output",
+            output_path.to_str().unwrap(),
+        ]);
+        assert!(
+            exported.status.success(),
+            "{}",
+            String::from_utf8_lossy(&exported.stderr)
+        );
+        assert_eq!(
+            fs::read(output_path).unwrap(),
+            fs::read(repository_root().join(checked)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn relationship_propose_review_and_atomic_apply_match_fixture_bytes() {
+    let temporary = tempdir().expect("temporary output directory");
+    let expected_review: serde_json::Value = serde_json::from_slice(
+        &fs::read(repository_root().join(RELATIONSHIP_REVIEW_JSON)).unwrap(),
+    )
+    .unwrap();
+    for (
+        format,
+        collection,
+        pack,
+        config,
+        decisions,
+        checked_proposal,
+        checked_review,
+        checked_receipt,
+        checked_collection,
+    ) in [
+        (
+            "json",
+            RELATIONSHIP_INPUT_JSON,
+            RELATIONSHIP_PACK_JSON,
+            RELATIONSHIP_CONFIG_JSON,
+            RELATIONSHIP_DECISIONS_JSON,
+            RELATIONSHIP_PROPOSAL_JSON,
+            RELATIONSHIP_REVIEW_JSON,
+            RELATIONSHIP_RECEIPT_JSON,
+            RELATIONSHIP_APPLIED_JSON,
+        ),
+        (
+            "ron",
+            RELATIONSHIP_INPUT_RON,
+            RELATIONSHIP_PACK_RON,
+            RELATIONSHIP_CONFIG_RON,
+            RELATIONSHIP_DECISIONS_RON,
+            RELATIONSHIP_PROPOSAL_RON,
+            RELATIONSHIP_REVIEW_RON,
+            RELATIONSHIP_RECEIPT_RON,
+            RELATIONSHIP_APPLIED_RON,
+        ),
+    ] {
+        let proposal = temporary.path().join(format!("proposal.{format}"));
+        let proposed = run(&[
+            "relationship-propose",
+            collection,
+            pack,
+            config,
+            "--format",
+            format,
+            "--output",
+            proposal.to_str().unwrap(),
+        ]);
+        assert!(
+            proposed.status.success(),
+            "{}",
+            String::from_utf8_lossy(&proposed.stderr)
+        );
+        assert_eq!(
+            fs::read(&proposal).unwrap(),
+            fs::read(repository_root().join(checked_proposal)).unwrap()
+        );
+
+        let review = temporary.path().join(format!("review.{format}"));
+        let reviewed = run(&[
+            "relationship-review",
+            proposal.to_str().unwrap(),
+            decisions,
+            "--reviewer",
+            expected_review["reviewer"].as_str().unwrap(),
+            "--rationale",
+            expected_review["rationale"].as_str().unwrap(),
+            "--format",
+            format,
+            "--output",
+            review.to_str().unwrap(),
+        ]);
+        assert!(
+            reviewed.status.success(),
+            "{}",
+            String::from_utf8_lossy(&reviewed.stderr)
+        );
+        assert_eq!(
+            fs::read(&review).unwrap(),
+            fs::read(repository_root().join(checked_review)).unwrap()
+        );
+
+        let receipt = temporary.path().join(format!("receipt.{format}"));
+        let applied_collection = temporary.path().join(format!("applied.{format}"));
+        let applied = run(&[
+            "relationship-apply",
+            collection,
+            proposal.to_str().unwrap(),
+            review.to_str().unwrap(),
+            "--receipt-output",
+            receipt.to_str().unwrap(),
+            "--collection-output",
+            applied_collection.to_str().unwrap(),
+            "--format",
+            format,
+        ]);
+        assert!(
+            applied.status.success(),
+            "{}",
+            String::from_utf8_lossy(&applied.stderr)
+        );
+        assert_eq!(
+            fs::read(receipt).unwrap(),
+            fs::read(repository_root().join(checked_receipt)).unwrap()
+        );
+        assert_eq!(
+            fs::read(applied_collection).unwrap(),
+            fs::read(repository_root().join(checked_collection)).unwrap()
+        );
+    }
+
+    let dry_receipt = temporary.path().join("forbidden-receipt.json");
+    let dry_collection = temporary.path().join("forbidden-collection.json");
+    let dry_run = run(&[
+        "relationship-apply",
+        RELATIONSHIP_INPUT_JSON,
+        RELATIONSHIP_PROPOSAL_JSON,
+        RELATIONSHIP_REVIEW_JSON,
+        "--dry-run",
+        "--receipt-output",
+        dry_receipt.to_str().unwrap(),
+        "--collection-output",
+        dry_collection.to_str().unwrap(),
+    ]);
+    assert!(
+        dry_run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&dry_run.stderr)
+    );
+    assert!(!dry_receipt.exists());
+    assert!(!dry_collection.exists());
+}
+
+#[test]
+fn relationship_reconciliation_and_invalid_inputs_are_redaction_safe() {
+    let temporary = tempdir().expect("temporary output directory");
+    let report = temporary.path().join("reconciliation.json");
+    let reconciled = run(&[
+        "relationship-reconcile",
+        RELATIONSHIP_CONFLICTED_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+        "--output",
+        report.to_str().unwrap(),
+    ]);
+    assert!(
+        reconciled.status.success(),
+        "{}",
+        String::from_utf8_lossy(&reconciled.stderr)
+    );
+    assert_eq!(
+        fs::read(report).unwrap(),
+        fs::read(repository_root().join(RELATIONSHIP_RECONCILIATION_JSON)).unwrap()
+    );
+
+    let invalid_graph = run(&[
+        "relationship-validate",
+        RELATIONSHIP_CONFLICTED_JSON,
+        RELATIONSHIP_PACK_JSON,
+        RELATIONSHIP_POLICY_JSON,
+    ]);
+    assert!(!invalid_graph.status.success());
+    let graph_stderr = String::from_utf8_lossy(&invalid_graph.stderr);
+    assert!(graph_stderr.contains("R106"));
+    assert!(!graph_stderr.contains("Ari Vale"));
+
+    for (proposal, review, stem) in [
+        (
+            "examples/domain-modules/weave-character/invalid/stale-relationship-proposal.json",
+            RELATIONSHIP_REVIEW_JSON,
+            "stale",
+        ),
+        (
+            RELATIONSHIP_PROPOSAL_JSON,
+            "examples/domain-modules/weave-character/invalid/incomplete-relationship-review.json",
+            "incomplete",
+        ),
+    ] {
+        let receipt = temporary.path().join(format!("{stem}-receipt.json"));
+        let collection = temporary.path().join(format!("{stem}-collection.json"));
+        let result = run(&[
+            "relationship-apply",
+            RELATIONSHIP_INPUT_JSON,
+            proposal,
+            review,
+            "--receipt-output",
+            receipt.to_str().unwrap(),
+            "--collection-output",
+            collection.to_str().unwrap(),
+        ]);
+        assert!(!result.status.success());
+        assert!(!receipt.exists());
+        assert!(!collection.exists());
         assert!(!String::from_utf8_lossy(&result.stderr).contains("Ari Vale"));
     }
 }

@@ -7,6 +7,7 @@ import {
   alignmentCharacterPresentation,
   characterPresentation,
   identityCharacterPresentation,
+  relationshipCharacterPresentation,
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
@@ -184,6 +185,32 @@ test("reads only approved alignment values with exact portable fingerprints", as
         value.id !== "tempo",
     ),
   );
+});
+
+test("queries layered Character relationships without treating affinity as canon", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const relationships = relationshipCharacterPresentation(story);
+  assert.equal(relationships.kindPack.id, "org.weave.relationship.reference");
+  assert.equal(relationships.kindPack.version, "1.0.0");
+  assert.match(relationships.kindPack.sha256, /^[0-9a-f]{64}$/u);
+  assert.deepEqual({ ...relationships, kindPack: undefined }, {
+    canonicalPersonalityWriteBack: false,
+    graphFormatVersion: 1,
+    kindPack: undefined,
+    edges: [
+      {
+        id: "mentor_sable",
+        sourceCharacterId: "org.weave.character.ari_vale",
+        targetCharacterId: "org.weave.character.sable_reed",
+        kind: "org.weave.relationship.mentor",
+        origin: "authored",
+        review: "not_required",
+        lock: "unlocked",
+        affinityScoreMicros: undefined,
+        evidenceCount: 0,
+      },
+    ],
+  });
 });
 
 test("reads reviewed temporal cues with separate fact and fictional-cue lineage", async () => {

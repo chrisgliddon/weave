@@ -1,0 +1,152 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.relationship.reference",
+  "version": "1.0.0",
+  "title": "Weave Reference Relationship Kinds",
+  "description": "Original, neutral relationship vocabulary for deterministic synthetic fixtures and offline tooling.",
+  "independently_authored": true,
+  "license": "MIT",
+  "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+  "kinds": {
+    "org.weave.relationship.child_of": {
+      "id": "org.weave.relationship.child_of",
+      "label": "Child of",
+      "description": "Original Child of relationship kind for fictional character graph authoring.",
+      "family": "kinship",
+      "kinship_semantics": "child_of",
+      "directionality": {
+        "mode": "inverse_paired",
+        "inverse_kind_id": "org.weave.relationship.parent_of"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": false,
+      "required_metadata": [
+        "confidence"
+      ],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.friend": {
+      "id": "org.weave.relationship.friend",
+      "label": "Friend",
+      "description": "Original Friend relationship kind for fictional character graph authoring.",
+      "family": "friendship",
+      "directionality": {
+        "mode": "symmetric"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": true,
+      "required_metadata": [],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.mentor": {
+      "id": "org.weave.relationship.mentor",
+      "label": "Mentor",
+      "description": "Original Mentor relationship kind for fictional character graph authoring.",
+      "family": "mentorship",
+      "directionality": {
+        "mode": "directed"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": true,
+      "required_metadata": [
+        "notes"
+      ],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.parent_of": {
+      "id": "org.weave.relationship.parent_of",
+      "label": "Parent of",
+      "description": "Original Parent of relationship kind for fictional character graph authoring.",
+      "family": "kinship",
+      "kinship_semantics": "parent_of",
+      "directionality": {
+        "mode": "inverse_paired",
+        "inverse_kind_id": "org.weave.relationship.child_of"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": false,
+      "required_metadata": [
+        "confidence"
+      ],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.partner": {
+      "id": "org.weave.relationship.partner",
+      "label": "Partner",
+      "description": "Original Partner relationship kind for fictional character graph authoring.",
+      "family": "partnership",
+      "directionality": {
+        "mode": "symmetric"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": false,
+      "required_metadata": [
+        "validity"
+      ],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.shared_affinity": {
+      "id": "org.weave.relationship.shared_affinity",
+      "label": "Shared affinity",
+      "description": "Original Shared affinity relationship kind for fictional character graph authoring.",
+      "family": "affinity",
+      "directionality": {
+        "mode": "symmetric"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": true,
+      "required_metadata": [
+        "evidence"
+      ],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    },
+    "org.weave.relationship.sibling": {
+      "id": "org.weave.relationship.sibling",
+      "label": "Sibling",
+      "description": "Original Sibling relationship kind for fictional character graph authoring.",
+      "family": "kinship",
+      "kinship_semantics": "sibling_of",
+      "directionality": {
+        "mode": "symmetric"
+      },
+      "allows_self": false,
+      "allows_multiple_concurrent": true,
+      "required_metadata": [],
+      "limitations": [
+        "A relationship edge is explicit fictional authoring context, not objective interpersonal truth, diagnosis, protected-class inference, or causal prediction."
+      ]
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_relationship_reference_pack",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "relationship-graph-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "kinds": [
+        "weave_relationship_reference_pack"
+      ]
+    }
+  }
+}

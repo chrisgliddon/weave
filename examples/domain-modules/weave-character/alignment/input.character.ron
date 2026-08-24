@@ -661,6 +661,11 @@
                     canonical_personality_write_back: forbidden,
                 ),
                 value: (
+                    kind_pack: Some((
+                        id: "org.weave.relationship.reference",
+                        version: "1.0.0",
+                        sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+                    )),
                     edges: {
                         "mentor_sable": (
                             id: "mentor_sable",
@@ -668,6 +673,19 @@
                             target_character_id: "org.weave.character.sable_reed",
                             kind: "org.weave.relationship.mentor",
                             confidence: high,
+                            notes: {
+                                "fixture_context": (
+                                    id: "fixture_context",
+                                    content: "Explicit synthetic relationship context for portable tests.",
+                                    lineage: [
+                                        "character_original",
+                                    ],
+                                ),
+                            },
+                            lineage: [
+                                "character_original",
+                            ],
+                            rationale: Some("Authored only for the public synthetic Character fixture."),
                         ),
                     },
                 ),
@@ -815,9 +833,22 @@
                 attribution: "Original synthetic Weave Character contract fixture.",
                 modified: false,
             ),
+            (
+                id: "weave_relationship_reference_pack",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "relationship-graph-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+                modified: false,
+            ),
         ],
         transformations: [],
         claims: {
+            "extensions.org.weave.character.relationships": [
+                "weave_relationship_reference_pack",
+            ],
             "profile": [
                 "character_original",
             ],

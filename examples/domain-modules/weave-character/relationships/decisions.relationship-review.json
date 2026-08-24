@@ -1,0 +1,315 @@
+{
+  "candidate_220dc128d3d32ceca82f4bc1": {
+    "decision": "withhold",
+    "rationale": "Keep this complete proposal in the authoring receipt without publishing an edge."
+  },
+  "candidate_2609ce0cf80f62ef4d022493": {
+    "decision": "edit",
+    "edges": [
+      {
+        "id": "edge_7959e7517f934a611e44efcd",
+        "source_character_id": "org.weave.character.ari_vale",
+        "target_character_id": "org.weave.character.tavi_quill",
+        "kind": "org.weave.relationship.shared_affinity",
+        "confidence": "moderate",
+        "origin": "computed_affinity",
+        "review": "pending",
+        "validity": {
+          "start": {
+            "year": 2035,
+            "month": 1,
+            "day": 1
+          }
+        },
+        "notes": {
+          "affinity_prompt": {
+            "id": "affinity_prompt",
+            "content": "This score is an inspectable authoring prompt, never objective interpersonal truth.",
+            "lineage": [
+              "weave_relationship_config"
+            ]
+          },
+          "edited_context": {
+            "id": "edited_context",
+            "content": "The reviewer narrows this prompt to their shared route-planning scenes.",
+            "lineage": [
+              "weave_relationship_config"
+            ]
+          }
+        },
+        "affinity_score_micros": 750000,
+        "evidence": [
+          {
+            "id": "openness_similarity",
+            "kind": "trait_similarity",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.canon.personality.openness.factor",
+              "characters.org.weave.character.tavi_quill.canon.personality.openness.factor"
+            ],
+            "input_sha256": "03a943b2b353bae51c4bc985a4cbc15d8327314b2b7d6682a2e9a2d769c7c6c7",
+            "explanation": "Similarity of two explicitly approved canonical trait measurements; advisory, not interpersonal truth."
+          },
+          {
+            "id": "communication_preference_overlap",
+            "kind": "preference_overlap",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.expression.preferences",
+              "characters.org.weave.character.tavi_quill.extensions.expression.preferences"
+            ],
+            "input_sha256": "9e4407ec8bb611e671c899bbcd6a1e3430dcdc3d93f0b4e25c05ca2c478a1698",
+            "explanation": "Exact overlap of reviewed normalized preference records in the selected category."
+          },
+          {
+            "id": "wayfinder_context",
+            "kind": "shared_context",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.context_refs",
+              "characters.org.weave.character.tavi_quill.extensions.context_refs"
+            ],
+            "input_sha256": "2e04089f8690bebf85781f00aab45f2189775d52731dd8e1c970075ee193ed54",
+            "explanation": "Exact shared reference explicitly retained by both character profiles."
+          },
+          {
+            "id": "existing_mentorship",
+            "kind": "existing_canon",
+            "contribution_micros": 0,
+            "available": false,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.relationships.edges"
+            ],
+            "input_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "explanation": "Presence of an explicitly authored, imported, or reviewed relationship of the selected kind."
+          }
+        ],
+        "lineage": [
+          "weave_relationship_config"
+        ],
+        "rationale": "Offer optional affinity prompts from only the four explicitly approved evidence rules."
+      }
+    ],
+    "lock": "unlocked",
+    "rationale": "Edit metadata while preserving the exact proposed topology and evidence trace."
+  },
+  "candidate_285bc7cbb2ad30d07a8797ab": {
+    "decision": "reject",
+    "rationale": "Do not add this alternate mentorship direction to the current draft."
+  },
+  "candidate_2bd8bf021fc53ac68c543748": {
+    "decision": "reject",
+    "rationale": "Do not add this alternate mentorship direction to the current draft."
+  },
+  "candidate_3bbf506ef6e3f927f4df47f6": {
+    "decision": "reject",
+    "rationale": "Do not add this alternate mentorship direction to the current draft."
+  },
+  "candidate_7a17498da24c00cc9601e473": {
+    "decision": "accept",
+    "lock": "locked",
+    "rationale": "Retain this transparent computed prompt as a reviewed optional edge."
+  },
+  "candidate_8bc3040727b85ee81ecb7fb8": {
+    "decision": "reject",
+    "rationale": "The reviewed partnership prompt does not serve this synthetic draft."
+  },
+  "candidate_9538cf0bcdea7704b1784c87": {
+    "decision": "reject",
+    "rationale": "Do not add this alternate mentorship direction to the current draft."
+  },
+  "candidate_96dadb083509af04a2ec54d7": {
+    "decision": "reject",
+    "rationale": "Do not add this alternate mentorship direction to the current draft."
+  },
+  "candidate_a7d1c26a181b121b07f94b3c": {
+    "decision": "override",
+    "edges": [
+      {
+        "id": "edge_19e511af7ae83c216826d23a",
+        "source_character_id": "org.weave.character.sable_reed",
+        "target_character_id": "org.weave.character.tavi_quill",
+        "kind": "org.weave.relationship.shared_affinity",
+        "confidence": "high",
+        "origin": "computed_affinity",
+        "review": "pending",
+        "validity": {
+          "start": {
+            "year": 2035,
+            "month": 1,
+            "day": 1
+          }
+        },
+        "notes": {
+          "affinity_prompt": {
+            "id": "affinity_prompt",
+            "content": "This score is an inspectable authoring prompt, never objective interpersonal truth.",
+            "lineage": [
+              "weave_relationship_config"
+            ]
+          },
+          "override_context": {
+            "id": "override_context",
+            "content": "The reviewer supplies project-specific confidence and context.",
+            "lineage": [
+              "weave_relationship_config"
+            ]
+          }
+        },
+        "affinity_score_micros": 750000,
+        "evidence": [
+          {
+            "id": "openness_similarity",
+            "kind": "trait_similarity",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.sable_reed.canon.personality.openness.factor",
+              "characters.org.weave.character.tavi_quill.canon.personality.openness.factor"
+            ],
+            "input_sha256": "03a943b2b353bae51c4bc985a4cbc15d8327314b2b7d6682a2e9a2d769c7c6c7",
+            "explanation": "Similarity of two explicitly approved canonical trait measurements; advisory, not interpersonal truth."
+          },
+          {
+            "id": "communication_preference_overlap",
+            "kind": "preference_overlap",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.sable_reed.extensions.expression.preferences",
+              "characters.org.weave.character.tavi_quill.extensions.expression.preferences"
+            ],
+            "input_sha256": "9e4407ec8bb611e671c899bbcd6a1e3430dcdc3d93f0b4e25c05ca2c478a1698",
+            "explanation": "Exact overlap of reviewed normalized preference records in the selected category."
+          },
+          {
+            "id": "wayfinder_context",
+            "kind": "shared_context",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.sable_reed.extensions.context_refs",
+              "characters.org.weave.character.tavi_quill.extensions.context_refs"
+            ],
+            "input_sha256": "2e04089f8690bebf85781f00aab45f2189775d52731dd8e1c970075ee193ed54",
+            "explanation": "Exact shared reference explicitly retained by both character profiles."
+          },
+          {
+            "id": "existing_mentorship",
+            "kind": "existing_canon",
+            "contribution_micros": 0,
+            "available": false,
+            "input_paths": [
+              "characters.org.weave.character.sable_reed.extensions.relationships.edges"
+            ],
+            "input_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "explanation": "Presence of an explicitly authored, imported, or reviewed relationship of the selected kind."
+          }
+        ],
+        "lineage": [
+          "weave_relationship_config"
+        ],
+        "rationale": "Offer optional affinity prompts from only the four explicitly approved evidence rules."
+      }
+    ],
+    "lock": "locked",
+    "rationale": "Override proposal metadata without claiming that the computed score is objective truth."
+  },
+  "candidate_d2eccdc84015086b4c75dfde": {
+    "decision": "exception",
+    "edges": [
+      {
+        "id": "edge_d710aa7f64598e0fc9630ec2",
+        "source_character_id": "org.weave.character.ari_vale",
+        "target_character_id": "org.weave.character.sable_reed",
+        "kind": "org.weave.relationship.partner",
+        "confidence": "low",
+        "origin": "suggested_narrative",
+        "review": "pending",
+        "validity": {
+          "start": {
+            "year": 2035,
+            "month": 1,
+            "day": 1
+          }
+        },
+        "notes": {
+          "partnership_prompt": {
+            "id": "partnership_prompt",
+            "content": "Optional fictional partnership prompt subject to explicit project safeguards.",
+            "lineage": [
+              "weave_relationship_config"
+            ]
+          }
+        },
+        "affinity_score_micros": 1000000,
+        "evidence": [
+          {
+            "id": "openness_similarity",
+            "kind": "trait_similarity",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.canon.personality.openness.factor",
+              "characters.org.weave.character.sable_reed.canon.personality.openness.factor"
+            ],
+            "input_sha256": "03a943b2b353bae51c4bc985a4cbc15d8327314b2b7d6682a2e9a2d769c7c6c7",
+            "explanation": "Similarity of two explicitly approved canonical trait measurements; advisory, not interpersonal truth."
+          },
+          {
+            "id": "communication_preference_overlap",
+            "kind": "preference_overlap",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.expression.preferences",
+              "characters.org.weave.character.sable_reed.extensions.expression.preferences"
+            ],
+            "input_sha256": "9e4407ec8bb611e671c899bbcd6a1e3430dcdc3d93f0b4e25c05ca2c478a1698",
+            "explanation": "Exact overlap of reviewed normalized preference records in the selected category."
+          },
+          {
+            "id": "wayfinder_context",
+            "kind": "shared_context",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.context_refs",
+              "characters.org.weave.character.sable_reed.extensions.context_refs"
+            ],
+            "input_sha256": "2e04089f8690bebf85781f00aab45f2189775d52731dd8e1c970075ee193ed54",
+            "explanation": "Exact shared reference explicitly retained by both character profiles."
+          },
+          {
+            "id": "existing_mentorship",
+            "kind": "existing_canon",
+            "contribution_micros": 250000,
+            "available": true,
+            "input_paths": [
+              "characters.org.weave.character.ari_vale.extensions.relationships.edges"
+            ],
+            "input_sha256": "6e40daf17d54926d5b0cde44d2009187294f7bc00c8c8465dba287fb5983fbef",
+            "explanation": "Presence of an explicitly authored, imported, or reviewed relationship of the selected kind."
+          }
+        ],
+        "lineage": [
+          "weave_relationship_config"
+        ],
+        "rationale": "Exercise age, kinship, concurrency, and affirmative-consent gates before any author decision."
+      }
+    ],
+    "exception_codes": [
+      "R110"
+    ],
+    "lock": "locked",
+    "rationale": "Exercise the explicit, retained author-exception path for a wholly synthetic fictional fixture."
+  },
+  "candidate_e443917acfaab66c40f47fdc": {
+    "decision": "accept",
+    "lock": "unlocked",
+    "rationale": "Accept one optional narrative suggestion after explicit human review."
+  }
+}

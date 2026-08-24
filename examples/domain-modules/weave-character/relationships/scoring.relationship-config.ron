@@ -1,0 +1,178 @@
+(
+    config_format_version: 1,
+    id: "org.weave.relationship.reference_scoring",
+    expected_input_sha256: "4f60c96a25230d4c97f8b70e3745e78ac8db698b392fdc4181c9db5368eea8b7",
+    kind_pack: (
+        id: "org.weave.relationship.reference",
+        version: "1.0.0",
+        sha256: "73534749ff340a39a246ba5c0b8c59a33787e0a7eb07faaa45fe60017c0bd019",
+    ),
+    reference_date: (
+        year: 2035,
+        month: 6,
+        day: 15,
+    ),
+    seed: 2035061500,
+    roster: [
+        "org.weave.character.ari_vale",
+        "org.weave.character.sable_reed",
+        "org.weave.character.tavi_quill",
+    ],
+    targets: [
+        (
+            id: "affinity",
+            kind_id: "org.weave.relationship.shared_affinity",
+            origin: computed_affinity,
+            minimum_score_micros: 500000,
+            confidence: moderate,
+            validity: Some((
+                start: Some((
+                    year: 2035,
+                    month: 1,
+                    day: 1,
+                )),
+            )),
+            notes: {
+                "affinity_prompt": (
+                    id: "affinity_prompt",
+                    content: "This score is an inspectable authoring prompt, never objective interpersonal truth.",
+                    lineage: [
+                        "weave_relationship_config",
+                    ],
+                ),
+            },
+            rationale: "Offer optional affinity prompts from only the four explicitly approved evidence rules.",
+        ),
+        (
+            id: "mentorship",
+            kind_id: "org.weave.relationship.mentor",
+            origin: suggested_narrative,
+            minimum_score_micros: 500000,
+            confidence: moderate,
+            validity: Some((
+                start: Some((
+                    year: 2035,
+                    month: 1,
+                    day: 1,
+                )),
+            )),
+            notes: {
+                "narrative_prompt": (
+                    id: "narrative_prompt",
+                    content: "Optional fictional mentorship direction for human review.",
+                    lineage: [
+                        "weave_relationship_config",
+                    ],
+                ),
+            },
+            rationale: "Suggest a possible story direction without asserting canon or mutating canonical character evidence.",
+        ),
+        (
+            id: "partnership",
+            kind_id: "org.weave.relationship.partner",
+            origin: suggested_narrative,
+            minimum_score_micros: 500000,
+            confidence: low,
+            validity: Some((
+                start: Some((
+                    year: 2035,
+                    month: 1,
+                    day: 1,
+                )),
+            )),
+            notes: {
+                "partnership_prompt": (
+                    id: "partnership_prompt",
+                    content: "Optional fictional partnership prompt subject to explicit project safeguards.",
+                    lineage: [
+                        "weave_relationship_config",
+                    ],
+                ),
+            },
+            rationale: "Exercise age, kinship, concurrency, and affirmative-consent gates before any author decision.",
+        ),
+    ],
+    evidence_rules: [
+        (
+            kind: "trait_similarity",
+            id: "openness_similarity",
+            trait_id: openness,
+            weight_micros: 250000,
+        ),
+        (
+            kind: "preference_overlap",
+            id: "communication_preference_overlap",
+            category: "org.weave.preference.communication",
+            weight_micros: 250000,
+        ),
+        (
+            kind: "shared_context",
+            id: "wayfinder_context",
+            context_ref: "org.weave.identity.wayfinder",
+            weight_micros: 250000,
+        ),
+        (
+            kind: "existing_canon",
+            id: "existing_mentorship",
+            relationship_kind_id: "org.weave.relationship.mentor",
+            weight_micros: 250000,
+        ),
+    ],
+    consent_records: [
+        (
+            id: "ari_tavi_partnership_consent",
+            source_character_id: "org.weave.character.ari_vale",
+            target_character_id: "org.weave.character.tavi_quill",
+            kind_id: "org.weave.relationship.partner",
+            consent: (
+                state: affirmed,
+                reviewed_by: Some("org.weave.reviewer.fixture"),
+                rationale: Some("Synthetic adults explicitly affirm this fictional partnership fixture."),
+                lineage: [
+                    "weave_relationship_config",
+                ],
+            ),
+        ),
+        (
+            id: "sable_tavi_partnership_consent",
+            source_character_id: "org.weave.character.sable_reed",
+            target_character_id: "org.weave.character.tavi_quill",
+            kind_id: "org.weave.relationship.partner",
+            consent: (
+                state: affirmed,
+                reviewed_by: Some("org.weave.reviewer.fixture"),
+                rationale: Some("Synthetic adults explicitly affirm this fictional partnership fixture."),
+                lineage: [
+                    "weave_relationship_config",
+                ],
+            ),
+        ),
+    ],
+    safeguards: (
+        minimum_partnership_age_years: Some(18),
+        forbid_close_kin_partnership: true,
+        require_affirmed_partnership_consent: true,
+        maximum_concurrent_partnerships: Some(1),
+        allow_reviewed_exceptions: true,
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "weave_relationship_config",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "relationship-graph-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original deterministic relationship scoring and safeguard fixture.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "configuration": [
+                "weave_relationship_config",
+            ],
+        },
+    ),
+)

@@ -17,32 +17,43 @@ use weave_character::{
     CharacterReviewDecision, CharacterScope, CharacterSynthesisResult, CharacterTemplate,
     HexacoTrait, PresentationAllocationRequest, PresentationCatalog, PresentationLockRevision,
     PresentationProposal, PresentationReceipt, PresentationReview, PresentationReviewDecision,
-    TemporalContextConfig, TemporalContextPack, TemporalContextProposal, TemporalContextReceipt,
-    TemporalContextReview, TemporalReviewDecision, alignment_config_schema, alignment_pack_schema,
-    alignment_profile_fingerprint, alignment_proposal_schema, alignment_receipt_schema,
-    alignment_review_schema, apply_authoring_revision, apply_character_questionnaire_review,
-    apply_presentation_lock_revision, apply_presentation_review, apply_reviewed_alignment,
-    apply_reviewed_character_proposal, apply_reviewed_temporal_context,
-    character_authoring_preview_schema, character_authoring_revision_schema,
-    character_authoring_workspace_schema, character_collection_schema, character_diagnostic_schema,
-    character_domain_pack, character_final_review_schema, character_module_manifest,
-    character_operation_request_schema, character_overlay_schema, character_profile_schema,
-    character_progress_schema, character_proposal_schema, character_questionnaire_answers_schema,
+    RelationshipDate, RelationshipEdgeOrigin, RelationshipFilter, RelationshipGraphPolicy,
+    RelationshipGraphRevision, RelationshipKindPack, RelationshipProposal,
+    RelationshipProposalConfig, RelationshipReceipt, RelationshipReconciliationReport,
+    RelationshipReview, RelationshipReviewDecision, TemporalContextConfig, TemporalContextPack,
+    TemporalContextProposal, TemporalContextReceipt, TemporalContextReview, TemporalReviewDecision,
+    alignment_config_schema, alignment_pack_schema, alignment_profile_fingerprint,
+    alignment_proposal_schema, alignment_receipt_schema, alignment_review_schema,
+    apply_authoring_revision, apply_character_questionnaire_review,
+    apply_presentation_lock_revision, apply_presentation_review, apply_relationship_graph_revision,
+    apply_reviewed_alignment, apply_reviewed_character_proposal, apply_reviewed_relationships,
+    apply_reviewed_temporal_context, character_authoring_preview_schema,
+    character_authoring_revision_schema, character_authoring_workspace_schema,
+    character_collection_schema, character_diagnostic_schema, character_domain_pack,
+    character_final_review_schema, character_module_manifest, character_operation_request_schema,
+    character_overlay_schema, character_profile_schema, character_progress_schema,
+    character_proposal_schema, character_questionnaire_answers_schema,
     character_questionnaire_pack_schema, character_questionnaire_proposal_schema,
     character_questionnaire_receipt_schema, character_questionnaire_review_schema,
     character_review_schema, character_synthesis_schema, character_template_schema,
     clone_authoring_draft, collection_fingerprint, create_alignment_review, create_authoring_draft,
-    create_character_questionnaire_review, create_temporal_context_review,
-    export_authoring_profile, list_authoring_drafts, list_characters, new_authoring_workspace,
+    create_character_questionnaire_review, create_relationship_review,
+    create_temporal_context_review, export_authoring_profile, list_authoring_drafts,
+    list_characters, list_relationships, new_authoring_workspace,
     presentation_allocation_request_schema, presentation_authoring_revision,
     presentation_catalog_schema, presentation_lock_revision_schema, presentation_proposal_schema,
     presentation_receipt_schema, presentation_review_schema, preview_authoring_revision,
     propose_alignment, propose_character_operation, propose_character_questionnaire,
-    propose_presentation_allocations, propose_temporal_context, questionnaire_authoring_revision,
-    resume_character_operation, review_authoring_draft, review_character_proposal,
-    review_presentation_proposal, show_authoring_draft, show_character, synthesize_character,
-    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
-    temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
+    propose_presentation_allocations, propose_relationships, propose_temporal_context,
+    questionnaire_authoring_revision, reconcile_relationship_graph, relationship_config_schema,
+    relationship_dense_matrix_review_csv, relationship_edge_review_csv,
+    relationship_kind_pack_schema, relationship_policy_schema, relationship_proposal_schema,
+    relationship_receipt_schema, relationship_reconciliation_schema, relationship_review_schema,
+    relationship_revision_schema, resume_character_operation, review_authoring_draft,
+    review_character_proposal, review_presentation_proposal, show_authoring_draft, show_character,
+    synthesize_character, temporal_context_config_schema, temporal_context_pack_schema,
+    temporal_context_proposal_schema, temporal_context_receipt_schema,
+    temporal_context_review_schema, temporal_profile_fingerprint, validate_relationship_graph,
 };
 
 #[derive(Debug, Parser)]
@@ -265,6 +276,104 @@ enum Command {
         format: OutputFormat,
         #[arg(long)]
         output: Option<PathBuf>,
+    },
+    /// Apply an authored/imported relationship graph revision atomically.
+    RelationshipRevise {
+        collection: PathBuf,
+        pack: PathBuf,
+        revision: PathBuf,
+        /// Validate the exact transition without writing any file.
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// List and filter validated relationship edges, optionally as review-only CSV.
+    RelationshipList {
+        collection: PathBuf,
+        pack: PathBuf,
+        policy: PathBuf,
+        #[arg(long)]
+        source: Option<String>,
+        #[arg(long)]
+        target: Option<String>,
+        #[arg(long = "kind")]
+        kinds: Vec<String>,
+        #[arg(long = "origin", value_enum)]
+        origins: Vec<RelationshipOriginArg>,
+        #[arg(long)]
+        active_on: Option<String>,
+        #[arg(long, value_enum, default_value_t = RelationshipOutputFormat::Json)]
+        format: RelationshipOutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Inspect one exact validated relationship edge and its pack semantics.
+    RelationshipInspect {
+        collection: PathBuf,
+        pack: PathBuf,
+        policy: PathBuf,
+        owner_character_id: String,
+        edge_id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Generate a deterministic provider-free relationship proposal.
+    RelationshipPropose {
+        collection: PathBuf,
+        pack: PathBuf,
+        config: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Create a complete relationship review from an exact decision map.
+    RelationshipReview {
+        proposal: PathBuf,
+        decisions: PathBuf,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long)]
+        rationale: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Replay and atomically apply one fully reviewed relationship proposal.
+    RelationshipApply {
+        collection: PathBuf,
+        proposal: PathBuf,
+        review: PathBuf,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        receipt_output: PathBuf,
+        #[arg(long)]
+        collection_output: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
+    /// Produce a deterministic read-only relationship reconciliation report.
+    RelationshipReconcile {
+        collection: PathBuf,
+        pack: PathBuf,
+        policy: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Validate one complete relationship graph against its exact pack and project policy.
+    RelationshipValidate {
+        collection: PathBuf,
+        pack: PathBuf,
+        policy: PathBuf,
     },
     /// Initialize an empty guided-authoring workspace.
     AuthoringInit {
@@ -510,6 +619,14 @@ enum DocumentKind {
     AlignmentProposal,
     AlignmentReview,
     AlignmentReceipt,
+    RelationshipKindPack,
+    RelationshipPolicy,
+    RelationshipConfig,
+    RelationshipProposal,
+    RelationshipReview,
+    RelationshipReceipt,
+    RelationshipRevision,
+    RelationshipReconciliation,
     AuthoringWorkspace,
     AuthoringRevision,
     AuthoringPreview,
@@ -531,6 +648,35 @@ enum DocumentKind {
 enum OutputFormat {
     Json,
     Ron,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum RelationshipOutputFormat {
+    Json,
+    Ron,
+    EdgeCsv,
+    MatrixCsv,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum RelationshipOriginArg {
+    Authored,
+    Imported,
+    ComputedAffinity,
+    SuggestedNarrative,
+    ReviewedSuggestion,
+}
+
+impl From<RelationshipOriginArg> for RelationshipEdgeOrigin {
+    fn from(value: RelationshipOriginArg) -> Self {
+        match value {
+            RelationshipOriginArg::Authored => Self::Authored,
+            RelationshipOriginArg::Imported => Self::Imported,
+            RelationshipOriginArg::ComputedAffinity => Self::ComputedAffinity,
+            RelationshipOriginArg::SuggestedNarrative => Self::SuggestedNarrative,
+            RelationshipOriginArg::ReviewedSuggestion => Self::ReviewedSuggestion,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -576,6 +722,14 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::AlignmentProposal => alignment_proposal_schema()?,
                 DocumentKind::AlignmentReview => alignment_review_schema()?,
                 DocumentKind::AlignmentReceipt => alignment_receipt_schema()?,
+                DocumentKind::RelationshipKindPack => relationship_kind_pack_schema()?,
+                DocumentKind::RelationshipPolicy => relationship_policy_schema()?,
+                DocumentKind::RelationshipConfig => relationship_config_schema()?,
+                DocumentKind::RelationshipProposal => relationship_proposal_schema()?,
+                DocumentKind::RelationshipReview => relationship_review_schema()?,
+                DocumentKind::RelationshipReceipt => relationship_receipt_schema()?,
+                DocumentKind::RelationshipRevision => relationship_revision_schema()?,
+                DocumentKind::RelationshipReconciliation => relationship_reconciliation_schema()?,
                 DocumentKind::AuthoringWorkspace => character_authoring_workspace_schema()?,
                 DocumentKind::AuthoringRevision => character_authoring_revision_schema()?,
                 DocumentKind::AuthoringPreview => character_authoring_preview_schema()?,
@@ -658,6 +812,30 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::AlignmentReceipt => {
                     parse_alignment_receipt(&input, &source)?;
+                }
+                DocumentKind::RelationshipKindPack => {
+                    parse_relationship_pack(&input, &source)?;
+                }
+                DocumentKind::RelationshipPolicy => {
+                    parse_relationship_policy(&input, &source)?;
+                }
+                DocumentKind::RelationshipConfig => {
+                    parse_relationship_config(&input, &source)?;
+                }
+                DocumentKind::RelationshipProposal => {
+                    parse_relationship_proposal(&input, &source)?;
+                }
+                DocumentKind::RelationshipReview => {
+                    parse_relationship_review(&input, &source)?;
+                }
+                DocumentKind::RelationshipReceipt => {
+                    parse_relationship_receipt(&input, &source)?;
+                }
+                DocumentKind::RelationshipRevision => {
+                    parse_relationship_revision(&input, &source)?;
+                }
+                DocumentKind::RelationshipReconciliation => {
+                    parse_relationship_reconciliation(&input, &source)?;
                 }
                 DocumentKind::AuthoringWorkspace => {
                     parse_authoring_workspace(&input, &source)?;
@@ -1059,6 +1237,240 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 atomic_write(destination, serialized.as_bytes())?;
                 println!("applied alignment view {}", destination.display());
             }
+        }
+        Command::RelationshipRevise {
+            collection,
+            pack,
+            revision,
+            dry_run,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let revision_value = read_relationship_revision(&revision)?;
+            let applied =
+                apply_relationship_graph_revision(&collection_value, &pack_value, &revision_value)?;
+            if dry_run {
+                println!(
+                    "validated relationship revision {}",
+                    collection_fingerprint(&applied)?
+                );
+            } else {
+                let destination = output.as_deref().unwrap_or(&collection);
+                let format = format.unwrap_or_else(|| output_format_for(destination));
+                let serialized = match format {
+                    OutputFormat::Json => applied.to_json()?,
+                    OutputFormat::Ron => applied.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!("applied relationship revision {}", destination.display());
+            }
+        }
+        Command::RelationshipList {
+            collection,
+            pack,
+            policy,
+            source,
+            target,
+            mut kinds,
+            origins,
+            active_on,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let policy_value = read_relationship_policy(&policy)?;
+            kinds.sort();
+            kinds.dedup();
+            let mut origins = origins
+                .into_iter()
+                .map(RelationshipEdgeOrigin::from)
+                .collect::<Vec<_>>();
+            origins.sort();
+            origins.dedup();
+            let filter = RelationshipFilter {
+                source_character_id: source,
+                target_character_id: target,
+                kind_ids: kinds,
+                origins,
+                active_on: active_on
+                    .as_deref()
+                    .map(parse_relationship_date)
+                    .transpose()?,
+            };
+            let serialized = match format {
+                RelationshipOutputFormat::Json | RelationshipOutputFormat::Ron => {
+                    let values = list_relationships(
+                        &collection_value,
+                        &pack_value,
+                        policy_value.reference_date,
+                        &policy_value.safeguards,
+                        &filter,
+                    )?;
+                    serialize_value(
+                        &values,
+                        if matches!(format, RelationshipOutputFormat::Ron) {
+                            OutputFormat::Ron
+                        } else {
+                            OutputFormat::Json
+                        },
+                    )?
+                }
+                RelationshipOutputFormat::EdgeCsv => relationship_edge_review_csv(
+                    &collection_value,
+                    &pack_value,
+                    policy_value.reference_date,
+                    &policy_value.safeguards,
+                    &filter,
+                )?,
+                RelationshipOutputFormat::MatrixCsv => relationship_dense_matrix_review_csv(
+                    &collection_value,
+                    &pack_value,
+                    policy_value.reference_date,
+                    &policy_value.safeguards,
+                    &filter,
+                )?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::RelationshipInspect {
+            collection,
+            pack,
+            policy,
+            owner_character_id,
+            edge_id,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let policy_value = read_relationship_policy(&policy)?;
+            let values = list_relationships(
+                &collection_value,
+                &pack_value,
+                policy_value.reference_date,
+                &policy_value.safeguards,
+                &RelationshipFilter::default(),
+            )?;
+            let value = values
+                .into_iter()
+                .find(|value| {
+                    value.owner_character_id == owner_character_id && value.edge.id == edge_id
+                })
+                .ok_or("relationship edge was not found")?;
+            let serialized = serialize_value(&value, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::RelationshipPropose {
+            collection,
+            pack,
+            config,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let config_value = read_relationship_config(&config)?;
+            let proposal = propose_relationships(&collection_value, &pack_value, &config_value)?;
+            let serialized = match format {
+                OutputFormat::Json => proposal.to_json()?,
+                OutputFormat::Ron => proposal.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote relationship proposal {}", output.display());
+        }
+        Command::RelationshipReview {
+            proposal,
+            decisions,
+            reviewer,
+            rationale,
+            format,
+            output,
+        } => {
+            let proposal_value = read_relationship_proposal(&proposal)?;
+            let decisions = read_relationship_decisions(&decisions)?;
+            let review =
+                create_relationship_review(&proposal_value, decisions, reviewer, rationale)?;
+            let serialized = match format {
+                OutputFormat::Json => review.to_json()?,
+                OutputFormat::Ron => review.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote relationship review {}", output.display());
+        }
+        Command::RelationshipApply {
+            collection,
+            proposal,
+            review,
+            dry_run,
+            receipt_output,
+            collection_output,
+            format,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let proposal_value = read_relationship_proposal(&proposal)?;
+            let review_value = read_relationship_review(&review)?;
+            let receipt =
+                apply_reviewed_relationships(&collection_value, &proposal_value, &review_value)?;
+            if dry_run {
+                println!("validated relationship apply {}", receipt.output_sha256);
+            } else {
+                let serialized_receipt = match format {
+                    OutputFormat::Json => receipt.to_json()?,
+                    OutputFormat::Ron => receipt.to_ron()?,
+                };
+                let serialized_collection = match format {
+                    OutputFormat::Json => receipt.output_collection.to_json()?,
+                    OutputFormat::Ron => receipt.output_collection.to_ron()?,
+                };
+                atomic_write(&receipt_output, serialized_receipt.as_bytes())?;
+                atomic_write(&collection_output, serialized_collection.as_bytes())?;
+                println!(
+                    "applied relationship review {}",
+                    collection_output.display()
+                );
+            }
+        }
+        Command::RelationshipReconcile {
+            collection,
+            pack,
+            policy,
+            format,
+            output,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let policy_value = read_relationship_policy(&policy)?;
+            let report = reconcile_relationship_graph(
+                &collection_value,
+                &pack_value,
+                policy_value.reference_date,
+                &policy_value.safeguards,
+            )?;
+            let serialized = match format {
+                OutputFormat::Json => report.to_json()?,
+                OutputFormat::Ron => report.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("wrote relationship reconciliation {}", output.display());
+        }
+        Command::RelationshipValidate {
+            collection,
+            pack,
+            policy,
+        } => {
+            let collection_value = read_collection(&collection)?;
+            let pack_value = read_relationship_pack(&pack)?;
+            let policy_value = read_relationship_policy(&policy)?;
+            validate_relationship_graph(
+                &collection_value,
+                &pack_value,
+                policy_value.reference_date,
+                &policy_value.safeguards,
+            )?;
+            println!("validated relationship graph {}", collection.display());
         }
         Command::AuthoringInit {
             id,
@@ -1656,6 +2068,94 @@ fn parse_alignment_receipt(
     }
 }
 
+fn parse_relationship_pack(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipKindPack, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipKindPack::from_ron(source)
+    } else {
+        RelationshipKindPack::from_json(source)
+    }
+}
+
+fn parse_relationship_policy(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipGraphPolicy, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipGraphPolicy::from_ron(source)
+    } else {
+        RelationshipGraphPolicy::from_json(source)
+    }
+}
+
+fn parse_relationship_config(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipProposalConfig, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipProposalConfig::from_ron(source)
+    } else {
+        RelationshipProposalConfig::from_json(source)
+    }
+}
+
+fn parse_relationship_proposal(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipProposal, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipProposal::from_ron(source)
+    } else {
+        RelationshipProposal::from_json(source)
+    }
+}
+
+fn parse_relationship_review(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipReview, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipReview::from_ron(source)
+    } else {
+        RelationshipReview::from_json(source)
+    }
+}
+
+fn parse_relationship_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipReceipt, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipReceipt::from_ron(source)
+    } else {
+        RelationshipReceipt::from_json(source)
+    }
+}
+
+fn parse_relationship_revision(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipGraphRevision, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipGraphRevision::from_ron(source)
+    } else {
+        RelationshipGraphRevision::from_json(source)
+    }
+}
+
+fn parse_relationship_reconciliation(
+    path: &Path,
+    source: &str,
+) -> Result<RelationshipReconciliationReport, weave_character::RelationshipError> {
+    if is_ron(path) {
+        RelationshipReconciliationReport::from_ron(source)
+    } else {
+        RelationshipReconciliationReport::from_json(source)
+    }
+}
+
 fn parse_authoring_workspace(
     path: &Path,
     source: &str,
@@ -1884,6 +2384,89 @@ fn read_alignment_decisions(
         weave_domain::parse_strict_json(&source)
             .map_err(|_| "invalid alignment decision JSON".into())
     }
+}
+
+fn read_relationship_pack(path: &Path) -> Result<RelationshipKindPack, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_pack(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_relationship_policy(
+    path: &Path,
+) -> Result<RelationshipGraphPolicy, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_policy(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_relationship_config(
+    path: &Path,
+) -> Result<RelationshipProposalConfig, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_config(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_relationship_proposal(
+    path: &Path,
+) -> Result<RelationshipProposal, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_proposal(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_relationship_review(path: &Path) -> Result<RelationshipReview, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_review(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_relationship_revision(
+    path: &Path,
+) -> Result<RelationshipGraphRevision, Box<dyn std::error::Error>> {
+    Ok(parse_relationship_revision(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_relationship_decisions(
+    path: &Path,
+) -> Result<BTreeMap<String, RelationshipReviewDecision>, Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
+    if is_ron(path) {
+        ron::from_str(&source).map_err(|_| "invalid relationship decision RON".into())
+    } else {
+        weave_domain::parse_strict_json(&source)
+            .map_err(|_| "invalid relationship decision JSON".into())
+    }
+}
+
+fn parse_relationship_date(value: &str) -> Result<RelationshipDate, Box<dyn std::error::Error>> {
+    let Some((year_month, day)) = value.rsplit_once('-') else {
+        return Err("relationship date must use YYYY-MM-DD".into());
+    };
+    let Some((year, month)) = year_month.rsplit_once('-') else {
+        return Err("relationship date must use YYYY-MM-DD".into());
+    };
+    let date = RelationshipDate {
+        year: year
+            .parse()
+            .map_err(|_| "relationship date year is invalid")?,
+        month: month
+            .parse()
+            .map_err(|_| "relationship date month is invalid")?,
+        day: day
+            .parse()
+            .map_err(|_| "relationship date day is invalid")?,
+    };
+    let probe = RelationshipGraphPolicy {
+        policy_format_version: weave_character::RELATIONSHIP_POLICY_FORMAT_VERSION,
+        reference_date: date,
+        safeguards: weave_character::RelationshipSafeguards {
+            minimum_partnership_age_years: None,
+            forbid_close_kin_partnership: false,
+            require_affirmed_partnership_consent: false,
+            maximum_concurrent_partnerships: None,
+            allow_reviewed_exceptions: false,
+        },
+    };
+    weave_character::validate_relationship_graph_policy(&probe)?;
+    Ok(date)
 }
 
 fn read_presentation_decisions(

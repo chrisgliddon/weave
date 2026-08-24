@@ -33,6 +33,8 @@ Watching is bounded to the open project and its approved project-relative artifa
 
 `CharacterPresentationSession` opens an exact collection, immutable presentation catalog, and pinned allocation request through the shared Character contract. Its proposal view exposes eligibility, exclusions, capacities, balance counts, seed hashes, retained assignments, and missing assets. Complete accept/edit/override/reject/withhold review supports dry-run and atomic apply. Lock/unlock revisions and a `rebalance` request use the same contract; a dry-run preserves the selected collection and a commit clears stale previews. The editor never derives eligibility from personality, alignment, birth, ruleset, pronoun, name, or protected identity fields.
 
+`RelationshipSession` opens an exact collection, immutable kind pack, reference date, and project safeguard policy. It lists and filters pack-validated edge layers, inspects direction/inverse semantics and ordered evidence, generates deterministic provider-free proposals, requires one accept/edit/override/exception/reject/withhold decision per candidate, and replays the complete review before dry-run or atomic commit. Direct authored/imported revisions use the same fingerprinted transition. Conflict inspection returns `R100`–`R113` diagnostics and read-only repair suggestions without changing the graph; edge and matrix CSV are explicitly review-only. A failed or stale operation preserves the prior collection, pack, policy, and proposal.
+
 ## Guided Character authoring
 
 `CharacterAuthoringSession` opens the same versioned workspace used by the
