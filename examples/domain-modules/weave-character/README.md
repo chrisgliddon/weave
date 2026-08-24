@@ -18,14 +18,17 @@ The canonical pairs are:
 - `context/`: three offline temporal packs, deterministic ranking configuration, complete proposal/review/receipt pairs, enriched output, and a separately locked runtime projection with fact/cue lineage split.
 - `alignment/`: an original pluggable alignment pack, exact project selection, complete five-action review, independently reproducible receipt, and approved-only output profile.
 - `presentation/`: attributed identity presentation, an original catalog and SVG assets, deterministic balanced allocation, complete review, explicit override, lock/unlock, and atomic output.
+- `expression/`: original normalized lexicon, preferences, vocabulary pools, behavioral signatures, voice constraints, a reusable dialogue template, exact pack assignment, lint/coverage reports, contextual resolution, and a stable fallback.
 
-The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate aliases and overlay targets, missing presentation assets, invalid palette slots, incompatible presentation overrides, stale template/review/progress/presentation/alignment/temporal lineage, incomplete alignment and temporal reviews, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence.
+The `invalid/` directory covers unsupported profile and typed-extension versions, duplicate aliases and overlay targets, missing presentation assets, invalid palette slots, incompatible presentation overrides, stale template/review/progress/presentation/alignment/temporal lineage, incomplete alignment and temporal reviews, a malformed proposal, a broken relationship reference, and forbidden derived canonical evidence. `expression/invalid/` adds a restricted placeholder with an exact source-located, redaction-safe diagnostic.
 
 Rebuild or check every fixture and schema from the repository root:
 
 ```bash
 cargo run -p weave-character --example character_fixture -- --write
 cargo run -p weave-character --example character_fixture -- --check
+cargo run -p weave-character --example expression_fixture -- --write
+cargo run -p weave-character --example expression_fixture -- --check
 ```
 
 Validate or reproduce individual artifacts:
@@ -72,6 +75,16 @@ cargo run -p weave-character -- synthesize \
   --template examples/domain-modules/weave-character/template.character.json \
   --output target/synthesis.character.json
 
+cargo run -p weave-character -- expression-validate \
+  examples/domain-modules/weave-character/expression/applied.character.json \
+  --pack examples/domain-modules/weave-character/expression/glasswind.expression-pack.json
+
+cargo run -p weave-character -- expression-resolve \
+  examples/domain-modules/weave-character/expression/applied.character.json \
+  examples/domain-modules/weave-character/expression/glasswind.expression-pack.json \
+  examples/domain-modules/weave-character/expression/contextual.expression-resolution-request.json \
+  --output target/contextual.expression-resolution.json
+
 cargo run -p weave-character -- domain-pack \
   examples/domain-modules/weave-character/profile.character.json \
   --id ari_vale \
@@ -86,4 +99,4 @@ cargo run -p weave-compiler -- \
   --output target/ari-vale.story.json
 ```
 
-See the [presentation fixture guide](presentation/README.md), [alignment fixture guide](alignment/README.md), and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, typed presentation, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.
+See the [expression fixture guide](expression/README.md), [presentation fixture guide](presentation/README.md), [alignment fixture guide](alignment/README.md), and [temporal-context fixture guide](context/README.md) for exact public provenance and reviewed reproduction commands. See the [Character contract guide](../../../docs/character_module.md) for authority, missing data, reusable expression/dialogue, typed presentation, OCEAN, alignment, temporal matching/ranking/review, extension, synthesis, compatibility, privacy, and diagnostic rules.

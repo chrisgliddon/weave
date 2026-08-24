@@ -1,0 +1,233 @@
+{
+  "$defs": {
+    "ExpressionPackRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable public expression-pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "ExpressionResolutionRequest": {
+      "additionalProperties": false,
+      "description": "Deterministic dialogue resolution request with only typed, public runtime context.",
+      "properties": {
+        "assignment_id": {
+          "type": "string"
+        },
+        "date_context_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "date_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "listener": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpressionRuntimeParticipant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relationship_kind_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "scenario_id": {
+          "type": "string"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "speaker_character_id": {
+          "type": "string"
+        },
+        "world_context_tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "world_place_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "request_format_version",
+        "id",
+        "assignment_id",
+        "scenario_id",
+        "speaker_character_id",
+        "seed"
+      ],
+      "type": "object"
+    },
+    "ExpressionRuntimeParticipant": {
+      "additionalProperties": false,
+      "description": "Explicit listener data; no open variable or metadata map is accepted.",
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "character_id",
+        "display_name"
+      ],
+      "type": "object"
+    },
+    "ExpressionTextAuthority": {
+      "description": "Runtime precedence: authored and accepted text always outrank suggestions.",
+      "enum": [
+        "suggested",
+        "reviewed",
+        "authored"
+      ],
+      "type": "string"
+    },
+    "ExpressionVariantTrace": {
+      "additionalProperties": false,
+      "description": "One ranked variant trace retained in deterministic runtime output.",
+      "properties": {
+        "applicable": {
+          "type": "boolean"
+        },
+        "authority": {
+          "$ref": "#/$defs/ExpressionTextAuthority"
+        },
+        "placeholders_available": {
+          "type": "boolean"
+        },
+        "priority": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "seeded_sha256": {
+          "type": "string"
+        },
+        "variant_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "variant_id",
+        "authority",
+        "priority",
+        "applicable",
+        "placeholders_available",
+        "seeded_sha256",
+        "reason"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-expression-resolution:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Byte-stable, fully inspectable offline dialogue resolution.",
+  "properties": {
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "pack": {
+      "$ref": "#/$defs/ExpressionPackRef"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "rendered_text": {
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/ExpressionResolutionRequest"
+    },
+    "request_sha256": {
+      "type": "string"
+    },
+    "resolution_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "selected_variant_id": {
+      "type": "string"
+    },
+    "substitutions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "template_id": {
+      "type": "string"
+    },
+    "trace": {
+      "items": {
+        "$ref": "#/$defs/ExpressionVariantTrace"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "resolution_format_version",
+    "id",
+    "profile_sha256",
+    "pack",
+    "request",
+    "request_sha256",
+    "template_id",
+    "selected_variant_id",
+    "fallback_used",
+    "rendered_text",
+    "substitutions",
+    "trace"
+  ],
+  "title": "Weave Character Expression Resolution v1",
+  "type": "object",
+  "x-weave-character-expression-contract-version": 1
+}

@@ -55,7 +55,13 @@ pub fn synthesize_character(
     let mut profile = match template {
         Some(template) => {
             let mut profile = template.profile.clone();
+            let template_character_id = profile.id.clone();
             profile.id.clone_from(&overlay.character_id);
+            retarget_template_owner_links(
+                &mut profile,
+                &template_character_id,
+                &overlay.character_id,
+            );
             profile.provenance = merge_provenance(&profile.provenance, &overlay.provenance)?;
             profile
         }
@@ -98,6 +104,87 @@ pub fn synthesize_character(
         effective_profile: profile,
         origins,
     })
+}
+
+/// Retarget profile-owned links when one immutable template is instantiated as another character.
+///
+/// This changes only explicit owner/self references. External relationship targets and every
+/// extension authority field remain exactly as authored in the template.
+fn retarget_template_owner_links(profile: &mut CharacterProfile, old_id: &str, new_id: &str) {
+    if old_id == new_id {
+        return;
+    }
+    for extension in profile.extensions.values_mut() {
+        match extension {
+            CharacterExtension::Expression(record) => {
+                if record.value.character_id == old_id {
+                    record.value.character_id = new_id.to_owned();
+                }
+                for value in record.value.lexicon.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                    retarget_applicability(&mut value.applicability, old_id, new_id);
+                }
+                for value in record.value.preferences.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                    retarget_applicability(&mut value.applicability, old_id, new_id);
+                }
+                for value in record.value.vocabulary_pools.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                    retarget_applicability(&mut value.applicability, old_id, new_id);
+                }
+                for value in record.value.voice_constraints.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                    retarget_applicability(&mut value.applicability, old_id, new_id);
+                }
+                for value in record.value.template_assignments.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                }
+                let prefix = format!("{old_id}.signature.");
+                for value in &mut record.value.behavioral_signature_refs {
+                    if let Some(suffix) = value.strip_prefix(&prefix) {
+                        *value = format!("{new_id}.signature.{suffix}");
+                    }
+                }
+            }
+            CharacterExtension::BehavioralSignatures(record) => {
+                retarget_owner(&mut record.value.character_id, old_id, new_id);
+                for value in record.value.signatures.values_mut() {
+                    retarget_owner(&mut value.character_id, old_id, new_id);
+                    retarget_applicability(&mut value.applicability, old_id, new_id);
+                }
+            }
+            CharacterExtension::Relationships(record) => {
+                for edge in record.value.edges.values_mut() {
+                    retarget_owner(&mut edge.source_character_id, old_id, new_id);
+                    retarget_owner(&mut edge.target_character_id, old_id, new_id);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn retarget_owner(value: &mut String, old_id: &str, new_id: &str) {
+    if value == old_id {
+        *value = new_id.to_owned();
+    }
+}
+
+fn retarget_applicability(
+    applicability: &mut crate::ExpressionApplicability,
+    old_id: &str,
+    new_id: &str,
+) {
+    for predicate in &mut applicability.predicates {
+        let crate::ExpressionContextPredicate::Relationship {
+            other_character_id: Some(character_id),
+            ..
+        } = predicate
+        else {
+            continue;
+        };
+        retarget_owner(character_id, old_id, new_id);
+    }
 }
 
 /// Independently reproduce and validate a serialized synthesis proof.

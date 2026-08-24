@@ -1,0 +1,8 @@
+(
+    request_format_version: 1,
+    id: "org.weave.character.expression.resolution.ari_fallback",
+    assignment_id: "arrival_greeting",
+    scenario_id: "arrival",
+    speaker_character_id: "org.weave.character.ari_vale",
+    seed: 42,
+)

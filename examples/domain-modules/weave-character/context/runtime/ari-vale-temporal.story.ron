@@ -60,7 +60,7 @@ StoryIr(
     modules: {
         "character": DomainModuleIr(
             id: "org.weave.character",
-            version: "1.4.0",
+            version: "1.5.0",
             pack_id: "ari_vale_temporal",
             pack_version: "1.0.0",
             exports: {
@@ -74,7 +74,7 @@ StoryIr(
                                 value: {
                                     "applied_sha256": DomainValueIr(
                                         kind: string,
-                                        value: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                                        value: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                                     ),
                                     "canonical_personality_write_back": DomainValueIr(
                                         kind: bool,
@@ -132,7 +132,7 @@ StoryIr(
                                     ),
                                     "review_sha256": DomainValueIr(
                                         kind: string,
-                                        value: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                                        value: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
                                     ),
                                     "values": DomainValueIr(
                                         kind: object,
@@ -365,7 +365,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
+                                                        value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
                                                     ),
                                                     "sensitivity": DomainValueIr(
                                                         kind: symbol,
@@ -428,7 +428,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
+                                                        value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
                                                     ),
                                                     "sensitivity": DomainValueIr(
                                                         kind: symbol,
@@ -491,7 +491,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "04e90e799e201548118601f2905bd2c66af2b11aaf934779e250d0d9a4e0d9bf",
+                                                        value: "b812d1e4ba4677923ceb64c448198788a44cc3e7bfbd71215590a6b06eb79899",
                                                     ),
                                                     "sensitivity": DomainValueIr(
                                                         kind: symbol,
@@ -560,6 +560,567 @@ StoryIr(
                                                 },
                                             ),
                                         ],
+                                    ),
+                                },
+                            ),
+                            "expression": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "behavioral_signature_refs": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: string,
+                                                value: "org.weave.character.ari_vale.signature.maps_before_moving",
+                                            ),
+                                        ],
+                                    ),
+                                    "behavioral_signatures": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "maps_before_moving": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.planning",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "cue": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Sketches a route before committing the group.",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "maps_before_moving",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "behavioral_signature",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "strength": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.8,
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "canonical_personality_write_back": DomainValueIr(
+                                        kind: bool,
+                                        value: false,
+                                    ),
+                                    "character_id": DomainValueIr(
+                                        kind: string,
+                                        value: "org.weave.character.ari_vale",
+                                    ),
+                                    "expression_format_version": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "lexicon": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "trailmark": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.navigation",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "trailmark",
+                                                    ),
+                                                    "normalized": DomainValueIr(
+                                                        kind: string,
+                                                        value: "trailmark",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "pack_assigned",
+                                                    ),
+                                                    "rationale": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Accept the original public reference-pack term for deterministic dialogue fixtures.",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "term",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "accepted",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_expression_glasswind_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "strength": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.9,
+                                                    ),
+                                                    "surface": DomainValueIr(
+                                                        kind: string,
+                                                        value: "trailmark",
+                                                    ),
+                                                    "term_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "term",
+                                                    ),
+                                                },
+                                            ),
+                                            "waymark": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.navigation",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "waymark",
+                                                    ),
+                                                    "normalized": DomainValueIr(
+                                                        kind: string,
+                                                        value: "waymark",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "term",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "strength": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.8,
+                                                    ),
+                                                    "surface": DomainValueIr(
+                                                        kind: string,
+                                                        value: "waymark",
+                                                    ),
+                                                    "term_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "term",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "preferences": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "clear_questions": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.preference.communication",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "clear_questions",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "polarity": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "prefer",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "preference",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "strength": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.9,
+                                                    ),
+                                                    "target": DomainValueIr(
+                                                        kind: string,
+                                                        value: "clear questions",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "source_packs": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.glasswind",
+                                                    ),
+                                                    "sha256": DomainValueIr(
+                                                        kind: string,
+                                                        value: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                                    ),
+                                                    "version": DomainValueIr(
+                                                        kind: string,
+                                                        value: "1.0.0",
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    "template_assignments": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "arrival_greeting": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.dialogue",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "arrival_greeting",
+                                                    ),
+                                                    "lock": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "unlocked",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "pack_assigned",
+                                                    ),
+                                                    "pack": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "id": DomainValueIr(
+                                                                kind: string,
+                                                                value: "org.weave.expression.glasswind",
+                                                            ),
+                                                            "sha256": DomainValueIr(
+                                                                kind: string,
+                                                                value: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                                            ),
+                                                            "version": DomainValueIr(
+                                                                kind: string,
+                                                                value: "1.0.0",
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "rationale": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Accept the original public arrival template for the synthetic runtime fixture.",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "template_assignment",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "accepted",
+                                                    ),
+                                                    "scenario_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "arrival",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_expression_glasswind_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "state": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "reviewed",
+                                                    ),
+                                                    "template_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "arrival_greeting",
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "vocabulary_pools": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "navigation_words": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.navigation",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "navigation_words",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "vocabulary_pool",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "term_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "trailmark",
+                                                            ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "waymark",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    "voice_constraints": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "prefer_clear_questions": DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "applicability": DomainValueIr(
+                                                        kind: object,
+                                                        value: {
+                                                            "predicates": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                            "scenario_ids": DomainValueIr(
+                                                                kind: list,
+                                                                value: [],
+                                                            ),
+                                                        },
+                                                    ),
+                                                    "category": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.expression.clarity",
+                                                    ),
+                                                    "character_id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "org.weave.character.ari_vale",
+                                                    ),
+                                                    "constraint_effect": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "prefer",
+                                                    ),
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "prefer_clear_questions",
+                                                    ),
+                                                    "instruction": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Ask one clear question after a short observation.",
+                                                    ),
+                                                    "medium": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "both",
+                                                    ),
+                                                    "origin": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "authored",
+                                                    ),
+                                                    "record_kind": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "voice_constraint",
+                                                    ),
+                                                    "review": DomainValueIr(
+                                                        kind: symbol,
+                                                        value: "not_required",
+                                                    ),
+                                                    "source_ids": DomainValueIr(
+                                                        kind: list,
+                                                        value: [
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "character_original",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    "strength": DomainValueIr(
+                                                        kind: number,
+                                                        value: 0.9,
+                                                    ),
+                                                    "target": DomainValueIr(
+                                                        kind: string,
+                                                        value: "clear questions",
+                                                    ),
+                                                },
+                                            ),
+                                        },
                                     ),
                                 },
                             ),
@@ -2225,7 +2786,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                                        value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2237,7 +2798,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                                        value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2313,7 +2874,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                                        value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2325,7 +2886,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                                        value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2418,7 +2979,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                                        value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2430,7 +2991,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                                        value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2506,7 +3067,7 @@ StoryIr(
                                                     ),
                                                     "proposal_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                                        value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                                     ),
                                                     "rationale": DomainValueIr(
                                                         kind: string,
@@ -2518,7 +3079,7 @@ StoryIr(
                                                     ),
                                                     "review_sha256": DomainValueIr(
                                                         kind: string,
-                                                        value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                                        value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                                     ),
                                                     "slot_id": DomainValueIr(
                                                         kind: string,
@@ -2856,6 +3417,10 @@ StoryIr(
                                             ),
                                             DomainValueIr(
                                                 kind: string,
+                                                value: "weave_expression_glasswind_original",
+                                            ),
+                                            DomainValueIr(
+                                                kind: string,
                                                 value: "weave_glasswind_presentation",
                                             ),
                                             DomainValueIr(
@@ -2885,11 +3450,11 @@ StoryIr(
                                         value: [
                                             DomainValueIr(
                                                 kind: string,
-                                                value: "alignment_apply_2171b3adb49f9384",
+                                                value: "alignment_apply_da2749184c01216c",
                                             ),
                                             DomainValueIr(
                                                 kind: string,
-                                                value: "temporal_review_04e90e799e201548",
+                                                value: "temporal_review_b812d1e4ba467792",
                                             ),
                                         ],
                                     ),
@@ -2935,6 +3500,10 @@ StoryIr(
                                                                 kind: string,
                                                                 value: "character_original",
                                                             ),
+                                                            DomainValueIr(
+                                                                kind: string,
+                                                                value: "weave_expression_glasswind_original",
+                                                            ),
                                                         ],
                                                     ),
                                                     "lock": DomainValueIr(
@@ -2961,6 +3530,10 @@ StoryIr(
                                                                             DomainValueIr(
                                                                                 kind: string,
                                                                                 value: "character_original",
+                                                                            ),
+                                                                            DomainValueIr(
+                                                                                kind: string,
+                                                                                value: "weave_expression_glasswind_original",
                                                                             ),
                                                                         ],
                                                                     ),

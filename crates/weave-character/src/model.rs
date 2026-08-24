@@ -657,14 +657,102 @@ pub struct PresentationCatalogAssignment {
     pub review_sha256: String,
 }
 
-/// Normalized expression and preference records plus behavioral-signature links.
+/// Normalized, character-linked expression records and reviewed template assignments.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ExpressionData {
+    /// Serialized expression value version.
+    #[serde(
+        default = "expression_format_version",
+        skip_serializing_if = "expression_version_is_current"
+    )]
+    pub expression_format_version: u32,
+    /// Exact profile owner. Pack entries remain generic until explicitly assigned here.
+    pub character_id: String,
     pub lexicon: BTreeMap<String, NormalizedExpressionTerm>,
     pub preferences: BTreeMap<String, NormalizedPreference>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub vocabulary_pools: BTreeMap<String, ExpressionVocabularyPool>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub voice_constraints: BTreeMap<String, ExpressionVoiceConstraint>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub template_assignments: BTreeMap<String, ExpressionTemplateAssignment>,
     pub behavioral_signature_refs: Vec<String>,
-    pub source_pack_refs: Vec<String>,
+    pub source_pack_refs: Vec<ExpressionPackRef>,
+}
+
+/// Expression values are currently serialized as version 1.
+#[must_use]
+pub const fn expression_format_version() -> u32 {
+    1
+}
+
+const fn expression_version_is_current(value: &u32) -> bool {
+    *value == expression_format_version()
+}
+
+/// Exact immutable public expression-pack coordinate.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ExpressionPackRef {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+}
+
+/// How one expression record entered the character extension.
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ExpressionRecordOrigin {
+    #[default]
+    Authored,
+    Imported,
+    PackAssigned,
+    Suggested,
+    ReviewedSuggestion,
+}
+
+/// Whether a normalized lexicon record is one word or a reusable phrase.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExpressionTermKind {
+    Term,
+    Phrase,
+}
+
+/// Typed applicability shared by terms, preferences, signatures, and constraints.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ExpressionApplicability {
+    /// Empty means every scenario; otherwise these stable ids are an allowlist.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub scenario_ids: Vec<String>,
+    /// All predicates must match. Missing optional context makes the record inapplicable.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub predicates: Vec<ExpressionContextPredicate>,
+}
+
+/// Closed, provider-free context predicates for expression and dialogue variants.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
+pub enum ExpressionContextPredicate {
+    PersonalityBand {
+        trait_id: HexacoTrait,
+        bands: Vec<TraitBand>,
+    },
+    Relationship {
+        relationship_kind_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        other_character_id: Option<String>,
+    },
+    DateContext {
+        cue_id: String,
+    },
+    WorldContext {
+        tag: String,
+    },
 }
 
 /// One normalized lexicon entry.
@@ -672,9 +760,20 @@ pub struct ExpressionData {
 #[serde(deny_unknown_fields)]
 pub struct NormalizedExpressionTerm {
     pub id: String,
+    pub character_id: String,
     pub category: String,
+    pub kind: ExpressionTermKind,
+    /// Authored spelling retained for display and deterministic substitution.
+    pub surface: String,
+    /// Lowercase, whitespace-collapsed comparison form produced by the normalizer.
     pub normalized: String,
     pub strength: f64,
+    pub applicability: ExpressionApplicability,
+    pub origin: ExpressionRecordOrigin,
+    pub review: ReviewState,
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
 }
 
 /// One normalized preference record.
@@ -682,10 +781,17 @@ pub struct NormalizedExpressionTerm {
 #[serde(deny_unknown_fields)]
 pub struct NormalizedPreference {
     pub id: String,
+    pub character_id: String,
     pub category: String,
     pub target: String,
     pub polarity: PreferencePolarity,
     pub strength: f64,
+    pub applicability: ExpressionApplicability,
+    pub origin: ExpressionRecordOrigin,
+    pub review: ReviewState,
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
 }
 
 /// Closed baseline preference direction.
@@ -696,10 +802,80 @@ pub enum PreferencePolarity {
     Avoid,
 }
 
+/// Reusable, categorized pool of normalized lexicon records.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ExpressionVocabularyPool {
+    pub id: String,
+    pub character_id: String,
+    pub category: String,
+    pub term_ids: Vec<String>,
+    pub applicability: ExpressionApplicability,
+    pub origin: ExpressionRecordOrigin,
+    pub review: ReviewState,
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
+}
+
+/// Medium affected by a reusable voice constraint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExpressionMedium {
+    Speech,
+    Writing,
+    Both,
+}
+
+/// Whether a normalized target is preferred or avoided by a voice constraint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExpressionConstraintEffect {
+    Prefer,
+    Avoid,
+}
+
+/// One authored speech or writing constraint.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ExpressionVoiceConstraint {
+    pub id: String,
+    pub character_id: String,
+    pub category: String,
+    pub medium: ExpressionMedium,
+    pub effect: ExpressionConstraintEffect,
+    pub target: String,
+    pub instruction: String,
+    pub strength: f64,
+    pub applicability: ExpressionApplicability,
+    pub origin: ExpressionRecordOrigin,
+    pub review: ReviewState,
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
+}
+
+/// One reviewed link from a character to a reusable dialogue template in an exact pack.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ExpressionTemplateAssignment {
+    pub id: String,
+    pub character_id: String,
+    pub scenario_id: String,
+    pub pack: ExpressionPackRef,
+    pub template_id: String,
+    pub state: ValueState,
+    pub review: ReviewState,
+    pub lock: LockState,
+    pub source_ids: Vec<String>,
+    pub rationale: String,
+}
+
 /// Stable behavioral signatures remain projections, not personality evidence.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct BehavioralSignatures {
+    pub character_id: String,
     pub signatures: BTreeMap<String, BehavioralSignature>,
 }
 
@@ -708,8 +884,16 @@ pub struct BehavioralSignatures {
 #[serde(deny_unknown_fields)]
 pub struct BehavioralSignature {
     pub id: String,
+    pub character_id: String,
+    pub category: String,
     pub cue: String,
     pub strength: f64,
+    pub applicability: ExpressionApplicability,
+    pub origin: ExpressionRecordOrigin,
+    pub review: ReviewState,
+    pub source_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
 }
 
 /// Accepted role projections keyed by stable identifier.

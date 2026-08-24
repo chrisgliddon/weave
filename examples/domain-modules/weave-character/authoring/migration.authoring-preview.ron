@@ -1490,7 +1490,7 @@
                         "extension_version": 1,
                         "freshness": "current",
                         "lineage": [
-                            "alignment_apply_2171b3adb49f9384",
+                            "alignment_apply_da2749184c01216c",
                             "character_original",
                             "weave_wayfinder_compass",
                         ],
@@ -1501,7 +1501,7 @@
                         "state": "reviewed",
                     },
                     "value": {
-                        "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                        "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                         "input_paths": [
                             "canon.personality.agreeableness.factor",
                             "canon.personality.conscientiousness.factor",
@@ -1516,7 +1516,7 @@
                             "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                             "version": "1.0.0",
                         },
-                        "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                        "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
                         "values": {
                             "horizon": {
                                 "coverage_micros": 1000000,
@@ -1572,7 +1572,7 @@
                         "extension_version": 1,
                         "freshness": "current",
                         "lineage": [
-                            "alignment_apply_2171b3adb49f9384",
+                            "alignment_apply_da2749184c01216c",
                             "character_original",
                             "weave_wayfinder_compass",
                         ],
@@ -1583,7 +1583,7 @@
                         "state": "reviewed",
                     },
                     "value": {
-                        "applied_sha256": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                        "applied_sha256": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                         "input_paths": [
                             "canon.personality.agreeableness.factor",
                             "canon.personality.conscientiousness.factor",
@@ -1598,7 +1598,7 @@
                             "sha256": "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
                             "version": "1.0.0",
                         },
-                        "review_sha256": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                        "review_sha256": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
                         "values": {
                             "horizon": {
                                 "coverage_micros": 1000000,
@@ -1669,6 +1669,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.behavioral_signatures",
@@ -1677,10 +1678,19 @@
                         "state": "reviewed",
                     },
                     "value": {
+                        "character_id": "org.weave.character.ari_vale",
                         "signatures": {
                             "maps_before_moving": {
+                                "applicability": {},
+                                "category": "org.weave.expression.planning",
+                                "character_id": "org.weave.character.ari_vale",
                                 "cue": "Sketches a route before committing the group.",
                                 "id": "maps_before_moving",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.8,
                             },
                         },
@@ -1697,6 +1707,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.behavioral_signatures",
@@ -1705,10 +1716,19 @@
                         "state": "reviewed",
                     },
                     "value": {
+                        "character_id": "org.weave.character.ari_vale",
                         "signatures": {
                             "maps_before_moving": {
+                                "applicability": {},
+                                "category": "org.weave.expression.planning",
+                                "character_id": "org.weave.character.ari_vale",
                                 "cue": "Sketches a route before committing the group.",
                                 "id": "maps_before_moving",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.8,
                             },
                         },
@@ -1739,6 +1759,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.date_context",
@@ -1766,6 +1787,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.date_context",
@@ -1807,6 +1829,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.expression",
@@ -1816,28 +1839,120 @@
                     },
                     "value": {
                         "behavioral_signature_refs": [
-                            "org.weave.signature.maps_before_moving",
+                            "org.weave.character.ari_vale.signature.maps_before_moving",
                         ],
+                        "character_id": "org.weave.character.ari_vale",
                         "lexicon": {
-                            "waymark": {
+                            "trailmark": {
+                                "applicability": {},
                                 "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "trailmark",
+                                "kind": "term",
+                                "normalized": "trailmark",
+                                "origin": "pack_assigned",
+                                "rationale": "Accept the original public reference-pack term for deterministic dialogue fixtures.",
+                                "review": "accepted",
+                                "source_ids": [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                "strength": 0.9,
+                                "surface": "trailmark",
+                            },
+                            "waymark": {
+                                "applicability": {},
+                                "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
                                 "id": "waymark",
+                                "kind": "term",
                                 "normalized": "waymark",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.8,
+                                "surface": "waymark",
                             },
                         },
                         "preferences": {
                             "clear_questions": {
+                                "applicability": {},
                                 "category": "org.weave.preference.communication",
+                                "character_id": "org.weave.character.ari_vale",
                                 "id": "clear_questions",
+                                "origin": "authored",
                                 "polarity": "prefer",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.9,
                                 "target": "clear questions",
                             },
                         },
                         "source_pack_refs": [
-                            "org.weave.expression.glasswind",
+                            {
+                                "id": "org.weave.expression.glasswind",
+                                "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                "version": "1.0.0",
+                            },
                         ],
+                        "template_assignments": {
+                            "arrival_greeting": {
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "arrival_greeting",
+                                "lock": "unlocked",
+                                "pack": {
+                                    "id": "org.weave.expression.glasswind",
+                                    "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                    "version": "1.0.0",
+                                },
+                                "rationale": "Accept the original public arrival template for the synthetic runtime fixture.",
+                                "review": "accepted",
+                                "scenario_id": "arrival",
+                                "source_ids": [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                "state": "reviewed",
+                                "template_id": "arrival_greeting",
+                            },
+                        },
+                        "vocabulary_pools": {
+                            "navigation_words": {
+                                "applicability": {},
+                                "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "navigation_words",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
+                                "term_ids": [
+                                    "trailmark",
+                                    "waymark",
+                                ],
+                            },
+                        },
+                        "voice_constraints": {
+                            "prefer_clear_questions": {
+                                "applicability": {},
+                                "category": "org.weave.expression.clarity",
+                                "character_id": "org.weave.character.ari_vale",
+                                "effect": "prefer",
+                                "id": "prefer_clear_questions",
+                                "instruction": "Ask one clear question after a short observation.",
+                                "medium": "both",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
+                                "strength": 0.9,
+                                "target": "clear questions",
+                            },
+                        },
                     },
                 },
             }),
@@ -1851,6 +1966,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.expression",
@@ -1860,28 +1976,120 @@
                     },
                     "value": {
                         "behavioral_signature_refs": [
-                            "org.weave.signature.maps_before_moving",
+                            "org.weave.character.ari_vale.signature.maps_before_moving",
                         ],
+                        "character_id": "org.weave.character.ari_vale",
                         "lexicon": {
-                            "waymark": {
+                            "trailmark": {
+                                "applicability": {},
                                 "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "trailmark",
+                                "kind": "term",
+                                "normalized": "trailmark",
+                                "origin": "pack_assigned",
+                                "rationale": "Accept the original public reference-pack term for deterministic dialogue fixtures.",
+                                "review": "accepted",
+                                "source_ids": [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                "strength": 0.9,
+                                "surface": "trailmark",
+                            },
+                            "waymark": {
+                                "applicability": {},
+                                "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
                                 "id": "waymark",
+                                "kind": "term",
                                 "normalized": "waymark",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.8,
+                                "surface": "waymark",
                             },
                         },
                         "preferences": {
                             "clear_questions": {
+                                "applicability": {},
                                 "category": "org.weave.preference.communication",
+                                "character_id": "org.weave.character.ari_vale",
                                 "id": "clear_questions",
+                                "origin": "authored",
                                 "polarity": "prefer",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
                                 "strength": 0.9,
                                 "target": "clear questions",
                             },
                         },
                         "source_pack_refs": [
-                            "org.weave.expression.glasswind",
+                            {
+                                "id": "org.weave.expression.glasswind",
+                                "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                "version": "1.0.0",
+                            },
                         ],
+                        "template_assignments": {
+                            "arrival_greeting": {
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "arrival_greeting",
+                                "lock": "unlocked",
+                                "pack": {
+                                    "id": "org.weave.expression.glasswind",
+                                    "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                    "version": "1.0.0",
+                                },
+                                "rationale": "Accept the original public arrival template for the synthetic runtime fixture.",
+                                "review": "accepted",
+                                "scenario_id": "arrival",
+                                "source_ids": [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                "state": "reviewed",
+                                "template_id": "arrival_greeting",
+                            },
+                        },
+                        "vocabulary_pools": {
+                            "navigation_words": {
+                                "applicability": {},
+                                "category": "org.weave.expression.navigation",
+                                "character_id": "org.weave.character.ari_vale",
+                                "id": "navigation_words",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
+                                "term_ids": [
+                                    "trailmark",
+                                    "waymark",
+                                ],
+                            },
+                        },
+                        "voice_constraints": {
+                            "prefer_clear_questions": {
+                                "applicability": {},
+                                "category": "org.weave.expression.clarity",
+                                "character_id": "org.weave.character.ari_vale",
+                                "effect": "prefer",
+                                "id": "prefer_clear_questions",
+                                "instruction": "Ask one clear question after a short observation.",
+                                "medium": "both",
+                                "origin": "authored",
+                                "review": "not_required",
+                                "source_ids": [
+                                    "character_original",
+                                ],
+                                "strength": 0.9,
+                                "target": "clear questions",
+                            },
+                        },
                     },
                 },
             }),
@@ -2052,8 +2260,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "amber_accent",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "accent_color",
                     "value": {
                         "color": "#D6A24A",
@@ -2079,8 +2287,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "amber_accent",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "accent_color",
                     "value": {
                         "color": "#D6A24A",
@@ -2120,8 +2328,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "ari_avatar",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "avatar",
                     "value": {
                         "asset": {
@@ -2152,8 +2360,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "ari_avatar",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "avatar",
                     "value": {
                         "asset": {
@@ -2198,8 +2406,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "long_coat",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "silhouette",
                     "value": {
                         "category": "org.weave.appearance.silhouette",
@@ -2225,8 +2433,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "long_coat",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "silhouette",
                     "value": {
                         "category": "org.weave.appearance.silhouette",
@@ -2266,8 +2474,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "river_glass",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "visual_tone",
                     "value": {
                         "kind": "style_tag",
@@ -2292,8 +2500,8 @@
                         "version": "1.0.0",
                     },
                     "entry_id": "river_glass",
-                    "proposal_sha256": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                    "review_sha256": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                    "proposal_sha256": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                    "review_sha256": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                     "slot_id": "visual_tone",
                     "value": {
                         "kind": "style_tag",
@@ -2593,6 +2801,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.relationships",
@@ -2608,6 +2817,7 @@
                                 "kind": "org.weave.relationship.mentor",
                                 "lineage": [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 "notes": {
                                     "fixture_context": {
@@ -2615,6 +2825,7 @@
                                         "id": "fixture_context",
                                         "lineage": [
                                             "character_original",
+                                            "weave_expression_glasswind_original",
                                         ],
                                     },
                                 },
@@ -2641,6 +2852,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.relationships",
@@ -2656,6 +2868,7 @@
                                 "kind": "org.weave.relationship.mentor",
                                 "lineage": [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 "notes": {
                                     "fixture_context": {
@@ -2663,6 +2876,7 @@
                                         "id": "fixture_context",
                                         "lineage": [
                                             "character_original",
+                                            "weave_expression_glasswind_original",
                                         ],
                                     },
                                 },
@@ -2703,6 +2917,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.role_projections",
@@ -2736,6 +2951,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.role_projections",
@@ -2783,6 +2999,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.tabletop",
@@ -2814,6 +3031,7 @@
                         "freshness": "current",
                         "lineage": [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         "lock": "unlocked",
                         "namespace": "org.weave.character.tabletop",
@@ -3021,7 +3239,7 @@
         recomputed_in_candidate: false,
     ),
     invalidations: [],
-    resulting_profile_sha256: "ed92961011172aaa4a6e5c8d4c6c010c937e9781678dbd608e39f5abbb597be6",
+    resulting_profile_sha256: "b204422abcea96b970c5d6e7461c5229fa9d1fc5cad88cd38b15f65b3ba398fc",
     candidate_draft: (
         id: "org.weave.character.ari_vale",
         revision: 1,
@@ -3560,7 +3778,7 @@
                                 lock: unlocked,
                                 freshness: current,
                                 lineage: [
-                                    "alignment_apply_2171b3adb49f9384",
+                                    "alignment_apply_da2749184c01216c",
                                     "character_original",
                                     "weave_wayfinder_compass",
                                 ],
@@ -3624,8 +3842,8 @@
                                     "canon.personality.openness.factor",
                                     "canon.personality.openness.inquisitiveness",
                                 ],
-                                review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
-                                applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                                review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                                applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                             ),
                         ),
                     ),
@@ -3643,15 +3861,25 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
                             value: (
+                                character_id: "org.weave.character.ari_vale",
                                 signatures: {
                                     "maps_before_moving": (
                                         id: "maps_before_moving",
+                                        character_id: "org.weave.character.ari_vale",
+                                        category: "org.weave.expression.planning",
                                         cue: "Sketches a route before committing the group.",
                                         strength: 0.8,
+                                        applicability: (),
+                                        origin: authored,
+                                        review: not_required,
+                                        source_ids: [
+                                            "character_original",
+                                        ],
                                     ),
                                 },
                             ),
@@ -3671,6 +3899,7 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
@@ -3698,32 +3927,125 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
                             value: (
+                                character_id: "org.weave.character.ari_vale",
                                 lexicon: {
+                                    "trailmark": (
+                                        id: "trailmark",
+                                        character_id: "org.weave.character.ari_vale",
+                                        category: "org.weave.expression.navigation",
+                                        kind: term,
+                                        surface: "trailmark",
+                                        normalized: "trailmark",
+                                        strength: 0.9,
+                                        applicability: (),
+                                        origin: pack_assigned,
+                                        review: accepted,
+                                        source_ids: [
+                                            "weave_expression_glasswind_original",
+                                        ],
+                                        rationale: Some("Accept the original public reference-pack term for deterministic dialogue fixtures."),
+                                    ),
                                     "waymark": (
                                         id: "waymark",
+                                        character_id: "org.weave.character.ari_vale",
                                         category: "org.weave.expression.navigation",
+                                        kind: term,
+                                        surface: "waymark",
                                         normalized: "waymark",
                                         strength: 0.8,
+                                        applicability: (),
+                                        origin: authored,
+                                        review: not_required,
+                                        source_ids: [
+                                            "character_original",
+                                        ],
                                     ),
                                 },
                                 preferences: {
                                     "clear_questions": (
                                         id: "clear_questions",
+                                        character_id: "org.weave.character.ari_vale",
                                         category: "org.weave.preference.communication",
                                         target: "clear questions",
                                         polarity: prefer,
                                         strength: 0.9,
+                                        applicability: (),
+                                        origin: authored,
+                                        review: not_required,
+                                        source_ids: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                                vocabulary_pools: {
+                                    "navigation_words": (
+                                        id: "navigation_words",
+                                        character_id: "org.weave.character.ari_vale",
+                                        category: "org.weave.expression.navigation",
+                                        term_ids: [
+                                            "trailmark",
+                                            "waymark",
+                                        ],
+                                        applicability: (),
+                                        origin: authored,
+                                        review: not_required,
+                                        source_ids: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                                voice_constraints: {
+                                    "prefer_clear_questions": (
+                                        id: "prefer_clear_questions",
+                                        character_id: "org.weave.character.ari_vale",
+                                        category: "org.weave.expression.clarity",
+                                        medium: both,
+                                        effect: prefer,
+                                        target: "clear questions",
+                                        instruction: "Ask one clear question after a short observation.",
+                                        strength: 0.9,
+                                        applicability: (),
+                                        origin: authored,
+                                        review: not_required,
+                                        source_ids: [
+                                            "character_original",
+                                        ],
+                                    ),
+                                },
+                                template_assignments: {
+                                    "arrival_greeting": (
+                                        id: "arrival_greeting",
+                                        character_id: "org.weave.character.ari_vale",
+                                        scenario_id: "arrival",
+                                        pack: (
+                                            id: "org.weave.expression.glasswind",
+                                            version: "1.0.0",
+                                            sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                        ),
+                                        template_id: "arrival_greeting",
+                                        state: reviewed,
+                                        review: accepted,
+                                        lock: unlocked,
+                                        source_ids: [
+                                            "weave_expression_glasswind_original",
+                                        ],
+                                        rationale: "Accept the original public arrival template for the synthetic runtime fixture.",
                                     ),
                                 },
                                 behavioral_signature_refs: [
-                                    "org.weave.signature.maps_before_moving",
+                                    "org.weave.character.ari_vale.signature.maps_before_moving",
                                 ],
                                 source_pack_refs: [
-                                    "org.weave.expression.glasswind",
+                                    (
+                                        id: "org.weave.expression.glasswind",
+                                        version: "1.0.0",
+                                        sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                    ),
                                 ],
                             ),
                         ),
@@ -3742,6 +4064,7 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
@@ -3884,8 +4207,8 @@
                                                 palette_slot: "accent",
                                                 color: "#D6A24A",
                                             ),
-                                            proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                                            review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         state: reviewed,
                                         confidence: high,
@@ -3916,8 +4239,8 @@
                                                     alt_text: "Geometric cedar and gold wayfinder avatar.",
                                                 ),
                                             ),
-                                            proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                                            review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         state: reviewed,
                                         confidence: high,
@@ -3943,8 +4266,8 @@
                                                 category: "org.weave.appearance.silhouette",
                                                 descriptor: "Long layered travel coat with a narrow shoulder line.",
                                             ),
-                                            proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                                            review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         state: reviewed,
                                         confidence: high,
@@ -3969,8 +4292,8 @@
                                                 kind: "style_tag",
                                                 tag: "river_glass",
                                             ),
-                                            proposal_sha256: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
-                                            review_sha256: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            proposal_sha256: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
+                                            review_sha256: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         state: reviewed,
                                         confidence: high,
@@ -4000,6 +4323,7 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
@@ -4022,11 +4346,13 @@
                                                 content: "Explicit synthetic relationship context for portable tests.",
                                                 lineage: [
                                                     "character_original",
+                                                    "weave_expression_glasswind_original",
                                                 ],
                                             ),
                                         },
                                         lineage: [
                                             "character_original",
+                                            "weave_expression_glasswind_original",
                                         ],
                                         rationale: Some("Authored only for the public synthetic Character fixture."),
                                     ),
@@ -4048,6 +4374,7 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
@@ -4081,6 +4408,7 @@
                                 freshness: current,
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 canonical_personality_write_back: forbidden,
                             ),
@@ -4177,6 +4505,16 @@
                             modified: false,
                         ),
                         (
+                            id: "weave_expression_glasswind_original",
+                            kind: original,
+                            url: "https://github.com/chrisgliddon/weave",
+                            revision: "expression-dialogue-v1",
+                            license: "MIT",
+                            license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                            attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                            modified: false,
+                        ),
+                        (
                             id: "weave_glasswind_presentation",
                             kind: original,
                             url: "https://github.com/chrisgliddon/weave",
@@ -4209,7 +4547,7 @@
                     ],
                     transformations: [
                         (
-                            id: "alignment_apply_2171b3adb49f9384",
+                            id: "alignment_apply_da2749184c01216c",
                             inputs: [
                                 "character_original",
                                 "weave_wayfinder_compass",
@@ -4231,7 +4569,10 @@
                             "weave_glasswind_presentation",
                         ],
                         "extensions.org.weave.character.alignment": [
-                            "alignment_apply_2171b3adb49f9384",
+                            "alignment_apply_da2749184c01216c",
+                        ],
+                        "extensions.org.weave.character.expression": [
+                            "weave_expression_glasswind_original",
                         ],
                         "extensions.org.weave.character.relationships": [
                             "weave_relationship_reference_pack",
@@ -4259,7 +4600,7 @@
             template: Some((
                 id: "org.weave.character.template.glasswind_wayfinder",
                 version: "1.1.0",
-                sha256: "01389c4952595f53469780cac91bb7ee0e1005f59b33490bba4bb13faa4b0c6f",
+                sha256: "96b40e9ee7f2a4bfe057c31f878d011d6bc0cda177728ba80d30e7c1002080bc",
             )),
             operations: [
                 (
@@ -4372,12 +4713,12 @@
                 prior_template: (
                     id: "org.weave.character.template.glasswind_wayfinder",
                     version: "1.0.0",
-                    sha256: "ed060959c6eda959f0e788b72b88f13df8e0f505e7dca3ee5cae733ec56d7c6c",
+                    sha256: "deecbe99bbd73f01e68a06d191c4dab2548f54194ef8086147c3ab363aa56206",
                 ),
                 template: (
                     id: "org.weave.character.template.glasswind_wayfinder",
                     version: "1.1.0",
-                    sha256: "01389c4952595f53469780cac91bb7ee0e1005f59b33490bba4bb13faa4b0c6f",
+                    sha256: "96b40e9ee7f2a4bfe057c31f878d011d6bc0cda177728ba80d30e7c1002080bc",
                 ),
                 applied_draft_revision: 1,
                 reviewer: "org.weave.reviewer.fixture",

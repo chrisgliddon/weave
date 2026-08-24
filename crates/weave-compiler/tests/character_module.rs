@@ -67,7 +67,7 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
     assert_eq!(from_ron, first.story);
     let character = &from_ron.modules["character"];
     assert_eq!(character.id, "org.weave.character");
-    assert_eq!(character.version, "1.4.0");
+    assert_eq!(character.version, "1.5.0");
     assert_eq!(character.pack_id, "ari_vale");
     assert_eq!(
         character.value(&["profile", "identity", "id"]),
@@ -129,6 +129,24 @@ fn complete_character_compiles_to_exact_portable_story_ir() {
         character.value(&["profile", "relationships", "kind_pack", "sha256"]),
         Some(DomainValueIr::String(value)) if value.len() == 64
     ));
+    assert_eq!(
+        character.value(&["profile", "expression", "lexicon", "trailmark", "surface",]),
+        Some(&DomainValueIr::String("trailmark".to_owned()))
+    );
+    assert_eq!(
+        character.value(&[
+            "profile",
+            "expression",
+            "preferences",
+            "clear_questions",
+            "target",
+        ]),
+        Some(&DomainValueIr::String("clear questions".to_owned()))
+    );
+    assert_eq!(
+        character.value(&["profile", "expression", "canonical_personality_write_back",]),
+        Some(&DomainValueIr::Bool(false))
+    );
     assert_eq!(
         character.value(&[
             "profile",
@@ -227,6 +245,14 @@ fn character_schema_paths_are_static_and_derived_evidence_is_read_only() {
     );
     let error = compile_with_modules(&relationship_writeback, &options(), &catalog())
         .expect_err("relationship workflow bypass must fail");
+    assert_eq!(error.diagnostics[0].code.0, "D140");
+
+    let expression_writeback = SOURCE.replace(
+        "override profile.identity.display_name.value: \"Ari Vale, Wayfinder\"",
+        "override profile.expression.lexicon.trailmark.surface: \"changed\"",
+    );
+    let error = compile_with_modules(&expression_writeback, &options(), &catalog())
+        .expect_err("expression workflow bypass must fail");
     assert_eq!(error.diagnostics[0].code.0, "D140");
 }
 

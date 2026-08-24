@@ -1220,7 +1220,13 @@ mod tests {
         assert_eq!(inspection.alias, "character");
         assert_eq!(inspection.id, "org.weave.character");
         assert_eq!(inspection.pack_id, "ari_vale");
-        assert_eq!(inspection.read_only_paths.len(), 10);
+        assert_eq!(inspection.read_only_paths.len(), 11);
+        assert!(inspection.read_only_paths.iter().any(|declaration| {
+            declaration.path == ["profile", "expression"].map(str::to_owned)
+                && declaration
+                    .reason
+                    .contains("fingerprinted expression revision")
+        }));
         assert!(inspection.read_only_paths.iter().any(|declaration| {
             declaration.path == ["profile", "alignment"].map(str::to_owned)
                 && declaration

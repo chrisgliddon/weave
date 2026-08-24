@@ -15,6 +15,9 @@ use weave_character::{
     CharacterQuestionnaireFacetDecision, CharacterQuestionnairePack,
     CharacterQuestionnaireProposal, CharacterQuestionnaireReceipt, CharacterQuestionnaireReview,
     CharacterReviewDecision, CharacterScope, CharacterSynthesisResult, CharacterTemplate,
+    ExpressionAssignmentReceipt, ExpressionAssignmentRequest, ExpressionCoverageReport,
+    ExpressionFilter, ExpressionLintReport, ExpressionPack, ExpressionRecordKind,
+    ExpressionRecordOrigin, ExpressionResolution, ExpressionResolutionRequest, ExpressionRevision,
     HexacoTrait, PresentationAllocationRequest, PresentationCatalog, PresentationLockRevision,
     PresentationProposal, PresentationReceipt, PresentationReview, PresentationReviewDecision,
     RelationshipDate, RelationshipEdgeOrigin, RelationshipFilter, RelationshipGraphPolicy,
@@ -24,10 +27,10 @@ use weave_character::{
     TemporalContextProposal, TemporalContextReceipt, TemporalContextReview, TemporalReviewDecision,
     alignment_config_schema, alignment_pack_schema, alignment_profile_fingerprint,
     alignment_proposal_schema, alignment_receipt_schema, alignment_review_schema,
-    apply_authoring_revision, apply_character_questionnaire_review,
+    apply_authoring_revision, apply_character_questionnaire_review, apply_expression_revision,
     apply_presentation_lock_revision, apply_presentation_review, apply_relationship_graph_revision,
     apply_reviewed_alignment, apply_reviewed_character_proposal, apply_reviewed_relationships,
-    apply_reviewed_temporal_context, character_authoring_preview_schema,
+    apply_reviewed_temporal_context, assign_expression_pack, character_authoring_preview_schema,
     character_authoring_revision_schema, character_authoring_workspace_schema,
     character_collection_schema, character_diagnostic_schema, character_domain_pack,
     character_final_review_schema, character_module_manifest, character_operation_request_schema,
@@ -38,8 +41,12 @@ use weave_character::{
     character_review_schema, character_synthesis_schema, character_template_schema,
     clone_authoring_draft, collection_fingerprint, create_alignment_review, create_authoring_draft,
     create_character_questionnaire_review, create_relationship_review,
-    create_temporal_context_review, export_authoring_profile, list_authoring_drafts,
-    list_characters, list_relationships, new_authoring_workspace,
+    create_temporal_context_review, export_authoring_profile, expression_assignment_receipt_schema,
+    expression_assignment_request_schema, expression_coverage_schema, expression_lint_schema,
+    expression_pack_schema, expression_profile_fingerprint, expression_resolution_request_schema,
+    expression_resolution_schema, expression_revision_schema, inspect_expression_coverage,
+    lint_expression, list_authoring_drafts, list_characters, list_expression_records,
+    list_relationships, new_authoring_workspace, normalize_expression_revision,
     presentation_allocation_request_schema, presentation_authoring_revision,
     presentation_catalog_schema, presentation_lock_revision_schema, presentation_proposal_schema,
     presentation_receipt_schema, presentation_review_schema, preview_authoring_revision,
@@ -49,11 +56,12 @@ use weave_character::{
     relationship_dense_matrix_review_csv, relationship_edge_review_csv,
     relationship_kind_pack_schema, relationship_policy_schema, relationship_proposal_schema,
     relationship_receipt_schema, relationship_reconciliation_schema, relationship_review_schema,
-    relationship_revision_schema, resume_character_operation, review_authoring_draft,
-    review_character_proposal, review_presentation_proposal, show_authoring_draft, show_character,
-    synthesize_character, temporal_context_config_schema, temporal_context_pack_schema,
-    temporal_context_proposal_schema, temporal_context_receipt_schema,
-    temporal_context_review_schema, temporal_profile_fingerprint, validate_relationship_graph,
+    relationship_revision_schema, resolve_expression_dialogue, resume_character_operation,
+    review_authoring_draft, review_character_proposal, review_presentation_proposal,
+    show_authoring_draft, show_character, show_expression_record, synthesize_character,
+    temporal_context_config_schema, temporal_context_pack_schema, temporal_context_proposal_schema,
+    temporal_context_receipt_schema, temporal_context_review_schema, temporal_profile_fingerprint,
+    validate_expression_profile, validate_relationship_graph,
 };
 
 #[derive(Debug, Parser)]
@@ -375,6 +383,104 @@ enum Command {
         pack: PathBuf,
         policy: PathBuf,
     },
+    /// Canonically normalize one authored expression revision without changing a profile.
+    ExpressionNormalize {
+        revision: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Add, edit, or remove normalized expression records through one atomic revision.
+    ExpressionRevise {
+        profile: PathBuf,
+        revision: PathBuf,
+        /// Validate the exact transition without writing any file.
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long, value_enum)]
+        format: Option<OutputFormat>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// List normalized expression records with deterministic typed filters.
+    ExpressionList {
+        profile: PathBuf,
+        #[arg(long = "kind", value_enum)]
+        kinds: Vec<ExpressionRecordKindArg>,
+        #[arg(long = "category")]
+        categories: Vec<String>,
+        #[arg(long = "origin", value_enum)]
+        origins: Vec<ExpressionOriginArg>,
+        #[arg(long)]
+        scenario: Option<String>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Show one exact normalized expression record.
+    ExpressionShow {
+        profile: PathBuf,
+        #[arg(value_enum)]
+        kind: ExpressionRecordKindArg,
+        id: String,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Assign explicitly selected records from one exact eligible public expression pack.
+    ExpressionAssign {
+        profile: PathBuf,
+        pack: PathBuf,
+        request: PathBuf,
+        /// Reproduce the assignment without writing either output.
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        receipt_output: Option<PathBuf>,
+        #[arg(long)]
+        profile_output: Option<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+    },
+    /// Inspect expression record, category, and dialogue-scenario coverage.
+    ExpressionCoverage {
+        profile: PathBuf,
+        #[arg(long = "pack", required = true)]
+        packs: Vec<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Report non-mutating editorial and structural expression diagnostics.
+    ExpressionLint {
+        profile: PathBuf,
+        #[arg(long = "pack", required = true)]
+        packs: Vec<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Validate all expression records against their exact public packs.
+    ExpressionValidate {
+        profile: PathBuf,
+        #[arg(long = "pack", required = true)]
+        packs: Vec<PathBuf>,
+    },
+    /// Resolve one reviewed dialogue template deterministically and entirely offline.
+    ExpressionResolve {
+        profile: PathBuf,
+        pack: PathBuf,
+        request: PathBuf,
+        #[arg(long, value_enum, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
     /// Initialize an empty guided-authoring workspace.
     AuthoringInit {
         #[arg(long)]
@@ -627,6 +733,14 @@ enum DocumentKind {
     RelationshipReceipt,
     RelationshipRevision,
     RelationshipReconciliation,
+    ExpressionPack,
+    ExpressionRevision,
+    ExpressionAssignmentRequest,
+    ExpressionAssignmentReceipt,
+    ExpressionResolutionRequest,
+    ExpressionResolution,
+    ExpressionLint,
+    ExpressionCoverage,
     AuthoringWorkspace,
     AuthoringRevision,
     AuthoringPreview,
@@ -665,6 +779,50 @@ enum RelationshipOriginArg {
     ComputedAffinity,
     SuggestedNarrative,
     ReviewedSuggestion,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum ExpressionRecordKindArg {
+    Term,
+    Preference,
+    VocabularyPool,
+    BehavioralSignature,
+    VoiceConstraint,
+    TemplateAssignment,
+}
+
+impl From<ExpressionRecordKindArg> for ExpressionRecordKind {
+    fn from(value: ExpressionRecordKindArg) -> Self {
+        match value {
+            ExpressionRecordKindArg::Term => Self::Term,
+            ExpressionRecordKindArg::Preference => Self::Preference,
+            ExpressionRecordKindArg::VocabularyPool => Self::VocabularyPool,
+            ExpressionRecordKindArg::BehavioralSignature => Self::BehavioralSignature,
+            ExpressionRecordKindArg::VoiceConstraint => Self::VoiceConstraint,
+            ExpressionRecordKindArg::TemplateAssignment => Self::TemplateAssignment,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum ExpressionOriginArg {
+    Authored,
+    Imported,
+    PackAssigned,
+    Suggested,
+    ReviewedSuggestion,
+}
+
+impl From<ExpressionOriginArg> for ExpressionRecordOrigin {
+    fn from(value: ExpressionOriginArg) -> Self {
+        match value {
+            ExpressionOriginArg::Authored => Self::Authored,
+            ExpressionOriginArg::Imported => Self::Imported,
+            ExpressionOriginArg::PackAssigned => Self::PackAssigned,
+            ExpressionOriginArg::Suggested => Self::Suggested,
+            ExpressionOriginArg::ReviewedSuggestion => Self::ReviewedSuggestion,
+        }
+    }
 }
 
 impl From<RelationshipOriginArg> for RelationshipEdgeOrigin {
@@ -730,6 +888,20 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 DocumentKind::RelationshipReceipt => relationship_receipt_schema()?,
                 DocumentKind::RelationshipRevision => relationship_revision_schema()?,
                 DocumentKind::RelationshipReconciliation => relationship_reconciliation_schema()?,
+                DocumentKind::ExpressionPack => expression_pack_schema()?,
+                DocumentKind::ExpressionRevision => expression_revision_schema()?,
+                DocumentKind::ExpressionAssignmentRequest => {
+                    expression_assignment_request_schema()?
+                }
+                DocumentKind::ExpressionAssignmentReceipt => {
+                    expression_assignment_receipt_schema()?
+                }
+                DocumentKind::ExpressionResolutionRequest => {
+                    expression_resolution_request_schema()?
+                }
+                DocumentKind::ExpressionResolution => expression_resolution_schema()?,
+                DocumentKind::ExpressionLint => expression_lint_schema()?,
+                DocumentKind::ExpressionCoverage => expression_coverage_schema()?,
                 DocumentKind::AuthoringWorkspace => character_authoring_workspace_schema()?,
                 DocumentKind::AuthoringRevision => character_authoring_revision_schema()?,
                 DocumentKind::AuthoringPreview => character_authoring_preview_schema()?,
@@ -836,6 +1008,30 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 DocumentKind::RelationshipReconciliation => {
                     parse_relationship_reconciliation(&input, &source)?;
+                }
+                DocumentKind::ExpressionPack => {
+                    parse_expression_pack(&input, &source)?;
+                }
+                DocumentKind::ExpressionRevision => {
+                    parse_expression_revision(&input, &source)?;
+                }
+                DocumentKind::ExpressionAssignmentRequest => {
+                    parse_expression_assignment_request(&input, &source)?;
+                }
+                DocumentKind::ExpressionAssignmentReceipt => {
+                    parse_expression_assignment_receipt(&input, &source)?;
+                }
+                DocumentKind::ExpressionResolutionRequest => {
+                    parse_expression_resolution_request(&input, &source)?;
+                }
+                DocumentKind::ExpressionResolution => {
+                    parse_expression_resolution(&input, &source)?;
+                }
+                DocumentKind::ExpressionLint => {
+                    parse_expression_lint(&input, &source)?;
+                }
+                DocumentKind::ExpressionCoverage => {
+                    parse_expression_coverage(&input, &source)?;
                 }
                 DocumentKind::AuthoringWorkspace => {
                     parse_authoring_workspace(&input, &source)?;
@@ -1471,6 +1667,185 @@ fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
                 &policy_value.safeguards,
             )?;
             println!("validated relationship graph {}", collection.display());
+        }
+        Command::ExpressionNormalize {
+            revision,
+            format,
+            output,
+        } => {
+            let source = fs::read_to_string(&revision)?;
+            let raw = parse_expression_revision_unchecked(&revision, &source)?;
+            let normalized = normalize_expression_revision(&raw)?;
+            let serialized = match format {
+                OutputFormat::Json => normalized.to_json()?,
+                OutputFormat::Ron => normalized.to_ron()?,
+            };
+            atomic_write(&output, serialized.as_bytes())?;
+            println!("normalized expression revision {}", output.display());
+        }
+        Command::ExpressionRevise {
+            profile,
+            revision,
+            dry_run,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let revision_value = read_expression_revision(&revision)?;
+            let applied = apply_expression_revision(&profile_value, &revision_value)?;
+            if dry_run {
+                println!(
+                    "validated expression revision {}",
+                    expression_profile_fingerprint(&applied)?
+                );
+            } else {
+                let destination = output.as_deref().unwrap_or(&profile);
+                let format = format.unwrap_or_else(|| output_format_for(destination));
+                let serialized = match format {
+                    OutputFormat::Json => applied.to_json()?,
+                    OutputFormat::Ron => applied.to_ron()?,
+                };
+                atomic_write(destination, serialized.as_bytes())?;
+                println!("applied expression revision {}", destination.display());
+            }
+        }
+        Command::ExpressionList {
+            profile,
+            kinds,
+            mut categories,
+            origins,
+            scenario,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let mut kinds = kinds
+                .into_iter()
+                .map(ExpressionRecordKind::from)
+                .collect::<Vec<_>>();
+            kinds.sort();
+            kinds.dedup();
+            categories.sort();
+            categories.dedup();
+            let mut origins = origins
+                .into_iter()
+                .map(ExpressionRecordOrigin::from)
+                .collect::<Vec<_>>();
+            origins.sort();
+            origins.dedup();
+            let records = list_expression_records(
+                &profile_value,
+                &ExpressionFilter {
+                    kinds,
+                    categories,
+                    origins,
+                    scenario_id: scenario,
+                },
+            )?;
+            let serialized = serialize_value(&records, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::ExpressionShow {
+            profile,
+            kind,
+            id,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let record = show_expression_record(&profile_value, kind.into(), &id)?
+                .ok_or("expression record was not found")?;
+            let serialized = serialize_value(&record, format)?;
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::ExpressionAssign {
+            profile,
+            pack,
+            request,
+            dry_run,
+            receipt_output,
+            profile_output,
+            format,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let pack_value = read_expression_pack(&pack)?;
+            let request_value = read_expression_assignment_request(&request)?;
+            let receipt = assign_expression_pack(&profile_value, &pack_value, &request_value)?;
+            if dry_run {
+                println!("validated expression assignment {}", receipt.output_sha256);
+            } else {
+                let receipt_destination = receipt_output
+                    .as_deref()
+                    .ok_or("expression assign requires --receipt-output unless --dry-run is set")?;
+                let profile_destination = profile_output
+                    .as_deref()
+                    .ok_or("expression assign requires --profile-output unless --dry-run is set")?;
+                let serialized_receipt = match format {
+                    OutputFormat::Json => receipt.to_json()?,
+                    OutputFormat::Ron => receipt.to_ron()?,
+                };
+                let serialized_profile = match format {
+                    OutputFormat::Json => receipt.output_profile.to_json()?,
+                    OutputFormat::Ron => receipt.output_profile.to_ron()?,
+                };
+                atomic_write(receipt_destination, serialized_receipt.as_bytes())?;
+                atomic_write(profile_destination, serialized_profile.as_bytes())?;
+                println!("assigned expression pack {}", profile_destination.display());
+            }
+        }
+        Command::ExpressionCoverage {
+            profile,
+            packs,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let pack_values = read_expression_packs(&packs)?;
+            let report = inspect_expression_coverage(&profile_value, &pack_values)?;
+            let serialized = match format {
+                OutputFormat::Json => report.to_json()?,
+                OutputFormat::Ron => report.to_ron()?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::ExpressionLint {
+            profile,
+            packs,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let pack_values = read_expression_packs(&packs)?;
+            let report = lint_expression(&profile_value, &pack_values)?;
+            let serialized = match format {
+                OutputFormat::Json => report.to_json()?,
+                OutputFormat::Ron => report.to_ron()?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
+        }
+        Command::ExpressionValidate { profile, packs } => {
+            let profile_value = read_profile(&profile)?;
+            let pack_values = read_expression_packs(&packs)?;
+            validate_expression_profile(&profile_value, &pack_values)?;
+            println!("validated Character expression {}", profile.display());
+        }
+        Command::ExpressionResolve {
+            profile,
+            pack,
+            request,
+            format,
+            output,
+        } => {
+            let profile_value = read_profile(&profile)?;
+            let pack_value = read_expression_pack(&pack)?;
+            let request_value = read_expression_resolution_request(&request)?;
+            let resolution =
+                resolve_expression_dialogue(&profile_value, &pack_value, &request_value)?;
+            let serialized = match format {
+                OutputFormat::Json => resolution.to_json()?,
+                OutputFormat::Ron => resolution.to_ron()?,
+            };
+            write_or_print(output.as_deref(), &serialized)?;
         }
         Command::AuthoringInit {
             id,
@@ -2156,6 +2531,106 @@ fn parse_relationship_reconciliation(
     }
 }
 
+fn parse_expression_pack(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionPack, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionPack::from_ron(source)
+    } else {
+        ExpressionPack::from_json(source)
+    }
+}
+
+fn parse_expression_revision(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionRevision, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionRevision::from_ron(source)
+    } else {
+        ExpressionRevision::from_json(source)
+    }
+}
+
+fn parse_expression_assignment_request(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionAssignmentRequest, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionAssignmentRequest::from_ron(source)
+    } else {
+        ExpressionAssignmentRequest::from_json(source)
+    }
+}
+
+fn parse_expression_assignment_receipt(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionAssignmentReceipt, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionAssignmentReceipt::from_ron(source)
+    } else {
+        ExpressionAssignmentReceipt::from_json(source)
+    }
+}
+
+fn parse_expression_resolution_request(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionResolutionRequest, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionResolutionRequest::from_ron(source)
+    } else {
+        ExpressionResolutionRequest::from_json(source)
+    }
+}
+
+fn parse_expression_resolution(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionResolution, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionResolution::from_ron(source)
+    } else {
+        ExpressionResolution::from_json(source)
+    }
+}
+
+fn parse_expression_lint(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionLintReport, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionLintReport::from_ron(source)
+    } else {
+        ExpressionLintReport::from_json(source)
+    }
+}
+
+fn parse_expression_coverage(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionCoverageReport, weave_character::ExpressionError> {
+    if is_ron(path) {
+        ExpressionCoverageReport::from_ron(source)
+    } else {
+        ExpressionCoverageReport::from_json(source)
+    }
+}
+
+fn parse_expression_revision_unchecked(
+    path: &Path,
+    source: &str,
+) -> Result<ExpressionRevision, Box<dyn std::error::Error>> {
+    if is_ron(path) {
+        Ok(ron::from_str(source).map_err(|_| "invalid expression revision RON")?)
+    } else {
+        Ok(weave_domain::parse_strict_json(source)
+            .map_err(|_| "invalid expression revision JSON")?)
+    }
+}
+
 fn parse_authoring_workspace(
     path: &Path,
     source: &str,
@@ -2314,6 +2789,45 @@ fn read_authoring_workspace(
     path: &Path,
 ) -> Result<CharacterAuthoringWorkspace, Box<dyn std::error::Error>> {
     Ok(parse_authoring_workspace(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_profile(path: &Path) -> Result<CharacterProfile, Box<dyn std::error::Error>> {
+    Ok(parse_profile(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_expression_pack(path: &Path) -> Result<ExpressionPack, Box<dyn std::error::Error>> {
+    Ok(parse_expression_pack(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_expression_packs(
+    paths: &[PathBuf],
+) -> Result<Vec<ExpressionPack>, Box<dyn std::error::Error>> {
+    paths
+        .iter()
+        .map(|path| read_expression_pack(path))
+        .collect()
+}
+
+fn read_expression_revision(path: &Path) -> Result<ExpressionRevision, Box<dyn std::error::Error>> {
+    Ok(parse_expression_revision(path, &fs::read_to_string(path)?)?)
+}
+
+fn read_expression_assignment_request(
+    path: &Path,
+) -> Result<ExpressionAssignmentRequest, Box<dyn std::error::Error>> {
+    Ok(parse_expression_assignment_request(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
+}
+
+fn read_expression_resolution_request(
+    path: &Path,
+) -> Result<ExpressionResolutionRequest, Box<dyn std::error::Error>> {
+    Ok(parse_expression_resolution_request(
+        path,
+        &fs::read_to_string(path)?,
+    )?)
 }
 
 fn read_authoring_revision(

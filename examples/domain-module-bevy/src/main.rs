@@ -131,6 +131,22 @@ struct RelationshipGraphReading {
     edges: Vec<RelationshipEdgeReading>,
 }
 
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct ExpressionReading {
+    term_id: String,
+    term_surface: String,
+    term_normalized: String,
+    term_origin: String,
+    preference_target: String,
+    preference_polarity: String,
+    template_id: String,
+    scenario_id: String,
+    pack_id: String,
+    pack_version: String,
+    pack_sha256: String,
+    canonical_personality_write_back: bool,
+}
+
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
     let module = story.modules.get("constellation").ok_or_else(|| {
         io::Error::new(io::ErrorKind::InvalidData, "constellation module is absent")
@@ -734,6 +750,140 @@ fn relationship_graph_reading(story: &StoryIr) -> Result<RelationshipGraphReadin
     })
 }
 
+fn expression_reading(story: &StoryIr) -> Result<ExpressionReading, io::Error> {
+    let module = story
+        .modules
+        .get("character")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Character module is absent"))?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let symbol = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let canonical_personality_write_back =
+        match module.value(&["profile", "expression", "canonical_personality_write_back"]) {
+            Some(DomainValueIr::Bool(value)) => *value,
+            _ => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "expression write-back marker is invalid",
+                ));
+            }
+        };
+    let pack_sha256 = string(
+        &[
+            "profile",
+            "expression",
+            "template_assignments",
+            "arrival_greeting",
+            "pack",
+            "sha256",
+        ],
+        "expression pack fingerprint is invalid",
+    )?;
+    if pack_sha256.len() != 64
+        || !pack_sha256
+            .bytes()
+            .all(|value| value.is_ascii_hexdigit() && !value.is_ascii_uppercase())
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "expression pack fingerprint is invalid",
+        ));
+    }
+    Ok(ExpressionReading {
+        term_id: string(
+            &["profile", "expression", "lexicon", "trailmark", "id"],
+            "expression term id is invalid",
+        )?,
+        term_surface: string(
+            &["profile", "expression", "lexicon", "trailmark", "surface"],
+            "expression term surface is invalid",
+        )?,
+        term_normalized: string(
+            &[
+                "profile",
+                "expression",
+                "lexicon",
+                "trailmark",
+                "normalized",
+            ],
+            "expression normalized term is invalid",
+        )?,
+        term_origin: symbol(
+            &["profile", "expression", "lexicon", "trailmark", "origin"],
+            "expression term origin is invalid",
+        )?,
+        preference_target: string(
+            &[
+                "profile",
+                "expression",
+                "preferences",
+                "clear_questions",
+                "target",
+            ],
+            "expression preference target is invalid",
+        )?,
+        preference_polarity: symbol(
+            &[
+                "profile",
+                "expression",
+                "preferences",
+                "clear_questions",
+                "polarity",
+            ],
+            "expression preference polarity is invalid",
+        )?,
+        template_id: string(
+            &[
+                "profile",
+                "expression",
+                "template_assignments",
+                "arrival_greeting",
+                "template_id",
+            ],
+            "expression template id is invalid",
+        )?,
+        scenario_id: string(
+            &[
+                "profile",
+                "expression",
+                "template_assignments",
+                "arrival_greeting",
+                "scenario_id",
+            ],
+            "expression scenario id is invalid",
+        )?,
+        pack_id: string(
+            &[
+                "profile",
+                "expression",
+                "template_assignments",
+                "arrival_greeting",
+                "pack",
+                "id",
+            ],
+            "expression pack id is invalid",
+        )?,
+        pack_version: string(
+            &[
+                "profile",
+                "expression",
+                "template_assignments",
+                "arrival_greeting",
+                "pack",
+                "version",
+            ],
+            "expression pack version is invalid",
+        )?,
+        pack_sha256,
+        canonical_personality_write_back,
+    })
+}
+
 fn string_list(
     value: Option<&DomainValueIr>,
     message: &'static str,
@@ -833,6 +983,21 @@ fn report_relationship_graph(reading: Res<RelationshipGraphReading>) {
     );
 }
 
+fn report_expression(reading: Res<ExpressionReading>) {
+    println!(
+        "Bevy read {} expression term `{}` and {} preference `{}` with template {} for {} from {}@{}; personality write-back={}",
+        reading.term_origin,
+        reading.term_surface,
+        reading.preference_polarity,
+        reading.preference_target,
+        reading.template_id,
+        reading.scenario_id,
+        reading.pack_id,
+        reading.pack_version,
+        reading.canonical_personality_write_back,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -851,6 +1016,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         alignment_character_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let relationship_graph =
         relationship_graph_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
+    let expression = expression_reading(&ron::from_str::<StoryIr>(CHARACTER_STORY)?)?;
     let temporal_character =
         temporal_character_reading(&ron::from_str::<StoryIr>(TEMPORAL_CHARACTER_STORY)?)?;
     let mut app = App::new();
@@ -861,6 +1027,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(character)
         .insert_resource(alignment_character)
         .insert_resource(relationship_graph)
+        .insert_resource(expression)
         .insert_resource(temporal_character)
         .add_systems(
             Startup,
@@ -871,6 +1038,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_character,
                 report_alignment_character,
                 report_relationship_graph,
+                report_expression,
                 report_temporal_character,
             ),
         );
@@ -1050,6 +1218,30 @@ mod tests {
                 evidence_count: 0,
             }]
         );
+    }
+
+    #[test]
+    fn reads_observable_expression_and_template_coordinates_without_editor_dependencies() {
+        let story = ron::from_str::<StoryIr>(CHARACTER_STORY).expect("checked Character RON");
+        let reading = expression_reading(&story).expect("read Character expression");
+        assert_eq!(
+            reading,
+            ExpressionReading {
+                term_id: "trailmark".to_owned(),
+                term_surface: "trailmark".to_owned(),
+                term_normalized: "trailmark".to_owned(),
+                term_origin: "pack_assigned".to_owned(),
+                preference_target: "clear questions".to_owned(),
+                preference_polarity: "prefer".to_owned(),
+                template_id: "arrival_greeting".to_owned(),
+                scenario_id: "arrival".to_owned(),
+                pack_id: "org.weave.expression.glasswind".to_owned(),
+                pack_version: "1.0.0".to_owned(),
+                pack_sha256: reading.pack_sha256.clone(),
+                canonical_personality_write_back: false,
+            }
+        );
+        assert_eq!(reading.pack_sha256.len(), 64);
     }
 
     #[test]

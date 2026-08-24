@@ -572,6 +572,16 @@
         "modified": false
       },
       {
+        "id": "weave_expression_glasswind_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "expression-dialogue-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+        "modified": false
+      },
+      {
         "id": "weave_glasswind_presentation",
         "kind": "original",
         "url": "https://github.com/chrisgliddon/weave",
@@ -604,7 +614,7 @@
     ],
     "transformations": [
       {
-        "id": "alignment_apply_2171b3adb49f9384",
+        "id": "alignment_apply_da2749184c01216c",
         "inputs": [
           "character_original",
           "weave_wayfinder_compass"
@@ -626,7 +636,10 @@
         "weave_glasswind_presentation"
       ],
       "extensions.org.weave.character.alignment": [
-        "alignment_apply_2171b3adb49f9384"
+        "alignment_apply_da2749184c01216c"
+      ],
+      "extensions.org.weave.character.expression": [
+        "weave_expression_glasswind_original"
       ],
       "extensions.org.weave.character.relationships": [
         "weave_relationship_reference_pack"

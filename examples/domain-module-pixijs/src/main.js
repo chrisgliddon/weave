@@ -11,6 +11,7 @@ import temporalCharacterStory from "../../domain-modules/weave-character/context
 import {
   alignmentCharacterPresentation,
   characterPresentation,
+  expressionCharacterPresentation,
   identityCharacterPresentation,
   temporalCharacterPresentation,
 } from "./character-presentation.js";
@@ -34,6 +35,7 @@ try {
   );
   const composedWorld = composedWorldPresentation(composedWorldStory);
   const character = characterPresentation(characterStory);
+  const expressionCharacter = expressionCharacterPresentation(characterStory);
   const identityPresentation = identityCharacterPresentation(characterStory);
   const alignmentCharacter = alignmentCharacterPresentation(characterStory);
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
@@ -50,7 +52,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
@@ -64,7 +66,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read portable World and Character exports; approved alignment stays non-diagnostic, temporal fact/cue lineage stays separate, and OCEAN remains visibly derived and lossy.";
+    "PixiJS read portable World and Character exports; normalized expression remains authored, approved alignment stays non-diagnostic, temporal fact/cue lineage stays separate, and OCEAN remains visibly derived and lossy.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

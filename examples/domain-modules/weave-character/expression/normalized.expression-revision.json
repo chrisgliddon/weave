@@ -1,0 +1,58 @@
+{
+  "revision_format_version": 1,
+  "id": "org.weave.character.expression.revision.ari_authored",
+  "character_id": "org.weave.character.ari_vale",
+  "expected_profile_sha256": "1e4f6497cf6b27c9877b858d34f9c999820df64c8424914f237db9d35bffe8bb",
+  "mutations": [
+    {
+      "action": "upsert_term",
+      "value": {
+        "id": "lantern_turn",
+        "character_id": "org.weave.character.ari_vale",
+        "category": "org.weave.expression.navigation",
+        "kind": "phrase",
+        "surface": "Lantern Turn",
+        "normalized": "lantern turn",
+        "strength": 0.7,
+        "applicability": {
+          "scenario_ids": [
+            "arrival",
+            "departure"
+          ],
+          "predicates": [
+            {
+              "kind": "world_context",
+              "tag": "glasswind"
+            }
+          ]
+        },
+        "origin": "authored",
+        "review": "not_required",
+        "source_ids": [
+          "weave_expression_authored_fixture"
+        ]
+      }
+    }
+  ],
+  "rationale": "Add one original phrase through the normalized authoring path.",
+  "provenance": {
+    "sources": [
+      {
+        "id": "weave_expression_authored_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "expression-dialogue-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic expression revision and phrase.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "mutations": [
+        "weave_expression_authored_fixture"
+      ]
+    }
+  }
+}

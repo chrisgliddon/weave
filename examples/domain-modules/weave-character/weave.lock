@@ -3,18 +3,18 @@
   "modules": [
     {
       "id": "org.weave.character",
-      "version": "1.4.0",
-      "sha256": "c7e7b483861659505ddf76e8f734d5c12e1febfbfcc67b81e5cf60f0eedfeb48",
+      "version": "1.5.0",
+      "sha256": "bb2c07588b879b02ae4e16a8299cc486999947bd59a0e0655b864ab680de75b2",
       "dependencies": []
     }
   ],
   "packs": [
     {
       "module_id": "org.weave.character",
-      "module_version": "1.4.0",
+      "module_version": "1.5.0",
       "pack_id": "ari_vale",
       "version": "1.0.0",
-      "sha256": "07cacd76244a575e43d8398cec5fcd2a0288809cb7d7eb123986d35f5653e7e9",
+      "sha256": "7319c0fedd6abaf469574f7cffb233275cc09dddcc68ea9df801e24c677d622e",
       "dependencies": []
     }
   ]

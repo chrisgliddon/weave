@@ -1,0 +1,5 @@
+{{speaker_name}} checks the route.
+{{speaker_name}} marks {{date_label}} with a {{waymark}}.
+{{speaker_name}} greets {{listener_name}} at {{world_place}} and names their {{relationship_kind}} a {{waymark}}.
+{{speaker_name}} offers a {{waymark}} and leaves the first turn open.
+{{speaker_name}} calls {{world_place}} a {{waymark}} before stepping in.

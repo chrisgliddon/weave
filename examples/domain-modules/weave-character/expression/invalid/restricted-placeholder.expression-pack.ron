@@ -1,0 +1,360 @@
+(
+    pack_format_version: 1,
+    id: "org.weave.expression.glasswind",
+    version: "1.0.0",
+    title: "Glasswind Expression Reference Pack",
+    description: "Original neutral lexicon, preference, behavior, voice, and dialogue examples for deterministic offline Character tooling.",
+    independently_authored: true,
+    license: "MIT",
+    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+    eligibility: (
+        compatible_profile_versions: [
+            1,
+        ],
+    ),
+    entries: {
+        "avoid_crowded_metaphors": (
+            id: "avoid_crowded_metaphors",
+            label: "Avoid crowded metaphors",
+            description: "Keeps a single concrete image in one short passage.",
+            value: (
+                kind: "voice_constraint",
+                category: "org.weave.expression.clarity",
+                medium: both,
+                effect: avoid,
+                target: "crowded metaphors",
+                instruction: "Use at most one concrete image in a short passage.",
+            ),
+            strength: 0.8,
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+        "pauses_to_map": (
+            id: "pauses_to_map",
+            label: "Pauses to map",
+            description: "A small planning behavior for a wholly fictional character.",
+            value: (
+                kind: "behavioral_signature",
+                category: "org.weave.expression.behavior",
+                cue: "Pauses to sketch a route before choosing a direction.",
+            ),
+            strength: 0.75,
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+        "prefers_shared_landmarks": (
+            id: "prefers_shared_landmarks",
+            label: "Prefers shared landmarks",
+            description: "A categorized communication preference.",
+            value: (
+                kind: "preference",
+                category: "org.weave.preference.communication",
+                target: "shared landmarks",
+                polarity: prefer,
+            ),
+            strength: 0.7,
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+        "steady_question": (
+            id: "steady_question",
+            label: "Steady question",
+            description: "A short reusable phrase for calm invitations.",
+            value: (
+                kind: "term",
+                category: "org.weave.expression.navigation",
+                term_kind: phrase,
+                surface: "steady question",
+            ),
+            strength: 0.65,
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+        "trailmark": (
+            id: "trailmark",
+            label: "Trailmark",
+            description: "A synthetic navigation term for template substitution.",
+            value: (
+                kind: "term",
+                category: "org.weave.expression.navigation",
+                term_kind: term,
+                surface: "trailmark",
+            ),
+            strength: 0.9,
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+    },
+    vocabulary_pools: {
+        "wayfinding_terms": (
+            id: "wayfinding_terms",
+            category: "org.weave.expression.navigation",
+            entry_ids: [
+                "steady_question",
+                "trailmark",
+            ],
+            applicability: (),
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+        ),
+    },
+    templates: {
+        "arrival_greeting": (
+            id: "arrival_greeting",
+            scenario_id: "arrival",
+            speaker_requirement: (
+                kind: "assigned_character",
+            ),
+            placeholders: {
+                "date_label": (
+                    id: "date_label",
+                    value: (
+                        kind: "date_label",
+                    ),
+                    required: false,
+                ),
+                "listener_name": (
+                    id: "listener_name",
+                    value: (
+                        kind: "listener_display_name",
+                    ),
+                    required: false,
+                ),
+                "relationship_kind": (
+                    id: "relationship_kind",
+                    value: (
+                        kind: "relationship_kind",
+                    ),
+                    required: false,
+                ),
+                "secret_token": (
+                    id: "secret_token",
+                    value: (
+                        kind: "speaker_display_name",
+                    ),
+                    required: false,
+                ),
+                "speaker_name": (
+                    id: "speaker_name",
+                    value: (
+                        kind: "speaker_display_name",
+                    ),
+                    required: true,
+                ),
+                "waymark": (
+                    id: "waymark",
+                    value: (
+                        kind: "lexicon_term",
+                        term_id: "trailmark",
+                    ),
+                    required: false,
+                ),
+                "world_place": (
+                    id: "world_place",
+                    value: (
+                        kind: "world_place_name",
+                    ),
+                    required: false,
+                ),
+            },
+            variants: {
+                "fallback": (
+                    id: "fallback",
+                    content: "{{speaker_name}} reveals {{secret_token}}.",
+                    priority: 0,
+                    authority: authored,
+                    review: not_required,
+                    applicability: (),
+                    source: (
+                        source_id: "expression/glasswind-arrival.txt",
+                        line: 6,
+                        column: 1,
+                    ),
+                    source_ids: [
+                        "weave_expression_glasswind_original",
+                    ],
+                ),
+                "festival_arrival": (
+                    id: "festival_arrival",
+                    content: "{{speaker_name}} marks {{date_label}} with a {{waymark}}.",
+                    priority: 15,
+                    authority: reviewed,
+                    review: accepted,
+                    applicability: (
+                        scenario_ids: [
+                            "arrival",
+                        ],
+                        predicates: [
+                            (
+                                kind: "date_context",
+                                cue_id: "harbor_festival",
+                            ),
+                        ],
+                    ),
+                    source: (
+                        source_id: "expression/glasswind-arrival.txt",
+                        line: 2,
+                        column: 1,
+                    ),
+                    source_ids: [
+                        "weave_expression_glasswind_original",
+                    ],
+                ),
+                "friend_at_stormwatch": (
+                    id: "friend_at_stormwatch",
+                    content: "{{speaker_name}} greets {{listener_name}} at {{world_place}} and names their {{relationship_kind}} a {{waymark}}.",
+                    priority: 30,
+                    authority: authored,
+                    review: not_required,
+                    applicability: (
+                        scenario_ids: [
+                            "arrival",
+                        ],
+                        predicates: [
+                            (
+                                kind: "relationship",
+                                relationship_kind_id: "org.weave.relationship.friend",
+                                other_character_id: Some("org.weave.character.tavi_quill"),
+                            ),
+                        ],
+                    ),
+                    source: (
+                        source_id: "expression/glasswind-arrival.txt",
+                        line: 3,
+                        column: 1,
+                    ),
+                    source_ids: [
+                        "weave_expression_glasswind_original",
+                    ],
+                ),
+                "open_arrival": (
+                    id: "open_arrival",
+                    content: "{{speaker_name}} offers a {{waymark}} and leaves the first turn open.",
+                    priority: 20,
+                    authority: reviewed,
+                    review: accepted,
+                    applicability: (
+                        scenario_ids: [
+                            "arrival",
+                        ],
+                        predicates: [
+                            (
+                                kind: "personality_band",
+                                trait_id: openness,
+                                bands: [
+                                    high,
+                                    very_high,
+                                ],
+                            ),
+                        ],
+                    ),
+                    source: (
+                        source_id: "expression/glasswind-arrival.txt",
+                        line: 4,
+                        column: 1,
+                    ),
+                    source_ids: [
+                        "weave_expression_glasswind_original",
+                    ],
+                ),
+                "stormwatch_arrival": (
+                    id: "stormwatch_arrival",
+                    content: "{{speaker_name}} calls {{world_place}} a {{waymark}} before stepping in.",
+                    priority: 10,
+                    authority: reviewed,
+                    review: accepted,
+                    applicability: (
+                        scenario_ids: [
+                            "arrival",
+                        ],
+                        predicates: [
+                            (
+                                kind: "world_context",
+                                tag: "stormwatch",
+                            ),
+                        ],
+                    ),
+                    source: (
+                        source_id: "expression/glasswind-arrival.txt",
+                        line: 5,
+                        column: 1,
+                    ),
+                    source_ids: [
+                        "weave_expression_glasswind_original",
+                    ],
+                ),
+            },
+            fallback_variant_id: "fallback",
+            source_ids: [
+                "weave_expression_glasswind_original",
+            ],
+            limitations: [
+                "Expression records are authored fictional guidance, not generated prose, diagnosis, identity inference, or objective personality evidence.",
+            ],
+        ),
+    },
+    coverage: (
+        minimum_terms: 2,
+        minimum_preferences: 1,
+        minimum_behavioral_signatures: 1,
+        minimum_voice_constraints: 1,
+        required_categories: [
+            "org.weave.expression.behavior",
+            "org.weave.expression.clarity",
+            "org.weave.expression.navigation",
+            "org.weave.preference.communication",
+        ],
+        required_scenario_ids: [
+            "arrival",
+        ],
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "weave_expression_glasswind_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "expression-dialogue-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                modified: false,
+            ),
+        ],
+        transformations: [],
+        claims: {
+            "entries": [
+                "weave_expression_glasswind_original",
+            ],
+            "templates": [
+                "weave_expression_glasswind_original",
+            ],
+        },
+    ),
+)

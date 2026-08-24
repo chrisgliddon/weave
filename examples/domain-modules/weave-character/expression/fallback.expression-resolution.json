@@ -1,0 +1,73 @@
+{
+  "resolution_format_version": 1,
+  "id": "org.weave.character.expression.resolution.ari_fallback.resolution",
+  "profile_sha256": "4358fb647383b35e2200e5289776613eba922658e79203137cdcf8b18748b15a",
+  "pack": {
+    "id": "org.weave.expression.glasswind",
+    "version": "1.0.0",
+    "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+  },
+  "request": {
+    "request_format_version": 1,
+    "id": "org.weave.character.expression.resolution.ari_fallback",
+    "assignment_id": "arrival_greeting",
+    "scenario_id": "arrival",
+    "speaker_character_id": "org.weave.character.ari_vale",
+    "seed": 42
+  },
+  "request_sha256": "1f0de1bf6303ba4c4a7a7403c2c13945469c9b70bed2e860bab0c38a8ecd64be",
+  "template_id": "arrival_greeting",
+  "selected_variant_id": "fallback",
+  "fallback_used": true,
+  "rendered_text": "Ari Vale checks the route.",
+  "substitutions": {
+    "speaker_name": "Ari Vale"
+  },
+  "trace": [
+    {
+      "variant_id": "fallback",
+      "authority": "authored",
+      "priority": 0,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "a08d03d40311f1423fe363a7057368c33511051d20a3257a9fd9cc7d8e137c2c",
+      "reason": "stable fallback retained"
+    },
+    {
+      "variant_id": "festival_arrival",
+      "authority": "reviewed",
+      "priority": 15,
+      "applicable": false,
+      "placeholders_available": false,
+      "seeded_sha256": "a60a518d33b6182f07bd0fd3de1c5e01ab8a6378a70874d96939144a1a2bd7bd",
+      "reason": "context predicates did not match"
+    },
+    {
+      "variant_id": "friend_at_stormwatch",
+      "authority": "authored",
+      "priority": 30,
+      "applicable": false,
+      "placeholders_available": false,
+      "seeded_sha256": "cd9b446e5557b0d54f4c5e48d313b3bcc684ed61751c259c3d632b3eb931130e",
+      "reason": "context predicates did not match"
+    },
+    {
+      "variant_id": "open_arrival",
+      "authority": "reviewed",
+      "priority": 20,
+      "applicable": false,
+      "placeholders_available": true,
+      "seeded_sha256": "3b9e39a19bcd1c91bcdf4de3f3271e7547f61ebbdc7b6928570a857297d659c9",
+      "reason": "context predicates did not match"
+    },
+    {
+      "variant_id": "stormwatch_arrival",
+      "authority": "reviewed",
+      "priority": 10,
+      "applicable": false,
+      "placeholders_available": false,
+      "seeded_sha256": "1fd1efe71aef0fb8f66b522231263329e14a22295ab760747c480c0c3be941ba",
+      "reason": "context predicates did not match"
+    }
+  ]
+}

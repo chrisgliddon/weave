@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "ExpressionRuntimeParticipant": {
+      "additionalProperties": false,
+      "description": "Explicit listener data; no open variable or metadata map is accepted.",
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "character_id",
+        "display_name"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-expression-resolution-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Deterministic dialogue resolution request with only typed, public runtime context.",
+  "properties": {
+    "assignment_id": {
+      "type": "string"
+    },
+    "date_context_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "date_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "listener": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExpressionRuntimeParticipant"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "relationship_kind_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "request_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "speaker_character_id": {
+      "type": "string"
+    },
+    "world_context_tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "world_place_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "request_format_version",
+    "id",
+    "assignment_id",
+    "scenario_id",
+    "speaker_character_id",
+    "seed"
+  ],
+  "title": "Weave Character Expression Resolution Request v1",
+  "type": "object",
+  "x-weave-character-expression-contract-version": 1
+}

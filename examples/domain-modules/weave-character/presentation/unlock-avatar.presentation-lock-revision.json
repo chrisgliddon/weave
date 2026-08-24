@@ -1,7 +1,7 @@
 {
   "revision_format_version": 1,
   "id": "org.weave.character.presentation.unlock_ari_avatar",
-  "expected_input_sha256": "9fdf8030061b1f6c5e04c35d96ec2de2708440b107be32048fa942bb890f05d8",
+  "expected_input_sha256": "65e68cfab4776ea450caae37e8990f207aa666399e0e94ae60e8e97c51bee67a",
   "targets": [
     {
       "character_id": "org.weave.character.ari_vale",

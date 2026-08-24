@@ -4,21 +4,23 @@ use std::fmt;
 use semver::Version;
 use weave_domain::{DomainValue, Provenance, validate_provenance};
 
+use crate::expression::{
+    validate_behavioral_signature_data, validate_expression_data, validate_expression_profile_links,
+};
 use crate::model::{
-    AlignmentPackRef, AlignmentView, AppearanceDescriptor, Attributed, AuthoredNote,
-    BehavioralSignatures, BirthDate, CHARACTER_OVERLAY_FORMAT_VERSION,
-    CHARACTER_PROFILE_FORMAT_VERSION, CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar,
-    CharacterDiagnostic, CharacterDiagnosticCode, CharacterExtension, CharacterOperation,
-    CharacterOperationAction, CharacterOverlay, CharacterProfile, CharacterSuggestion,
-    CharacterTemplate, Confidence, DateContext, DateContextPackRef, DiagnosticSeverity,
-    ExpressionData, ExtensionHeader, ExtensionWriteBack, Freshness, HexacoProfile, HexacoTrait,
-    IdentityContextNote, IdentityPresentation, OceanView, OpaqueExtensionData,
-    OpaqueInterpretation, PresentationAssetReference, PresentationCatalogAssignment,
-    PresentationCatalogRef, PresentationCatalogValue, PresentationPalette, PronounSet,
-    RelationshipConsent, RelationshipConsentState, RelationshipDate, RelationshipEdge,
-    RelationshipEdgeOrigin, RelationshipEdges, RelationshipKindPackRef, ReviewState,
-    RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceDirection,
-    relationship_graph_format_version,
+    AlignmentPackRef, AlignmentView, AppearanceDescriptor, Attributed, AuthoredNote, BirthDate,
+    CHARACTER_OVERLAY_FORMAT_VERSION, CHARACTER_PROFILE_FORMAT_VERSION,
+    CHARACTER_TEMPLATE_FORMAT_VERSION, Calendar, CharacterDiagnostic, CharacterDiagnosticCode,
+    CharacterExtension, CharacterOperation, CharacterOperationAction, CharacterOverlay,
+    CharacterProfile, CharacterSuggestion, CharacterTemplate, Confidence, DateContext,
+    DateContextPackRef, DiagnosticSeverity, ExtensionHeader, ExtensionWriteBack, Freshness,
+    HexacoProfile, HexacoTrait, IdentityContextNote, IdentityPresentation, OceanView,
+    OpaqueExtensionData, OpaqueInterpretation, PresentationAssetReference,
+    PresentationCatalogAssignment, PresentationCatalogRef, PresentationCatalogValue,
+    PresentationPalette, PronounSet, RelationshipConsent, RelationshipConsentState,
+    RelationshipDate, RelationshipEdge, RelationshipEdgeOrigin, RelationshipEdges,
+    RelationshipKindPackRef, ReviewState, RoleProjections, TraitMeasurement, ValueState,
+    VersionedExtension, VoiceDirection, relationship_graph_format_version,
 };
 
 const MAX_TEXT: usize = 65_536;
@@ -98,6 +100,7 @@ pub fn validate_profile(profile: &CharacterProfile) -> Result<(), CharacterError
     for (namespace, extension) in &profile.extensions {
         validate_extension(namespace, extension, &profile.id, &lineage)?;
     }
+    validate_expression_profile_links(profile)?;
     if profile.suggestions.len() > 16_384 {
         return Err(invalid_value("suggestions", "too many suggestions"));
     }
@@ -381,11 +384,11 @@ fn validate_extension(
         }
         CharacterExtension::Expression(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_expression(namespace, &record.value)
+            validate_expression_data(namespace, profile_id, &record.value, lineage)
         }
         CharacterExtension::BehavioralSignatures(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
-            validate_behavioral_signatures(namespace, &record.value)
+            validate_behavioral_signature_data(namespace, profile_id, &record.value, lineage)
         }
         CharacterExtension::RoleProjections(record) => {
             validate_extension_record(namespace, record, lineage, false)?;
@@ -717,65 +720,6 @@ fn validate_presentation_catalog_assignment(
     validate_presentation_catalog_value(&format!("{path}.value"), &value.value)?;
     validate_sha256(&format!("{path}.proposal_sha256"), &value.proposal_sha256)?;
     validate_sha256(&format!("{path}.review_sha256"), &value.review_sha256)
-}
-
-fn validate_expression(namespace: &str, value: &ExpressionData) -> Result<(), CharacterError> {
-    for (id, term) in &value.lexicon {
-        let path = format!("extensions.{namespace}.value.lexicon.{id}");
-        validate_local_id(&path, id)?;
-        if term.id != *id {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                format!("{path}.id"),
-                "lexicon identifier must equal its containing map key",
-            ));
-        }
-        validate_namespaced_id(&format!("{path}.category"), &term.category)?;
-        validate_normalized_text(&format!("{path}.normalized"), &term.normalized)?;
-        validate_unit_interval(&format!("{path}.strength"), term.strength)?;
-    }
-    for (id, preference) in &value.preferences {
-        let path = format!("extensions.{namespace}.value.preferences.{id}");
-        validate_local_id(&path, id)?;
-        if preference.id != *id {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                format!("{path}.id"),
-                "preference identifier must equal its containing map key",
-            ));
-        }
-        validate_namespaced_id(&format!("{path}.category"), &preference.category)?;
-        validate_normalized_text(&format!("{path}.target"), &preference.target)?;
-        validate_unit_interval(&format!("{path}.strength"), preference.strength)?;
-    }
-    validate_sorted_namespaced_refs(
-        &format!("extensions.{namespace}.value.behavioral_signature_refs"),
-        &value.behavioral_signature_refs,
-    )?;
-    validate_sorted_namespaced_refs(
-        &format!("extensions.{namespace}.value.source_pack_refs"),
-        &value.source_pack_refs,
-    )
-}
-
-fn validate_behavioral_signatures(
-    namespace: &str,
-    value: &BehavioralSignatures,
-) -> Result<(), CharacterError> {
-    for (id, signature) in &value.signatures {
-        let path = format!("extensions.{namespace}.value.signatures.{id}");
-        validate_local_id(&path, id)?;
-        if signature.id != *id {
-            return Err(error(
-                CharacterDiagnosticCode::InvalidReference,
-                format!("{path}.id"),
-                "signature identifier must equal its containing map key",
-            ));
-        }
-        validate_text(&format!("{path}.cue"), &signature.cue, 1, 2_048)?;
-        validate_unit_interval(&format!("{path}.strength"), signature.strength)?;
-    }
-    Ok(())
 }
 
 fn validate_role_projections(
@@ -2003,20 +1947,6 @@ pub(crate) fn validate_text(
     let length = value.chars().count();
     if !(minimum..=maximum).contains(&length) || value.contains('\0') {
         return Err(invalid_value(path, "text length or contents are invalid"));
-    }
-    Ok(())
-}
-
-fn validate_normalized_text(path: &str, value: &str) -> Result<(), CharacterError> {
-    validate_text(path, value, 1, 1_024)?;
-    if value.trim() != value
-        || value.chars().any(char::is_uppercase)
-        || value.split_whitespace().collect::<Vec<_>>().join(" ") != value
-    {
-        return Err(invalid_value(
-            path,
-            "normalized text must be lowercase with canonical single spacing",
-        ));
     }
     Ok(())
 }

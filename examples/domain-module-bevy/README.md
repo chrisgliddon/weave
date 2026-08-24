@@ -6,9 +6,11 @@ through `weave-core`, inserts the results as Bevy resources, and reports them fr
 systems. The Character reader retains exact alignment pack/review/application fingerprints, reads
 only reviewed/edited/overridden narrative labels, proves rejected and withheld axes are absent,
 and reads attributed pronouns, palette accent, a safe avatar path, exact presentation catalog
-id/hash, visual tone, and the presentation lock. It verifies both alignment and presentation
-canonical personality write-back are false. It has no editor dependency and performs no artifact
-discovery at runtime.
+id/hash, visual tone, and the presentation lock. A separate `ExpressionReading` resource loads the
+normalized `trailmark` term, categorized preference, exact dialogue template/scenario, and pinned
+expression-pack id/version/hash. It verifies expression, alignment, and presentation canonical
+personality write-back are false. It has no editor dependency and performs no artifact discovery
+at runtime.
 
 Run it from the repository root:
 

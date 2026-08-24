@@ -6,6 +6,7 @@ import { decodeDomainValue, readModuleExport } from "../src/domain-values.js";
 import {
   alignmentCharacterPresentation,
   characterPresentation,
+  expressionCharacterPresentation,
   identityCharacterPresentation,
   relationshipCharacterPresentation,
   temporalCharacterPresentation,
@@ -211,6 +212,42 @@ test("queries layered Character relationships without treating affinity as canon
       },
     ],
   });
+});
+
+test("reads observable normalized expression, voice, preference, and exact template links", async () => {
+  const story = JSON.parse(await readFile(characterUrl, "utf8"));
+  const expression = expressionCharacterPresentation(story);
+  assert.deepEqual(
+    { ...expression, template: { ...expression.template, pack: undefined } },
+    {
+      term: {
+        id: "trailmark",
+        surface: "trailmark",
+        normalized: "trailmark",
+        origin: "pack_assigned",
+      },
+      preference: {
+        id: "clear_questions",
+        target: "clear questions",
+        polarity: "prefer",
+      },
+      voice: {
+        id: "prefer_clear_questions",
+        instruction: "Ask one clear question after a short observation.",
+        medium: "both",
+        effect: "prefer",
+      },
+      template: {
+        id: "arrival_greeting",
+        scenarioId: "arrival",
+        pack: undefined,
+      },
+      canonicalPersonalityWriteBack: false,
+    },
+  );
+  assert.equal(expression.template.pack.id, "org.weave.expression.glasswind");
+  assert.equal(expression.template.pack.version, "1.0.0");
+  assert.match(expression.template.pack.sha256, /^[0-9a-f]{64}$/u);
 });
 
 test("reads reviewed temporal cues with separate fact and fictional-cue lineage", async () => {

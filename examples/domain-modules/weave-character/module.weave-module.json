@@ -2,10 +2,10 @@
   "contract_version": 1,
   "pack_format_version": 1,
   "id": "org.weave.character",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "namespace": "character",
   "title": "Weave Character",
-  "summary": "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
+  "summary": "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.",
   "authors": [
     {
       "name": "Weave Contributors",
@@ -616,6 +616,589 @@
           },
           "required": true,
           "description": "Exact temporal context pack version."
+        }
+      }
+    },
+    "CharacterExpression": {
+      "kind": "object",
+      "fields": {
+        "behavioral_signature_refs": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 3,
+              "max_length": 512
+            },
+            "min_items": 0,
+            "max_items": 16384
+          },
+          "required": true,
+          "description": "Explicit links to projected behavioral signatures."
+        },
+        "behavioral_signatures": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Behavioral signatures keyed by stable id."
+        },
+        "canonical_personality_write_back": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Always false; expression cannot modify canonical personality evidence."
+        },
+        "character_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Exact Character owner."
+        },
+        "expression_format_version": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 1.0,
+            "maximum": 1.0
+          },
+          "required": true,
+          "description": "Exact expression value version."
+        },
+        "lexicon": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Normalized terms and phrases."
+        },
+        "preferences": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Categorized expression preferences."
+        },
+        "source_packs": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "CharacterExpressionPack"
+            },
+            "min_items": 0,
+            "max_items": 4096
+          },
+          "required": true,
+          "description": "Exact expression-pack coordinates retained by accepted assignments."
+        },
+        "template_assignments": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Reviewed exact dialogue-template links."
+        },
+        "vocabulary_pools": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Reusable normalized vocabulary pools."
+        },
+        "voice_constraints": {
+          "type": {
+            "kind": "map",
+            "values": {
+              "kind": "named",
+              "name": "CharacterExpressionRecord"
+            },
+            "min_entries": 0,
+            "max_entries": 16384
+          },
+          "required": true,
+          "description": "Authored speech and writing constraints."
+        }
+      }
+    },
+    "CharacterExpressionApplicability": {
+      "kind": "object",
+      "fields": {
+        "predicates": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "CharacterExpressionPredicate"
+            },
+            "min_items": 0,
+            "max_items": 128
+          },
+          "required": true,
+          "description": "Typed predicates; every predicate must match for runtime applicability."
+        },
+        "scenario_ids": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 128
+            },
+            "min_items": 0,
+            "max_items": 4096
+          },
+          "required": true,
+          "description": "Sorted scenario allowlist; empty means every scenario."
+        }
+      }
+    },
+    "CharacterExpressionPack": {
+      "kind": "object",
+      "fields": {
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Exact expression-pack identity."
+        },
+        "sha256": {
+          "type": {
+            "kind": "string",
+            "min_length": 64,
+            "max_length": 64
+          },
+          "required": true,
+          "description": "Exact expression-pack content SHA-256."
+        },
+        "version": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Exact expression-pack semantic version."
+        }
+      }
+    },
+    "CharacterExpressionPredicate": {
+      "kind": "object",
+      "fields": {
+        "bands": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "symbol",
+              "values": [
+                "high",
+                "low",
+                "middle",
+                "very_high",
+                "very_low"
+              ]
+            },
+            "min_items": 1,
+            "max_items": 5
+          },
+          "required": false,
+          "description": "Allowed personality bands when kind is personality_band."
+        },
+        "cue_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": false,
+          "description": "Reviewed date-context cue when kind is date_context."
+        },
+        "kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "date_context",
+              "personality_band",
+              "relationship",
+              "world_context"
+            ]
+          },
+          "required": true,
+          "description": "Closed expression applicability predicate kind."
+        },
+        "other_character_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": false,
+          "description": "Optional exact relationship counterpart."
+        },
+        "relationship_kind_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": false,
+          "description": "Exact relationship kind when kind is relationship."
+        },
+        "tag": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": false,
+          "description": "World-context tag when kind is world_context."
+        },
+        "trait_id": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "aesthetic_appreciation",
+              "agreeableness",
+              "anxiety",
+              "conscientiousness",
+              "creativity",
+              "dependence",
+              "diligence",
+              "emotionality",
+              "extraversion",
+              "fairness",
+              "fearfulness",
+              "flexibility",
+              "forgivingness",
+              "gentleness",
+              "greed_avoidance",
+              "honesty_humility",
+              "inquisitiveness",
+              "liveliness",
+              "modesty",
+              "openness",
+              "organization",
+              "patience",
+              "perfectionism",
+              "prudence",
+              "sentimentality",
+              "sincerity",
+              "sociability",
+              "social_boldness",
+              "social_self_esteem",
+              "unconventionality"
+            ]
+          },
+          "required": false,
+          "description": "Canonical HEXACO factor or facet when kind is personality_band."
+        }
+      }
+    },
+    "CharacterExpressionRecord": {
+      "kind": "object",
+      "fields": {
+        "applicability": {
+          "type": {
+            "kind": "named",
+            "name": "CharacterExpressionApplicability"
+          },
+          "required": true,
+          "description": "Deterministic scenario and context applicability."
+        },
+        "category": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Namespaced expression category."
+        },
+        "character_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 3,
+            "max_length": 256
+          },
+          "required": true,
+          "description": "Exact Character owner."
+        },
+        "constraint_effect": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "avoid",
+              "prefer"
+            ]
+          },
+          "required": false,
+          "description": "Voice-constraint direction."
+        },
+        "cue": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 2048
+          },
+          "required": false,
+          "description": "Authored behavioral cue."
+        },
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Stable local expression record id."
+        },
+        "instruction": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 2048
+          },
+          "required": false,
+          "description": "Authored voice instruction."
+        },
+        "lock": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "locked",
+              "unlocked"
+            ]
+          },
+          "required": false,
+          "description": "Template-assignment lock state."
+        },
+        "medium": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "both",
+              "speech",
+              "writing"
+            ]
+          },
+          "required": false,
+          "description": "Speech or writing medium for a voice constraint."
+        },
+        "normalized": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": false,
+          "description": "Normalized lexicon comparison form."
+        },
+        "origin": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "authored",
+              "imported",
+              "pack_assigned",
+              "reviewed_suggestion",
+              "suggested"
+            ]
+          },
+          "required": true,
+          "description": "Explicit record authority and entry path."
+        },
+        "pack": {
+          "type": {
+            "kind": "named",
+            "name": "CharacterExpressionPack"
+          },
+          "required": false,
+          "description": "Exact dialogue-template pack coordinate."
+        },
+        "polarity": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "avoid",
+              "prefer"
+            ]
+          },
+          "required": false,
+          "description": "Categorized preference direction."
+        },
+        "rationale": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 2048
+          },
+          "required": false,
+          "description": "Authorship or review rationale."
+        },
+        "record_kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "behavioral_signature",
+              "preference",
+              "template_assignment",
+              "term",
+              "vocabulary_pool",
+              "voice_constraint"
+            ]
+          },
+          "required": true,
+          "description": "Closed expression record family."
+        },
+        "review": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "accepted",
+              "not_required",
+              "pending",
+              "rejected"
+            ]
+          },
+          "required": true,
+          "description": "Editorial review state."
+        },
+        "scenario_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": false,
+          "description": "Assigned dialogue scenario id."
+        },
+        "source_ids": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 256
+            },
+            "min_items": 1,
+            "max_items": 4096
+          },
+          "required": true,
+          "description": "Sorted public provenance ids."
+        },
+        "state": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "authored",
+              "derived",
+              "imported",
+              "overridden",
+              "reviewed",
+              "suggested"
+            ]
+          },
+          "required": false,
+          "description": "Template-assignment value state."
+        },
+        "strength": {
+          "type": {
+            "kind": "number",
+            "integer": false,
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "required": false,
+          "description": "Explicit expression strength in the closed unit interval."
+        },
+        "surface": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": false,
+          "description": "Authored lexicon surface text."
+        },
+        "target": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": false,
+          "description": "Normalized preference or constraint target."
+        },
+        "template_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": false,
+          "description": "Exact dialogue template id."
+        },
+        "term_ids": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 128
+            },
+            "min_items": 1,
+            "max_items": 4096
+          },
+          "required": false,
+          "description": "Sorted normalized term ids in a vocabulary pool."
+        },
+        "term_kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "phrase",
+              "term"
+            ]
+          },
+          "required": false,
+          "description": "Normalized lexicon term kind."
         }
       }
     },
@@ -1628,6 +2211,14 @@
           },
           "required": false,
           "description": "Optional reviewed, non-causal temporal authoring context."
+        },
+        "expression": {
+          "type": {
+            "kind": "named",
+            "name": "CharacterExpression"
+          },
+          "required": false,
+          "description": "Optional normalized expression records and exact deterministic dialogue links."
         },
         "hexaco": {
           "type": {
@@ -2823,6 +3414,13 @@
           "date_context"
         ],
         "reason": "Reviewed temporal cues retain exact lineage and remain non-causal read-only context; canonical authoring requires a separate reviewed operation."
+      },
+      {
+        "path": [
+          "profile",
+          "expression"
+        ],
+        "reason": "Normalized expression records and exact dialogue-template assignments are changed only through a fingerprinted expression revision or explicit public-pack assignment."
       },
       {
         "path": [

@@ -1,0 +1,950 @@
+{
+  "$defs": {
+    "BehavioralSignature": {
+      "additionalProperties": false,
+      "description": "One normalized behavioral signature.",
+      "properties": {
+        "applicability": {
+          "$ref": "#/$defs/ExpressionApplicability"
+        },
+        "category": {
+          "type": "string"
+        },
+        "character_id": {
+          "type": "string"
+        },
+        "cue": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/ExpressionRecordOrigin"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "category",
+        "cue",
+        "strength",
+        "applicability",
+        "origin",
+        "review",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "ExpressionApplicability": {
+      "additionalProperties": false,
+      "description": "Typed applicability shared by terms, preferences, signatures, and constraints.",
+      "properties": {
+        "predicates": {
+          "description": "All predicates must match. Missing optional context makes the record inapplicable.",
+          "items": {
+            "$ref": "#/$defs/ExpressionContextPredicate"
+          },
+          "type": "array"
+        },
+        "scenario_ids": {
+          "description": "Empty means every scenario; otherwise these stable ids are an allowlist.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ExpressionConstraintEffect": {
+      "description": "Whether a normalized target is preferred or avoided by a voice constraint.",
+      "enum": [
+        "prefer",
+        "avoid"
+      ],
+      "type": "string"
+    },
+    "ExpressionContextPredicate": {
+      "description": "Closed, provider-free context predicates for expression and dialogue variants.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bands": {
+              "items": {
+                "$ref": "#/$defs/TraitBand"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "const": "personality_band",
+              "type": "string"
+            },
+            "trait_id": {
+              "$ref": "#/$defs/HexacoTrait"
+            }
+          },
+          "required": [
+            "kind",
+            "trait_id",
+            "bands"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "relationship",
+              "type": "string"
+            },
+            "other_character_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "relationship_kind_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "relationship_kind_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cue_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "date_context",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "cue_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "world_context",
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "tag"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ExpressionMedium": {
+      "description": "Medium affected by a reusable voice constraint.",
+      "enum": [
+        "speech",
+        "writing",
+        "both"
+      ],
+      "type": "string"
+    },
+    "ExpressionMutation": {
+      "description": "Atomic expression mutation. One revision cannot target the same record twice.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_term",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/NormalizedExpressionTerm"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_preference",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/NormalizedPreference"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_vocabulary_pool",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ExpressionVocabularyPool"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_behavioral_signature",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/BehavioralSignature"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_voice_constraint",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ExpressionVoiceConstraint"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "upsert_template_assignment",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ExpressionTemplateAssignment"
+            }
+          },
+          "required": [
+            "action",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "const": "remove",
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/ExpressionRecordKind"
+            }
+          },
+          "required": [
+            "action",
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ExpressionPackRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable public expression-pack coordinate.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "ExpressionRecordKind": {
+      "description": "Stable record families exposed by list, show, revision, and coverage operations.",
+      "enum": [
+        "term",
+        "preference",
+        "vocabulary_pool",
+        "behavioral_signature",
+        "voice_constraint",
+        "template_assignment"
+      ],
+      "type": "string"
+    },
+    "ExpressionRecordOrigin": {
+      "description": "How one expression record entered the character extension.",
+      "enum": [
+        "authored",
+        "imported",
+        "pack_assigned",
+        "suggested",
+        "reviewed_suggestion"
+      ],
+      "type": "string"
+    },
+    "ExpressionTemplateAssignment": {
+      "additionalProperties": false,
+      "description": "One reviewed link from a character to a reusable dialogue template in an exact pack.",
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lock": {
+          "$ref": "#/$defs/LockState"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpressionPackRef"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "scenario_id": {
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/ValueState"
+        },
+        "template_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "scenario_id",
+        "pack",
+        "template_id",
+        "state",
+        "review",
+        "lock",
+        "source_ids",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "ExpressionTermKind": {
+      "description": "Whether a normalized lexicon record is one word or a reusable phrase.",
+      "enum": [
+        "term",
+        "phrase"
+      ],
+      "type": "string"
+    },
+    "ExpressionVocabularyPool": {
+      "additionalProperties": false,
+      "description": "Reusable, categorized pool of normalized lexicon records.",
+      "properties": {
+        "applicability": {
+          "$ref": "#/$defs/ExpressionApplicability"
+        },
+        "category": {
+          "type": "string"
+        },
+        "character_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/ExpressionRecordOrigin"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "term_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "category",
+        "term_ids",
+        "applicability",
+        "origin",
+        "review",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "ExpressionVoiceConstraint": {
+      "additionalProperties": false,
+      "description": "One authored speech or writing constraint.",
+      "properties": {
+        "applicability": {
+          "$ref": "#/$defs/ExpressionApplicability"
+        },
+        "category": {
+          "type": "string"
+        },
+        "character_id": {
+          "type": "string"
+        },
+        "effect": {
+          "$ref": "#/$defs/ExpressionConstraintEffect"
+        },
+        "id": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        },
+        "medium": {
+          "$ref": "#/$defs/ExpressionMedium"
+        },
+        "origin": {
+          "$ref": "#/$defs/ExpressionRecordOrigin"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "category",
+        "medium",
+        "effect",
+        "target",
+        "instruction",
+        "strength",
+        "applicability",
+        "origin",
+        "review",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "HexacoTrait": {
+      "description": "Stable identifiers for all six factors and 24 facets.",
+      "enum": [
+        "honesty_humility",
+        "sincerity",
+        "fairness",
+        "greed_avoidance",
+        "modesty",
+        "emotionality",
+        "fearfulness",
+        "anxiety",
+        "dependence",
+        "sentimentality",
+        "extraversion",
+        "social_self_esteem",
+        "social_boldness",
+        "sociability",
+        "liveliness",
+        "agreeableness",
+        "forgivingness",
+        "gentleness",
+        "flexibility",
+        "patience",
+        "conscientiousness",
+        "organization",
+        "diligence",
+        "perfectionism",
+        "prudence",
+        "openness",
+        "aesthetic_appreciation",
+        "inquisitiveness",
+        "creativity",
+        "unconventionality"
+      ],
+      "type": "string"
+    },
+    "LockState": {
+      "description": "Author lock state.",
+      "enum": [
+        "unlocked",
+        "locked"
+      ],
+      "type": "string"
+    },
+    "NormalizedExpressionTerm": {
+      "additionalProperties": false,
+      "description": "One normalized lexicon entry.",
+      "properties": {
+        "applicability": {
+          "$ref": "#/$defs/ExpressionApplicability"
+        },
+        "category": {
+          "type": "string"
+        },
+        "character_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ExpressionTermKind"
+        },
+        "normalized": {
+          "description": "Lowercase, whitespace-collapsed comparison form produced by the normalizer.",
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/ExpressionRecordOrigin"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        },
+        "surface": {
+          "description": "Authored spelling retained for display and deterministic substitution.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "category",
+        "kind",
+        "surface",
+        "normalized",
+        "strength",
+        "applicability",
+        "origin",
+        "review",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "NormalizedPreference": {
+      "additionalProperties": false,
+      "description": "One normalized preference record.",
+      "properties": {
+        "applicability": {
+          "$ref": "#/$defs/ExpressionApplicability"
+        },
+        "category": {
+          "type": "string"
+        },
+        "character_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/ExpressionRecordOrigin"
+        },
+        "polarity": {
+          "$ref": "#/$defs/PreferencePolarity"
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strength": {
+          "format": "double",
+          "type": "number"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "category",
+        "target",
+        "polarity",
+        "strength",
+        "applicability",
+        "origin",
+        "review",
+        "source_ids"
+      ],
+      "type": "object"
+    },
+    "PreferencePolarity": {
+      "description": "Closed baseline preference direction.",
+      "enum": [
+        "prefer",
+        "avoid"
+      ],
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Machine-readable source lineage shared by manifests and packs.",
+      "properties": {
+        "claims": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Manifest or pack paths mapped to sorted source/transformation identifiers.",
+          "type": "object"
+        },
+        "sources": {
+          "description": "Public sources sorted by source identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceSource"
+          },
+          "type": "array"
+        },
+        "transformations": {
+          "description": "Documented transformations sorted by transformation identifier.",
+          "items": {
+            "$ref": "#/$defs/ProvenanceTransformation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "transformations",
+        "claims"
+      ],
+      "type": "object"
+    },
+    "ProvenanceKind": {
+      "description": "Source category used by provenance validation.",
+      "oneOf": [
+        {
+          "const": "original",
+          "description": "Original material authored for the artifact.",
+          "type": "string"
+        },
+        {
+          "const": "public_source",
+          "description": "Unmodified compatibly licensed public source.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Material derived from one or more declared sources.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvenanceSource": {
+      "additionalProperties": false,
+      "description": "One public or original source.",
+      "properties": {
+        "attribution": {
+          "description": "Attribution retained with redistributed data.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable source identifier within this artifact.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProvenanceKind",
+          "description": "Source category."
+        },
+        "license": {
+          "description": "SPDX license expression.",
+          "type": "string"
+        },
+        "license_url": {
+          "description": "HTTPS location of the applicable license text.",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Whether the artifact changes or derives from this source.",
+          "type": "boolean"
+        },
+        "revision": {
+          "description": "Immutable commit, tag, release, date, or authored revision.",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 for externally acquired source content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Public HTTPS source location.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "url",
+        "revision",
+        "license",
+        "license_url",
+        "attribution",
+        "modified"
+      ],
+      "type": "object"
+    },
+    "ProvenanceTransformation": {
+      "additionalProperties": false,
+      "description": "One reviewable transformation from declared inputs.",
+      "properties": {
+        "description": {
+          "description": "Human-readable, independently written transformation summary.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable transformation identifier.",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "Sorted source or prior-transformation identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "inputs",
+        "description"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "description": "Explicit editorial state.",
+      "enum": [
+        "not_required",
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "type": "string"
+    },
+    "TraitBand": {
+      "description": "Closed five-band trait vocabulary.",
+      "enum": [
+        "very_low",
+        "low",
+        "middle",
+        "high",
+        "very_high"
+      ],
+      "type": "string"
+    },
+    "ValueState": {
+      "description": "Distinguishable value states with deterministic precedence.",
+      "oneOf": [
+        {
+          "const": "suggested",
+          "description": "Unaccepted proposal; lowest precedence and never canonical personality evidence.",
+          "type": "string"
+        },
+        {
+          "const": "derived",
+          "description": "Mechanical projection; never independent evidence and never writable to canon.",
+          "type": "string"
+        },
+        {
+          "const": "imported",
+          "description": "Value acquired from a declared external source.",
+          "type": "string"
+        },
+        {
+          "const": "reviewed",
+          "description": "Proposal or import explicitly accepted by a reviewer.",
+          "type": "string"
+        },
+        {
+          "const": "authored",
+          "description": "Direct author decision.",
+          "type": "string"
+        },
+        {
+          "const": "overridden",
+          "description": "Explicit replacement naming and fingerprinting the prior value; highest precedence.",
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "$id": "urn:weave:schema:character-expression-revision:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Fingerprinted direct add/edit/remove operation over one character expression layer.",
+  "properties": {
+    "character_id": {
+      "type": "string"
+    },
+    "expected_profile_sha256": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "mutations": {
+      "items": {
+        "$ref": "#/$defs/ExpressionMutation"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "revision_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision_format_version",
+    "id",
+    "character_id",
+    "expected_profile_sha256",
+    "mutations",
+    "rationale",
+    "provenance"
+  ],
+  "title": "Weave Character Expression Revision v1",
+  "type": "object",
+  "x-weave-character-expression-contract-version": 1
+}

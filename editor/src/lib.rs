@@ -6,6 +6,7 @@ pub mod character;
 pub mod character_authoring;
 pub mod character_presentation;
 pub mod domain;
+pub mod expression;
 pub mod graph;
 pub mod graph_view;
 pub mod node_renderers;
@@ -33,6 +34,7 @@ pub use domain::{
     DomainError, DomainSession, ModuleExportInspection, ModuleInspection,
     builtin_pattern_definitions,
 };
+pub use expression::ExpressionSession;
 pub use graph::{
     GraphConnectionError, GraphDocument, GraphEdge, GraphEdgeKind, GraphNode, GraphNodeKind,
     GraphPoint, GraphRect, GraphViewport, INTERACTIVE_FRAME_BUDGET_MS, NavigationDirection,

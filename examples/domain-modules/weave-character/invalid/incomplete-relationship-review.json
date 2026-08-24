@@ -310,7 +310,7 @@
       "rationale": "Accept one optional narrative suggestion after explicit human review."
     }
   },
-  "proposal_sha256": "38f590bce6026f727fe9cdf54c25e40f063ee956712b3dc4c5384d7c02df7fe4",
+  "proposal_sha256": "5ab3f5e223757f23ae7eed6462a83749990a1873f2cf2516d6fd7dd8d804befb",
   "rationale": "Review every deterministic candidate, preserve every rationale, and publish only explicit human decisions.",
   "review_format_version": 1,
   "reviewer": "org.weave.reviewer.fixture"

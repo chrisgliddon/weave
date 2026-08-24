@@ -1,0 +1,924 @@
+{
+  "profile_format_version": 1,
+  "id": "org.weave.character.ari_vale",
+  "canon": {
+    "identity": {
+      "display_name": {
+        "value": "Ari Vale",
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "character_original"
+        ]
+      },
+      "aliases": {
+        "value": [
+          "Ari",
+          "Vale"
+        ],
+        "state": "authored",
+        "confidence": "high",
+        "review": "not_required",
+        "lock": "unlocked",
+        "freshness": "current",
+        "lineage": [
+          "character_original"
+        ]
+      }
+    },
+    "birth_date": {
+      "value": {
+        "precision": "full",
+        "calendar": "proleptic_gregorian",
+        "year": 998,
+        "month": 3,
+        "day": 14
+      },
+      "state": "authored",
+      "confidence": "high",
+      "review": "not_required",
+      "lock": "unlocked",
+      "freshness": "current",
+      "lineage": [
+        "character_original"
+      ]
+    },
+    "personality": {
+      "honesty_humility": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.72
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "sincerity": {
+          "value": {
+            "form": "score",
+            "score": 0.76
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "fairness": {
+          "value": {
+            "form": "score",
+            "score": 0.81
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "greed_avoidance": {
+          "value": {
+            "form": "score",
+            "score": 0.66
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "modesty": {
+          "value": {
+            "form": "score",
+            "score": 0.65
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "emotionality": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.57
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "fearfulness": {
+          "value": {
+            "form": "score",
+            "score": 0.42
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "anxiety": {
+          "value": {
+            "form": "score",
+            "score": 0.58
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "dependence": {
+          "value": {
+            "form": "score",
+            "score": 0.49
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "sentimentality": {
+          "value": {
+            "form": "score",
+            "score": 0.79
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "extraversion": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.68
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "social_self_esteem": {
+          "value": {
+            "form": "score",
+            "score": 0.73
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "social_boldness": {
+          "value": {
+            "form": "score",
+            "score": 0.61
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "sociability": {
+          "value": {
+            "form": "score",
+            "score": 0.64
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "liveliness": {
+          "value": {
+            "form": "score",
+            "score": 0.74
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "agreeableness": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.63
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "forgivingness": {
+          "value": {
+            "form": "score",
+            "score": 0.55
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "gentleness": {
+          "value": {
+            "form": "score",
+            "score": 0.71
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "flexibility": {
+          "value": {
+            "form": "score",
+            "score": 0.59
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "patience": {
+          "value": {
+            "form": "score",
+            "score": 0.67
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "conscientiousness": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.78
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "organization": {
+          "value": {
+            "form": "score",
+            "score": 0.75
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "diligence": {
+          "value": {
+            "form": "score",
+            "score": 0.84
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "perfectionism": {
+          "value": {
+            "form": "score",
+            "score": 0.69
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "prudence": {
+          "value": {
+            "form": "score",
+            "score": 0.82
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "locked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      },
+      "openness": {
+        "factor": {
+          "value": {
+            "form": "score",
+            "score": 0.83
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "aesthetic_appreciation": {
+          "value": {
+            "form": "score",
+            "score": 0.88
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "inquisitiveness": {
+          "value": {
+            "form": "score",
+            "score": 0.81
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "creativity": {
+          "value": {
+            "form": "score",
+            "score": 0.86
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        },
+        "unconventionality": {
+          "value": {
+            "form": "score",
+            "score": 0.77
+          },
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      }
+    },
+    "inner_life": {
+      "keeps_promises": {
+        "id": "keeps_promises",
+        "category": "value",
+        "content": {
+          "value": "Promises become paths Ari can follow through uncertainty.",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      }
+    },
+    "voice": {
+      "measured_warmth": {
+        "id": "measured_warmth",
+        "category": "cadence",
+        "content": {
+          "value": "Short observations followed by one generous question.",
+          "state": "authored",
+          "confidence": "high",
+          "review": "not_required",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "character_original"
+          ]
+        }
+      }
+    }
+  },
+  "extensions": {
+    "org.weave.character.behavioral_signatures": {
+      "kind": "behavioral_signatures",
+      "record": {
+        "header": {
+          "namespace": "org.weave.character.behavioral_signatures",
+          "extension_version": 1,
+          "authority": "org.weave.character.expression.workflow",
+          "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture.",
+          "state": "reviewed",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "expression_revision_1a077a0239c55097",
+            "expression_revision_34c9e47de48f9cad",
+            "weave_expression_assignment_fixture",
+            "weave_expression_authored_fixture",
+            "weave_expression_glasswind_original"
+          ],
+          "canonical_personality_write_back": "forbidden"
+        },
+        "value": {
+          "character_id": "org.weave.character.ari_vale",
+          "signatures": {
+            "pauses_to_map": {
+              "id": "pauses_to_map",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.behavior",
+              "cue": "Pauses to sketch a route before choosing a direction.",
+              "strength": 0.75,
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          }
+        }
+      }
+    },
+    "org.weave.character.expression": {
+      "kind": "expression",
+      "record": {
+        "header": {
+          "namespace": "org.weave.character.expression",
+          "extension_version": 1,
+          "authority": "org.weave.character.expression.workflow",
+          "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture.",
+          "state": "reviewed",
+          "review": "accepted",
+          "lock": "unlocked",
+          "freshness": "current",
+          "lineage": [
+            "expression_revision_1a077a0239c55097",
+            "expression_revision_34c9e47de48f9cad",
+            "weave_expression_assignment_fixture",
+            "weave_expression_authored_fixture",
+            "weave_expression_glasswind_original"
+          ],
+          "canonical_personality_write_back": "forbidden"
+        },
+        "value": {
+          "character_id": "org.weave.character.ari_vale",
+          "lexicon": {
+            "lantern_turn": {
+              "id": "lantern_turn",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.navigation",
+              "kind": "phrase",
+              "surface": "Lantern Turn",
+              "normalized": "lantern turn",
+              "strength": 0.7,
+              "applicability": {
+                "scenario_ids": [
+                  "arrival",
+                  "departure"
+                ],
+                "predicates": [
+                  {
+                    "kind": "world_context",
+                    "tag": "glasswind"
+                  }
+                ]
+              },
+              "origin": "authored",
+              "review": "not_required",
+              "source_ids": [
+                "weave_expression_authored_fixture"
+              ]
+            },
+            "steady_question": {
+              "id": "steady_question",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.navigation",
+              "kind": "phrase",
+              "surface": "steady question",
+              "normalized": "steady question",
+              "strength": 0.65,
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            },
+            "trailmark": {
+              "id": "trailmark",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.navigation",
+              "kind": "term",
+              "surface": "trailmark",
+              "normalized": "trailmark",
+              "strength": 0.9,
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          },
+          "preferences": {
+            "prefers_shared_landmarks": {
+              "id": "prefers_shared_landmarks",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.preference.communication",
+              "target": "shared landmarks",
+              "polarity": "prefer",
+              "strength": 0.7,
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          },
+          "vocabulary_pools": {
+            "wayfinding_terms": {
+              "id": "wayfinding_terms",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.navigation",
+              "term_ids": [
+                "steady_question",
+                "trailmark"
+              ],
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          },
+          "voice_constraints": {
+            "avoid_crowded_metaphors": {
+              "id": "avoid_crowded_metaphors",
+              "character_id": "org.weave.character.ari_vale",
+              "category": "org.weave.expression.clarity",
+              "medium": "both",
+              "effect": "avoid",
+              "target": "crowded metaphors",
+              "instruction": "Use at most one concrete image in a short passage.",
+              "strength": 0.8,
+              "applicability": {},
+              "origin": "pack_assigned",
+              "review": "accepted",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          },
+          "template_assignments": {
+            "arrival_greeting": {
+              "id": "arrival_greeting",
+              "character_id": "org.weave.character.ari_vale",
+              "scenario_id": "arrival",
+              "pack": {
+                "id": "org.weave.expression.glasswind",
+                "version": "1.0.0",
+                "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+              },
+              "template_id": "arrival_greeting",
+              "state": "reviewed",
+              "review": "accepted",
+              "lock": "unlocked",
+              "source_ids": [
+                "weave_expression_glasswind_original"
+              ],
+              "rationale": "Accept every independently authored Glasswind expression record for the public offline fixture."
+            }
+          },
+          "behavioral_signature_refs": [
+            "org.weave.character.ari_vale.signature.pauses_to_map"
+          ],
+          "source_pack_refs": [
+            {
+              "id": "org.weave.expression.glasswind",
+              "version": "1.0.0",
+              "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "derived": {
+    "ocean": {
+      "algorithm": "weave_hexaco_to_ocean_compatibility",
+      "algorithm_version": 1,
+      "lossy": true,
+      "independent_evidence": false,
+      "openness": {
+        "score": 0.83,
+        "confidence": "high",
+        "input_paths": [
+          "canon.personality.openness.factor"
+        ]
+      },
+      "conscientiousness": {
+        "score": 0.78,
+        "confidence": "high",
+        "input_paths": [
+          "canon.personality.conscientiousness.factor"
+        ]
+      },
+      "extraversion": {
+        "score": 0.68,
+        "confidence": "high",
+        "input_paths": [
+          "canon.personality.extraversion.factor"
+        ]
+      },
+      "agreeableness": {
+        "score": 0.63,
+        "confidence": "high",
+        "input_paths": [
+          "canon.personality.agreeableness.factor"
+        ]
+      },
+      "neuroticism": {
+        "score": 0.57,
+        "confidence": "high",
+        "input_paths": [
+          "canon.personality.emotionality.factor"
+        ]
+      },
+      "omitted_factor": "honesty_humility"
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "character_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "character-contract-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic Weave Character contract fixture.",
+        "modified": false
+      },
+      {
+        "id": "weave_expression_assignment_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "expression-dialogue-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic reviewed expression-pack assignment.",
+        "modified": false
+      },
+      {
+        "id": "weave_expression_authored_fixture",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "expression-dialogue-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic expression revision and phrase.",
+        "modified": false
+      },
+      {
+        "id": "weave_expression_glasswind_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "expression-dialogue-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+        "modified": false
+      },
+      {
+        "id": "weave_glasswind_presentation",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "glasswind-presentation-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic Glasswind presentation catalog and vector assets.",
+        "modified": false
+      },
+      {
+        "id": "weave_relationship_reference_pack",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "relationship-graph-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original neutral relationship vocabulary, semantics, safeguards, and limitations.",
+        "modified": false
+      },
+      {
+        "id": "weave_wayfinder_compass",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "wayfinder-compass-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original Wayfinder Compass axes, neutral labels, fixed-point methodology, explanations, limitations, and synthetic calibration fixtures.",
+        "modified": false
+      }
+    ],
+    "transformations": [
+      {
+        "id": "alignment_apply_da2749184c01216c",
+        "inputs": [
+          "character_original",
+          "weave_wayfinder_compass"
+        ],
+        "description": "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon."
+      },
+      {
+        "id": "expression_revision_1a077a0239c55097",
+        "inputs": [
+          "weave_expression_authored_fixture"
+        ],
+        "description": "Applied one fingerprinted authored expression revision without changing canonical personality evidence."
+      },
+      {
+        "id": "expression_revision_34c9e47de48f9cad",
+        "inputs": [
+          "weave_expression_assignment_fixture",
+          "weave_expression_glasswind_original"
+        ],
+        "description": "Applied one fingerprinted authored expression revision without changing canonical personality evidence."
+      }
+    ],
+    "claims": {
+      "assets": [
+        "weave_glasswind_presentation"
+      ],
+      "assignment": [
+        "weave_expression_assignment_fixture"
+      ],
+      "axes": [
+        "weave_wayfinder_compass"
+      ],
+      "calibrations": [
+        "weave_wayfinder_compass"
+      ],
+      "entries": [
+        "weave_expression_glasswind_original",
+        "weave_glasswind_presentation"
+      ],
+      "extensions.expression": [
+        "expression_revision_1a077a0239c55097",
+        "expression_revision_34c9e47de48f9cad"
+      ],
+      "extensions.org.weave.character.alignment": [
+        "alignment_apply_da2749184c01216c"
+      ],
+      "extensions.org.weave.character.expression": [
+        "weave_expression_glasswind_original"
+      ],
+      "extensions.org.weave.character.relationships": [
+        "weave_relationship_reference_pack"
+      ],
+      "inputs": [
+        "weave_wayfinder_compass"
+      ],
+      "methodology": [
+        "weave_wayfinder_compass"
+      ],
+      "mutations": [
+        "weave_expression_authored_fixture"
+      ],
+      "profile": [
+        "character_original"
+      ],
+      "slots": [
+        "weave_glasswind_presentation"
+      ],
+      "templates": [
+        "weave_expression_glasswind_original"
+      ]
+    }
+  }
+}

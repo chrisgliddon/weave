@@ -532,15 +532,25 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        character_id: "org.weave.character.ari_vale",
                         signatures: {
                             "maps_before_moving": (
                                 id: "maps_before_moving",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.planning",
                                 cue: "Sketches a route before committing the group.",
                                 strength: 0.8,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
                             ),
                         },
                     ),
@@ -560,6 +570,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -587,32 +598,125 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        character_id: "org.weave.character.ari_vale",
                         lexicon: {
+                            "trailmark": (
+                                id: "trailmark",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.navigation",
+                                kind: term,
+                                surface: "trailmark",
+                                normalized: "trailmark",
+                                strength: 0.9,
+                                applicability: (),
+                                origin: pack_assigned,
+                                review: accepted,
+                                source_ids: [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                rationale: Some("Accept the original public reference-pack term for deterministic dialogue fixtures."),
+                            ),
                             "waymark": (
                                 id: "waymark",
+                                character_id: "org.weave.character.ari_vale",
                                 category: "org.weave.expression.navigation",
+                                kind: term,
+                                surface: "waymark",
                                 normalized: "waymark",
                                 strength: 0.8,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
                             ),
                         },
                         preferences: {
                             "clear_questions": (
                                 id: "clear_questions",
+                                character_id: "org.weave.character.ari_vale",
                                 category: "org.weave.preference.communication",
                                 target: "clear questions",
                                 polarity: prefer,
                                 strength: 0.9,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        vocabulary_pools: {
+                            "navigation_words": (
+                                id: "navigation_words",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.navigation",
+                                term_ids: [
+                                    "trailmark",
+                                    "waymark",
+                                ],
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        voice_constraints: {
+                            "prefer_clear_questions": (
+                                id: "prefer_clear_questions",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.clarity",
+                                medium: both,
+                                effect: prefer,
+                                target: "clear questions",
+                                instruction: "Ask one clear question after a short observation.",
+                                strength: 0.9,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        template_assignments: {
+                            "arrival_greeting": (
+                                id: "arrival_greeting",
+                                character_id: "org.weave.character.ari_vale",
+                                scenario_id: "arrival",
+                                pack: (
+                                    id: "org.weave.expression.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                ),
+                                template_id: "arrival_greeting",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                source_ids: [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                rationale: "Accept the original public arrival template for the synthetic runtime fixture.",
                             ),
                         },
                         behavioral_signature_refs: [
-                            "org.weave.signature.maps_before_moving",
+                            "org.weave.character.ari_vale.signature.maps_before_moving",
                         ],
                         source_pack_refs: [
-                            "org.weave.expression.glasswind",
+                            (
+                                id: "org.weave.expression.glasswind",
+                                version: "1.0.0",
+                                sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                            ),
                         ],
                     ),
                 ),
@@ -631,6 +735,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -659,6 +764,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -681,11 +787,13 @@
                                         content: "Explicit synthetic relationship context for portable tests.",
                                         lineage: [
                                             "character_original",
+                                            "weave_expression_glasswind_original",
                                         ],
                                     ),
                                 },
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 rationale: Some("Authored only for the public synthetic Character fixture."),
                             ),
@@ -707,6 +815,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -740,6 +849,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -836,6 +946,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_expression_glasswind_original",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "expression-dialogue-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                    modified: false,
+                ),
+                (
                     id: "weave_relationship_reference_pack",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -848,6 +968,9 @@
             ],
             transformations: [],
             claims: {
+                "extensions.org.weave.character.expression": [
+                    "weave_expression_glasswind_original",
+                ],
                 "extensions.org.weave.character.relationships": [
                     "weave_relationship_reference_pack",
                 ],
@@ -1248,7 +1371,7 @@
     proposal: (
         proposal_format_version: 1,
         profile_id: "org.weave.character.ari_vale",
-        profile_sha256: "5dcc3959add7711952f5d1a8baf9360c8091d43d41881f48402c6336e4290e18",
+        profile_sha256: "768f7d5ec917c2169cc4fb058d8b03fa56f9b599737da2ac5c7c49377e5c3e77",
         pack: (
             id: "org.weave.alignment.wayfinder_compass",
             version: "1.0.0",
@@ -1496,8 +1619,8 @@
     ),
     review: (
         review_format_version: 1,
-        proposal_sha256: "2abaa0e87caf8bd58a3306772051ccae24e59f8d85320b2c88fe7b700812020d",
-        profile_sha256: "5dcc3959add7711952f5d1a8baf9360c8091d43d41881f48402c6336e4290e18",
+        proposal_sha256: "bc95acb0fbbea08bca1d4ddc5e23c9424a0eacb40da0c4aa7da447fafd2db2cd",
+        profile_sha256: "768f7d5ec917c2169cc4fb058d8b03fa56f9b599737da2ac5c7c49377e5c3e77",
         pack_sha256: "148d3a6d97e62545285ccd8bdbe998f5dc576f3d8c89c430a340e403ca9ad442",
         reviewer: "org.weave.reviewer.fixture",
         rationale: "Review every original Wayfinder Compass axis independently; publish only approved fictional shorthand and never treat a label as diagnosis, moral rank, canonical evidence, or runtime authority.",
@@ -1541,10 +1664,10 @@
             ),
         },
     ),
-    proposal_sha256: "2abaa0e87caf8bd58a3306772051ccae24e59f8d85320b2c88fe7b700812020d",
-    review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
-    applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
-    output_profile_sha256: "4f22e17772bfa55ef80e8ecb3dbf6d644842d343d7075a58a73dc36676eafa80",
+    proposal_sha256: "bc95acb0fbbea08bca1d4ddc5e23c9424a0eacb40da0c4aa7da447fafd2db2cd",
+    review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+    applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
+    output_profile_sha256: "e76fed1da92267aa555de61d1eee3e2b3c19da07710a48f9fb7c8378224581d6",
     output_profile: (
         profile_format_version: 1,
         id: "org.weave.character.ari_vale",
@@ -2076,7 +2199,7 @@
                         lock: unlocked,
                         freshness: current,
                         lineage: [
-                            "alignment_apply_2171b3adb49f9384",
+                            "alignment_apply_da2749184c01216c",
                             "character_original",
                             "weave_wayfinder_compass",
                         ],
@@ -2140,8 +2263,8 @@
                             "canon.personality.openness.factor",
                             "canon.personality.openness.inquisitiveness",
                         ],
-                        review_sha256: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
-                        applied_sha256: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                        review_sha256: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
+                        applied_sha256: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                     ),
                 ),
             ),
@@ -2159,15 +2282,25 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        character_id: "org.weave.character.ari_vale",
                         signatures: {
                             "maps_before_moving": (
                                 id: "maps_before_moving",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.planning",
                                 cue: "Sketches a route before committing the group.",
                                 strength: 0.8,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
                             ),
                         },
                     ),
@@ -2187,6 +2320,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -2214,32 +2348,125 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
                     value: (
+                        character_id: "org.weave.character.ari_vale",
                         lexicon: {
+                            "trailmark": (
+                                id: "trailmark",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.navigation",
+                                kind: term,
+                                surface: "trailmark",
+                                normalized: "trailmark",
+                                strength: 0.9,
+                                applicability: (),
+                                origin: pack_assigned,
+                                review: accepted,
+                                source_ids: [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                rationale: Some("Accept the original public reference-pack term for deterministic dialogue fixtures."),
+                            ),
                             "waymark": (
                                 id: "waymark",
+                                character_id: "org.weave.character.ari_vale",
                                 category: "org.weave.expression.navigation",
+                                kind: term,
+                                surface: "waymark",
                                 normalized: "waymark",
                                 strength: 0.8,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
                             ),
                         },
                         preferences: {
                             "clear_questions": (
                                 id: "clear_questions",
+                                character_id: "org.weave.character.ari_vale",
                                 category: "org.weave.preference.communication",
                                 target: "clear questions",
                                 polarity: prefer,
                                 strength: 0.9,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        vocabulary_pools: {
+                            "navigation_words": (
+                                id: "navigation_words",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.navigation",
+                                term_ids: [
+                                    "trailmark",
+                                    "waymark",
+                                ],
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        voice_constraints: {
+                            "prefer_clear_questions": (
+                                id: "prefer_clear_questions",
+                                character_id: "org.weave.character.ari_vale",
+                                category: "org.weave.expression.clarity",
+                                medium: both,
+                                effect: prefer,
+                                target: "clear questions",
+                                instruction: "Ask one clear question after a short observation.",
+                                strength: 0.9,
+                                applicability: (),
+                                origin: authored,
+                                review: not_required,
+                                source_ids: [
+                                    "character_original",
+                                ],
+                            ),
+                        },
+                        template_assignments: {
+                            "arrival_greeting": (
+                                id: "arrival_greeting",
+                                character_id: "org.weave.character.ari_vale",
+                                scenario_id: "arrival",
+                                pack: (
+                                    id: "org.weave.expression.glasswind",
+                                    version: "1.0.0",
+                                    sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                ),
+                                template_id: "arrival_greeting",
+                                state: reviewed,
+                                review: accepted,
+                                lock: unlocked,
+                                source_ids: [
+                                    "weave_expression_glasswind_original",
+                                ],
+                                rationale: "Accept the original public arrival template for the synthetic runtime fixture.",
                             ),
                         },
                         behavioral_signature_refs: [
-                            "org.weave.signature.maps_before_moving",
+                            "org.weave.character.ari_vale.signature.maps_before_moving",
                         ],
                         source_pack_refs: [
-                            "org.weave.expression.glasswind",
+                            (
+                                id: "org.weave.expression.glasswind",
+                                version: "1.0.0",
+                                sha256: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                            ),
                         ],
                     ),
                 ),
@@ -2258,6 +2485,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -2286,6 +2514,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -2308,11 +2537,13 @@
                                         content: "Explicit synthetic relationship context for portable tests.",
                                         lineage: [
                                             "character_original",
+                                            "weave_expression_glasswind_original",
                                         ],
                                     ),
                                 },
                                 lineage: [
                                     "character_original",
+                                    "weave_expression_glasswind_original",
                                 ],
                                 rationale: Some("Authored only for the public synthetic Character fixture."),
                             ),
@@ -2334,6 +2565,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -2367,6 +2599,7 @@
                         freshness: current,
                         lineage: [
                             "character_original",
+                            "weave_expression_glasswind_original",
                         ],
                         canonical_personality_write_back: forbidden,
                     ),
@@ -2463,6 +2696,16 @@
                     modified: false,
                 ),
                 (
+                    id: "weave_expression_glasswind_original",
+                    kind: original,
+                    url: "https://github.com/chrisgliddon/weave",
+                    revision: "expression-dialogue-v1",
+                    license: "MIT",
+                    license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                    attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                    modified: false,
+                ),
+                (
                     id: "weave_relationship_reference_pack",
                     kind: original,
                     url: "https://github.com/chrisgliddon/weave",
@@ -2485,7 +2728,7 @@
             ],
             transformations: [
                 (
-                    id: "alignment_apply_2171b3adb49f9384",
+                    id: "alignment_apply_da2749184c01216c",
                     inputs: [
                         "character_original",
                         "weave_wayfinder_compass",
@@ -2501,7 +2744,10 @@
                     "weave_wayfinder_compass",
                 ],
                 "extensions.org.weave.character.alignment": [
-                    "alignment_apply_2171b3adb49f9384",
+                    "alignment_apply_da2749184c01216c",
+                ],
+                "extensions.org.weave.character.expression": [
+                    "weave_expression_glasswind_original",
                 ],
                 "extensions.org.weave.character.relationships": [
                     "weave_relationship_reference_pack",

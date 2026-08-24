@@ -1,7 +1,7 @@
 (
     review_format_version: 1,
-    proposal_sha256: "8eef000247e504ddead53358a581451943d5a7c99ded4c5722297bc07b8509ad",
-    input_sha256: "9fdf8030061b1f6c5e04c35d96ec2de2708440b107be32048fa942bb890f05d8",
+    proposal_sha256: "374f4fb7a7632be9149f6f92edd1428232160f538f439b937dc5b7239c12a7df",
+    input_sha256: "65e68cfab4776ea450caae37e8990f207aa666399e0e94ae60e8e97c51bee67a",
     decision: accepted,
     reviewer: "org.weave.reviewer.fixture",
     rationale: "Approve the complete synthetic reference-safe rename.",

@@ -1,0 +1,30 @@
+(
+    coverage_format_version: 1,
+    profile_sha256: "73d561106e94959057ac91725986428602b0a615b1ca4a8aefc16f2746d7dc30",
+    record_counts: {
+        term: 3,
+        preference: 1,
+        vocabulary_pool: 1,
+        behavioral_signature: 1,
+        voice_constraint: 1,
+        template_assignment: 1,
+    },
+    category_counts: {
+        "org.weave.expression.behavior": 1,
+        "org.weave.expression.clarity": 1,
+        "org.weave.expression.dialogue": 1,
+        "org.weave.expression.navigation": 4,
+        "org.weave.preference.communication": 1,
+    },
+    scenario_coverage: {
+        "arrival": (
+            scenario_id: "arrival",
+            assigned_template_ids: [
+                "arrival_greeting",
+            ],
+            has_fallback: true,
+            reviewed_variant_count: 5,
+        ),
+    },
+    diagnostics: [],
+)

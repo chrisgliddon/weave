@@ -1,0 +1,92 @@
+{
+  "resolution_format_version": 1,
+  "id": "org.weave.character.expression.resolution.ari_arrival.resolution",
+  "profile_sha256": "73d561106e94959057ac91725986428602b0a615b1ca4a8aefc16f2746d7dc30",
+  "pack": {
+    "id": "org.weave.expression.glasswind",
+    "version": "1.0.0",
+    "sha256": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+  },
+  "request": {
+    "request_format_version": 1,
+    "id": "org.weave.character.expression.resolution.ari_arrival",
+    "assignment_id": "arrival_greeting",
+    "scenario_id": "arrival",
+    "speaker_character_id": "org.weave.character.ari_vale",
+    "listener": {
+      "character_id": "org.weave.character.tavi_quill",
+      "display_name": "Tavi Quill"
+    },
+    "relationship_kind_ids": [
+      "org.weave.relationship.friend"
+    ],
+    "date_label": "Harbor Festival",
+    "date_context_ids": [
+      "harbor_festival"
+    ],
+    "world_place_name": "Stormwatch Gate",
+    "world_context_tags": [
+      "stormwatch"
+    ],
+    "seed": 42
+  },
+  "request_sha256": "47e4238511ae46d32ee66d830a1359accf095867bfb2569ffc233f40cd4229e2",
+  "template_id": "arrival_greeting",
+  "selected_variant_id": "friend_at_stormwatch",
+  "fallback_used": false,
+  "rendered_text": "Ari Vale greets Tavi Quill at Stormwatch Gate and names their org.weave.relationship.friend a trailmark.",
+  "substitutions": {
+    "listener_name": "Tavi Quill",
+    "relationship_kind": "org.weave.relationship.friend",
+    "speaker_name": "Ari Vale",
+    "waymark": "trailmark",
+    "world_place": "Stormwatch Gate"
+  },
+  "trace": [
+    {
+      "variant_id": "fallback",
+      "authority": "authored",
+      "priority": 0,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "5a16137d7c73b4d1c45f4f594069e48f514638d6a43a72dd39fa41e2af422922",
+      "reason": "stable fallback retained"
+    },
+    {
+      "variant_id": "festival_arrival",
+      "authority": "reviewed",
+      "priority": 15,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "fbead67ef5473509e3651e224d882df1088e91fb6c636717db275b4f5fda3672",
+      "reason": "eligible authored or reviewed variant"
+    },
+    {
+      "variant_id": "friend_at_stormwatch",
+      "authority": "authored",
+      "priority": 30,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "d68685c46b73ff8d4fe0252fd76524a0383898e911b15612b2d618e9ff3cf841",
+      "reason": "eligible authored or reviewed variant"
+    },
+    {
+      "variant_id": "open_arrival",
+      "authority": "reviewed",
+      "priority": 20,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "02d179ffab3b808211998f7719af22e4bd18d81a4997efa5b5c1b6c19edb3616",
+      "reason": "eligible authored or reviewed variant"
+    },
+    {
+      "variant_id": "stormwatch_arrival",
+      "authority": "reviewed",
+      "priority": 10,
+      "applicable": true,
+      "placeholders_available": true,
+      "seeded_sha256": "017be9b826716d09447d376dc6d9a77fe1d576fe9fa916281e9b204db5baf0db",
+      "reason": "eligible authored or reviewed variant"
+    }
+  ]
+}

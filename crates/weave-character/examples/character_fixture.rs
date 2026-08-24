@@ -3,6 +3,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
+#[path = "support/expression.rs"]
+mod expression_support;
+
 use weave_character::{
     ALIGNMENT_CONFIG_FORMAT_VERSION, ALIGNMENT_PACK_FORMAT_VERSION, Agreeableness, AlignmentAxis,
     AlignmentCalibrationExpected, AlignmentCalibrationFixture, AlignmentConfig,
@@ -17,11 +20,13 @@ use weave_character::{
     CharacterProfile, CharacterReviewDecision, CharacterScope, CharacterSuggestion,
     CharacterTemplate, CharacterTemplateRef, Confidence, Conscientiousness, DateContext,
     DateContextCueKind, DateContextSensitivity, DateContextUncertainty, Emotionality,
-    ExpressionData, ExtensionHeader, ExtensionWriteBack, Extraversion, Freshness, HexacoProfile,
-    HexacoTrait, HonestyHumility, IdentityContextKind, IdentityContextNote, IdentityPresentation,
-    InnerLifeCategory, LockState, NormalizedExpressionTerm, NormalizedPreference,
-    OpaqueExtensionData, OpaqueInterpretation, Openness,
-    PRESENTATION_ALLOCATION_REQUEST_FORMAT_VERSION, PRESENTATION_CATALOG_FORMAT_VERSION,
+    ExpressionApplicability, ExpressionConstraintEffect, ExpressionData, ExpressionMedium,
+    ExpressionPackRef, ExpressionRecordOrigin, ExpressionTemplateAssignment, ExpressionTermKind,
+    ExpressionVocabularyPool, ExpressionVoiceConstraint, ExtensionHeader, ExtensionWriteBack,
+    Extraversion, Freshness, HexacoProfile, HexacoTrait, HonestyHumility, IdentityContextKind,
+    IdentityContextNote, IdentityPresentation, InnerLifeCategory, LockState,
+    NormalizedExpressionTerm, NormalizedPreference, OpaqueExtensionData, OpaqueInterpretation,
+    Openness, PRESENTATION_ALLOCATION_REQUEST_FORMAT_VERSION, PRESENTATION_CATALOG_FORMAT_VERSION,
     PRESENTATION_LOCK_REVISION_FORMAT_VERSION, PreferencePolarity, PresentationAllocationMode,
     PresentationAllocationRequest, PresentationAssetKind, PresentationAssetReference,
     PresentationCatalog, PresentationCatalogEntry, PresentationCatalogSlot,
@@ -1196,6 +1201,7 @@ fn relationship_roster(base: &CharacterProfile) -> CharacterCollection {
     .map(|(id, display_name)| {
         let mut profile = base.clone();
         profile.id = id.to_owned();
+        retarget_expression_owner(&mut profile, id);
         profile.canon.identity.display_name.value = display_name.to_owned();
         profile.canon.identity.aliases = None;
         let CharacterExtension::Relationships(relationships) = profile
@@ -2831,6 +2837,7 @@ fn character_collection(
 ) -> Result<CharacterCollection, Box<dyn std::error::Error>> {
     let mut sable = ari.clone();
     sable.id = "org.weave.character.sable_reed".to_owned();
+    retarget_expression_owner(&mut sable, "org.weave.character.sable_reed");
     sable.canon.identity.display_name.value = "Sable Reed".to_owned();
     let CharacterExtension::Relationships(relationships) = sable
         .extensions
@@ -2854,6 +2861,45 @@ fn character_collection(
         revision: 1,
         characters: BTreeMap::from([(ari.id.clone(), ari.clone()), (sable.id.clone(), sable)]),
     })
+}
+
+fn retarget_expression_owner(profile: &mut CharacterProfile, character_id: &str) {
+    if let Some(CharacterExtension::Expression(record)) =
+        profile.extensions.get_mut("org.weave.character.expression")
+    {
+        record.value.character_id = character_id.to_owned();
+        for term in record.value.lexicon.values_mut() {
+            term.character_id = character_id.to_owned();
+        }
+        for preference in record.value.preferences.values_mut() {
+            preference.character_id = character_id.to_owned();
+        }
+        for pool in record.value.vocabulary_pools.values_mut() {
+            pool.character_id = character_id.to_owned();
+        }
+        for constraint in record.value.voice_constraints.values_mut() {
+            constraint.character_id = character_id.to_owned();
+        }
+        for assignment in record.value.template_assignments.values_mut() {
+            assignment.character_id = character_id.to_owned();
+        }
+        record.value.behavioral_signature_refs = record
+            .value
+            .behavioral_signature_refs
+            .iter()
+            .filter_map(|reference| reference.rsplit_once(".signature."))
+            .map(|(_, id)| format!("{character_id}.signature.{id}"))
+            .collect();
+    }
+    if let Some(CharacterExtension::BehavioralSignatures(record)) = profile
+        .extensions
+        .get_mut("org.weave.character.behavioral_signatures")
+    {
+        record.value.character_id = character_id.to_owned();
+        for signature in record.value.signatures.values_mut() {
+            signature.character_id = character_id.to_owned();
+        }
+    }
 }
 
 fn rename_request(
@@ -2935,13 +2981,29 @@ fn complete_profile() -> CharacterProfile {
     let relationship_pack = relationship_kind_pack();
     let relationship_pack_ref = relationship_kind_pack_ref(&relationship_pack)
         .expect("reference relationship pack is valid");
+    let expression_pack = expression_support::reference_expression_pack();
+    let expression_pack_ref = weave_character::expression_pack_ref(&expression_pack)
+        .expect("reference expression pack is valid");
     let mut provenance = original_provenance("character_original", "profile");
     provenance
         .sources
         .extend(relationship_pack.provenance.sources.clone());
+    provenance
+        .sources
+        .extend(expression_pack.provenance.sources.clone());
+    provenance
+        .sources
+        .sort_by(|left, right| left.id.cmp(&right.id));
+    let mut extension_lineage = lineage.clone();
+    extension_lineage.push(expression_support::SOURCE_ID.to_owned());
+    extension_lineage.sort();
     provenance.claims.insert(
         "extensions.org.weave.character.relationships".to_owned(),
         vec!["weave_relationship_reference_pack".to_owned()],
+    );
+    provenance.claims.insert(
+        "extensions.org.weave.character.expression".to_owned(),
+        vec![expression_support::SOURCE_ID.to_owned()],
     );
     let mut profile = CharacterProfile {
         profile_format_version: CHARACTER_PROFILE_FORMAT_VERSION,
@@ -2987,7 +3049,11 @@ fn complete_profile() -> CharacterProfile {
                 },
             )]),
         },
-        extensions: extensions(&lineage, relationship_pack_ref),
+        extensions: extensions(
+            &extension_lineage,
+            relationship_pack_ref,
+            expression_pack_ref,
+        ),
         suggestions: BTreeMap::from([(
             "night_market_memory".to_owned(),
             CharacterSuggestion {
@@ -3013,6 +3079,7 @@ fn complete_profile() -> CharacterProfile {
 fn extensions(
     lineage: &[String],
     relationship_kind_pack: RelationshipKindPackRef,
+    expression_pack: ExpressionPackRef,
 ) -> BTreeMap<String, CharacterExtension> {
     let identity_namespace = "org.weave.character.identity_presentation";
     let expression_namespace = "org.weave.character.expression";
@@ -3027,12 +3094,20 @@ fn extensions(
             CharacterExtension::BehavioralSignatures(VersionedExtension {
                 header: extension_header(behavior_namespace, 1, lineage),
                 value: BehavioralSignatures {
+                    character_id: "org.weave.character.ari_vale".to_owned(),
                     signatures: BTreeMap::from([(
                         "maps_before_moving".to_owned(),
                         BehavioralSignature {
                             id: "maps_before_moving".to_owned(),
+                            character_id: "org.weave.character.ari_vale".to_owned(),
+                            category: "org.weave.expression.planning".to_owned(),
                             cue: "Sketches a route before committing the group.".to_owned(),
                             strength: 0.8,
+                            applicability: ExpressionApplicability::default(),
+                            origin: ExpressionRecordOrigin::Authored,
+                            review: ReviewState::NotRequired,
+                            source_ids: vec!["character_original".to_owned()],
+                            rationale: None,
                         },
                     )]),
                 },
@@ -3057,29 +3132,116 @@ fn extensions(
             CharacterExtension::Expression(VersionedExtension {
                 header: extension_header(expression_namespace, 1, lineage),
                 value: ExpressionData {
-                    lexicon: BTreeMap::from([(
-                        "waymark".to_owned(),
-                        NormalizedExpressionTerm {
-                            id: "waymark".to_owned(),
-                            category: "org.weave.expression.navigation".to_owned(),
-                            normalized: "waymark".to_owned(),
-                            strength: 0.8,
-                        },
-                    )]),
+                    expression_format_version: 1,
+                    character_id: "org.weave.character.ari_vale".to_owned(),
+                    lexicon: BTreeMap::from([
+                        (
+                            "trailmark".to_owned(),
+                            NormalizedExpressionTerm {
+                                id: "trailmark".to_owned(),
+                                character_id: "org.weave.character.ari_vale".to_owned(),
+                                category: "org.weave.expression.navigation".to_owned(),
+                                kind: ExpressionTermKind::Term,
+                                surface: "trailmark".to_owned(),
+                                normalized: "trailmark".to_owned(),
+                                strength: 0.9,
+                                applicability: ExpressionApplicability::default(),
+                                origin: ExpressionRecordOrigin::PackAssigned,
+                                review: ReviewState::Accepted,
+                                source_ids: vec![expression_support::SOURCE_ID.to_owned()],
+                                rationale: Some(
+                                    "Accept the original public reference-pack term for deterministic dialogue fixtures."
+                                        .to_owned(),
+                                ),
+                            },
+                        ),
+                        (
+                            "waymark".to_owned(),
+                            NormalizedExpressionTerm {
+                                id: "waymark".to_owned(),
+                                character_id: "org.weave.character.ari_vale".to_owned(),
+                                category: "org.weave.expression.navigation".to_owned(),
+                                kind: ExpressionTermKind::Term,
+                                surface: "waymark".to_owned(),
+                                normalized: "waymark".to_owned(),
+                                strength: 0.8,
+                                applicability: ExpressionApplicability::default(),
+                                origin: ExpressionRecordOrigin::Authored,
+                                review: ReviewState::NotRequired,
+                                source_ids: vec!["character_original".to_owned()],
+                                rationale: None,
+                            },
+                        ),
+                    ]),
                     preferences: BTreeMap::from([(
                         "clear_questions".to_owned(),
                         NormalizedPreference {
                             id: "clear_questions".to_owned(),
+                            character_id: "org.weave.character.ari_vale".to_owned(),
                             category: "org.weave.preference.communication".to_owned(),
                             target: "clear questions".to_owned(),
                             polarity: PreferencePolarity::Prefer,
                             strength: 0.9,
+                            applicability: ExpressionApplicability::default(),
+                            origin: ExpressionRecordOrigin::Authored,
+                            review: ReviewState::NotRequired,
+                            source_ids: vec!["character_original".to_owned()],
+                            rationale: None,
+                        },
+                    )]),
+                    vocabulary_pools: BTreeMap::from([(
+                        "navigation_words".to_owned(),
+                        ExpressionVocabularyPool {
+                            id: "navigation_words".to_owned(),
+                            character_id: "org.weave.character.ari_vale".to_owned(),
+                            category: "org.weave.expression.navigation".to_owned(),
+                            term_ids: vec!["trailmark".to_owned(), "waymark".to_owned()],
+                            applicability: ExpressionApplicability::default(),
+                            origin: ExpressionRecordOrigin::Authored,
+                            review: ReviewState::NotRequired,
+                            source_ids: vec!["character_original".to_owned()],
+                            rationale: None,
+                        },
+                    )]),
+                    voice_constraints: BTreeMap::from([(
+                        "prefer_clear_questions".to_owned(),
+                        ExpressionVoiceConstraint {
+                            id: "prefer_clear_questions".to_owned(),
+                            character_id: "org.weave.character.ari_vale".to_owned(),
+                            category: "org.weave.expression.clarity".to_owned(),
+                            medium: ExpressionMedium::Both,
+                            effect: ExpressionConstraintEffect::Prefer,
+                            target: "clear questions".to_owned(),
+                            instruction: "Ask one clear question after a short observation."
+                                .to_owned(),
+                            strength: 0.9,
+                            applicability: ExpressionApplicability::default(),
+                            origin: ExpressionRecordOrigin::Authored,
+                            review: ReviewState::NotRequired,
+                            source_ids: vec!["character_original".to_owned()],
+                            rationale: None,
+                        },
+                    )]),
+                    template_assignments: BTreeMap::from([(
+                        "arrival_greeting".to_owned(),
+                        ExpressionTemplateAssignment {
+                            id: "arrival_greeting".to_owned(),
+                            character_id: "org.weave.character.ari_vale".to_owned(),
+                            scenario_id: "arrival".to_owned(),
+                            pack: expression_pack.clone(),
+                            template_id: "arrival_greeting".to_owned(),
+                            state: ValueState::Reviewed,
+                            review: ReviewState::Accepted,
+                            lock: LockState::Unlocked,
+                            source_ids: vec![expression_support::SOURCE_ID.to_owned()],
+                            rationale: "Accept the original public arrival template for the synthetic runtime fixture."
+                                .to_owned(),
                         },
                     )]),
                     behavioral_signature_refs: vec![
-                        "org.weave.signature.maps_before_moving".to_owned(),
+                        "org.weave.character.ari_vale.signature.maps_before_moving".to_owned(),
                     ],
-                    source_pack_refs: vec!["org.weave.expression.glasswind".to_owned()],
+                    source_pack_refs: vec![expression_pack],
                 },
             }),
         ),

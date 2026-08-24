@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "ExpressionDiagnostic": {
+      "additionalProperties": false,
+      "description": "One fixed-message diagnostic. Author text is never echoed into errors.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ExpressionDiagnosticCode"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/ExpressionDiagnosticSeverity"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpressionSourceLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "type": "object"
+    },
+    "ExpressionDiagnosticCode": {
+      "description": "Redaction-safe expression validation and lint vocabulary.",
+      "enum": [
+        "X100",
+        "X101",
+        "X102",
+        "X103",
+        "X104",
+        "X105",
+        "X106",
+        "X107",
+        "X108",
+        "X109",
+        "X110",
+        "X111",
+        "X112"
+      ],
+      "type": "string"
+    },
+    "ExpressionDiagnosticSeverity": {
+      "description": "Whether a lint blocks validation or remains review guidance.",
+      "enum": [
+        "warning",
+        "error"
+      ],
+      "type": "string"
+    },
+    "ExpressionScenarioCoverage": {
+      "additionalProperties": false,
+      "description": "Coverage for one required or assigned dialogue scenario.",
+      "properties": {
+        "assigned_template_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "has_fallback": {
+          "type": "boolean"
+        },
+        "reviewed_variant_count": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "scenario_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "assigned_template_ids",
+        "has_fallback",
+        "reviewed_variant_count"
+      ],
+      "type": "object"
+    },
+    "ExpressionSourceLocation": {
+      "additionalProperties": false,
+      "description": "Stable public source coordinate used by placeholder diagnostics.",
+      "properties": {
+        "column": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "line": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "source_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "line",
+        "column"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-expression-coverage:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Scenario and record coverage for one exact profile/pack set.",
+  "properties": {
+    "category_counts": {
+      "additionalProperties": {
+        "format": "uint32",
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "object"
+    },
+    "coverage_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/ExpressionDiagnostic"
+      },
+      "type": "array"
+    },
+    "profile_sha256": {
+      "type": "string"
+    },
+    "record_counts": {
+      "additionalProperties": false,
+      "properties": {
+        "behavioral_signature": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "preference": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template_assignment": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "term": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "vocabulary_pool": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "voice_constraint": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "scenario_coverage": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ExpressionScenarioCoverage"
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "coverage_format_version",
+    "profile_sha256",
+    "record_counts",
+    "category_counts",
+    "scenario_coverage",
+    "diagnostics"
+  ],
+  "title": "Weave Character Expression Coverage Report v1",
+  "type": "object",
+  "x-weave-character-expression-contract-version": 1
+}

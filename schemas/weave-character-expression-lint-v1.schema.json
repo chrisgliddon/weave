@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "ExpressionDiagnostic": {
+      "additionalProperties": false,
+      "description": "One fixed-message diagnostic. Author text is never echoed into errors.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ExpressionDiagnosticCode"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/ExpressionDiagnosticSeverity"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpressionSourceLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "type": "object"
+    },
+    "ExpressionDiagnosticCode": {
+      "description": "Redaction-safe expression validation and lint vocabulary.",
+      "enum": [
+        "X100",
+        "X101",
+        "X102",
+        "X103",
+        "X104",
+        "X105",
+        "X106",
+        "X107",
+        "X108",
+        "X109",
+        "X110",
+        "X111",
+        "X112"
+      ],
+      "type": "string"
+    },
+    "ExpressionDiagnosticSeverity": {
+      "description": "Whether a lint blocks validation or remains review guidance.",
+      "enum": [
+        "warning",
+        "error"
+      ],
+      "type": "string"
+    },
+    "ExpressionSourceLocation": {
+      "additionalProperties": false,
+      "description": "Stable public source coordinate used by placeholder diagnostics.",
+      "properties": {
+        "column": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "line": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "source_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "line",
+        "column"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:character-expression-lint:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete lint output; the linter never rewrites author content.",
+  "properties": {
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/ExpressionDiagnostic"
+      },
+      "type": "array"
+    },
+    "lint_format_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "pack_sha256": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_sha256": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "lint_format_version",
+    "profile_sha256",
+    "pack_sha256",
+    "diagnostics"
+  ],
+  "title": "Weave Character Expression Lint Report v1",
+  "type": "object",
+  "x-weave-character-expression-contract-version": 1
+}

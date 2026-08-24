@@ -583,6 +583,168 @@
           "allowed_states": []
         }
       }
+    },
+    {
+      "span": {
+        "start": 1951,
+        "end": 2028,
+        "line": 30,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_term",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "lexicon",
+              "trailmark",
+              "surface"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2028,
+        "end": 2120,
+        "line": 31,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_preference",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "preferences",
+              "clear_questions",
+              "target"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2120,
+        "end": 2225,
+        "line": 32,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_template",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "template_assignments",
+              "arrival_greeting",
+              "template_id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2225,
+        "end": 2322,
+        "line": 33,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_pack",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "template_assignments",
+              "arrival_greeting",
+              "pack",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2322,
+        "end": 2430,
+        "line": 34,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_pack_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "template_assignments",
+              "arrival_greeting",
+              "pack",
+              "sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 2430,
+        "end": 2531,
+        "line": 35,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "expression_personality_writeback",
+          "value": {
+            "kind": "path",
+            "value": [
+              "character",
+              "profile",
+              "expression",
+              "canonical_personality_write_back"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
     }
   ],
   "grammars": {},
@@ -590,7 +752,7 @@
   "modules": {
     "character": {
       "id": "org.weave.character",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "pack_id": "ari_vale",
       "pack_version": "1.0.0",
       "exports": {
@@ -604,7 +766,7 @@
                 "value": {
                   "applied_sha256": {
                     "kind": "string",
-                    "value": "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d"
+                    "value": "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577"
                   },
                   "canonical_personality_write_back": {
                     "kind": "bool",
@@ -662,7 +824,7 @@
                   },
                   "review_sha256": {
                     "kind": "string",
-                    "value": "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876"
+                    "value": "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf"
                   },
                   "values": {
                     "kind": "object",
@@ -858,6 +1020,567 @@
                         }
                       }
                     ]
+                  }
+                }
+              },
+              "expression": {
+                "kind": "object",
+                "value": {
+                  "behavioral_signature_refs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "org.weave.character.ari_vale.signature.maps_before_moving"
+                      }
+                    ]
+                  },
+                  "behavioral_signatures": {
+                    "kind": "object",
+                    "value": {
+                      "maps_before_moving": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.planning"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "cue": {
+                            "kind": "string",
+                            "value": "Sketches a route before committing the group."
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "maps_before_moving"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "behavioral_signature"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "strength": {
+                            "kind": "number",
+                            "value": 0.8
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "canonical_personality_write_back": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "character_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.ari_vale"
+                  },
+                  "expression_format_version": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "lexicon": {
+                    "kind": "object",
+                    "value": {
+                      "trailmark": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.navigation"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "trailmark"
+                          },
+                          "normalized": {
+                            "kind": "string",
+                            "value": "trailmark"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "pack_assigned"
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept the original public reference-pack term for deterministic dialogue fixtures."
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "term"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_expression_glasswind_original"
+                              }
+                            ]
+                          },
+                          "strength": {
+                            "kind": "number",
+                            "value": 0.9
+                          },
+                          "surface": {
+                            "kind": "string",
+                            "value": "trailmark"
+                          },
+                          "term_kind": {
+                            "kind": "symbol",
+                            "value": "term"
+                          }
+                        }
+                      },
+                      "waymark": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.navigation"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "waymark"
+                          },
+                          "normalized": {
+                            "kind": "string",
+                            "value": "waymark"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "term"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "strength": {
+                            "kind": "number",
+                            "value": 0.8
+                          },
+                          "surface": {
+                            "kind": "string",
+                            "value": "waymark"
+                          },
+                          "term_kind": {
+                            "kind": "symbol",
+                            "value": "term"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "preferences": {
+                    "kind": "object",
+                    "value": {
+                      "clear_questions": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.preference.communication"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "clear_questions"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          },
+                          "polarity": {
+                            "kind": "symbol",
+                            "value": "prefer"
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "preference"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "strength": {
+                            "kind": "number",
+                            "value": 0.9
+                          },
+                          "target": {
+                            "kind": "string",
+                            "value": "clear questions"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "source_packs": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "id": {
+                            "kind": "string",
+                            "value": "org.weave.expression.glasswind"
+                          },
+                          "sha256": {
+                            "kind": "string",
+                            "value": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+                          },
+                          "version": {
+                            "kind": "string",
+                            "value": "1.0.0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "template_assignments": {
+                    "kind": "object",
+                    "value": {
+                      "arrival_greeting": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.dialogue"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "arrival_greeting"
+                          },
+                          "lock": {
+                            "kind": "symbol",
+                            "value": "unlocked"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "pack_assigned"
+                          },
+                          "pack": {
+                            "kind": "object",
+                            "value": {
+                              "id": {
+                                "kind": "string",
+                                "value": "org.weave.expression.glasswind"
+                              },
+                              "sha256": {
+                                "kind": "string",
+                                "value": "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6"
+                              },
+                              "version": {
+                                "kind": "string",
+                                "value": "1.0.0"
+                              }
+                            }
+                          },
+                          "rationale": {
+                            "kind": "string",
+                            "value": "Accept the original public arrival template for the synthetic runtime fixture."
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "template_assignment"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "accepted"
+                          },
+                          "scenario_id": {
+                            "kind": "string",
+                            "value": "arrival"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "weave_expression_glasswind_original"
+                              }
+                            ]
+                          },
+                          "state": {
+                            "kind": "symbol",
+                            "value": "reviewed"
+                          },
+                          "template_id": {
+                            "kind": "string",
+                            "value": "arrival_greeting"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "vocabulary_pools": {
+                    "kind": "object",
+                    "value": {
+                      "navigation_words": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.navigation"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "navigation_words"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "vocabulary_pool"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "term_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "trailmark"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "waymark"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "voice_constraints": {
+                    "kind": "object",
+                    "value": {
+                      "prefer_clear_questions": {
+                        "kind": "object",
+                        "value": {
+                          "applicability": {
+                            "kind": "object",
+                            "value": {
+                              "predicates": {
+                                "kind": "list",
+                                "value": []
+                              },
+                              "scenario_ids": {
+                                "kind": "list",
+                                "value": []
+                              }
+                            }
+                          },
+                          "category": {
+                            "kind": "string",
+                            "value": "org.weave.expression.clarity"
+                          },
+                          "character_id": {
+                            "kind": "string",
+                            "value": "org.weave.character.ari_vale"
+                          },
+                          "constraint_effect": {
+                            "kind": "symbol",
+                            "value": "prefer"
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "prefer_clear_questions"
+                          },
+                          "instruction": {
+                            "kind": "string",
+                            "value": "Ask one clear question after a short observation."
+                          },
+                          "medium": {
+                            "kind": "symbol",
+                            "value": "both"
+                          },
+                          "origin": {
+                            "kind": "symbol",
+                            "value": "authored"
+                          },
+                          "record_kind": {
+                            "kind": "symbol",
+                            "value": "voice_constraint"
+                          },
+                          "review": {
+                            "kind": "symbol",
+                            "value": "not_required"
+                          },
+                          "source_ids": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "string",
+                                "value": "character_original"
+                              }
+                            ]
+                          },
+                          "strength": {
+                            "kind": "number",
+                            "value": 0.9
+                          },
+                          "target": {
+                            "kind": "string",
+                            "value": "clear questions"
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -2523,7 +3246,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a"
+                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
                           },
                           "rationale": {
                             "kind": "string",
@@ -2535,7 +3258,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
+                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -2611,7 +3334,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a"
+                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
                           },
                           "rationale": {
                             "kind": "string",
@@ -2623,7 +3346,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
+                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -2716,7 +3439,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a"
+                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
                           },
                           "rationale": {
                             "kind": "string",
@@ -2728,7 +3451,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
+                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -2804,7 +3527,7 @@
                           },
                           "proposal_sha256": {
                             "kind": "string",
-                            "value": "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a"
+                            "value": "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6"
                           },
                           "rationale": {
                             "kind": "string",
@@ -2816,7 +3539,7 @@
                           },
                           "review_sha256": {
                             "kind": "string",
-                            "value": "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a"
+                            "value": "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa"
                           },
                           "slot_id": {
                             "kind": "string",
@@ -3142,6 +3865,10 @@
                       },
                       {
                         "kind": "string",
+                        "value": "weave_expression_glasswind_original"
+                      },
+                      {
+                        "kind": "string",
                         "value": "weave_glasswind_presentation"
                       },
                       {
@@ -3159,7 +3886,7 @@
                     "value": [
                       {
                         "kind": "string",
-                        "value": "alignment_apply_2171b3adb49f9384"
+                        "value": "alignment_apply_da2749184c01216c"
                       }
                     ]
                   }
@@ -3204,6 +3931,10 @@
                               {
                                 "kind": "string",
                                 "value": "character_original"
+                              },
+                              {
+                                "kind": "string",
+                                "value": "weave_expression_glasswind_original"
                               }
                             ]
                           },
@@ -3231,6 +3962,10 @@
                                       {
                                         "kind": "string",
                                         "value": "character_original"
+                                      },
+                                      {
+                                        "kind": "string",
+                                        "value": "weave_expression_glasswind_original"
                                       }
                                     ]
                                   }
@@ -3314,9 +4049,9 @@
       "content": [
         {
           "span": {
-            "start": 1966,
-            "end": 2161,
-            "line": 32,
+            "start": 2546,
+            "end": 2741,
+            "line": 38,
             "column": 1
           },
           "kind": {
@@ -3333,9 +4068,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 2007,
-                        "end": 2090,
-                        "line": 33,
+                        "start": 2587,
+                        "end": 2670,
+                        "line": 39,
                         "column": 5
                       },
                       "kind": {
@@ -3356,9 +4091,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 2103,
-                    "end": 2159,
-                    "line": 35,
+                    "start": 2683,
+                    "end": 2739,
+                    "line": 41,
                     "column": 5
                   },
                   "kind": {
@@ -3379,9 +4114,9 @@
         },
         {
           "span": {
-            "start": 2162,
-            "end": 2908,
-            "line": 37,
+            "start": 2742,
+            "end": 3488,
+            "line": 43,
             "column": 1
           },
           "kind": {
@@ -3398,9 +4133,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 2200,
-                        "end": 2299,
-                        "line": 38,
+                        "start": 2780,
+                        "end": 2879,
+                        "line": 44,
                         "column": 5
                       },
                       "kind": {
@@ -3421,9 +4156,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 2312,
-                    "end": 2906,
-                    "line": 40,
+                    "start": 2892,
+                    "end": 3486,
+                    "line": 46,
                     "column": 5
                   },
                   "kind": {
@@ -3443,9 +4178,9 @@
                           "body": [
                             {
                               "span": {
-                                "start": 2352,
-                                "end": 2835,
-                                "line": 41,
+                                "start": 2932,
+                                "end": 3415,
+                                "line": 47,
                                 "column": 9
                               },
                               "kind": {
@@ -3631,9 +4366,9 @@
                       "fallback": [
                         {
                           "span": {
-                            "start": 2856,
-                            "end": 2900,
-                            "line": 43,
+                            "start": 3436,
+                            "end": 3480,
+                            "line": 49,
                             "column": 9
                           },
                           "kind": {
@@ -3658,9 +4393,9 @@
         },
         {
           "span": {
-            "start": 2909,
-            "end": 3196,
-            "line": 46,
+            "start": 3489,
+            "end": 3776,
+            "line": 52,
             "column": 1
           },
           "kind": {
@@ -3677,9 +4412,9 @@
                   "body": [
                     {
                       "span": {
-                        "start": 2950,
-                        "end": 3034,
-                        "line": 47,
+                        "start": 3530,
+                        "end": 3614,
+                        "line": 53,
                         "column": 5
                       },
                       "kind": {
@@ -3700,9 +4435,9 @@
               "fallback": [
                 {
                   "span": {
-                    "start": 3047,
-                    "end": 3194,
-                    "line": 49,
+                    "start": 3627,
+                    "end": 3774,
+                    "line": 55,
                     "column": 5
                   },
                   "kind": {
@@ -3788,9 +4523,139 @@
         },
         {
           "span": {
-            "start": 3197,
-            "end": 3203,
-            "line": 51,
+            "start": 3777,
+            "end": 4074,
+            "line": 57,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "path",
+                    "value": [
+                      "expression_personality_writeback"
+                    ]
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 3816,
+                        "end": 3897,
+                        "line": 58,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "This branch is unreachable because expression cannot become personality evidence."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 3910,
+                    "end": 4072,
+                    "line": 60,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "Runtime expression query: "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "expression_term"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "; preference "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "expression_preference"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": "; template "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "expression_template"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " from "
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "expression_pack"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": " ("
+                        },
+                        {
+                          "kind": "expression",
+                          "value": {
+                            "kind": "path",
+                            "value": [
+                              "expression_pack_sha256"
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "text",
+                          "value": ")."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 4075,
+            "end": 4081,
+            "line": 62,
             "column": 1
           },
           "kind": {

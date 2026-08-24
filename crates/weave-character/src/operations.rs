@@ -990,6 +990,7 @@ fn apply_action(
                 clone.canon.identity.display_name.rationale = Some(rationale.clone());
             }
             rewrite_owned_relationship_source(&mut clone, source_id, new_id, rationale, true)?;
+            rewrite_owned_expression_links(&mut clone, source_id, new_id, rationale, true)?;
             recompute_derived(&mut clone);
             validate_profile(&clone).map_err(from_profile)?;
             result.characters.insert(new_id.clone(), clone);
@@ -1079,17 +1080,34 @@ fn apply_action(
                     rationale,
                     *override_locked,
                 )?;
+                let mut own_reference_changes = own_reference_changes;
+                own_reference_changes.extend(rewrite_owned_expression_links(
+                    &mut profile,
+                    character_id,
+                    final_id,
+                    rationale,
+                    *override_locked,
+                )?);
+                own_reference_changes.sort();
                 if !own_reference_changes.is_empty() {
                     references.insert(final_id.to_owned(), own_reference_changes);
                 }
                 for (owner_id, owner) in &mut result.characters {
-                    let changes = rewrite_relationship_targets(
+                    let mut changes = rewrite_relationship_targets(
                         owner,
                         character_id,
                         final_id,
                         rationale,
                         *override_locked,
                     )?;
+                    changes.extend(rewrite_expression_context_targets(
+                        owner,
+                        character_id,
+                        final_id,
+                        rationale,
+                        *override_locked,
+                    )?);
+                    changes.sort();
                     if !changes.is_empty() {
                         references.insert(owner_id.clone(), changes);
                     }
@@ -1238,6 +1256,309 @@ fn rewrite_relationship_targets(
     Ok(changes)
 }
 
+fn rewrite_owned_expression_links(
+    profile: &mut CharacterProfile,
+    old_id: &str,
+    new_id: &str,
+    rationale: &str,
+    override_locked: bool,
+) -> Result<Vec<CharacterReferenceChange>, CharacterCorpusError> {
+    let mut changes = Vec::new();
+    for (namespace, extension) in &mut profile.extensions {
+        match extension {
+            CharacterExtension::Expression(record) => {
+                let has_owner_links = record.value.character_id == old_id
+                    || record
+                        .value
+                        .lexicon
+                        .values()
+                        .any(|value| value.character_id == old_id)
+                    || record
+                        .value
+                        .preferences
+                        .values()
+                        .any(|value| value.character_id == old_id)
+                    || record
+                        .value
+                        .vocabulary_pools
+                        .values()
+                        .any(|value| value.character_id == old_id)
+                    || record
+                        .value
+                        .voice_constraints
+                        .values()
+                        .any(|value| value.character_id == old_id)
+                    || record
+                        .value
+                        .template_assignments
+                        .values()
+                        .any(|value| value.character_id == old_id)
+                    || record
+                        .value
+                        .behavioral_signature_refs
+                        .iter()
+                        .any(|value| value.starts_with(&format!("{old_id}.signature.")));
+                if !has_owner_links {
+                    continue;
+                }
+                require_extension_override(
+                    &mut record.header,
+                    rationale,
+                    override_locked,
+                    "expression.character_id",
+                )?;
+                if record.value.character_id == old_id {
+                    record.value.character_id = new_id.to_owned();
+                    changes.push(CharacterReferenceChange {
+                        owner_character_id: profile.id.clone(),
+                        path: format!("extensions.{namespace}.value.character_id"),
+                    });
+                }
+                for (id, value) in &mut record.value.lexicon {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.lexicon.{id}.character_id"),
+                    );
+                }
+                for (id, value) in &mut record.value.preferences {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.preferences.{id}.character_id"),
+                    );
+                }
+                for (id, value) in &mut record.value.vocabulary_pools {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.vocabulary_pools.{id}.character_id"),
+                    );
+                }
+                for (id, value) in &mut record.value.voice_constraints {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.voice_constraints.{id}.character_id"),
+                    );
+                }
+                for (id, value) in &mut record.value.template_assignments {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!(
+                            "extensions.{namespace}.value.template_assignments.{id}.character_id"
+                        ),
+                    );
+                }
+                let prefix = format!("{old_id}.signature.");
+                for (index, value) in record
+                    .value
+                    .behavioral_signature_refs
+                    .iter_mut()
+                    .enumerate()
+                {
+                    if let Some(suffix) = value.strip_prefix(&prefix) {
+                        *value = format!("{new_id}.signature.{suffix}");
+                        changes.push(CharacterReferenceChange {
+                            owner_character_id: profile.id.clone(),
+                            path: format!(
+                                "extensions.{namespace}.value.behavioral_signature_refs[{index}]"
+                            ),
+                        });
+                    }
+                }
+            }
+            CharacterExtension::BehavioralSignatures(record) => {
+                let has_owner_links = record.value.character_id == old_id
+                    || record
+                        .value
+                        .signatures
+                        .values()
+                        .any(|value| value.character_id == old_id);
+                if !has_owner_links {
+                    continue;
+                }
+                require_extension_override(
+                    &mut record.header,
+                    rationale,
+                    override_locked,
+                    "behavioral_signatures.character_id",
+                )?;
+                if record.value.character_id == old_id {
+                    record.value.character_id = new_id.to_owned();
+                    changes.push(CharacterReferenceChange {
+                        owner_character_id: profile.id.clone(),
+                        path: format!("extensions.{namespace}.value.character_id"),
+                    });
+                }
+                for (id, value) in &mut record.value.signatures {
+                    rewrite_expression_record_owner(
+                        &mut value.character_id,
+                        old_id,
+                        new_id,
+                        &mut changes,
+                        &profile.id,
+                        format!("extensions.{namespace}.value.signatures.{id}.character_id"),
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+    changes.sort();
+    changes.dedup();
+    Ok(changes)
+}
+
+fn rewrite_expression_record_owner(
+    value: &mut String,
+    old_id: &str,
+    new_id: &str,
+    changes: &mut Vec<CharacterReferenceChange>,
+    owner_id: &str,
+    path: String,
+) {
+    if value == old_id {
+        *value = new_id.to_owned();
+        changes.push(CharacterReferenceChange {
+            owner_character_id: owner_id.to_owned(),
+            path,
+        });
+    }
+}
+
+fn rewrite_expression_context_targets(
+    profile: &mut CharacterProfile,
+    old_id: &str,
+    new_id: &str,
+    rationale: &str,
+    override_locked: bool,
+) -> Result<Vec<CharacterReferenceChange>, CharacterCorpusError> {
+    let mut changes = Vec::new();
+    for (namespace, extension) in &mut profile.extensions {
+        let mut changed_paths = Vec::new();
+        match extension {
+            CharacterExtension::Expression(record) => {
+                for (id, term) in &mut record.value.lexicon {
+                    rewrite_applicability_targets(
+                        &mut term.applicability,
+                        old_id,
+                        new_id,
+                        format!("extensions.{namespace}.value.lexicon.{id}.applicability"),
+                        &mut changed_paths,
+                    );
+                }
+                for (id, preference) in &mut record.value.preferences {
+                    rewrite_applicability_targets(
+                        &mut preference.applicability,
+                        old_id,
+                        new_id,
+                        format!("extensions.{namespace}.value.preferences.{id}.applicability"),
+                        &mut changed_paths,
+                    );
+                }
+                for (id, pool) in &mut record.value.vocabulary_pools {
+                    rewrite_applicability_targets(
+                        &mut pool.applicability,
+                        old_id,
+                        new_id,
+                        format!("extensions.{namespace}.value.vocabulary_pools.{id}.applicability"),
+                        &mut changed_paths,
+                    );
+                }
+                for (id, constraint) in &mut record.value.voice_constraints {
+                    rewrite_applicability_targets(
+                        &mut constraint.applicability,
+                        old_id,
+                        new_id,
+                        format!(
+                            "extensions.{namespace}.value.voice_constraints.{id}.applicability"
+                        ),
+                        &mut changed_paths,
+                    );
+                }
+                if !changed_paths.is_empty() {
+                    require_extension_override(
+                        &mut record.header,
+                        rationale,
+                        override_locked,
+                        "expression.applicability",
+                    )?;
+                }
+            }
+            CharacterExtension::BehavioralSignatures(record) => {
+                for (id, signature) in &mut record.value.signatures {
+                    rewrite_applicability_targets(
+                        &mut signature.applicability,
+                        old_id,
+                        new_id,
+                        format!("extensions.{namespace}.value.signatures.{id}.applicability"),
+                        &mut changed_paths,
+                    );
+                }
+                if !changed_paths.is_empty() {
+                    require_extension_override(
+                        &mut record.header,
+                        rationale,
+                        override_locked,
+                        "behavioral_signatures.applicability",
+                    )?;
+                }
+            }
+            _ => {}
+        }
+        changes.extend(
+            changed_paths
+                .into_iter()
+                .map(|path| CharacterReferenceChange {
+                    owner_character_id: profile.id.clone(),
+                    path,
+                }),
+        );
+    }
+    changes.sort();
+    changes.dedup();
+    Ok(changes)
+}
+
+fn rewrite_applicability_targets(
+    applicability: &mut crate::ExpressionApplicability,
+    old_id: &str,
+    new_id: &str,
+    path: String,
+    changes: &mut Vec<String>,
+) {
+    for (index, predicate) in applicability.predicates.iter_mut().enumerate() {
+        let crate::ExpressionContextPredicate::Relationship {
+            other_character_id: Some(character_id),
+            ..
+        } = predicate
+        else {
+            continue;
+        };
+        if character_id == old_id {
+            *character_id = new_id.to_owned();
+            changes.push(format!("{path}.predicates[{index}].other_character_id"));
+        }
+    }
+}
+
 fn require_extension_override(
     header: &mut crate::ExtensionHeader,
     rationale: &str,
@@ -1247,7 +1568,7 @@ fn require_extension_override(
     if header.lock == LockState::Locked && !override_locked {
         return Err(locked(
             path,
-            "relationship reference is locked and requires an explicit reviewed override",
+            "extension reference is locked and requires an explicit reviewed override",
         ));
     }
     header.state = ValueState::Overridden;
@@ -1258,8 +1579,60 @@ fn require_extension_override(
 }
 
 fn relationship_references(profile: &CharacterProfile, id: &str) -> bool {
-    profile.extensions.values().any(|extension| {
-        matches!(extension, CharacterExtension::Relationships(record) if record.value.edges.values().any(|edge| edge.source_character_id == id || edge.target_character_id == id))
+    profile
+        .extensions
+        .values()
+        .any(|extension| match extension {
+            CharacterExtension::Relationships(record) => record
+                .value
+                .edges
+                .values()
+                .any(|edge| edge.source_character_id == id || edge.target_character_id == id),
+            CharacterExtension::Expression(record) => record
+                .value
+                .lexicon
+                .values()
+                .map(|value| &value.applicability)
+                .chain(
+                    record
+                        .value
+                        .preferences
+                        .values()
+                        .map(|value| &value.applicability),
+                )
+                .chain(
+                    record
+                        .value
+                        .vocabulary_pools
+                        .values()
+                        .map(|value| &value.applicability),
+                )
+                .chain(
+                    record
+                        .value
+                        .voice_constraints
+                        .values()
+                        .map(|value| &value.applicability),
+                )
+                .any(|applicability| applicability_references(applicability, id)),
+            CharacterExtension::BehavioralSignatures(record) => record
+                .value
+                .signatures
+                .values()
+                .any(|value| applicability_references(&value.applicability, id)),
+            _ => false,
+        })
+}
+
+fn applicability_references(value: &crate::ExpressionApplicability, id: &str) -> bool {
+    value.predicates.iter().any(|predicate| {
+        matches!(
+            predicate,
+            crate::ExpressionContextPredicate::Relationship {
+                other_character_id: Some(character_id),
+                ..
+            } if character_id == id
+        )
     })
 }
 

@@ -5,7 +5,7 @@
     title: "Ari Vale Synthetic Character",
     module: (
         id: "org.weave.character",
-        version: "=1.4.0",
+        version: "=1.5.0",
     ),
     dependencies: [],
     values: {
@@ -17,7 +17,7 @@
                     value: {
                         "applied_sha256": (
                             kind: string,
-                            value: "2171b3adb49f9384d8b9749dcaabaa7fcfd711854ecf68653e9536d01815210d",
+                            value: "da2749184c01216cc761180673edf6904a712e3bb79e16b7525862f88ffba577",
                         ),
                         "canonical_personality_write_back": (
                             kind: bool,
@@ -75,7 +75,7 @@
                         ),
                         "review_sha256": (
                             kind: string,
-                            value: "37b9fa4b6f19e5b208c8467f4bfa827cc4e5fd14a2e2ad82d5ac97a18e0fb876",
+                            value: "4355708ded7f704f00416620762c1e62eee4ab2525cfe086f96c197cfc1f8eaf",
                         ),
                         "values": (
                             kind: object,
@@ -271,6 +271,567 @@
                                     },
                                 ),
                             ],
+                        ),
+                    },
+                ),
+                "expression": (
+                    kind: object,
+                    value: {
+                        "behavioral_signature_refs": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: string,
+                                    value: "org.weave.character.ari_vale.signature.maps_before_moving",
+                                ),
+                            ],
+                        ),
+                        "behavioral_signatures": (
+                            kind: object,
+                            value: {
+                                "maps_before_moving": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.planning",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "cue": (
+                                            kind: string,
+                                            value: "Sketches a route before committing the group.",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "maps_before_moving",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "behavioral_signature",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "strength": (
+                                            kind: number,
+                                            value: 0.8,
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "canonical_personality_write_back": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "character_id": (
+                            kind: string,
+                            value: "org.weave.character.ari_vale",
+                        ),
+                        "expression_format_version": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                        "lexicon": (
+                            kind: object,
+                            value: {
+                                "trailmark": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.navigation",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "trailmark",
+                                        ),
+                                        "normalized": (
+                                            kind: string,
+                                            value: "trailmark",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "pack_assigned",
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept the original public reference-pack term for deterministic dialogue fixtures.",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "term",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "accepted",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "weave_expression_glasswind_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "strength": (
+                                            kind: number,
+                                            value: 0.9,
+                                        ),
+                                        "surface": (
+                                            kind: string,
+                                            value: "trailmark",
+                                        ),
+                                        "term_kind": (
+                                            kind: symbol,
+                                            value: "term",
+                                        ),
+                                    },
+                                ),
+                                "waymark": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.navigation",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "waymark",
+                                        ),
+                                        "normalized": (
+                                            kind: string,
+                                            value: "waymark",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "term",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "strength": (
+                                            kind: number,
+                                            value: 0.8,
+                                        ),
+                                        "surface": (
+                                            kind: string,
+                                            value: "waymark",
+                                        ),
+                                        "term_kind": (
+                                            kind: symbol,
+                                            value: "term",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "preferences": (
+                            kind: object,
+                            value: {
+                                "clear_questions": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.preference.communication",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "clear_questions",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "polarity": (
+                                            kind: symbol,
+                                            value: "prefer",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "preference",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "strength": (
+                                            kind: number,
+                                            value: 0.9,
+                                        ),
+                                        "target": (
+                                            kind: string,
+                                            value: "clear questions",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "source_packs": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: object,
+                                    value: {
+                                        "id": (
+                                            kind: string,
+                                            value: "org.weave.expression.glasswind",
+                                        ),
+                                        "sha256": (
+                                            kind: string,
+                                            value: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                        ),
+                                        "version": (
+                                            kind: string,
+                                            value: "1.0.0",
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                        "template_assignments": (
+                            kind: object,
+                            value: {
+                                "arrival_greeting": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.dialogue",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "arrival_greeting",
+                                        ),
+                                        "lock": (
+                                            kind: symbol,
+                                            value: "unlocked",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "pack_assigned",
+                                        ),
+                                        "pack": (
+                                            kind: object,
+                                            value: {
+                                                "id": (
+                                                    kind: string,
+                                                    value: "org.weave.expression.glasswind",
+                                                ),
+                                                "sha256": (
+                                                    kind: string,
+                                                    value: "cb9a577720dde087af5e633c337dcb9814b12b25a0102636cc2a06444b8d66f6",
+                                                ),
+                                                "version": (
+                                                    kind: string,
+                                                    value: "1.0.0",
+                                                ),
+                                            },
+                                        ),
+                                        "rationale": (
+                                            kind: string,
+                                            value: "Accept the original public arrival template for the synthetic runtime fixture.",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "template_assignment",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "accepted",
+                                        ),
+                                        "scenario_id": (
+                                            kind: string,
+                                            value: "arrival",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "weave_expression_glasswind_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "state": (
+                                            kind: symbol,
+                                            value: "reviewed",
+                                        ),
+                                        "template_id": (
+                                            kind: string,
+                                            value: "arrival_greeting",
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "vocabulary_pools": (
+                            kind: object,
+                            value: {
+                                "navigation_words": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.navigation",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "navigation_words",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "vocabulary_pool",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "term_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "trailmark",
+                                                ),
+                                                (
+                                                    kind: string,
+                                                    value: "waymark",
+                                                ),
+                                            ],
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        "voice_constraints": (
+                            kind: object,
+                            value: {
+                                "prefer_clear_questions": (
+                                    kind: object,
+                                    value: {
+                                        "applicability": (
+                                            kind: object,
+                                            value: {
+                                                "predicates": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                                "scenario_ids": (
+                                                    kind: list,
+                                                    value: [],
+                                                ),
+                                            },
+                                        ),
+                                        "category": (
+                                            kind: string,
+                                            value: "org.weave.expression.clarity",
+                                        ),
+                                        "character_id": (
+                                            kind: string,
+                                            value: "org.weave.character.ari_vale",
+                                        ),
+                                        "constraint_effect": (
+                                            kind: symbol,
+                                            value: "prefer",
+                                        ),
+                                        "id": (
+                                            kind: string,
+                                            value: "prefer_clear_questions",
+                                        ),
+                                        "instruction": (
+                                            kind: string,
+                                            value: "Ask one clear question after a short observation.",
+                                        ),
+                                        "medium": (
+                                            kind: symbol,
+                                            value: "both",
+                                        ),
+                                        "origin": (
+                                            kind: symbol,
+                                            value: "authored",
+                                        ),
+                                        "record_kind": (
+                                            kind: symbol,
+                                            value: "voice_constraint",
+                                        ),
+                                        "review": (
+                                            kind: symbol,
+                                            value: "not_required",
+                                        ),
+                                        "source_ids": (
+                                            kind: list,
+                                            value: [
+                                                (
+                                                    kind: string,
+                                                    value: "character_original",
+                                                ),
+                                            ],
+                                        ),
+                                        "strength": (
+                                            kind: number,
+                                            value: 0.9,
+                                        ),
+                                        "target": (
+                                            kind: string,
+                                            value: "clear questions",
+                                        ),
+                                    },
+                                ),
+                            },
                         ),
                     },
                 ),
@@ -1936,7 +2497,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -1948,7 +2509,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2024,7 +2585,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2036,7 +2597,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2129,7 +2690,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2141,7 +2702,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2217,7 +2778,7 @@
                                         ),
                                         "proposal_sha256": (
                                             kind: string,
-                                            value: "bc0fd1533927bc5e63c2754bc7803b367736b0062dd8a7025e8e6aa3b648b68a",
+                                            value: "8d2a8ab6f97d8619d4bc6afc1db5ed7aa7a53cb42576239f4485972590d601f6",
                                         ),
                                         "rationale": (
                                             kind: string,
@@ -2229,7 +2790,7 @@
                                         ),
                                         "review_sha256": (
                                             kind: string,
-                                            value: "34b0a1d66b3356ff126f5b0cd7f65acd254b6f62f5360943417033a0797c7e7a",
+                                            value: "69bcb590deb2d96ec520a4de89b6bec37d86c6f67f8e4f4a9c238977002cf8aa",
                                         ),
                                         "slot_id": (
                                             kind: string,
@@ -2555,6 +3116,10 @@
                                 ),
                                 (
                                     kind: string,
+                                    value: "weave_expression_glasswind_original",
+                                ),
+                                (
+                                    kind: string,
                                     value: "weave_glasswind_presentation",
                                 ),
                                 (
@@ -2572,7 +3137,7 @@
                             value: [
                                 (
                                     kind: string,
-                                    value: "alignment_apply_2171b3adb49f9384",
+                                    value: "alignment_apply_da2749184c01216c",
                                 ),
                             ],
                         ),
@@ -2618,6 +3183,10 @@
                                                     kind: string,
                                                     value: "character_original",
                                                 ),
+                                                (
+                                                    kind: string,
+                                                    value: "weave_expression_glasswind_original",
+                                                ),
                                             ],
                                         ),
                                         "lock": (
@@ -2644,6 +3213,10 @@
                                                                 (
                                                                     kind: string,
                                                                     value: "character_original",
+                                                                ),
+                                                                (
+                                                                    kind: string,
+                                                                    value: "weave_expression_glasswind_original",
                                                                 ),
                                                             ],
                                                         ),
@@ -2718,6 +3291,16 @@
                 modified: false,
             ),
             (
+                id: "weave_expression_glasswind_original",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "expression-dialogue-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+                attribution: "Original neutral expression vocabulary, editorial constraints, templates, lines, scenarios, and expected behavior.",
+                modified: false,
+            ),
+            (
                 id: "weave_glasswind_presentation",
                 kind: original,
                 url: "https://github.com/chrisgliddon/weave",
@@ -2750,7 +3333,7 @@
         ],
         transformations: [
             (
-                id: "alignment_apply_2171b3adb49f9384",
+                id: "alignment_apply_da2749184c01216c",
                 inputs: [
                     "character_original",
                     "weave_wayfinder_compass",
@@ -2758,19 +3341,20 @@
                 description: "Applied a complete editorial review to a deterministic, non-diagnostic narrative alignment proposal without mutating canonical personality evidence or authored canon.",
             ),
             (
-                id: "weave_character_domain_projection_v5",
+                id: "weave_character_domain_projection_v6",
                 inputs: [
                     "character_original",
+                    "weave_expression_glasswind_original",
                     "weave_glasswind_presentation",
                     "weave_relationship_reference_pack",
                     "weave_wayfinder_compass",
                 ],
-                description: "Validated, deterministic projection of Character Profile identity, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
+                description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.",
             ),
         ],
         claims: {
             "values.profile": [
-                "weave_character_domain_projection_v5",
+                "weave_character_domain_projection_v6",
             ],
         },
     ),

@@ -98,13 +98,48 @@ fn retarget_profile(
     profile.id = id.to_owned();
     profile.canon.identity.display_name.value = display_name.to_owned();
     for extension in profile.extensions.values_mut() {
-        let CharacterExtension::Relationships(relationships) = extension else {
-            continue;
-        };
-        for edge in relationships.value.edges.values_mut() {
-            if edge.source_character_id == old_id {
-                edge.source_character_id = id.to_owned();
+        match extension {
+            CharacterExtension::Relationships(relationships) => {
+                for edge in relationships.value.edges.values_mut() {
+                    if edge.source_character_id == old_id {
+                        edge.source_character_id = id.to_owned();
+                    }
+                    if edge.target_character_id == old_id {
+                        edge.target_character_id = id.to_owned();
+                    }
+                }
             }
+            CharacterExtension::Expression(expression) => {
+                expression.value.character_id = id.to_owned();
+                for value in expression.value.lexicon.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+                for value in expression.value.preferences.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+                for value in expression.value.vocabulary_pools.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+                for value in expression.value.voice_constraints.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+                for value in expression.value.template_assignments.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+                let prefix = format!("{old_id}.signature.");
+                for value in &mut expression.value.behavioral_signature_refs {
+                    if let Some(suffix) = value.strip_prefix(&prefix) {
+                        *value = format!("{id}.signature.{suffix}");
+                    }
+                }
+            }
+            CharacterExtension::BehavioralSignatures(signatures) => {
+                signatures.value.character_id = id.to_owned();
+                for value in signatures.value.signatures.values_mut() {
+                    value.character_id = id.to_owned();
+                }
+            }
+            _ => {}
         }
     }
     profile
@@ -295,12 +330,27 @@ fn reference_safe_rename_previews_every_migration_and_respects_locks() {
     let request = CharacterOperationRequest::from_json(REQUEST_JSON).unwrap();
     let proposal = propose_character_operation(&collection, &request).unwrap();
     assert_eq!(proposal.changes.len(), 2);
-    assert_eq!(proposal.changes[0].affected_references.len(), 1);
+    assert_eq!(proposal.changes[0].affected_references.len(), 11);
     assert_eq!(proposal.changes[1].affected_references.len(), 1);
     assert!(
-        proposal.changes[0].affected_references[0]
-            .path
-            .ends_with("source_character_id")
+        proposal.changes[0]
+            .affected_references
+            .iter()
+            .any(|change| change.path.ends_with("source_character_id"))
+    );
+    assert!(
+        proposal.changes[0]
+            .affected_references
+            .iter()
+            .any(|change| change.path.ends_with("expression.value.character_id"))
+    );
+    assert!(
+        proposal.changes[0]
+            .affected_references
+            .iter()
+            .any(|change| change
+                .path
+                .ends_with("behavioral_signatures.value.character_id"))
     );
     assert!(
         proposal.changes[1].affected_references[0]

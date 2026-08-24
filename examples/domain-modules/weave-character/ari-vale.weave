@@ -1,6 +1,6 @@
 module character {
     id: "org.weave.character"
-    version: "=1.4.0"
+    version: "=1.5.0"
     pack: "ari_vale@=1.0.0"
     override profile.identity.display_name.value: "Ari Vale, Wayfinder"
 }
@@ -27,6 +27,12 @@ VAR relationship_pack = character.profile.relationships.kind_pack.id
 VAR relationship_pack_version = character.profile.relationships.kind_pack.version
 VAR relationship_pack_sha256 = character.profile.relationships.kind_pack.sha256
 VAR relationship_personality_writeback = character.profile.relationships.canonical_personality_write_back
+VAR expression_term = character.profile.expression.lexicon.trailmark.surface
+VAR expression_preference = character.profile.expression.preferences.clear_questions.target
+VAR expression_template = character.profile.expression.template_assignments.arrival_greeting.template_id
+VAR expression_pack = character.profile.expression.template_assignments.arrival_greeting.pack.id
+VAR expression_pack_sha256 = character.profile.expression.template_assignments.arrival_greeting.pack.sha256
+VAR expression_personality_writeback = character.profile.expression.canonical_personality_write_back
 
 === start ===
 {presentation_personality_writeback:
@@ -47,5 +53,10 @@ VAR relationship_personality_writeback = character.profile.relationships.canonic
     This branch is unreachable because relationships cannot become personality evidence.
 - else:
     Runtime relationship query: {mentor_kind} toward {mentor_target} from {relationship_pack}@{relationship_pack_version} ({relationship_pack_sha256}).
+}
+{expression_personality_writeback:
+    This branch is unreachable because expression cannot become personality evidence.
+- else:
+    Runtime expression query: {expression_term}; preference {expression_preference}; template {expression_template} from {expression_pack} ({expression_pack_sha256}).
 }
 -> END

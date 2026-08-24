@@ -6,8 +6,10 @@ their tagged domain values and renders them with `Application` and `Text`. It re
 variables as the Bevy example, labels OCEAN as derived and lossy, accepts only reviewed/edited/
 overridden alignment labels with exact pack and review fingerprints, excludes rejected and
 withheld axes, and validates attributed pronouns, palette colors, safe asset paths, catalog
-coordinates, assignment value kinds, and presentation locks. It keeps fact lineage separate from
-original fictional-cue lineage, verifies presentation, alignment, and temporal personality
+coordinates, assignment value kinds, and presentation locks. Its expression reader validates and
+renders a normalized term, categorized preference, reusable voice instruction, exact dialogue
+template/scenario, and pinned pack coordinate. It keeps fact lineage separate from original
+fictional-cue lineage, verifies expression, presentation, alignment, and temporal personality
 write-back are false, and has no dependency on the Weave Editor.
 
 ```bash

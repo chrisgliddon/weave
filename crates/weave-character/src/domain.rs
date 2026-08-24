@@ -11,10 +11,14 @@ use weave_domain::{
 
 use crate::{
     AcceptedDateContextCue, AlignmentPackRef, AlignmentPublicDecision, ApprovedAlignmentValue,
-    Attributed, CharacterError, CharacterExtension, CharacterProfile, Confidence,
-    DateContextCueKind, DateContextDecision, DateContextSensitivity, DateContextUncertainty,
-    DerivedTrait, Freshness, HexacoProfile, IdentityContextKind, IdentityPresentation, LockState,
-    OceanView, PresentationAssetKind, PresentationAssetReference, PresentationCatalogAssignment,
+    Attributed, BehavioralSignature, CharacterError, CharacterExtension, CharacterProfile,
+    Confidence, DateContextCueKind, DateContextDecision, DateContextSensitivity,
+    DateContextUncertainty, DerivedTrait, ExpressionApplicability, ExpressionConstraintEffect,
+    ExpressionContextPredicate, ExpressionMedium, ExpressionPackRef, ExpressionRecordOrigin,
+    ExpressionTemplateAssignment, ExpressionTermKind, ExpressionVocabularyPool,
+    ExpressionVoiceConstraint, Freshness, HexacoProfile, IdentityContextKind, IdentityPresentation,
+    LockState, NormalizedExpressionTerm, NormalizedPreference, OceanView, PreferencePolarity,
+    PresentationAssetKind, PresentationAssetReference, PresentationCatalogAssignment,
     PresentationCatalogRef, PresentationCatalogValue, RelationshipConsent,
     RelationshipConsentState, RelationshipDate, RelationshipEdge, RelationshipEdgeOrigin,
     RelationshipEvidenceContribution, RelationshipEvidenceKind, RelationshipKindPackRef,
@@ -23,7 +27,7 @@ use crate::{
 };
 
 /// Exact release of the declarative Weave Character domain module.
-pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.4.0";
+pub const CHARACTER_DOMAIN_MODULE_VERSION: &str = "1.5.0";
 
 /// Failure while projecting a validated Character Profile through the shared domain boundary.
 #[derive(Debug)]
@@ -174,6 +178,26 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             "CharacterRelationshipValidity".to_owned(),
             character_relationship_validity_type(),
         ),
+        (
+            "CharacterExpression".to_owned(),
+            character_expression_type(),
+        ),
+        (
+            "CharacterExpressionApplicability".to_owned(),
+            character_expression_applicability_type(),
+        ),
+        (
+            "CharacterExpressionPack".to_owned(),
+            character_expression_pack_type(),
+        ),
+        (
+            "CharacterExpressionPredicate".to_owned(),
+            character_expression_predicate_type(),
+        ),
+        (
+            "CharacterExpressionRecord".to_owned(),
+            character_expression_record_type(),
+        ),
         ("CharacterProfile".to_owned(), runtime_profile_type()),
         (
             "CharacterProvenance".to_owned(),
@@ -221,7 +245,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
         version: CHARACTER_DOMAIN_MODULE_VERSION.to_owned(),
         namespace: "character".to_owned(),
         title: "Weave Character".to_owned(),
-        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
+        summary: "Typed, provenance-aware Character Profiles with canonical HEXACO evidence, normalized authored expression, deterministic dialogue links, layered relationship graphs, non-canonical identity presentation, and a visibly lossy derived OCEAN view.".to_owned(),
         authors: vec![ModuleAuthor {
             name: "Weave Contributors".to_owned(),
             url: Some("https://github.com/chrisgliddon/weave".to_owned()),
@@ -255,6 +279,7 @@ pub fn character_module_manifest() -> Result<ModuleManifest, CharacterDomainErro
             read_only_paths: [
                 (vec!["profile", "alignment"], "Reviewed alignment values retain exact pack and review fingerprints and remain non-diagnostic read-only shorthand; canonical authoring requires a separate reviewed operation."),
                 (vec!["profile", "date_context"], "Reviewed temporal cues retain exact lineage and remain non-causal read-only context; canonical authoring requires a separate reviewed operation."),
+                (vec!["profile", "expression"], "Normalized expression records and exact dialogue-template assignments are changed only through a fingerprinted expression revision or explicit public-pack assignment."),
                 (vec!["profile", "hexaco"], "Canonical HEXACO evidence is revised in the profile artifact so dependent views can be recomputed and reviewed."),
                 (vec!["profile", "identity", "id"], "The stable character identifier is not a display label and cannot be rewritten by a story override."),
                 (vec!["profile", "ocean"], "OCEAN is a lossy derived compatibility view and cannot be authored as independent evidence."),
@@ -419,6 +444,9 @@ pub fn character_profile_domain_value(profile: &CharacterProfile) -> DomainValue
     if let Some(relationships) = relationship_graph_value(profile) {
         fields.insert("relationships".to_owned(), relationships);
     }
+    if let Some(expression) = expression_value(profile) {
+        fields.insert("expression".to_owned(), expression);
+    }
     DomainValue::Object(fields)
 }
 
@@ -427,7 +455,7 @@ fn current_weave() -> Result<Version, CharacterDomainError> {
 }
 
 fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDomainError> {
-    const PROJECTION_ID: &str = "weave_character_domain_projection_v5";
+    const PROJECTION_ID: &str = "weave_character_domain_projection_v6";
     if input
         .transformations
         .iter()
@@ -443,7 +471,7 @@ fn projection_provenance(input: &Provenance) -> Result<Provenance, CharacterDoma
             .iter()
             .map(|source| source.id.clone())
             .collect(),
-        description: "Validated, deterministic projection of Character Profile identity, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
+        description: "Validated, deterministic projection of Character Profile identity, normalized authored expression and exact dialogue links, layered relationships, non-canonical presentation, HEXACO evidence, reviewed non-diagnostic alignment values, reviewed non-causal temporal context, lossy OCEAN compatibility fields, and lineage into the shared finite domain-value contract.".to_owned(),
     });
     transformations.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(Provenance {
@@ -1897,6 +1925,456 @@ fn character_relationship_graph_type() -> TypeExpression {
     }
 }
 
+fn character_expression_pack_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "id".to_owned(),
+                field(text(3, 256), true, "Exact expression-pack identity."),
+            ),
+            (
+                "sha256".to_owned(),
+                field(text(64, 64), true, "Exact expression-pack content SHA-256."),
+            ),
+            (
+                "version".to_owned(),
+                field(
+                    text(1, 256),
+                    true,
+                    "Exact expression-pack semantic version.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_expression_predicate_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "bands".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(symbol(&[
+                            "high",
+                            "low",
+                            "middle",
+                            "very_high",
+                            "very_low",
+                        ])),
+                        min_items: 1,
+                        max_items: 5,
+                    },
+                    false,
+                    "Allowed personality bands when kind is personality_band.",
+                ),
+            ),
+            (
+                "cue_id".to_owned(),
+                field(
+                    text(1, 128),
+                    false,
+                    "Reviewed date-context cue when kind is date_context.",
+                ),
+            ),
+            (
+                "kind".to_owned(),
+                field(
+                    symbol(&[
+                        "date_context",
+                        "personality_band",
+                        "relationship",
+                        "world_context",
+                    ]),
+                    true,
+                    "Closed expression applicability predicate kind.",
+                ),
+            ),
+            (
+                "other_character_id".to_owned(),
+                field(
+                    text(3, 256),
+                    false,
+                    "Optional exact relationship counterpart.",
+                ),
+            ),
+            (
+                "relationship_kind_id".to_owned(),
+                field(
+                    text(3, 256),
+                    false,
+                    "Exact relationship kind when kind is relationship.",
+                ),
+            ),
+            (
+                "tag".to_owned(),
+                field(
+                    text(1, 128),
+                    false,
+                    "World-context tag when kind is world_context.",
+                ),
+            ),
+            (
+                "trait_id".to_owned(),
+                field(
+                    symbol(&[
+                        "aesthetic_appreciation",
+                        "agreeableness",
+                        "anxiety",
+                        "conscientiousness",
+                        "creativity",
+                        "dependence",
+                        "diligence",
+                        "emotionality",
+                        "extraversion",
+                        "fairness",
+                        "fearfulness",
+                        "flexibility",
+                        "forgivingness",
+                        "gentleness",
+                        "greed_avoidance",
+                        "honesty_humility",
+                        "inquisitiveness",
+                        "liveliness",
+                        "modesty",
+                        "openness",
+                        "organization",
+                        "patience",
+                        "perfectionism",
+                        "prudence",
+                        "sentimentality",
+                        "sincerity",
+                        "sociability",
+                        "social_boldness",
+                        "social_self_esteem",
+                        "unconventionality",
+                    ]),
+                    false,
+                    "Canonical HEXACO factor or facet when kind is personality_band.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_expression_applicability_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "predicates".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterExpressionPredicate")),
+                        min_items: 0,
+                        max_items: 128,
+                    },
+                    true,
+                    "Typed predicates; every predicate must match for runtime applicability.",
+                ),
+            ),
+            (
+                "scenario_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 128)),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted scenario allowlist; empty means every scenario.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_expression_record_type() -> TypeExpression {
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "applicability".to_owned(),
+                field(
+                    named("CharacterExpressionApplicability"),
+                    true,
+                    "Deterministic scenario and context applicability.",
+                ),
+            ),
+            (
+                "category".to_owned(),
+                field(text(3, 256), true, "Namespaced expression category."),
+            ),
+            (
+                "character_id".to_owned(),
+                field(text(3, 256), true, "Exact Character owner."),
+            ),
+            (
+                "constraint_effect".to_owned(),
+                field(
+                    symbol(&["avoid", "prefer"]),
+                    false,
+                    "Voice-constraint direction.",
+                ),
+            ),
+            (
+                "cue".to_owned(),
+                field(text(1, 2_048), false, "Authored behavioral cue."),
+            ),
+            (
+                "id".to_owned(),
+                field(text(1, 128), true, "Stable local expression record id."),
+            ),
+            (
+                "instruction".to_owned(),
+                field(text(1, 2_048), false, "Authored voice instruction."),
+            ),
+            (
+                "lock".to_owned(),
+                field(
+                    symbol(&["locked", "unlocked"]),
+                    false,
+                    "Template-assignment lock state.",
+                ),
+            ),
+            (
+                "medium".to_owned(),
+                field(
+                    symbol(&["both", "speech", "writing"]),
+                    false,
+                    "Speech or writing medium for a voice constraint.",
+                ),
+            ),
+            (
+                "normalized".to_owned(),
+                field(text(1, 512), false, "Normalized lexicon comparison form."),
+            ),
+            (
+                "origin".to_owned(),
+                field(
+                    symbol(&[
+                        "authored",
+                        "imported",
+                        "pack_assigned",
+                        "reviewed_suggestion",
+                        "suggested",
+                    ]),
+                    true,
+                    "Explicit record authority and entry path.",
+                ),
+            ),
+            (
+                "pack".to_owned(),
+                field(
+                    named("CharacterExpressionPack"),
+                    false,
+                    "Exact dialogue-template pack coordinate.",
+                ),
+            ),
+            (
+                "polarity".to_owned(),
+                field(
+                    symbol(&["avoid", "prefer"]),
+                    false,
+                    "Categorized preference direction.",
+                ),
+            ),
+            (
+                "rationale".to_owned(),
+                field(text(1, 2_048), false, "Authorship or review rationale."),
+            ),
+            (
+                "record_kind".to_owned(),
+                field(
+                    symbol(&[
+                        "behavioral_signature",
+                        "preference",
+                        "template_assignment",
+                        "term",
+                        "vocabulary_pool",
+                        "voice_constraint",
+                    ]),
+                    true,
+                    "Closed expression record family.",
+                ),
+            ),
+            (
+                "review".to_owned(),
+                field(
+                    symbol(&["accepted", "not_required", "pending", "rejected"]),
+                    true,
+                    "Editorial review state.",
+                ),
+            ),
+            (
+                "scenario_id".to_owned(),
+                field(text(1, 128), false, "Assigned dialogue scenario id."),
+            ),
+            (
+                "source_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 256)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Sorted public provenance ids.",
+                ),
+            ),
+            (
+                "state".to_owned(),
+                field(
+                    symbol(&[
+                        "authored",
+                        "derived",
+                        "imported",
+                        "overridden",
+                        "reviewed",
+                        "suggested",
+                    ]),
+                    false,
+                    "Template-assignment value state.",
+                ),
+            ),
+            (
+                "strength".to_owned(),
+                field(
+                    number(false, 0.0, 1.0),
+                    false,
+                    "Explicit expression strength in the closed unit interval.",
+                ),
+            ),
+            (
+                "surface".to_owned(),
+                field(text(1, 512), false, "Authored lexicon surface text."),
+            ),
+            (
+                "target".to_owned(),
+                field(
+                    text(1, 512),
+                    false,
+                    "Normalized preference or constraint target.",
+                ),
+            ),
+            (
+                "template_id".to_owned(),
+                field(text(1, 128), false, "Exact dialogue template id."),
+            ),
+            (
+                "term_ids".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(1, 128)),
+                        min_items: 1,
+                        max_items: 4_096,
+                    },
+                    false,
+                    "Sorted normalized term ids in a vocabulary pool.",
+                ),
+            ),
+            (
+                "term_kind".to_owned(),
+                field(
+                    symbol(&["phrase", "term"]),
+                    false,
+                    "Normalized lexicon term kind.",
+                ),
+            ),
+        ]),
+    }
+}
+
+fn character_expression_type() -> TypeExpression {
+    let record_map = || TypeExpression::Map {
+        values: Box::new(named("CharacterExpressionRecord")),
+        min_entries: 0,
+        max_entries: 16_384,
+    };
+    TypeExpression::Object {
+        fields: BTreeMap::from([
+            (
+                "behavioral_signature_refs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(text(3, 512)),
+                        min_items: 0,
+                        max_items: 16_384,
+                    },
+                    true,
+                    "Explicit links to projected behavioral signatures.",
+                ),
+            ),
+            (
+                "behavioral_signatures".to_owned(),
+                field(
+                    record_map(),
+                    true,
+                    "Behavioral signatures keyed by stable id.",
+                ),
+            ),
+            (
+                "canonical_personality_write_back".to_owned(),
+                field(
+                    TypeExpression::Bool,
+                    true,
+                    "Always false; expression cannot modify canonical personality evidence.",
+                ),
+            ),
+            (
+                "character_id".to_owned(),
+                field(text(3, 256), true, "Exact Character owner."),
+            ),
+            (
+                "expression_format_version".to_owned(),
+                field(
+                    number(true, 1.0, 1.0),
+                    true,
+                    "Exact expression value version.",
+                ),
+            ),
+            (
+                "lexicon".to_owned(),
+                field(record_map(), true, "Normalized terms and phrases."),
+            ),
+            (
+                "preferences".to_owned(),
+                field(record_map(), true, "Categorized expression preferences."),
+            ),
+            (
+                "source_packs".to_owned(),
+                field(
+                    TypeExpression::List {
+                        items: Box::new(named("CharacterExpressionPack")),
+                        min_items: 0,
+                        max_items: 4_096,
+                    },
+                    true,
+                    "Exact expression-pack coordinates retained by accepted assignments.",
+                ),
+            ),
+            (
+                "template_assignments".to_owned(),
+                field(
+                    record_map(),
+                    true,
+                    "Reviewed exact dialogue-template links.",
+                ),
+            ),
+            (
+                "vocabulary_pools".to_owned(),
+                field(record_map(), true, "Reusable normalized vocabulary pools."),
+            ),
+            (
+                "voice_constraints".to_owned(),
+                field(
+                    record_map(),
+                    true,
+                    "Authored speech and writing constraints.",
+                ),
+            ),
+        ]),
+    }
+}
+
 fn runtime_profile_type() -> TypeExpression {
     TypeExpression::Object {
         fields: BTreeMap::from([
@@ -1914,6 +2392,14 @@ fn runtime_profile_type() -> TypeExpression {
                     named("CharacterDateContext"),
                     false,
                     "Optional reviewed, non-causal temporal authoring context.",
+                ),
+            ),
+            (
+                "expression".to_owned(),
+                field(
+                    named("CharacterExpression"),
+                    false,
+                    "Optional normalized expression records and exact deterministic dialogue links.",
                 ),
             ),
             (
@@ -2526,6 +3012,403 @@ fn relationship_exception_value(value: &RelationshipSafeguardException) -> Domai
     ])
 }
 
+fn expression_value(profile: &CharacterProfile) -> Option<DomainValue> {
+    let CharacterExtension::Expression(extension) = profile
+        .extensions
+        .get(crate::EXPRESSION_EXTENSION_NAMESPACE)?
+    else {
+        return None;
+    };
+    let value = &extension.value;
+    let behavioral_signatures = profile
+        .extensions
+        .get(crate::BEHAVIORAL_SIGNATURES_EXTENSION_NAMESPACE)
+        .and_then(|extension| match extension {
+            CharacterExtension::BehavioralSignatures(extension) => Some(&extension.value),
+            _ => None,
+        });
+    Some(DomainValue::Object(BTreeMap::from([
+        (
+            "behavioral_signature_refs".to_owned(),
+            string_list(value.behavioral_signature_refs.iter()),
+        ),
+        (
+            "behavioral_signatures".to_owned(),
+            DomainValue::Object(
+                behavioral_signatures
+                    .into_iter()
+                    .flat_map(|signatures| signatures.signatures.iter())
+                    .map(|(id, signature)| (id.clone(), behavioral_signature_value(signature)))
+                    .collect(),
+            ),
+        ),
+        (
+            "canonical_personality_write_back".to_owned(),
+            DomainValue::Bool(false),
+        ),
+        (
+            "character_id".to_owned(),
+            DomainValue::String(value.character_id.clone()),
+        ),
+        (
+            "expression_format_version".to_owned(),
+            DomainValue::Number(f64::from(value.expression_format_version)),
+        ),
+        (
+            "lexicon".to_owned(),
+            DomainValue::Object(
+                value
+                    .lexicon
+                    .iter()
+                    .map(|(id, term)| (id.clone(), expression_term_value(term)))
+                    .collect(),
+            ),
+        ),
+        (
+            "preferences".to_owned(),
+            DomainValue::Object(
+                value
+                    .preferences
+                    .iter()
+                    .map(|(id, preference)| (id.clone(), expression_preference_value(preference)))
+                    .collect(),
+            ),
+        ),
+        (
+            "source_packs".to_owned(),
+            DomainValue::List(
+                value
+                    .source_pack_refs
+                    .iter()
+                    .map(expression_pack_ref_value)
+                    .collect(),
+            ),
+        ),
+        (
+            "template_assignments".to_owned(),
+            DomainValue::Object(
+                value
+                    .template_assignments
+                    .iter()
+                    .map(|(id, assignment)| {
+                        (id.clone(), expression_template_assignment_value(assignment))
+                    })
+                    .collect(),
+            ),
+        ),
+        (
+            "vocabulary_pools".to_owned(),
+            DomainValue::Object(
+                value
+                    .vocabulary_pools
+                    .iter()
+                    .map(|(id, pool)| (id.clone(), expression_vocabulary_pool_value(pool)))
+                    .collect(),
+            ),
+        ),
+        (
+            "voice_constraints".to_owned(),
+            DomainValue::Object(
+                value
+                    .voice_constraints
+                    .iter()
+                    .map(|(id, constraint)| {
+                        (id.clone(), expression_voice_constraint_value(constraint))
+                    })
+                    .collect(),
+            ),
+        ),
+    ])))
+}
+
+struct ExpressionRecordProjection<'a> {
+    id: &'a str,
+    character_id: &'a str,
+    category: &'a str,
+    record_kind: &'a str,
+    applicability: &'a ExpressionApplicability,
+    origin: ExpressionRecordOrigin,
+    review: ReviewState,
+    source_ids: &'a [String],
+    rationale: Option<&'a str>,
+}
+
+fn expression_record_fields(
+    value: ExpressionRecordProjection<'_>,
+) -> BTreeMap<String, DomainValue> {
+    let mut fields = BTreeMap::from([
+        (
+            "applicability".to_owned(),
+            expression_applicability_value(value.applicability),
+        ),
+        (
+            "category".to_owned(),
+            DomainValue::String(value.category.to_owned()),
+        ),
+        (
+            "character_id".to_owned(),
+            DomainValue::String(value.character_id.to_owned()),
+        ),
+        ("id".to_owned(), DomainValue::String(value.id.to_owned())),
+        (
+            "origin".to_owned(),
+            DomainValue::Symbol(expression_origin(value.origin).to_owned()),
+        ),
+        (
+            "record_kind".to_owned(),
+            DomainValue::Symbol(value.record_kind.to_owned()),
+        ),
+        (
+            "review".to_owned(),
+            DomainValue::Symbol(review(value.review).to_owned()),
+        ),
+        (
+            "source_ids".to_owned(),
+            string_list(value.source_ids.iter()),
+        ),
+    ]);
+    if let Some(rationale) = value.rationale {
+        fields.insert(
+            "rationale".to_owned(),
+            DomainValue::String(rationale.to_owned()),
+        );
+    }
+    fields
+}
+
+fn expression_term_value(value: &NormalizedExpressionTerm) -> DomainValue {
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: &value.category,
+        record_kind: "term",
+        applicability: &value.applicability,
+        origin: value.origin,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: value.rationale.as_deref(),
+    });
+    fields.insert(
+        "normalized".to_owned(),
+        DomainValue::String(value.normalized.clone()),
+    );
+    fields.insert("strength".to_owned(), DomainValue::Number(value.strength));
+    fields.insert(
+        "surface".to_owned(),
+        DomainValue::String(value.surface.clone()),
+    );
+    fields.insert(
+        "term_kind".to_owned(),
+        DomainValue::Symbol(expression_term_kind(value.kind).to_owned()),
+    );
+    DomainValue::Object(fields)
+}
+
+fn expression_preference_value(value: &NormalizedPreference) -> DomainValue {
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: &value.category,
+        record_kind: "preference",
+        applicability: &value.applicability,
+        origin: value.origin,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: value.rationale.as_deref(),
+    });
+    fields.insert(
+        "polarity".to_owned(),
+        DomainValue::Symbol(preference_polarity(value.polarity).to_owned()),
+    );
+    fields.insert("strength".to_owned(), DomainValue::Number(value.strength));
+    fields.insert(
+        "target".to_owned(),
+        DomainValue::String(value.target.clone()),
+    );
+    DomainValue::Object(fields)
+}
+
+fn expression_vocabulary_pool_value(value: &ExpressionVocabularyPool) -> DomainValue {
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: &value.category,
+        record_kind: "vocabulary_pool",
+        applicability: &value.applicability,
+        origin: value.origin,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: value.rationale.as_deref(),
+    });
+    fields.insert("term_ids".to_owned(), string_list(value.term_ids.iter()));
+    DomainValue::Object(fields)
+}
+
+fn behavioral_signature_value(value: &BehavioralSignature) -> DomainValue {
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: &value.category,
+        record_kind: "behavioral_signature",
+        applicability: &value.applicability,
+        origin: value.origin,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: value.rationale.as_deref(),
+    });
+    fields.insert("cue".to_owned(), DomainValue::String(value.cue.clone()));
+    fields.insert("strength".to_owned(), DomainValue::Number(value.strength));
+    DomainValue::Object(fields)
+}
+
+fn expression_voice_constraint_value(value: &ExpressionVoiceConstraint) -> DomainValue {
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: &value.category,
+        record_kind: "voice_constraint",
+        applicability: &value.applicability,
+        origin: value.origin,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: value.rationale.as_deref(),
+    });
+    fields.insert(
+        "constraint_effect".to_owned(),
+        DomainValue::Symbol(expression_constraint_effect(value.effect).to_owned()),
+    );
+    fields.insert(
+        "instruction".to_owned(),
+        DomainValue::String(value.instruction.clone()),
+    );
+    fields.insert(
+        "medium".to_owned(),
+        DomainValue::Symbol(expression_medium(value.medium).to_owned()),
+    );
+    fields.insert("strength".to_owned(), DomainValue::Number(value.strength));
+    fields.insert(
+        "target".to_owned(),
+        DomainValue::String(value.target.clone()),
+    );
+    DomainValue::Object(fields)
+}
+
+fn expression_template_assignment_value(value: &ExpressionTemplateAssignment) -> DomainValue {
+    let applicability = ExpressionApplicability::default();
+    let mut fields = expression_record_fields(ExpressionRecordProjection {
+        id: &value.id,
+        character_id: &value.character_id,
+        category: "org.weave.expression.dialogue",
+        record_kind: "template_assignment",
+        applicability: &applicability,
+        origin: ExpressionRecordOrigin::PackAssigned,
+        review: value.review,
+        source_ids: &value.source_ids,
+        rationale: Some(&value.rationale),
+    });
+    fields.insert(
+        "lock".to_owned(),
+        DomainValue::Symbol(lock(value.lock).to_owned()),
+    );
+    fields.insert("pack".to_owned(), expression_pack_ref_value(&value.pack));
+    fields.insert(
+        "scenario_id".to_owned(),
+        DomainValue::String(value.scenario_id.clone()),
+    );
+    fields.insert(
+        "state".to_owned(),
+        DomainValue::Symbol(state(value.state).to_owned()),
+    );
+    fields.insert(
+        "template_id".to_owned(),
+        DomainValue::String(value.template_id.clone()),
+    );
+    DomainValue::Object(fields)
+}
+
+fn expression_pack_ref_value(value: &ExpressionPackRef) -> DomainValue {
+    object([
+        ("id", DomainValue::String(value.id.clone())),
+        ("sha256", DomainValue::String(value.sha256.clone())),
+        ("version", DomainValue::String(value.version.clone())),
+    ])
+}
+
+fn expression_applicability_value(value: &ExpressionApplicability) -> DomainValue {
+    object([
+        (
+            "predicates",
+            DomainValue::List(
+                value
+                    .predicates
+                    .iter()
+                    .map(expression_predicate_value)
+                    .collect(),
+            ),
+        ),
+        ("scenario_ids", string_list(value.scenario_ids.iter())),
+    ])
+}
+
+fn expression_predicate_value(value: &ExpressionContextPredicate) -> DomainValue {
+    let mut fields = BTreeMap::new();
+    match value {
+        ExpressionContextPredicate::PersonalityBand { trait_id, bands } => {
+            fields.insert(
+                "bands".to_owned(),
+                DomainValue::List(
+                    bands
+                        .iter()
+                        .map(|band| DomainValue::Symbol(trait_band(*band).to_owned()))
+                        .collect(),
+                ),
+            );
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("personality_band".to_owned()),
+            );
+            fields.insert(
+                "trait_id".to_owned(),
+                DomainValue::Symbol(expression_trait_id(*trait_id).to_owned()),
+            );
+        }
+        ExpressionContextPredicate::Relationship {
+            relationship_kind_id,
+            other_character_id,
+        } => {
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("relationship".to_owned()),
+            );
+            fields.insert(
+                "relationship_kind_id".to_owned(),
+                DomainValue::String(relationship_kind_id.clone()),
+            );
+            if let Some(character_id) = other_character_id {
+                fields.insert(
+                    "other_character_id".to_owned(),
+                    DomainValue::String(character_id.clone()),
+                );
+            }
+        }
+        ExpressionContextPredicate::DateContext { cue_id } => {
+            fields.insert("cue_id".to_owned(), DomainValue::String(cue_id.clone()));
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("date_context".to_owned()),
+            );
+        }
+        ExpressionContextPredicate::WorldContext { tag } => {
+            fields.insert(
+                "kind".to_owned(),
+                DomainValue::Symbol("world_context".to_owned()),
+            );
+            fields.insert("tag".to_owned(), DomainValue::String(tag.clone()));
+        }
+    }
+    DomainValue::Object(fields)
+}
+
 fn string_list<'a>(values: impl IntoIterator<Item = &'a String>) -> DomainValue {
     DomainValue::List(
         values
@@ -2543,6 +3426,80 @@ const fn relationship_origin(value: RelationshipEdgeOrigin) -> &'static str {
         RelationshipEdgeOrigin::ComputedAffinity => "computed_affinity",
         RelationshipEdgeOrigin::SuggestedNarrative => "suggested_narrative",
         RelationshipEdgeOrigin::ReviewedSuggestion => "reviewed_suggestion",
+    }
+}
+
+const fn expression_origin(value: ExpressionRecordOrigin) -> &'static str {
+    match value {
+        ExpressionRecordOrigin::Authored => "authored",
+        ExpressionRecordOrigin::Imported => "imported",
+        ExpressionRecordOrigin::PackAssigned => "pack_assigned",
+        ExpressionRecordOrigin::Suggested => "suggested",
+        ExpressionRecordOrigin::ReviewedSuggestion => "reviewed_suggestion",
+    }
+}
+
+const fn expression_term_kind(value: ExpressionTermKind) -> &'static str {
+    match value {
+        ExpressionTermKind::Term => "term",
+        ExpressionTermKind::Phrase => "phrase",
+    }
+}
+
+const fn preference_polarity(value: PreferencePolarity) -> &'static str {
+    match value {
+        PreferencePolarity::Prefer => "prefer",
+        PreferencePolarity::Avoid => "avoid",
+    }
+}
+
+const fn expression_medium(value: ExpressionMedium) -> &'static str {
+    match value {
+        ExpressionMedium::Speech => "speech",
+        ExpressionMedium::Writing => "writing",
+        ExpressionMedium::Both => "both",
+    }
+}
+
+const fn expression_constraint_effect(value: ExpressionConstraintEffect) -> &'static str {
+    match value {
+        ExpressionConstraintEffect::Prefer => "prefer",
+        ExpressionConstraintEffect::Avoid => "avoid",
+    }
+}
+
+const fn expression_trait_id(value: crate::HexacoTrait) -> &'static str {
+    match value {
+        crate::HexacoTrait::HonestyHumility => "honesty_humility",
+        crate::HexacoTrait::Sincerity => "sincerity",
+        crate::HexacoTrait::Fairness => "fairness",
+        crate::HexacoTrait::GreedAvoidance => "greed_avoidance",
+        crate::HexacoTrait::Modesty => "modesty",
+        crate::HexacoTrait::Emotionality => "emotionality",
+        crate::HexacoTrait::Fearfulness => "fearfulness",
+        crate::HexacoTrait::Anxiety => "anxiety",
+        crate::HexacoTrait::Dependence => "dependence",
+        crate::HexacoTrait::Sentimentality => "sentimentality",
+        crate::HexacoTrait::Extraversion => "extraversion",
+        crate::HexacoTrait::SocialSelfEsteem => "social_self_esteem",
+        crate::HexacoTrait::SocialBoldness => "social_boldness",
+        crate::HexacoTrait::Sociability => "sociability",
+        crate::HexacoTrait::Liveliness => "liveliness",
+        crate::HexacoTrait::Agreeableness => "agreeableness",
+        crate::HexacoTrait::Forgivingness => "forgivingness",
+        crate::HexacoTrait::Gentleness => "gentleness",
+        crate::HexacoTrait::Flexibility => "flexibility",
+        crate::HexacoTrait::Patience => "patience",
+        crate::HexacoTrait::Conscientiousness => "conscientiousness",
+        crate::HexacoTrait::Organization => "organization",
+        crate::HexacoTrait::Diligence => "diligence",
+        crate::HexacoTrait::Perfectionism => "perfectionism",
+        crate::HexacoTrait::Prudence => "prudence",
+        crate::HexacoTrait::Openness => "openness",
+        crate::HexacoTrait::AestheticAppreciation => "aesthetic_appreciation",
+        crate::HexacoTrait::Inquisitiveness => "inquisitiveness",
+        crate::HexacoTrait::Creativity => "creativity",
+        crate::HexacoTrait::Unconventionality => "unconventionality",
     }
 }
 

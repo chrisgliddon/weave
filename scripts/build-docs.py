@@ -589,6 +589,7 @@ def verify_domain_contract() -> None:
     character_authoring = character_fixture / "authoring"
     character_operations = character_fixture / "operations"
     character_presentation = character_fixture / "presentation"
+    character_expression = character_fixture / "expression"
     character_collection_json = (
         character_operations / "collection.character-collection.json"
     )
@@ -799,6 +800,21 @@ def verify_domain_contract() -> None:
             "-p",
             "weave-character",
             "--example",
+            "expression_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-character",
+            "--example",
             "guided_authoring_fixture",
             "--",
             "--check",
@@ -957,6 +973,24 @@ def verify_domain_contract() -> None:
         generated_alignment_receipt_schema = (
             workspace / "weave-character-alignment-receipt-v1.schema.json"
         )
+        generated_expression_schemas = {
+            "expression-pack": workspace
+            / "weave-character-expression-pack-v1.schema.json",
+            "expression-revision": workspace
+            / "weave-character-expression-revision-v1.schema.json",
+            "expression-assignment-request": workspace
+            / "weave-character-expression-assignment-request-v1.schema.json",
+            "expression-assignment-receipt": workspace
+            / "weave-character-expression-assignment-receipt-v1.schema.json",
+            "expression-resolution-request": workspace
+            / "weave-character-expression-resolution-request-v1.schema.json",
+            "expression-resolution": workspace
+            / "weave-character-expression-resolution-v1.schema.json",
+            "expression-lint": workspace
+            / "weave-character-expression-lint-v1.schema.json",
+            "expression-coverage": workspace
+            / "weave-character-expression-coverage-v1.schema.json",
+        }
         generated_relationship_schemas = {
             "relationship-kind-pack": workspace
             / "weave-character-relationship-kind-pack-v1.schema.json",
@@ -1181,6 +1215,11 @@ def verify_domain_contract() -> None:
                 [str(character_tool), "schema", kind, "--output", str(output)],
                 capture=True,
             )
+        for kind, output in generated_expression_schemas.items():
+            run(
+                [str(character_tool), "schema", kind, "--output", str(output)],
+                capture=True,
+            )
         for kind, output in generated_relationship_schemas.items():
             run(
                 [str(character_tool), "schema", kind, "--output", str(output)],
@@ -1313,6 +1352,10 @@ def verify_domain_contract() -> None:
             checked = ROOT / "schemas" / generated.name
             if generated.read_bytes() != checked.read_bytes():
                 raise DocsError(f"checked-in authoring schema is stale: {checked.name}")
+        for generated in generated_expression_schemas.values():
+            checked = ROOT / "schemas" / generated.name
+            if generated.read_bytes() != checked.read_bytes():
+                raise DocsError(f"checked-in expression schema is stale: {checked.name}")
         for generated in generated_relationship_schemas.values():
             checked = ROOT / "schemas" / generated.name
             if generated.read_bytes() != checked.read_bytes():
@@ -1463,6 +1506,72 @@ def verify_domain_contract() -> None:
             ("alignment-review", alignment_review_ron),
             ("alignment-receipt", alignment_receipt_json),
             ("alignment-receipt", alignment_receipt_ron),
+            ("profile", character_expression / "applied.character.json"),
+            ("profile", character_expression / "applied.character.ron"),
+            (
+                "expression-pack",
+                character_expression / "glasswind.expression-pack.json",
+            ),
+            (
+                "expression-pack",
+                character_expression / "glasswind.expression-pack.ron",
+            ),
+            (
+                "expression-revision",
+                character_expression / "normalized.expression-revision.json",
+            ),
+            (
+                "expression-revision",
+                character_expression / "normalized.expression-revision.ron",
+            ),
+            (
+                "expression-assignment-request",
+                character_expression / "assignment.expression-request.json",
+            ),
+            (
+                "expression-assignment-request",
+                character_expression / "assignment.expression-request.ron",
+            ),
+            (
+                "expression-assignment-receipt",
+                character_expression / "assignment.expression-receipt.json",
+            ),
+            (
+                "expression-assignment-receipt",
+                character_expression / "assignment.expression-receipt.ron",
+            ),
+            (
+                "expression-resolution-request",
+                character_expression / "contextual.expression-resolution-request.json",
+            ),
+            (
+                "expression-resolution-request",
+                character_expression / "contextual.expression-resolution-request.ron",
+            ),
+            (
+                "expression-resolution",
+                character_expression / "contextual.expression-resolution.json",
+            ),
+            (
+                "expression-resolution",
+                character_expression / "contextual.expression-resolution.ron",
+            ),
+            (
+                "expression-lint",
+                character_expression / "lint.expression-lint.json",
+            ),
+            (
+                "expression-lint",
+                character_expression / "lint.expression-lint.ron",
+            ),
+            (
+                "expression-coverage",
+                character_expression / "coverage.expression-coverage.json",
+            ),
+            (
+                "expression-coverage",
+                character_expression / "coverage.expression-coverage.ron",
+            ),
         ):
             run(
                 [
@@ -2540,6 +2649,21 @@ def verify_domain_contract() -> None:
         character_relationship_pack = character_relationships.get(
             "kind_pack", {}
         ).get("value", {})
+        character_expression = character_profile.get("expression", {}).get(
+            "value", {}
+        )
+        character_expression_term = (
+            character_expression.get("lexicon", {})
+            .get("value", {})
+            .get("trailmark", {})
+            .get("value", {})
+        )
+        character_expression_assignment = (
+            character_expression.get("template_assignments", {})
+            .get("value", {})
+            .get("arrival_greeting", {})
+            .get("value", {})
+        )
         character_presentation_value = (
             character_profile.get("presentation", {}).get("value", {})
         )
@@ -2551,7 +2675,7 @@ def verify_domain_contract() -> None:
         )
         if (
             character_story.get("version") != 4
-            or character_module.get("version") != "1.4.0"
+            or character_module.get("version") != "1.5.0"
             or character_profile.get("identity", {})
             .get("value", {})
             .get("id", {})
@@ -2622,6 +2746,23 @@ def verify_domain_contract() -> None:
             or character_mentor_edge.get("target_character_id", {}).get("value")
             != "org.weave.character.sable_reed"
             or character_mentor_edge.get("origin", {}).get("value") != "authored"
+            or character_expression.get(
+                "canonical_personality_write_back", {}
+            ).get("value")
+            is not False
+            or character_expression_term.get("surface", {}).get("value")
+            != "trailmark"
+            or character_expression_term.get("origin", {}).get("value")
+            != "pack_assigned"
+            or character_expression_assignment.get("template_id", {}).get("value")
+            != "arrival_greeting"
+            or len(
+                character_expression_assignment.get("pack", {})
+                .get("value", {})
+                .get("sha256", {})
+                .get("value", "")
+            )
+            != 64
             or character_presentation_value.get(
                 "canonical_personality_write_back", {}
             ).get("value")
@@ -2729,7 +2870,7 @@ def verify_domain_contract() -> None:
         ]
         if (
             temporal_story.get("version") != 4
-            or temporal_module.get("version") != "1.4.0"
+            or temporal_module.get("version") != "1.5.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
             != [
@@ -3438,6 +3579,14 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-character-alignment-proposal-v1.schema.json",
         "weave-character-alignment-review-v1.schema.json",
         "weave-character-alignment-receipt-v1.schema.json",
+        "weave-character-expression-pack-v1.schema.json",
+        "weave-character-expression-revision-v1.schema.json",
+        "weave-character-expression-assignment-request-v1.schema.json",
+        "weave-character-expression-assignment-receipt-v1.schema.json",
+        "weave-character-expression-resolution-request-v1.schema.json",
+        "weave-character-expression-resolution-v1.schema.json",
+        "weave-character-expression-lint-v1.schema.json",
+        "weave-character-expression-coverage-v1.schema.json",
         "weave-character-relationship-kind-pack-v1.schema.json",
         "weave-character-relationship-policy-v1.schema.json",
         "weave-character-relationship-config-v1.schema.json",

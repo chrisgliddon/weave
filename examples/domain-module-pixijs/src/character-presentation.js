@@ -255,3 +255,68 @@ export function relationshipCharacterPresentation(story) {
     edges,
   };
 }
+
+export function expressionCharacterPresentation(story) {
+  const expression = readModuleExport(story, "character", ["profile", "expression"]);
+  const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  const isHash = (value) => typeof value === "string" && /^[0-9a-f]{64}$/u.test(value);
+  const term = expression?.lexicon?.trailmark;
+  const preference = expression?.preferences?.clear_questions;
+  const voice = expression?.voice_constraints?.prefer_clear_questions;
+  const assignment = expression?.template_assignments?.arrival_greeting;
+  if (
+    !isObject(expression) ||
+    expression.expression_format_version !== 1 ||
+    expression.canonical_personality_write_back !== false ||
+    !isObject(term) ||
+    term.id !== "trailmark" ||
+    term.record_kind !== "term" ||
+    typeof term.surface !== "string" ||
+    typeof term.normalized !== "string" ||
+    !["authored", "imported", "pack_assigned", "reviewed_suggestion"].includes(term.origin) ||
+    !isObject(preference) ||
+    preference.record_kind !== "preference" ||
+    typeof preference.target !== "string" ||
+    !["prefer", "avoid"].includes(preference.polarity) ||
+    !isObject(voice) ||
+    voice.record_kind !== "voice_constraint" ||
+    typeof voice.instruction !== "string" ||
+    !["speech", "writing", "both"].includes(voice.medium) ||
+    !["prefer", "avoid"].includes(voice.constraint_effect) ||
+    !isObject(assignment) ||
+    assignment.record_kind !== "template_assignment" ||
+    assignment.template_id !== "arrival_greeting" ||
+    typeof assignment.scenario_id !== "string" ||
+    !isObject(assignment.pack) ||
+    typeof assignment.pack.id !== "string" ||
+    typeof assignment.pack.version !== "string" ||
+    !isHash(assignment.pack.sha256)
+  ) {
+    throw new TypeError("invalid Character expression projection");
+  }
+  return {
+    term: {
+      id: term.id,
+      surface: term.surface,
+      normalized: term.normalized,
+      origin: term.origin,
+    },
+    preference: {
+      id: preference.id,
+      target: preference.target,
+      polarity: preference.polarity,
+    },
+    voice: {
+      id: voice.id,
+      instruction: voice.instruction,
+      medium: voice.medium,
+      effect: voice.constraint_effect,
+    },
+    template: {
+      id: assignment.template_id,
+      scenarioId: assignment.scenario_id,
+      pack: assignment.pack,
+    },
+    canonicalPersonalityWriteBack: expression.canonical_personality_write_back,
+  };
+}
