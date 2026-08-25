@@ -20,11 +20,11 @@ Run it from the repository root:
 cargo run -p weave-example-domain-module-bevy
 ```
 
-The same explicitly ordered `Startup` schedule also loads the generated Plug-And-Play and
-Dungeonpunk stories and runtime-projected receipts. It reports each exact adapter coordinate,
-portable character/state values, public check or Struggle consequence, request fingerprint, and
-hidden entropy payload fingerprint. The entropy payloads themselves must remain redacted for the
-runtime audience.
+The same explicitly ordered `Startup` schedule also loads the generated Plug-And-Play,
+Dungeonpunk, and Freehack stories and receipts. For Freehack, Bevy acts as an authority host: it
+validates the complete authority wrapper and the structurally separate public receipt, presents
+only public story/check values, and reports merely that the private audit is present rather than
+logging hidden opposition, signed draws, or entropy.
 
 The process performs one Bevy update and exits, so the same command is suitable for documentation
-and CI smoke checks.
+and local smoke checks.

@@ -1,0 +1,73 @@
+{
+  "projection_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.freehack",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+  },
+  "operation": "recall_memory",
+  "capability": "resources_and_conditions",
+  "public_state_sha256": "ee0f9031bd512c0a0351a620581650927b6a74f39b78d0d440a4e43191997d9e",
+  "public_state": {
+    "projection_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+    },
+    "owner_id": "org.weave.character.tavi_quill",
+    "tracks": [
+      {
+        "id": "fatigue",
+        "label": "Fatigue",
+        "interval": "after strenuous movement",
+        "target_count": 3,
+        "progress": 0,
+        "advances_on": "failure",
+        "consequence": "The character must pause and recover.",
+        "completed": false
+      }
+    ],
+    "sections": [],
+    "memories": [
+      {
+        "id": "old_channel",
+        "topic": "the old freight channel",
+        "has_experience": true,
+        "rationale": "Established explicitly during character creation."
+      },
+      {
+        "id": "tide_gate",
+        "topic": "the public tide-gate schedule",
+        "has_experience": false,
+        "rationale": "The deterministic memory check did not establish prior experience with this topic."
+      }
+    ]
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "memory_resolved",
+      "capability": "resources_and_conditions",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "has_experience": {
+            "kind": "bool",
+            "value": false
+          },
+          "id": {
+            "kind": "string",
+            "value": "tide_gate"
+          },
+          "topic": {
+            "kind": "string",
+            "value": "the public tide-gate schedule"
+          }
+        }
+      }
+    }
+  ]
+}

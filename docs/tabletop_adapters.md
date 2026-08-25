@@ -216,6 +216,44 @@ the final definition and state through the ordinary domain-module boundary, and 
 `.weave` story. Bevy 0.18 consumes its RON as a `Resource` in an explicitly ordered `Startup`
 schedule; PixiJS v8 validates the JSON and redacted Struggle receipt before rendering `Text`.
 
+## Verified Freehack implementation
+
+The checked [Freehack fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/freehack)
+pins the official Freehack 2.1 itch release and exact GitLab revision
+`c98ac40f6b0bee2504c5c436dea2841a5d511ad9`. `SOURCE.lock.json` records the release PDF,
+Markdown source, publication metadata, executable roll reference, CC0-1.0 legal code, retrieval
+date, URLs, media types, hashes, and redistribution decisions. Upstream prose, art, icon,
+stylesheet, branding, layout, trade dress, community material, and unverified assets are outside
+the independently authored adapter boundary.
+
+Creation is campaign-configured rather than setting-coded. A versioned schema chooses disabled,
+open, or rarity-offer archetypes; arbitrary bounded authored, fixed, or seeded-random modifiers;
+catalog or permitted authored features and inventory; optional inventory budgets; initial generic
+tracks; and public or authority-only memories. The editor shows the manifest-defined steps,
+records explicit reroll seed/hash lineage, invalidates acceptance after changes, and exports only
+an accepted deterministic JSON/RON preview.
+
+Support and opposition are positive checked-integer sums capped at the reviewed arithmetic domain.
+Their squares form the exact favorable and unfavorable weights. Probability display uses rational
+weights and floored integer basis points; resolution uses rejection-sampled deterministic entropy
+over the nonzero signed domain and checked ceiling division for magnitude. No floating-point
+probability, modulo bias, panic, or unchecked overflow participates in resolution.
+
+Generic tracks declare an interval, target, advancing outcome, consequence, and visibility.
+Simultaneous sections persist timing, mapping, abstraction, participant order, private submissions,
+cancellation, timeout, resolution, and reveal policy. The generated playthrough covers public and
+host-only checks, secret/public tracks and memories, mapped and unmapped timed sections,
+cancellation and resubmission, deterministic ordering, timeout, save/restore, replay, and exact
+RON/JSON pairs.
+
+Freehack does not use the generic redacted-event envelope for players. Dedicated public state and
+receipt schemas remove host-only event envelopes entirely and omit entropy, request/state lineage
+derived from private inputs, hidden opposition, secret tracks, private memories, and pending
+actions. Host-only operations produce no public receipt. The compiled Tavi Quill story is built
+from a separate immutable public-only module; PixiJS imports only that story and public receipt,
+while Bevy validates both the public artifact and a complete authority wrapper without logging
+private values.
+
 ## Event visibility
 
 Each event contains sequence, kind, capability, visibility, payload SHA-256, and an optional typed
@@ -288,7 +326,7 @@ capabilities, or lifecycle failures without echoing source payloads. Invalid sel
 fingerprints, licenses, schemas, write-back, stale state, resolver registrations, events, entropy,
 and replay all fail before state publication.
 
-Ten checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
+Seventeen checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
 [selection](downloads/weave-tabletop-adapter-selection-v1.schema.json),
 [Character projection](downloads/weave-tabletop-character-projection-v1.schema.json),
 [mutable state](downloads/weave-tabletop-state-v1.schema.json),
@@ -297,7 +335,14 @@ Ten checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manife
 [Plug-And-Play creation request](downloads/weave-tabletop-plug-and-play-creation-request-v1.schema.json)
 and [explainable creation preview](downloads/weave-tabletop-plug-and-play-creation-preview-v1.schema.json),
 and the Dungeonpunk [creation request](downloads/weave-tabletop-dungeonpunk-creation-request-v1.schema.json)
-and [creation preview](downloads/weave-tabletop-dungeonpunk-creation-preview-v1.schema.json).
+and [creation preview](downloads/weave-tabletop-dungeonpunk-creation-preview-v1.schema.json), plus
+Freehack [creation request](downloads/weave-tabletop-freehack-creation-request-v1.schema.json),
+[creation preview](downloads/weave-tabletop-freehack-creation-preview-v1.schema.json),
+[probability request](downloads/weave-tabletop-freehack-probability-request-v1.schema.json),
+[probability preview](downloads/weave-tabletop-freehack-probability-preview-v1.schema.json),
+[public state](downloads/weave-tabletop-freehack-public-state-v1.schema.json),
+[public receipt](downloads/weave-tabletop-freehack-public-receipt-v1.schema.json), and
+[authority receipt](downloads/weave-tabletop-freehack-authority-receipt-v1.schema.json).
 
 ## Reference commands
 
@@ -305,6 +350,7 @@ and [creation preview](downloads/weave-tabletop-dungeonpunk-creation-preview-v1.
 cargo run -p weave-tabletop --example tabletop_fixture -- --check
 cargo run -p weave-tabletop --example plug_and_play_fixture -- --check
 cargo run -p weave-tabletop --example dungeonpunk_fixture -- --check
+cargo run -p weave-tabletop --example freehack_fixture -- --check
 
 cargo run -p weave-tabletop -- validate selection \
   examples/tabletop-adapters/contract/selection.tabletop-selection.json \
@@ -343,6 +389,20 @@ cargo run -p weave-tabletop -- dungeonpunk-resolve \
   examples/tabletop-adapters/dungeonpunk/request.tabletop-request.json \
   --state examples/tabletop-adapters/dungeonpunk/state.tabletop-state.json \
   --output target/dungeonpunk-receipt.json
+
+cargo run -p weave-tabletop -- freehack-create \
+  examples/tabletop-adapters/freehack/creation.tabletop-creation.json \
+  --output target/freehack-preview.ron
+
+cargo run -p weave-tabletop -- freehack-probability \
+  examples/tabletop-adapters/freehack/probability.freehack-probability.json \
+  --output target/freehack-probability-preview.json
+
+cargo run -p weave-tabletop -- freehack-resolve \
+  examples/tabletop-adapters/freehack/playthrough/preview_crossing_probability.tabletop-request.json \
+  --state examples/tabletop-adapters/freehack/authority-state.tabletop-state.json \
+  --authority-output target/freehack-authority-receipt.json \
+  --public-output target/freehack-public-receipt.json
 ```
 
 The checked [Lantern Trail fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/contract)
@@ -354,3 +414,6 @@ consumption without adapter-specific compiler syntax.
 The checked Dungeonpunk fixture adds a second verified CC0 source boundary, manifest-driven
 creation, Struggle and structured GM consequences, portable campaign state, explicit FATE
 resolution, and the same standalone/Bevy/PixiJS boundary without compiler or editor special cases.
+The checked Freehack fixture adds arbitrary campaign-shaped characters, exact integer
+support/opposition resolution, generic tracks, simultaneous sections, and structurally separate
+authority/public transports for standalone Rust, Bevy, and PixiJS.

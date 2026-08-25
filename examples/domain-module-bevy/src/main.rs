@@ -5,8 +5,9 @@ use bevy::prelude::*;
 use weave_core::ir::{DomainValueIr, StoryIr};
 use weave_domain::DomainValue;
 use weave_tabletop::{
-    EventVisibility, ResolutionReceipt, dungeonpunk_manifest, plug_and_play_manifest,
-    validate_resolution_receipt,
+    EventVisibility, FreehackAuthorityReceipt, FreehackPublicReceipt, ResolutionReceipt,
+    dungeonpunk_manifest, plug_and_play_manifest, validate_freehack_authority_receipt,
+    validate_freehack_public_receipt, validate_resolution_receipt,
 };
 
 const TRACER_STORY: &str = include_str!("../../domain-modules/contract/tracer.story.ron");
@@ -33,6 +34,13 @@ const DUNGEONPUNK_STORY: &str =
     include_str!("../../tabletop-adapters/dungeonpunk/runtime/vesper-ash.story.ron");
 const DUNGEONPUNK_RECEIPT: &str =
     include_str!("../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json");
+const FREEHACK_STORY: &str =
+    include_str!("../../tabletop-adapters/freehack/runtime/tavi-quill.story.ron");
+const FREEHACK_PUBLIC_RECEIPT: &str =
+    include_str!("../../tabletop-adapters/freehack/public-receipt.freehack-public-receipt.json");
+const FREEHACK_AUTHORITY_RECEIPT: &str = include_str!(
+    "../../tabletop-adapters/freehack/authority-receipt.freehack-authority-receipt.json"
+);
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -223,6 +231,25 @@ struct DungeonpunkReading {
     pushed: bool,
     request_sha256: String,
     hidden_entropy_sha256: String,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct FreehackReading {
+    adapter_id: String,
+    adapter_version: String,
+    adapter_sha256: String,
+    character_name: String,
+    archetype_id: String,
+    focus: f64,
+    fatigue_progress: f64,
+    gantry_status: String,
+    public_memory_count: f64,
+    operation: String,
+    outcome: String,
+    magnitude: f64,
+    support_total: f64,
+    public_state_sha256: String,
+    authority_private_fields_present: bool,
 }
 
 fn reading_from_story(story: &StoryIr) -> Result<ConstellationReading, io::Error> {
@@ -1415,6 +1442,187 @@ fn dungeonpunk_reading(
     })
 }
 
+fn freehack_reading(
+    story: &StoryIr,
+    public: &FreehackPublicReceipt,
+    authority: &FreehackAuthorityReceipt,
+) -> Result<FreehackReading, io::Error> {
+    validate_freehack_public_receipt(public).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public receipt contract is invalid",
+        )
+    })?;
+    validate_freehack_authority_receipt(authority).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack authority receipt contract is invalid",
+        )
+    })?;
+    let module = story.modules.get("freehack").ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public module is absent",
+        )
+    })?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let symbol = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Symbol(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let number = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Number(value)) if value.is_finite() => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let adapter_id = string(&["adapter", "id"], "Freehack adapter id is invalid")?;
+    let adapter_version = string(
+        &["adapter", "version"],
+        "Freehack adapter version is invalid",
+    )?;
+    let adapter_sha256 = string(
+        &["adapter", "content_sha256"],
+        "Freehack adapter fingerprint is invalid",
+    )?;
+    if public.adapter != authority.receipt.adapter
+        || public.adapter.id != adapter_id
+        || public.adapter.version != adapter_version
+        || public.adapter.content_sha256 != adapter_sha256
+        || public.operation != "resolve_check"
+        || authority.receipt.operation != public.operation
+        || !is_sha256(&adapter_sha256)
+        || !is_sha256(&public.public_state_sha256)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack story, public receipt, and authority receipt disagree",
+        ));
+    }
+
+    let public_json = public.to_json().map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public receipt cannot be encoded",
+        )
+    })?;
+    let forbidden = [
+        "request_sha256",
+        "entropy",
+        "opposition_total",
+        "draw_index",
+        "signed_result",
+        "_authority",
+        "Sealed Current",
+        "sealed_current",
+    ];
+    if forbidden.iter().any(|marker| public_json.contains(marker))
+        || public
+            .events
+            .iter()
+            .any(|event| event.kind.ends_with("_authority"))
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public transport crosses the authority boundary",
+        ));
+    }
+    let public_event = public
+        .events
+        .iter()
+        .find(|event| event.kind == "check_resolved")
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Freehack public check is absent",
+            )
+        })?;
+    let DomainValue::Object(public_check) = &public_event.payload else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public check payload is invalid",
+        ));
+    };
+    let public_number = |field: &str| match public_check.get(field) {
+        Some(DomainValue::Number(value)) if value.is_finite() => Ok(*value),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack public check number is invalid",
+        )),
+    };
+    let outcome = match public_check.get("outcome") {
+        Some(DomainValue::Symbol(value)) => value.clone(),
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Freehack public check outcome is invalid",
+            ));
+        }
+    };
+
+    let private_check = authority
+        .receipt
+        .events
+        .iter()
+        .find(|event| {
+            event.kind == "check_resolved_authority"
+                && event.visibility == EventVisibility::HostOnly
+        })
+        .and_then(|event| event.payload.as_ref());
+    let private_fields_present = matches!(
+        private_check,
+        Some(DomainValue::Object(fields))
+            if ["draw_index", "opposition", "opposition_total", "signed_result"]
+                .iter()
+                .all(|field| fields.contains_key(*field))
+    );
+    let entropy_present = authority.receipt.events.iter().any(|event| {
+        event.kind == "entropy_trace"
+            && event.visibility == EventVisibility::HostOnly
+            && event.payload.is_some()
+    });
+    if !private_fields_present || !entropy_present {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Freehack authority host lacks its private resolution audit",
+        ));
+    }
+
+    Ok(FreehackReading {
+        adapter_id,
+        adapter_version,
+        adapter_sha256,
+        character_name: string(&["character", "name"], "Freehack character name is invalid")?,
+        archetype_id: string(
+            &["character", "archetype_id"],
+            "Freehack archetype is invalid",
+        )?,
+        focus: number(
+            &["character", "modifiers", "focus"],
+            "Freehack Focus is invalid",
+        )?,
+        fatigue_progress: number(
+            &["tracks", "fatigue", "progress"],
+            "Freehack fatigue is invalid",
+        )?,
+        gantry_status: symbol(
+            &["snapshot", "gantry_status"],
+            "Freehack gantry status is invalid",
+        )?,
+        public_memory_count: number(
+            &["snapshot", "memory_count"],
+            "Freehack public memory count is invalid",
+        )?,
+        operation: public.operation.clone(),
+        outcome,
+        magnitude: public_number("magnitude")?,
+        support_total: public_number("support_total")?,
+        public_state_sha256: public.public_state_sha256.clone(),
+        authority_private_fields_present: true,
+    })
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -1569,6 +1777,27 @@ fn report_dungeonpunk(reading: Res<DungeonpunkReading>) {
     );
 }
 
+fn report_freehack(reading: Res<FreehackReading>) {
+    println!(
+        "Bevy read {} ({}) in {}@{} ({}): Focus {}, Fatigue {}, gantry {}, {} public memories; {} resolved {} at magnitude {} with public support {} (public state {}, authority audit validated={})",
+        reading.character_name,
+        reading.archetype_id,
+        reading.adapter_id,
+        reading.adapter_version,
+        reading.adapter_sha256,
+        reading.focus,
+        reading.fatigue_progress,
+        reading.gantry_status,
+        reading.public_memory_count,
+        reading.operation,
+        reading.outcome,
+        reading.magnitude,
+        reading.support_total,
+        reading.public_state_sha256,
+        reading.authority_private_fields_present,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -1602,6 +1831,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         &ron::from_str::<StoryIr>(DUNGEONPUNK_STORY)?,
         &dungeonpunk_receipt,
     )?;
+    let freehack_public = FreehackPublicReceipt::from_json(FREEHACK_PUBLIC_RECEIPT)?;
+    let freehack_authority = FreehackAuthorityReceipt::from_json(FREEHACK_AUTHORITY_RECEIPT)?;
+    let freehack = freehack_reading(
+        &ron::from_str::<StoryIr>(FREEHACK_STORY)?,
+        &freehack_public,
+        &freehack_authority,
+    )?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
@@ -1615,6 +1851,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(temporal_character)
         .insert_resource(tabletop)
         .insert_resource(dungeonpunk)
+        .insert_resource(freehack)
         .add_systems(
             Startup,
             (
@@ -1629,6 +1866,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_temporal_character,
                 report_tabletop,
                 report_dungeonpunk,
+                report_freehack,
             )
                 .chain(),
         );
@@ -1981,5 +2219,41 @@ mod tests {
         assert!(reading.pushed);
         assert!(is_sha256(&reading.request_sha256));
         assert!(is_sha256(&reading.hidden_entropy_sha256));
+    }
+
+    #[test]
+    fn reads_freehack_public_story_while_authority_host_retains_private_audit() {
+        let story = ron::from_str::<StoryIr>(FREEHACK_STORY).expect("checked Freehack story RON");
+        let public = FreehackPublicReceipt::from_json(FREEHACK_PUBLIC_RECEIPT)
+            .expect("checked Freehack public receipt JSON");
+        let authority = FreehackAuthorityReceipt::from_json(FREEHACK_AUTHORITY_RECEIPT)
+            .expect("checked Freehack authority receipt JSON");
+        let reading = freehack_reading(&story, &public, &authority)
+            .expect("read split Freehack presentation");
+        assert_eq!(reading.adapter_id, "org.weave.tabletop.freehack");
+        assert_eq!(reading.adapter_version, "1.0.0");
+        assert_eq!(reading.character_name, "Tavi Quill");
+        assert_eq!(reading.archetype_id, "courier");
+        assert_eq!(reading.focus, 4.0);
+        assert_eq!(reading.fatigue_progress, 0.0);
+        assert_eq!(reading.gantry_status, "resolved");
+        assert_eq!(reading.public_memory_count, 2.0);
+        assert_eq!(reading.operation, "resolve_check");
+        assert_eq!(reading.outcome, "success");
+        assert_eq!(reading.magnitude, 1.0);
+        assert_eq!(reading.support_total, 4.0);
+        assert!(is_sha256(&reading.public_state_sha256));
+        assert!(reading.authority_private_fields_present);
+    }
+
+    #[test]
+    fn rejects_freehack_player_transport_with_an_authority_event() {
+        let story = ron::from_str::<StoryIr>(FREEHACK_STORY).expect("checked Freehack story RON");
+        let mut public = FreehackPublicReceipt::from_json(FREEHACK_PUBLIC_RECEIPT)
+            .expect("checked Freehack public receipt JSON");
+        public.events[0].kind = "check_resolved_authority".to_owned();
+        let authority = FreehackAuthorityReceipt::from_json(FREEHACK_AUTHORITY_RECEIPT)
+            .expect("checked Freehack authority receipt JSON");
+        assert!(freehack_reading(&story, &public, &authority).is_err());
     }
 }

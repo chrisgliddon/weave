@@ -13,7 +13,11 @@ import {
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
-import { dungeonpunkPresentation, tabletopPresentation } from "../src/tabletop-presentation.js";
+import {
+  dungeonpunkPresentation,
+  freehackPresentation,
+  tabletopPresentation,
+} from "../src/tabletop-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
 const worldStoryUrls = [
@@ -48,6 +52,14 @@ const dungeonpunkStoryUrl = new URL(
 );
 const dungeonpunkReceiptUrl = new URL(
   "../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json",
+  import.meta.url,
+);
+const freehackStoryUrl = new URL(
+  "../../tabletop-adapters/freehack/runtime/tavi-quill.story.json",
+  import.meta.url,
+);
+const freehackReceiptUrl = new URL(
+  "../../tabletop-adapters/freehack/public-receipt.freehack-public-receipt.json",
   import.meta.url,
 );
 
@@ -131,6 +143,59 @@ test("rejects a Dungeonpunk receipt that exposes host-only entropy", async () =>
   assert.throws(
     () => dungeonpunkPresentation(story, receipt),
     /invalid portable Dungeonpunk presentation/u,
+  );
+});
+
+test("reads only the explicit Freehack public story and receipt", async () => {
+  const [storySource, receiptSource] = await Promise.all(
+    [freehackStoryUrl, freehackReceiptUrl].map((url) => readFile(url, "utf8")),
+  );
+  for (const marker of [
+    "request_sha256",
+    "payload_sha256",
+    "entropy",
+    "opposition",
+    "draw_index",
+    "signed_result",
+    "_authority",
+    "sealed_current",
+    "hidden_watch",
+    "sealed_route",
+  ]) {
+    assert.equal(`${storySource}\n${receiptSource}`.includes(marker), false, marker);
+  }
+  const presentation = freehackPresentation(
+    JSON.parse(storySource),
+    JSON.parse(receiptSource),
+  );
+  assert.equal(presentation.adapter.id, "org.weave.tabletop.freehack");
+  assert.equal(presentation.name, "Tavi Quill");
+  assert.equal(presentation.archetype, "courier");
+  assert.equal(presentation.modifiers.focus, 4);
+  assert.ok(Number.isInteger(presentation.modifiers.balance));
+  assert.equal("clearance" in presentation.modifiers, false);
+  assert.equal(presentation.fatigue, 0);
+  assert.equal(presentation.tracks.fatigue.target_count, 3);
+  assert.equal(presentation.tracks.crossing_ready.completed, true);
+  assert.equal(presentation.tracks.crossing_ready.target_count, 1);
+  assert.equal(presentation.gantryStatus, "resolved");
+  assert.equal(presentation.publicMemoryCount, 2);
+  assert.equal(presentation.check.outcome, "success");
+  assert.equal(presentation.check.magnitude, 1);
+  assert.equal(presentation.check.support_total, 4);
+  assert.match(presentation.publicStateSha256, /^[0-9a-f]{64}$/u);
+});
+
+test("rejects a Freehack player receipt with an authority-shaped field", async () => {
+  const [story, receipt] = await Promise.all(
+    [freehackStoryUrl, freehackReceiptUrl].map(async (url) =>
+      JSON.parse(await readFile(url, "utf8")),
+    ),
+  );
+  receipt.request_sha256 = "0".repeat(64);
+  assert.throws(
+    () => freehackPresentation(story, receipt),
+    /invalid portable Freehack public presentation/u,
   );
 });
 

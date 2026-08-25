@@ -1,0 +1,300 @@
+{
+  "$defs": {
+    "FreehackPublicMemory": {
+      "additionalProperties": false,
+      "description": "One non-secret memory exposed without its authority-only draw or obscurity values.",
+      "properties": {
+        "has_experience": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "topic",
+        "has_experience",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "FreehackPublicSection": {
+      "additionalProperties": false,
+      "description": "Leak-free player/runtime view of one section.",
+      "properties": {
+        "abstraction": {
+          "$ref": "#/$defs/FreehackSectionAbstraction"
+        },
+        "elapsed_ticks": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "mapping": {
+          "$ref": "#/$defs/FreehackSectionMapping"
+        },
+        "participants": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "public_summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolved_order": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "revealed_submissions": {
+          "items": {
+            "$ref": "#/$defs/FreehackRevealedSubmission"
+          },
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/FreehackSectionStatus"
+        },
+        "submitted_participants": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "timing": {
+          "$ref": "#/$defs/FreehackSectionTiming"
+        },
+        "turn_ticks": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "timing",
+        "mapping",
+        "abstraction",
+        "status",
+        "elapsed_ticks",
+        "participants",
+        "submitted_participants",
+        "resolved_order",
+        "revealed_submissions"
+      ],
+      "type": "object"
+    },
+    "FreehackPublicTrack": {
+      "additionalProperties": false,
+      "description": "One non-secret generic track exposed to player/runtime consumers.",
+      "properties": {
+        "advances_on": {
+          "$ref": "#/$defs/FreehackTrackOutcome"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "consequence": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "progress": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "target_count": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "interval",
+        "target_count",
+        "progress",
+        "advances_on",
+        "consequence",
+        "completed"
+      ],
+      "type": "object"
+    },
+    "FreehackRevealedSubmission": {
+      "additionalProperties": false,
+      "description": "One section action deliberately revealed only after a resolved turn.",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "map_intent": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "submission_id": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_id",
+        "submission_id",
+        "action",
+        "map_intent",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "FreehackSectionAbstraction": {
+      "description": "Scale at which participants direct their characters.",
+      "enum": [
+        "automatic",
+        "objective",
+        "strategic"
+      ],
+      "type": "string"
+    },
+    "FreehackSectionMapping": {
+      "description": "Whether movement declarations refer to an authority-maintained map.",
+      "enum": [
+        "mapped",
+        "unmapped"
+      ],
+      "type": "string"
+    },
+    "FreehackSectionStatus": {
+      "description": "Serializable lifecycle for one section turn.",
+      "enum": [
+        "open",
+        "resolved",
+        "timed_out"
+      ],
+      "type": "string"
+    },
+    "FreehackSectionTiming": {
+      "description": "Whether a section gathers simultaneous actions against a fixed turn duration.",
+      "enum": [
+        "timed",
+        "untimed"
+      ],
+      "type": "string"
+    },
+    "FreehackTrackOutcome": {
+      "description": "Which check outcome advances a generic track.",
+      "enum": [
+        "failure",
+        "success"
+      ],
+      "type": "string"
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-freehack-public-state:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Public state intentionally omits entropy and all host-only state records.",
+  "properties": {
+    "adapter": {
+      "$ref": "#/$defs/ResolvedAdapter"
+    },
+    "memories": {
+      "items": {
+        "$ref": "#/$defs/FreehackPublicMemory"
+      },
+      "type": "array"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "projection_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sections": {
+      "items": {
+        "$ref": "#/$defs/FreehackPublicSection"
+      },
+      "type": "array"
+    },
+    "tracks": {
+      "items": {
+        "$ref": "#/$defs/FreehackPublicTrack"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "projection_format_version",
+    "adapter",
+    "owner_id",
+    "tracks",
+    "sections",
+    "memories"
+  ],
+  "title": "Weave Freehack Public State v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

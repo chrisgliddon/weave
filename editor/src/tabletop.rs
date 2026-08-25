@@ -4,11 +4,12 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use weave_tabletop::{
     AdapterManifest, AdapterSelection, CreationStep, DungeonpunkCreationPreview,
-    DungeonpunkCreationRequest, PlugAndPlayCreationPreview, PlugAndPlayCreationRequest,
-    PlugAndPlayStatSource, ResolvedAdapter, TabletopCapability, TabletopError,
-    create_dungeonpunk_character, create_plug_and_play_character, has_capability, resolved_adapter,
-    validate_adapter_manifest, validate_adapter_selection, validate_dungeonpunk_creation_preview,
-    validate_plug_and_play_creation_preview,
+    DungeonpunkCreationRequest, FreehackCreationPreview, FreehackCreationRequest,
+    PlugAndPlayCreationPreview, PlugAndPlayCreationRequest, PlugAndPlayStatSource, ResolvedAdapter,
+    TabletopCapability, TabletopError, create_dungeonpunk_character, create_freehack_character,
+    create_plug_and_play_character, has_capability, resolved_adapter, validate_adapter_manifest,
+    validate_adapter_selection, validate_dungeonpunk_creation_preview,
+    validate_freehack_creation_preview, validate_plug_and_play_creation_preview,
 };
 
 /// One manifest-driven panel; no adapter id is matched in editor code.
@@ -66,6 +67,123 @@ pub struct DungeonpunkCreationSession {
     preview: DungeonpunkCreationPreview,
     accepted: bool,
     seed_lineage: Vec<DungeonpunkSeedLineage>,
+}
+
+/// One explicit Freehack creation reroll edge retained for audit and undo presentation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FreehackSeedLineage {
+    pub previous_seed: u64,
+    pub next_seed: u64,
+    pub previous_request_sha256: String,
+    pub next_request_sha256: String,
+}
+
+/// Campaign-driven Freehack form, deterministic offer/value preview, and acceptance state.
+#[derive(Debug, Clone)]
+pub struct FreehackCreationSession {
+    request: FreehackCreationRequest,
+    preview: FreehackCreationPreview,
+    accepted: bool,
+    seed_lineage: Vec<FreehackSeedLineage>,
+}
+
+impl FreehackCreationSession {
+    pub fn new(request: FreehackCreationRequest) -> Result<Self, TabletopError> {
+        let preview = create_freehack_character(&request)?;
+        Ok(Self {
+            request,
+            preview,
+            accepted: false,
+            seed_lineage: Vec::new(),
+        })
+    }
+
+    #[must_use]
+    pub fn request(&self) -> &FreehackCreationRequest {
+        &self.request
+    }
+
+    #[must_use]
+    pub fn preview(&self) -> &FreehackCreationPreview {
+        &self.preview
+    }
+
+    #[must_use]
+    pub fn is_accepted(&self) -> bool {
+        self.accepted
+    }
+
+    #[must_use]
+    pub fn seed_lineage(&self) -> &[FreehackSeedLineage] {
+        &self.seed_lineage
+    }
+
+    /// Replace the complete campaign-driven form and recompute its preview atomically.
+    pub fn update(&mut self, request: FreehackCreationRequest) -> Result<(), TabletopError> {
+        let preview = create_freehack_character(&request)?;
+        self.request = request;
+        self.preview = preview;
+        self.accepted = false;
+        Ok(())
+    }
+
+    /// Recompute random offers/values from a deliberately supplied, different seed.
+    pub fn reroll(&mut self, next_seed: u64) -> Result<(), TabletopError> {
+        if self.preview.initial_state.entropy.cursor == 0 {
+            return Err(TabletopError::InvalidField {
+                path: "editor.seed".to_owned(),
+                reason: "campaign creation has no random procedure to reroll",
+            });
+        }
+        if next_seed == self.request.seed {
+            return Err(TabletopError::InvalidField {
+                path: "editor.seed".to_owned(),
+                reason: "reroll requires a different explicit seed",
+            });
+        }
+        let previous_seed = self.request.seed;
+        let previous_request_sha256 = self.preview.request_sha256.clone();
+        let mut request = self.request.clone();
+        request.seed = next_seed;
+        let preview = create_freehack_character(&request)?;
+        self.seed_lineage.push(FreehackSeedLineage {
+            previous_seed,
+            next_seed,
+            previous_request_sha256,
+            next_request_sha256: preview.request_sha256.clone(),
+        });
+        self.request = request;
+        self.preview = preview;
+        self.accepted = false;
+        Ok(())
+    }
+
+    /// Accept the exact visible preview; later edits or rerolls invalidate acceptance.
+    pub fn accept(&mut self) -> Result<(), TabletopError> {
+        validate_freehack_creation_preview(&self.preview)?;
+        self.accepted = true;
+        Ok(())
+    }
+
+    /// Export accepted JSON for source/runtime handoff.
+    pub fn export_json(&self) -> Result<String, TabletopError> {
+        self.accepted_preview()?.to_json()
+    }
+
+    /// Export accepted RON for source/runtime handoff.
+    pub fn export_ron(&self) -> Result<String, TabletopError> {
+        self.accepted_preview()?.to_ron()
+    }
+
+    fn accepted_preview(&self) -> Result<&FreehackCreationPreview, TabletopError> {
+        if !self.accepted {
+            return Err(TabletopError::InvalidField {
+                path: "editor.acceptance".to_owned(),
+                reason: "the current creation preview has not been accepted",
+            });
+        }
+        Ok(&self.preview)
+    }
 }
 
 impl DungeonpunkCreationSession {
@@ -382,7 +500,7 @@ mod tests {
     use weave_tabletop::{
         PLUG_AND_PLAY_CREATION_FORMAT_VERSION, PlugAndPlayAttributes, PlugAndPlayMentalAttribute,
         PlugAndPlayModifier, PlugAndPlayPhysicalAttribute, PlugAndPlayRollAssignment,
-        dungeonpunk_manifest,
+        dungeonpunk_manifest, freehack_manifest,
     };
 
     fn manifest() -> AdapterManifest {
@@ -566,6 +684,92 @@ mod tests {
         );
         assert_eq!(
             DungeonpunkCreationPreview::from_ron(&session.export_ron().unwrap()).unwrap(),
+            *session.preview()
+        );
+    }
+
+    #[test]
+    fn freehack_panels_expose_campaign_checks_tracks_and_simultaneous_sections() {
+        let mut catalog = TabletopEditorCatalog::new();
+        catalog.install(freehack_manifest()).unwrap();
+        catalog
+            .select_primary(Some("org.weave.tabletop.freehack"))
+            .unwrap();
+
+        let creation = catalog
+            .panel(TabletopCapability::CharacterCreation)
+            .unwrap();
+        assert_eq!(
+            creation
+                .creation_steps
+                .iter()
+                .map(|step| step.id.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "campaign",
+                "identity_and_modifiers",
+                "features_and_inventory"
+            ]
+        );
+        let checks = catalog
+            .panel(TabletopCapability::ChecksAndConflicts)
+            .unwrap();
+        assert_eq!(checks.operations, ["preview_probability", "resolve_check"]);
+        assert!(checks.event_types.contains(&"check_resolved".to_owned()));
+        assert!(
+            checks
+                .event_types
+                .contains(&"check_resolved_authority".to_owned())
+        );
+        let tracks = catalog
+            .panel(TabletopCapability::ResourcesAndConditions)
+            .unwrap();
+        assert_eq!(
+            tracks.operations,
+            ["advance_track", "create_track", "recall_memory"]
+        );
+        let scenes = catalog.panel(TabletopCapability::Scenes).unwrap();
+        assert_eq!(
+            scenes.operations,
+            [
+                "cancel_submission",
+                "open_section",
+                "resolve_section",
+                "submit_action",
+                "timeout_section"
+            ]
+        );
+        assert!(scenes.event_types.contains(&"section_timed_out".to_owned()));
+    }
+
+    #[test]
+    fn freehack_preview_reroll_accept_and_export_are_explicit() {
+        let request = FreehackCreationRequest::from_json(include_str!(
+            "../../examples/tabletop-adapters/freehack/creation.tabletop-creation.json"
+        ))
+        .unwrap();
+        let mut session = FreehackCreationSession::new(request).unwrap();
+        assert!(!session.is_accepted());
+        assert!(session.export_json().is_err());
+        assert_eq!(
+            session.preview().selected_archetype.as_deref(),
+            Some("courier")
+        );
+        assert_eq!(session.preview().modifiers["focus"], 4);
+        let previous_hash = session.preview().request_sha256.clone();
+        session.reroll(202).unwrap();
+        assert_eq!(session.seed_lineage().len(), 1);
+        assert_eq!(session.seed_lineage()[0].previous_seed, 137);
+        assert_eq!(session.seed_lineage()[0].next_seed, 202);
+        assert_ne!(previous_hash, session.preview().request_sha256);
+        session.accept().unwrap();
+        assert!(session.is_accepted());
+        assert_eq!(
+            FreehackCreationPreview::from_json(&session.export_json().unwrap()).unwrap(),
+            *session.preview()
+        );
+        assert_eq!(
+            FreehackCreationPreview::from_ron(&session.export_ron().unwrap()).unwrap(),
             *session.preview()
         );
     }

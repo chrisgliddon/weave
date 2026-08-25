@@ -1,0 +1,703 @@
+{
+  "$defs": {
+    "AdapterCharacterDefinition": {
+      "additionalProperties": false,
+      "description": "Active immutable adapter-owned character definition.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "completed_creation_steps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "definition": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "definition_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "definition",
+        "definition_sha256",
+        "completed_creation_steps"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EntropyState": {
+      "additionalProperties": false,
+      "description": "Serializable deterministic entropy cursor.",
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "cursor": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "algorithm",
+        "seed",
+        "cursor"
+      ],
+      "type": "object"
+    },
+    "FreehackArchetypeOption": {
+      "additionalProperties": false,
+      "description": "One setting-authored archetype option; the adapter assigns it no genre semantics.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "rarity": {
+          "$ref": "#/$defs/FreehackRarity"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "rarity"
+      ],
+      "type": "object"
+    },
+    "FreehackArchetypeProcedure": {
+      "description": "Campaign-selected archetype offering procedure.",
+      "enum": [
+        "disabled",
+        "open_choice",
+        "rarity_offer"
+      ],
+      "type": "string"
+    },
+    "FreehackCampaignSchema": {
+      "additionalProperties": false,
+      "description": "Complete setting-neutral creation configuration interpreted without adapter-code changes.",
+      "properties": {
+        "allow_authored_features": {
+          "type": "boolean"
+        },
+        "allow_authored_inventory": {
+          "type": "boolean"
+        },
+        "archetype_procedure": {
+          "$ref": "#/$defs/FreehackArchetypeProcedure"
+        },
+        "archetypes": {
+          "items": {
+            "$ref": "#/$defs/FreehackArchetypeOption"
+          },
+          "type": "array"
+        },
+        "feature_count": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "feature_options": {
+          "items": {
+            "$ref": "#/$defs/FreehackFeatureOption"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "initial_tracks": {
+          "items": {
+            "$ref": "#/$defs/FreehackTrackTemplate"
+          },
+          "type": "array"
+        },
+        "inventory_budget": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "inventory_options": {
+          "items": {
+            "$ref": "#/$defs/FreehackInventoryOption"
+          },
+          "type": "array"
+        },
+        "modifiers": {
+          "items": {
+            "$ref": "#/$defs/FreehackModifierSpec"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "title",
+        "archetype_procedure",
+        "archetypes",
+        "modifiers",
+        "feature_count",
+        "feature_options",
+        "allow_authored_features",
+        "inventory_options",
+        "allow_authored_inventory",
+        "initial_tracks"
+      ],
+      "type": "object"
+    },
+    "FreehackFeatureOption": {
+      "additionalProperties": false,
+      "description": "One campaign-authored feature available during creation.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description"
+      ],
+      "type": "object"
+    },
+    "FreehackGeneratedModifier": {
+      "additionalProperties": false,
+      "description": "Trace for one campaign-configured generated modifier.",
+      "properties": {
+        "entropy_end": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "entropy_start": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "value": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "value",
+        "source",
+        "entropy_start",
+        "entropy_end"
+      ],
+      "type": "object"
+    },
+    "FreehackInventoryOption": {
+      "additionalProperties": false,
+      "description": "One campaign-authored inventory option with an optional point cost.",
+      "properties": {
+        "cost": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description"
+      ],
+      "type": "object"
+    },
+    "FreehackModifierGeneration": {
+      "description": "How a campaign obtains one numeric character modifier during creation.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "fixed",
+              "type": "string"
+            },
+            "value": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "random_inclusive",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FreehackModifierSpec": {
+      "additionalProperties": false,
+      "description": "One arbitrary, campaign-named numeric modifier.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "generation": {
+          "$ref": "#/$defs/FreehackModifierGeneration"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "maximum": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "minimum": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "player_visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "minimum",
+        "maximum",
+        "generation",
+        "player_visible"
+      ],
+      "type": "object"
+    },
+    "FreehackRarity": {
+      "description": "Optional rarity label used only when a campaign configures archetype offers.",
+      "enum": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "type": "string"
+    },
+    "FreehackTrackOutcome": {
+      "description": "Which check outcome advances a generic track.",
+      "enum": [
+        "failure",
+        "success"
+      ],
+      "type": "string"
+    },
+    "FreehackTrackTemplate": {
+      "additionalProperties": false,
+      "description": "One initial generic interval/target/consequence track configured by a campaign.",
+      "properties": {
+        "advances_on": {
+          "$ref": "#/$defs/FreehackTrackOutcome"
+        },
+        "consequence": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "boolean"
+        },
+        "target_count": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "secret",
+        "interval",
+        "target_count",
+        "advances_on",
+        "consequence"
+      ],
+      "type": "object"
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "TabletopState": {
+      "additionalProperties": false,
+      "description": "Adapter-owned mutable state kept outside the immutable definition and Character canon.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "definition_sha256": {
+          "type": "string"
+        },
+        "entropy": {
+          "$ref": "#/$defs/EntropyState"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValue"
+        }
+      },
+      "required": [
+        "state_format_version",
+        "adapter",
+        "owner_id",
+        "definition_sha256",
+        "revision",
+        "entropy",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-freehack-creation-preview:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explainable result of creation before projection/state export.",
+  "properties": {
+    "adapter": {
+      "$ref": "#/$defs/ResolvedAdapter"
+    },
+    "campaign": {
+      "$ref": "#/$defs/FreehackCampaignSchema"
+    },
+    "campaign_sha256": {
+      "type": "string"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "definition": {
+      "$ref": "#/$defs/AdapterCharacterDefinition"
+    },
+    "explanations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "feature_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generated_modifiers": {
+      "items": {
+        "$ref": "#/$defs/FreehackGeneratedModifier"
+      },
+      "type": "array"
+    },
+    "initial_state": {
+      "$ref": "#/$defs/TabletopState"
+    },
+    "inventory_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "inventory_spent": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "modifiers": {
+      "additionalProperties": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "type": "object"
+    },
+    "offered_archetypes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "request_sha256": {
+      "type": "string"
+    },
+    "selected_archetype": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "request_sha256",
+    "adapter",
+    "campaign",
+    "campaign_sha256",
+    "offered_archetypes",
+    "modifiers",
+    "generated_modifiers",
+    "feature_ids",
+    "inventory_ids",
+    "inventory_spent",
+    "definition",
+    "initial_state",
+    "explanations"
+  ],
+  "title": "Weave Freehack Creation Preview v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

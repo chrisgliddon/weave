@@ -1,0 +1,138 @@
+{
+  "projection_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.freehack",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+  },
+  "operation": "advance_track",
+  "capability": "resources_and_conditions",
+  "public_state_sha256": "c986fe8f150a3a7353e7c3dd779882569ceede7b91af823ce8d1fe5a732bc6a6",
+  "public_state": {
+    "projection_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+    },
+    "owner_id": "org.weave.character.tavi_quill",
+    "tracks": [
+      {
+        "id": "crossing_ready",
+        "label": "Crossing Ready",
+        "interval": "after a stable crossing",
+        "target_count": 1,
+        "progress": 1,
+        "advances_on": "success",
+        "consequence": "The crossing route becomes dependable.",
+        "completed": true
+      },
+      {
+        "id": "fatigue",
+        "label": "Fatigue",
+        "interval": "after strenuous movement",
+        "target_count": 3,
+        "progress": 0,
+        "advances_on": "failure",
+        "consequence": "The character must pause and recover.",
+        "completed": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "gantry_turn",
+        "label": "Gantry Turn",
+        "timing": "timed",
+        "mapping": "mapped",
+        "abstraction": "objective",
+        "status": "resolved",
+        "turn_ticks": 30,
+        "elapsed_ticks": 0,
+        "participants": [
+          "ira",
+          "moss"
+        ],
+        "submitted_participants": [
+          "ira",
+          "moss"
+        ],
+        "resolved_order": [
+          "ira",
+          "moss"
+        ],
+        "public_summary": "The gantry stabilizes.",
+        "revealed_submissions": []
+      }
+    ],
+    "memories": [
+      {
+        "id": "old_channel",
+        "topic": "the old freight channel",
+        "has_experience": true,
+        "rationale": "Established explicitly during character creation."
+      },
+      {
+        "id": "tide_gate",
+        "topic": "the public tide-gate schedule",
+        "has_experience": false,
+        "rationale": "The deterministic memory check did not establish prior experience with this topic."
+      }
+    ]
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "track_advanced",
+      "capability": "resources_and_conditions",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "completed": {
+            "kind": "bool",
+            "value": true
+          },
+          "id": {
+            "kind": "string",
+            "value": "crossing_ready"
+          },
+          "label": {
+            "kind": "string",
+            "value": "Crossing Ready"
+          },
+          "progress_after": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "progress_before": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "target_count": {
+            "kind": "number",
+            "value": 1.0
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "track_completed",
+      "capability": "resources_and_conditions",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "consequence": {
+            "kind": "string",
+            "value": "The crossing route becomes dependable."
+          },
+          "id": {
+            "kind": "string",
+            "value": "crossing_ready"
+          }
+        }
+      }
+    }
+  ]
+}

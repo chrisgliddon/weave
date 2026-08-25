@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "FreehackContribution": {
+      "additionalProperties": false,
+      "description": "One non-negative contribution assigned to support or opposition by the authority host.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/FreehackContributionSource"
+        },
+        "value": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "value",
+        "source"
+      ],
+      "type": "object"
+    },
+    "FreehackContributionSource": {
+      "description": "Source category for a modifier contributing to one check side.",
+      "enum": [
+        "character",
+        "equipment",
+        "situation",
+        "other"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-freehack-probability-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Exact input to a non-mutating probability preview.",
+  "properties": {
+    "opposition": {
+      "items": {
+        "$ref": "#/$defs/FreehackContribution"
+      },
+      "type": "array"
+    },
+    "probability_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "support": {
+      "items": {
+        "$ref": "#/$defs/FreehackContribution"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "probability_format_version",
+    "support",
+    "opposition"
+  ],
+  "title": "Weave Freehack Probability Request v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

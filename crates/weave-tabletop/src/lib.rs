@@ -7,6 +7,7 @@
 
 mod domain;
 mod dungeonpunk;
+mod freehack;
 mod model;
 mod plug_and_play;
 mod resolver;
@@ -17,6 +18,7 @@ use serde::Deserialize;
 
 pub use domain::{tabletop_domain_manifest, tabletop_domain_pack};
 pub use dungeonpunk::*;
+pub use freehack::*;
 pub use model::*;
 pub use plug_and_play::*;
 pub use resolver::{

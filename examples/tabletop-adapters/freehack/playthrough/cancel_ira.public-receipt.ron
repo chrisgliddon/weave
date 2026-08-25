@@ -1,0 +1,92 @@
+(
+    projection_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.freehack",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
+    ),
+    operation: "cancel_submission",
+    capability: scenes,
+    public_state_sha256: "4894fd3bd90de7c3606f7c5f65f4600cf73b85c321d0cab1a2421ca2140ac495",
+    public_state: (
+        projection_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.freehack",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
+        ),
+        owner_id: "org.weave.character.tavi_quill",
+        tracks: [
+            (
+                id: "fatigue",
+                label: "Fatigue",
+                interval: "after strenuous movement",
+                target_count: 3,
+                progress: 0,
+                advances_on: failure,
+                consequence: "The character must pause and recover.",
+                completed: false,
+            ),
+        ],
+        sections: [
+            (
+                id: "gantry_turn",
+                label: "Gantry Turn",
+                timing: timed,
+                mapping: mapped,
+                abstraction: objective,
+                status: open,
+                turn_ticks: Some(30),
+                elapsed_ticks: 0,
+                participants: [
+                    "ira",
+                    "moss",
+                ],
+                submitted_participants: [],
+                resolved_order: [],
+                public_summary: None,
+                revealed_submissions: [],
+            ),
+        ],
+        memories: [
+            (
+                id: "old_channel",
+                topic: "the old freight channel",
+                has_experience: true,
+                rationale: "Established explicitly during character creation.",
+            ),
+            (
+                id: "tide_gate",
+                topic: "the public tide-gate schedule",
+                has_experience: false,
+                rationale: "The deterministic memory check did not establish prior experience with this topic.",
+            ),
+        ],
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "submission_cancelled",
+            capability: scenes,
+            payload: (
+                kind: object,
+                value: {
+                    "participant_id": (
+                        kind: string,
+                        value: "ira",
+                    ),
+                    "section_id": (
+                        kind: string,
+                        value: "gantry_turn",
+                    ),
+                    "submitted_count": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                },
+            ),
+        ),
+    ],
+)

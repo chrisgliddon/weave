@@ -1,0 +1,535 @@
+{
+  "$defs": {
+    "FreehackArchetypeOption": {
+      "additionalProperties": false,
+      "description": "One setting-authored archetype option; the adapter assigns it no genre semantics.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "rarity": {
+          "$ref": "#/$defs/FreehackRarity"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "rarity"
+      ],
+      "type": "object"
+    },
+    "FreehackArchetypeProcedure": {
+      "description": "Campaign-selected archetype offering procedure.",
+      "enum": [
+        "disabled",
+        "open_choice",
+        "rarity_offer"
+      ],
+      "type": "string"
+    },
+    "FreehackCampaignSchema": {
+      "additionalProperties": false,
+      "description": "Complete setting-neutral creation configuration interpreted without adapter-code changes.",
+      "properties": {
+        "allow_authored_features": {
+          "type": "boolean"
+        },
+        "allow_authored_inventory": {
+          "type": "boolean"
+        },
+        "archetype_procedure": {
+          "$ref": "#/$defs/FreehackArchetypeProcedure"
+        },
+        "archetypes": {
+          "items": {
+            "$ref": "#/$defs/FreehackArchetypeOption"
+          },
+          "type": "array"
+        },
+        "feature_count": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "feature_options": {
+          "items": {
+            "$ref": "#/$defs/FreehackFeatureOption"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "initial_tracks": {
+          "items": {
+            "$ref": "#/$defs/FreehackTrackTemplate"
+          },
+          "type": "array"
+        },
+        "inventory_budget": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "inventory_options": {
+          "items": {
+            "$ref": "#/$defs/FreehackInventoryOption"
+          },
+          "type": "array"
+        },
+        "modifiers": {
+          "items": {
+            "$ref": "#/$defs/FreehackModifierSpec"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "title",
+        "archetype_procedure",
+        "archetypes",
+        "modifiers",
+        "feature_count",
+        "feature_options",
+        "allow_authored_features",
+        "inventory_options",
+        "allow_authored_inventory",
+        "initial_tracks"
+      ],
+      "type": "object"
+    },
+    "FreehackDisclosure": {
+      "description": "Visibility of a memory, check, track event, or section detail.",
+      "enum": [
+        "host_only",
+        "public"
+      ],
+      "type": "string"
+    },
+    "FreehackFeatureOption": {
+      "additionalProperties": false,
+      "description": "One campaign-authored feature available during creation.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description"
+      ],
+      "type": "object"
+    },
+    "FreehackFeatureSelection": {
+      "description": "One selected catalog feature or a campaign-permitted authored feature.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "catalog",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FreehackInventoryOption": {
+      "additionalProperties": false,
+      "description": "One campaign-authored inventory option with an optional point cost.",
+      "properties": {
+        "cost": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description"
+      ],
+      "type": "object"
+    },
+    "FreehackInventorySelection": {
+      "description": "One selected catalog item or a campaign-permitted authored item.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "catalog",
+              "type": "string"
+            },
+            "quantity": {
+              "format": "uint16",
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "quantity"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cost_per_item": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "quantity": {
+              "format": "uint16",
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "label",
+            "quantity",
+            "cost_per_item"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FreehackMemorySeed": {
+      "additionalProperties": false,
+      "description": "One explicitly authored memory present before play begins.",
+      "properties": {
+        "disclosure": {
+          "$ref": "#/$defs/FreehackDisclosure"
+        },
+        "has_experience": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "topic",
+        "has_experience",
+        "rationale",
+        "disclosure"
+      ],
+      "type": "object"
+    },
+    "FreehackModifierGeneration": {
+      "description": "How a campaign obtains one numeric character modifier during creation.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "authored",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "fixed",
+              "type": "string"
+            },
+            "value": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "random_inclusive",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FreehackModifierSpec": {
+      "additionalProperties": false,
+      "description": "One arbitrary, campaign-named numeric modifier.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "generation": {
+          "$ref": "#/$defs/FreehackModifierGeneration"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "maximum": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "minimum": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "player_visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "description",
+        "minimum",
+        "maximum",
+        "generation",
+        "player_visible"
+      ],
+      "type": "object"
+    },
+    "FreehackRarity": {
+      "description": "Optional rarity label used only when a campaign configures archetype offers.",
+      "enum": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "type": "string"
+    },
+    "FreehackTrackOutcome": {
+      "description": "Which check outcome advances a generic track.",
+      "enum": [
+        "failure",
+        "success"
+      ],
+      "type": "string"
+    },
+    "FreehackTrackTemplate": {
+      "additionalProperties": false,
+      "description": "One initial generic interval/target/consequence track configured by a campaign.",
+      "properties": {
+        "advances_on": {
+          "$ref": "#/$defs/FreehackTrackOutcome"
+        },
+        "consequence": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "boolean"
+        },
+        "target_count": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "secret",
+        "interval",
+        "target_count",
+        "advances_on",
+        "consequence"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-freehack-creation-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete, versioned input to deterministic Freehack character creation.",
+  "properties": {
+    "authored_modifiers": {
+      "additionalProperties": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "type": "object"
+    },
+    "campaign": {
+      "$ref": "#/$defs/FreehackCampaignSchema"
+    },
+    "character_id": {
+      "type": "string"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "features": {
+      "items": {
+        "$ref": "#/$defs/FreehackFeatureSelection"
+      },
+      "type": "array"
+    },
+    "inventory": {
+      "items": {
+        "$ref": "#/$defs/FreehackInventorySelection"
+      },
+      "type": "array"
+    },
+    "memories": {
+      "items": {
+        "$ref": "#/$defs/FreehackMemorySeed"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "selected_archetype": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "character_id",
+    "name",
+    "seed",
+    "campaign",
+    "authored_modifiers",
+    "features",
+    "inventory",
+    "memories"
+  ],
+  "title": "Weave Freehack Creation Request v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

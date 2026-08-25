@@ -1,0 +1,542 @@
+{
+  "projection_format_version": 1,
+  "receipt": {
+    "resolver_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+    },
+    "operation": "advance_track",
+    "capability": "resources_and_conditions",
+    "request_sha256": "faf4162c5391ba5588c3fc6096fe8986c405adf176d44d29a221f8d1b397cfcc",
+    "before_state_sha256": "37fe545f07bca3fa0553b8e02f0a2fb684fa6451b6e5666349546f267e587f0b",
+    "before_revision": 12,
+    "entropy_before": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 137,
+      "cursor": 7
+    },
+    "after_state_sha256": "92588dff31701b60878fa62278908ce024dec791fedc225f5e085fd0668e913a",
+    "entropy_consumed": 0,
+    "after_state": {
+      "state_format_version": 1,
+      "adapter": {
+        "id": "org.weave.tabletop.freehack",
+        "version": "1.0.0",
+        "schema_version": 1,
+        "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+      },
+      "owner_id": "org.weave.character.tavi_quill",
+      "definition_sha256": "0a994183f1d3a7f5858c0e017651559432f2069418d0542de387dd04856fc91a",
+      "revision": 13,
+      "entropy": {
+        "algorithm": "sha256_counter_v1",
+        "seed": 137,
+        "cursor": 7
+      },
+      "value": {
+        "kind": "object",
+        "value": {
+          "memories": {
+            "kind": "object",
+            "value": {
+              "old_channel": {
+                "kind": "object",
+                "value": {
+                  "connected": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "disclosure": {
+                    "kind": "symbol",
+                    "value": "public"
+                  },
+                  "draw": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "effective_obscurity": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "has_experience": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "obscurity": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "rationale": {
+                    "kind": "string",
+                    "value": "Established explicitly during character creation."
+                  },
+                  "topic": {
+                    "kind": "string",
+                    "value": "the old freight channel"
+                  }
+                }
+              },
+              "sealed_route": {
+                "kind": "object",
+                "value": {
+                  "connected": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "disclosure": {
+                    "kind": "symbol",
+                    "value": "host_only"
+                  },
+                  "draw": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "effective_obscurity": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "has_experience": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "obscurity": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "rationale": {
+                    "kind": "string",
+                    "value": "Held for authority review until play establishes it."
+                  },
+                  "topic": {
+                    "kind": "string",
+                    "value": "a sealed maintenance route"
+                  }
+                }
+              },
+              "tide_gate": {
+                "kind": "object",
+                "value": {
+                  "connected": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "disclosure": {
+                    "kind": "symbol",
+                    "value": "public"
+                  },
+                  "draw": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "effective_obscurity": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "has_experience": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "obscurity": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "rationale": {
+                    "kind": "string",
+                    "value": "The deterministic memory check did not establish prior experience with this topic."
+                  },
+                  "topic": {
+                    "kind": "string",
+                    "value": "the public tide-gate schedule"
+                  }
+                }
+              }
+            }
+          },
+          "sections": {
+            "kind": "object",
+            "value": {
+              "gantry_turn": {
+                "kind": "object",
+                "value": {
+                  "abstraction": {
+                    "kind": "symbol",
+                    "value": "objective"
+                  },
+                  "elapsed_ticks": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Gantry Turn"
+                  },
+                  "mapping": {
+                    "kind": "symbol",
+                    "value": "mapped"
+                  },
+                  "outcomes": {
+                    "kind": "object",
+                    "value": {
+                      "ira_second": {
+                        "kind": "object",
+                        "value": {
+                          "summary": {
+                            "kind": "string",
+                            "value": "The east cable holds."
+                          }
+                        }
+                      },
+                      "moss_first": {
+                        "kind": "object",
+                        "value": {
+                          "summary": {
+                            "kind": "string",
+                            "value": "The counterweight settles."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "participants": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "public_summary": {
+                    "kind": "string",
+                    "value": "The gantry stabilizes."
+                  },
+                  "resolved_order": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "reveal_after_resolution": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "resolved"
+                  },
+                  "submissions": {
+                    "kind": "object",
+                    "value": {
+                      "ira": {
+                        "kind": "object",
+                        "value": {
+                          "action": {
+                            "kind": "string",
+                            "value": "Brace the east cable instead."
+                          },
+                          "map_intent": {
+                            "kind": "string",
+                            "value": "Move to east anchor."
+                          },
+                          "submission_id": {
+                            "kind": "string",
+                            "value": "ira_second"
+                          }
+                        }
+                      },
+                      "moss": {
+                        "kind": "object",
+                        "value": {
+                          "action": {
+                            "kind": "string",
+                            "value": "Lower a counterweight."
+                          },
+                          "map_intent": {
+                            "kind": "string",
+                            "value": "Remain by the central winch."
+                          },
+                          "submission_id": {
+                            "kind": "string",
+                            "value": "moss_first"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "timing": {
+                    "kind": "symbol",
+                    "value": "timed"
+                  },
+                  "turn_ticks": {
+                    "kind": "number",
+                    "value": 30.0
+                  }
+                }
+              }
+            }
+          },
+          "tracks": {
+            "kind": "object",
+            "value": {
+              "crossing_ready": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "consequence": {
+                    "kind": "string",
+                    "value": "The crossing route becomes dependable."
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after a stable crossing"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Crossing Ready"
+                  },
+                  "progress": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "secret": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "fatigue": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "consequence": {
+                    "kind": "string",
+                    "value": "The character must pause and recover."
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after strenuous movement"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Fatigue"
+                  },
+                  "progress": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "secret": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 3.0
+                  }
+                }
+              },
+              "hidden_watch": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "consequence": {
+                    "kind": "string",
+                    "value": "An unseen observer changes position."
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after a loud disturbance"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Hidden Watch"
+                  },
+                  "progress": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "secret": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "events": [
+      {
+        "sequence": 0,
+        "kind": "track_advanced",
+        "capability": "resources_and_conditions",
+        "visibility": "public",
+        "payload_sha256": "525007b37ecc57c65b98b55cd1e922e5aa10e5dcc5f051e1d887e8906bf700f1",
+        "payload": {
+          "kind": "object",
+          "value": {
+            "completed": {
+              "kind": "bool",
+              "value": true
+            },
+            "id": {
+              "kind": "string",
+              "value": "crossing_ready"
+            },
+            "label": {
+              "kind": "string",
+              "value": "Crossing Ready"
+            },
+            "progress_after": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "progress_before": {
+              "kind": "number",
+              "value": 0.0
+            },
+            "target_count": {
+              "kind": "number",
+              "value": 1.0
+            }
+          }
+        }
+      },
+      {
+        "sequence": 1,
+        "kind": "track_completed",
+        "capability": "resources_and_conditions",
+        "visibility": "public",
+        "payload_sha256": "f5453b02404a799103ad93084439ec2c28339fc3dcefea9ac8046a76bed9c7af",
+        "payload": {
+          "kind": "object",
+          "value": {
+            "consequence": {
+              "kind": "string",
+              "value": "The crossing route becomes dependable."
+            },
+            "id": {
+              "kind": "string",
+              "value": "crossing_ready"
+            }
+          }
+        }
+      },
+      {
+        "sequence": 2,
+        "kind": "track_advanced_authority",
+        "capability": "resources_and_conditions",
+        "visibility": "host_only",
+        "payload_sha256": "66ff0362293b55ffe073660183b31d23007f624d0e6319ad32a2f159e20b686a",
+        "payload": {
+          "kind": "object",
+          "value": {
+            "completed": {
+              "kind": "bool",
+              "value": true
+            },
+            "consequence": {
+              "kind": "string",
+              "value": "The crossing route becomes dependable."
+            },
+            "id": {
+              "kind": "string",
+              "value": "crossing_ready"
+            },
+            "label": {
+              "kind": "string",
+              "value": "Crossing Ready"
+            },
+            "outcome": {
+              "kind": "symbol",
+              "value": "success"
+            },
+            "progress_after": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "progress_before": {
+              "kind": "number",
+              "value": 0.0
+            },
+            "secret": {
+              "kind": "bool",
+              "value": false
+            },
+            "target_count": {
+              "kind": "number",
+              "value": 1.0
+            }
+          }
+        }
+      },
+      {
+        "sequence": 3,
+        "kind": "track_completed_authority",
+        "capability": "resources_and_conditions",
+        "visibility": "host_only",
+        "payload_sha256": "eb723d7c63b4b355061efffb24b8dcabb61233f64e7171cb2f0da2730a5392b2",
+        "payload": {
+          "kind": "object",
+          "value": {
+            "consequence": {
+              "kind": "string",
+              "value": "The crossing route becomes dependable."
+            },
+            "id": {
+              "kind": "string",
+              "value": "crossing_ready"
+            },
+            "secret": {
+              "kind": "bool",
+              "value": false
+            }
+          }
+        }
+      }
+    ]
+  }
+}

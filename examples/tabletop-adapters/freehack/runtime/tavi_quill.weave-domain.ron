@@ -1,0 +1,255 @@
+(
+    pack_format_version: 1,
+    id: "tavi_quill",
+    version: "1.0.0",
+    title: "Tavi Quill Freehack public projection",
+    module: (
+        id: "org.weave.tabletop.freehack.public",
+        version: "=1.0.0",
+    ),
+    dependencies: [],
+    values: {
+        "adapter": (
+            kind: object,
+            value: {
+                "content_sha256": (
+                    kind: string,
+                    value: "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
+                ),
+                "id": (
+                    kind: string,
+                    value: "org.weave.tabletop.freehack",
+                ),
+                "schema_version": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "version": (
+                    kind: string,
+                    value: "1.0.0",
+                ),
+            },
+        ),
+        "capabilities": (
+            kind: object,
+            value: {
+                "checks_and_conflicts": (
+                    kind: bool,
+                    value: true,
+                ),
+                "resources_and_conditions": (
+                    kind: bool,
+                    value: true,
+                ),
+                "scenes": (
+                    kind: bool,
+                    value: true,
+                ),
+            },
+        ),
+        "character": (
+            kind: object,
+            value: {
+                "archetype_id": (
+                    kind: string,
+                    value: "courier",
+                ),
+                "feature_ids": (
+                    kind: list,
+                    value: [
+                        (
+                            kind: string,
+                            value: "quiet_step",
+                        ),
+                        (
+                            kind: string,
+                            value: "tide_memory",
+                        ),
+                    ],
+                ),
+                "inventory_ids": (
+                    kind: list,
+                    value: [
+                        (
+                            kind: string,
+                            value: "line_launcher",
+                        ),
+                        (
+                            kind: string,
+                            value: "wax_tablet",
+                        ),
+                    ],
+                ),
+                "modifiers": (
+                    kind: object,
+                    value: {
+                        "balance": (
+                            kind: number,
+                            value: 6.0,
+                        ),
+                        "focus": (
+                            kind: number,
+                            value: 4.0,
+                        ),
+                    },
+                ),
+                "name": (
+                    kind: string,
+                    value: "Tavi Quill",
+                ),
+            },
+        ),
+        "snapshot": (
+            kind: object,
+            value: {
+                "gantry_status": (
+                    kind: symbol,
+                    value: "resolved",
+                ),
+                "memory_count": (
+                    kind: number,
+                    value: 2.0,
+                ),
+                "section_count": (
+                    kind: number,
+                    value: 2.0,
+                ),
+                "track_count": (
+                    kind: number,
+                    value: 2.0,
+                ),
+            },
+        ),
+        "tracks": (
+            kind: object,
+            value: {
+                "crossing_ready": (
+                    kind: object,
+                    value: {
+                        "advances_on": (
+                            kind: symbol,
+                            value: "success",
+                        ),
+                        "completed": (
+                            kind: bool,
+                            value: true,
+                        ),
+                        "consequence": (
+                            kind: string,
+                            value: "The crossing route becomes dependable.",
+                        ),
+                        "id": (
+                            kind: string,
+                            value: "crossing_ready",
+                        ),
+                        "interval": (
+                            kind: string,
+                            value: "after a stable crossing",
+                        ),
+                        "label": (
+                            kind: string,
+                            value: "Crossing Ready",
+                        ),
+                        "progress": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                        "target_count": (
+                            kind: number,
+                            value: 1.0,
+                        ),
+                    },
+                ),
+                "fatigue": (
+                    kind: object,
+                    value: {
+                        "advances_on": (
+                            kind: symbol,
+                            value: "failure",
+                        ),
+                        "completed": (
+                            kind: bool,
+                            value: false,
+                        ),
+                        "consequence": (
+                            kind: string,
+                            value: "The character must pause and recover.",
+                        ),
+                        "id": (
+                            kind: string,
+                            value: "fatigue",
+                        ),
+                        "interval": (
+                            kind: string,
+                            value: "after strenuous movement",
+                        ),
+                        "label": (
+                            kind: string,
+                            value: "Fatigue",
+                        ),
+                        "progress": (
+                            kind: number,
+                            value: 0.0,
+                        ),
+                        "target_count": (
+                            kind: number,
+                            value: 3.0,
+                        ),
+                    },
+                ),
+            },
+        ),
+    },
+    provenance: (
+        sources: [
+            (
+                id: "freehack_source",
+                kind: public_source,
+                url: "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.md",
+                revision: "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+                sha256: Some("cfb7910f9dfe73335bb575df107712735a7c806a4a392599958f8f4298be2c64"),
+                license: "CC0-1.0",
+                license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+                attribution: "Freehack 2.1 by Amini Allight.",
+                modified: true,
+            ),
+            (
+                id: "weave_fixture",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "freehack-public-fixture-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/dev/LICENSE",
+                attribution: "Original Freehack fixture scenario and projection authored by Weave contributors.",
+                modified: false,
+            ),
+        ],
+        transformations: [
+            (
+                id: "public_projection",
+                inputs: [
+                    "freehack_source",
+                    "weave_fixture",
+                ],
+                description: "Projects only explicitly disclosed adapter, character, track, section, and memory facts into an immutable story module; no private resolution data is carried.",
+            ),
+        ],
+        claims: {
+            "values.adapter": [
+                "public_projection",
+            ],
+            "values.capabilities": [
+                "public_projection",
+            ],
+            "values.character": [
+                "public_projection",
+            ],
+            "values.snapshot": [
+                "public_projection",
+            ],
+            "values.tracks": [
+                "public_projection",
+            ],
+        },
+    ),
+)

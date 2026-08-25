@@ -1,0 +1,177 @@
+(
+    creation_format_version: 1,
+    character_id: "org.weave.character.tavi_quill",
+    name: "Tavi Quill",
+    seed: 137,
+    campaign: (
+        schema_version: 1,
+        id: "org.weave.freehack.gantry_fixture",
+        title: "Gantry Fixture",
+        archetype_procedure: rarity_offer,
+        archetypes: [
+            (
+                id: "courier",
+                label: "Courier",
+                description: "Moves messages and small cargo between districts.",
+                rarity: common,
+            ),
+            (
+                id: "scribe",
+                label: "Scribe",
+                description: "Keeps exact public and private records.",
+                rarity: common,
+            ),
+            (
+                id: "diver",
+                label: "Diver",
+                description: "Works below the tide line.",
+                rarity: uncommon,
+            ),
+            (
+                id: "pilot",
+                label: "Pilot",
+                description: "Guides vessels through narrow channels.",
+                rarity: uncommon,
+            ),
+            (
+                id: "rigger",
+                label: "Rigger",
+                description: "Builds temporary lines and lifts.",
+                rarity: uncommon,
+            ),
+            (
+                id: "cartographer",
+                label: "Cartographer",
+                description: "Maintains charts of changing passages.",
+                rarity: rare,
+            ),
+            (
+                id: "signal_keeper",
+                label: "Signal Keeper",
+                description: "Coordinates long-range harbor signals.",
+                rarity: rare,
+            ),
+        ],
+        modifiers: [
+            (
+                id: "focus",
+                label: "Focus",
+                description: "Sustained attention under pressure.",
+                minimum: -10,
+                maximum: 10,
+                generation: (
+                    kind: "authored",
+                ),
+                player_visible: true,
+            ),
+            (
+                id: "balance",
+                label: "Balance",
+                description: "Footing on moving or narrow surfaces.",
+                minimum: 1,
+                maximum: 10,
+                generation: (
+                    kind: "random_inclusive",
+                ),
+                player_visible: true,
+            ),
+            (
+                id: "clearance",
+                label: "Clearance",
+                description: "Campaign-specific access rating.",
+                minimum: 2,
+                maximum: 2,
+                generation: (
+                    kind: "fixed",
+                    value: 2,
+                ),
+                player_visible: false,
+            ),
+        ],
+        feature_count: 2,
+        feature_options: [
+            (
+                id: "quiet_step",
+                label: "Quiet Step",
+                description: "Moves carefully across resonant decking.",
+            ),
+        ],
+        allow_authored_features: true,
+        inventory_budget: Some(10),
+        inventory_options: [
+            (
+                id: "line_launcher",
+                label: "Line Launcher",
+                description: "Projects a light cord across a gap.",
+                cost: Some(3),
+            ),
+        ],
+        allow_authored_inventory: true,
+        initial_tracks: [
+            (
+                id: "fatigue",
+                label: "Fatigue",
+                secret: false,
+                interval: "after strenuous movement",
+                target_count: 3,
+                advances_on: failure,
+                consequence: "The character must pause and recover.",
+            ),
+            (
+                id: "hidden_watch",
+                label: "Hidden Watch",
+                secret: true,
+                interval: "after a loud disturbance",
+                target_count: 2,
+                advances_on: success,
+                consequence: "An unseen observer changes position.",
+            ),
+        ],
+    ),
+    selected_archetype: Some("courier"),
+    authored_modifiers: {
+        "focus": 4,
+    },
+    features: [
+        (
+            kind: "catalog",
+            id: "quiet_step",
+        ),
+        (
+            kind: "authored",
+            id: "tide_memory",
+            label: "Tide Memory",
+            description: "Remembers recurring harbor currents.",
+        ),
+    ],
+    inventory: [
+        (
+            kind: "catalog",
+            id: "line_launcher",
+            quantity: 2,
+        ),
+        (
+            kind: "authored",
+            id: "wax_tablet",
+            label: "Wax Tablet",
+            quantity: 2,
+            cost_per_item: 1,
+        ),
+    ],
+    memories: [
+        (
+            id: "old_channel",
+            topic: "the old freight channel",
+            has_experience: true,
+            rationale: "Established explicitly during character creation.",
+            disclosure: public,
+        ),
+        (
+            id: "sealed_route",
+            topic: "a sealed maintenance route",
+            has_experience: false,
+            rationale: "Held for authority review until play establishes it.",
+            disclosure: host_only,
+        ),
+    ],
+)

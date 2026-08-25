@@ -131,3 +131,98 @@ export function dungeonpunkPresentation(story, receipt) {
     hiddenEntropySha256: entropyTrace.payload_sha256,
   };
 }
+
+export function freehackPresentation(story, receipt) {
+  const adapter = readModuleExport(story, "freehack", ["adapter"]);
+  const capabilities = readModuleExport(story, "freehack", ["capabilities"]);
+  const character = readModuleExport(story, "freehack", ["character"]);
+  const snapshot = readModuleExport(story, "freehack", ["snapshot"]);
+  const tracks = readModuleExport(story, "freehack", ["tracks"]);
+  const serializedPublicTransport = JSON.stringify({ story, receipt });
+  const forbiddenMarkers = [
+    "request_sha256",
+    "payload_sha256",
+    "entropy",
+    "opposition",
+    "draw_index",
+    "signed_result",
+    "_authority",
+    "sealed_current",
+    "Sealed Current",
+    "hidden_watch",
+    "sealed_route",
+    "Private action marker",
+  ];
+  const publicCheck = receipt?.events?.find((event) => event.kind === "check_resolved");
+  if (
+    forbiddenMarkers.some((marker) => serializedPublicTransport.includes(marker)) ||
+    adapter?.id !== "org.weave.tabletop.freehack" ||
+    adapter.version !== "1.0.0" ||
+    !SHA256.test(adapter.content_sha256 ?? "") ||
+    capabilities?.checks_and_conflicts !== true ||
+    capabilities?.resources_and_conditions !== true ||
+    capabilities?.scenes !== true ||
+    typeof character?.name !== "string" ||
+    typeof character?.archetype_id !== "string" ||
+    !Number.isInteger(character?.modifiers?.focus) ||
+    !Number.isInteger(character?.modifiers?.balance) ||
+    "clearance" in (character?.modifiers ?? {}) ||
+    !Array.isArray(character?.feature_ids) ||
+    !character.feature_ids.every((id) => typeof id === "string") ||
+    !Array.isArray(character?.inventory_ids) ||
+    !character.inventory_ids.every((id) => typeof id === "string") ||
+    !Number.isInteger(tracks?.fatigue?.progress) ||
+    !Number.isInteger(tracks?.fatigue?.target_count) ||
+    typeof tracks?.fatigue?.interval !== "string" ||
+    typeof tracks?.fatigue?.consequence !== "string" ||
+    typeof tracks?.fatigue?.completed !== "boolean" ||
+    !["open", "resolved", "timed_out"].includes(snapshot?.gantry_status) ||
+    !Number.isInteger(snapshot?.memory_count) ||
+    receipt?.projection_format_version !== 1 ||
+    receipt?.adapter?.id !== adapter.id ||
+    receipt?.adapter?.version !== adapter.version ||
+    receipt?.adapter?.content_sha256 !== adapter.content_sha256 ||
+    receipt?.operation !== "resolve_check" ||
+    !SHA256.test(receipt?.public_state_sha256 ?? "") ||
+    receipt?.public_state?.projection_format_version !== 1 ||
+    receipt?.public_state?.adapter?.id !== adapter.id ||
+    !Array.isArray(receipt?.events) ||
+    receipt.events.length === 0 ||
+    receipt.events.some(
+      (event, index) =>
+        event?.sequence !== index ||
+        typeof event?.kind !== "string" ||
+        event.kind.endsWith("_authority") ||
+        "visibility" in event ||
+        "payload_sha256" in event,
+    ) ||
+    publicCheck == null
+  ) {
+    throw new TypeError("invalid portable Freehack public presentation");
+  }
+  const check = decodeDomainValue(publicCheck.payload);
+  if (
+    !["success", "failure"].includes(check?.outcome) ||
+    !Number.isInteger(check?.magnitude) ||
+    !Number.isInteger(check?.support_total) ||
+    "opposition_total" in check ||
+    "draw_index" in check ||
+    "signed_result" in check
+  ) {
+    throw new TypeError("invalid portable Freehack public check event");
+  }
+  return {
+    adapter,
+    name: character.name,
+    archetype: character.archetype_id,
+    modifiers: character.modifiers,
+    featureIds: character.feature_ids,
+    inventoryIds: character.inventory_ids,
+    fatigue: tracks.fatigue.progress,
+    tracks,
+    gantryStatus: snapshot.gantry_status,
+    publicMemoryCount: snapshot.memory_count,
+    check,
+    publicStateSha256: receipt.public_state_sha256,
+  };
+}

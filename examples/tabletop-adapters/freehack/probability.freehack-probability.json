@@ -1,0 +1,19 @@
+{
+  "probability_format_version": 1,
+  "support": [
+    {
+      "id": "focus",
+      "label": "Focus",
+      "value": 4,
+      "source": "character"
+    }
+  ],
+  "opposition": [
+    {
+      "id": "crosswind",
+      "label": "Crosswind",
+      "value": 3,
+      "source": "situation"
+    }
+  ]
+}

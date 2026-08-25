@@ -1,0 +1,70 @@
+{
+  "artifacts": [
+    {
+      "exact_artifact": "freehack.pdf",
+      "media_type": "application/pdf",
+      "redistributed": false,
+      "sha256": "ca5c0420ec05884c1b0182f2a5857a4991e23573e10b9e28ecb009157e8ad393",
+      "source_url": "https://amini-allight.itch.io/freehack"
+    },
+    {
+      "exact_artifact": "src/freehack.md",
+      "media_type": "text/markdown",
+      "redistributed": false,
+      "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+      "sha256": "cfb7910f9dfe73335bb575df107712735a7c806a4a392599958f8f4298be2c64",
+      "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.md"
+    },
+    {
+      "exact_artifact": "src/freehack.yml",
+      "media_type": "application/yaml",
+      "redistributed": false,
+      "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+      "sha256": "a4b2d8bbe45b4d2f96e8ac161999d35fec5f27d4908f004bbfed871e1f1655f0",
+      "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.yml"
+    },
+    {
+      "exact_artifact": "tools/roll.py",
+      "media_type": "text/x-python",
+      "redistributed": false,
+      "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+      "sha256": "838ee10829d00fce8a66416f85401de48fc3927fa9a0b3536137e6007b9aed19",
+      "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/tools/roll.py"
+    },
+    {
+      "exact_artifact": "LICENSE-CC0-1.0.txt",
+      "media_type": "text/plain",
+      "redistributed": true,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt"
+    }
+  ],
+  "format_version": 1,
+  "implementation": {
+    "copy_policy": "independently authored, setting-neutral Rust behavior",
+    "public_projection": "authority inputs, entropy traces, hidden opposition, secret tracks, private memories, and pending submissions are excluded"
+  },
+  "official_release_page": "https://amini-allight.itch.io/freehack",
+  "official_source_repository": "https://gitlab.com/amini-allight/freehack",
+  "release": "2.1",
+  "release_date": "2026-07-13",
+  "retrieved_on": "2026-08-25",
+  "review_boundary": {
+    "excluded": [
+      "artwork",
+      "branding",
+      "community supplements",
+      "layout",
+      "logos",
+      "trade dress",
+      "unverified assets"
+    ],
+    "included": [
+      "campaign-configured character fields, archetype procedures, features, inventory, and memories",
+      "exact support/opposition probability, signed result, and magnitude behavior",
+      "generic tracks and simultaneous sections",
+      "official executable roll reference cross-check"
+    ]
+  },
+  "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9"
+}

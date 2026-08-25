@@ -1,0 +1,771 @@
+{
+  "version": 4,
+  "source_name": "examples/tabletop-adapters/freehack/runtime/tavi-quill.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 118,
+        "end": 155,
+        "line": 7,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_id",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "adapter",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 155,
+        "end": 202,
+        "line": 8,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_version",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "adapter",
+              "version"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 202,
+        "end": 255,
+        "line": 9,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "adapter",
+              "content_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 255,
+        "end": 321,
+        "line": 10,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "checks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "capabilities",
+              "checks_and_conflicts"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 321,
+        "end": 373,
+        "line": 11,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "scenes_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "capabilities",
+              "scenes"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 373,
+        "end": 443,
+        "line": 12,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "tracks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "capabilities",
+              "resources_and_conditions"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 443,
+        "end": 488,
+        "line": 13,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "character_name",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "character",
+              "name"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 488,
+        "end": 536,
+        "line": 14,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "archetype",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "character",
+              "archetype_id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 536,
+        "end": 583,
+        "line": 15,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "focus",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "character",
+              "modifiers",
+              "focus"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 583,
+        "end": 630,
+        "line": 16,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "fatigue",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "tracks",
+              "fatigue",
+              "progress"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 630,
+        "end": 683,
+        "line": 17,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "section_status",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "snapshot",
+              "gantry_status"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 683,
+        "end": 736,
+        "line": 18,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "public_memories",
+          "value": {
+            "kind": "path",
+            "value": [
+              "freehack",
+              "snapshot",
+              "memory_count"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "freehack": {
+      "id": "org.weave.tabletop.freehack.public",
+      "version": "1.0.0",
+      "pack_id": "tavi_quill",
+      "pack_version": "1.0.0",
+      "exports": {
+        "adapter": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "content_sha256": {
+                "kind": "string",
+                "value": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+              },
+              "id": {
+                "kind": "string",
+                "value": "org.weave.tabletop.freehack"
+              },
+              "schema_version": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "version": {
+                "kind": "string",
+                "value": "1.0.0"
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "checks_and_conflicts": {
+                "kind": "bool",
+                "value": true
+              },
+              "resources_and_conditions": {
+                "kind": "bool",
+                "value": true
+              },
+              "scenes": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        },
+        "character": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "archetype_id": {
+                "kind": "string",
+                "value": "courier"
+              },
+              "feature_ids": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "quiet_step"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "tide_memory"
+                  }
+                ]
+              },
+              "inventory_ids": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "line_launcher"
+                  },
+                  {
+                    "kind": "string",
+                    "value": "wax_tablet"
+                  }
+                ]
+              },
+              "modifiers": {
+                "kind": "object",
+                "value": {
+                  "balance": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "focus": {
+                    "kind": "number",
+                    "value": 4.0
+                  }
+                }
+              },
+              "name": {
+                "kind": "string",
+                "value": "Tavi Quill"
+              }
+            }
+          }
+        },
+        "snapshot": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "gantry_status": {
+                "kind": "symbol",
+                "value": "resolved"
+              },
+              "memory_count": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "section_count": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "track_count": {
+                "kind": "number",
+                "value": 2.0
+              }
+            }
+          }
+        },
+        "tracks": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "crossing_ready": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "consequence": {
+                    "kind": "string",
+                    "value": "The crossing route becomes dependable."
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "crossing_ready"
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after a stable crossing"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Crossing Ready"
+                  },
+                  "progress": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "fatigue": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "consequence": {
+                    "kind": "string",
+                    "value": "The character must pause and recover."
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "fatigue"
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after strenuous movement"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Fatigue"
+                  },
+                  "progress": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 3.0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 751,
+            "end": 1173,
+            "line": 21,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "binary",
+                    "value": {
+                      "left": {
+                        "kind": "binary",
+                        "value": {
+                          "left": {
+                            "kind": "path",
+                            "value": [
+                              "checks_supported"
+                            ]
+                          },
+                          "operator": "and",
+                          "right": {
+                            "kind": "path",
+                            "value": [
+                              "scenes_supported"
+                            ]
+                          }
+                        }
+                      },
+                      "operator": "and",
+                      "right": {
+                        "kind": "path",
+                        "value": [
+                          "tracks_supported"
+                        ]
+                      }
+                    }
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 814,
+                        "end": 900,
+                        "line": 22,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "character_name"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", a "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "archetype"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", enters play with Focus "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "focus"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " and Fatigue "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "fatigue"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "."
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "start": 905,
+                        "end": 993,
+                        "line": 23,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The gantry section is "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "section_status"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "; "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "public_memories"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " public memories are available."
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "start": 998,
+                        "end": 1069,
+                        "line": 24,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The active rules are "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_id"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "@"
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_version"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " ("
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_sha256"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ")."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 1082,
+                    "end": 1171,
+                    "line": 26,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "This branch is unreachable because the public module declares checks, scenes, and tracks."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1174,
+            "end": 1180,
+            "line": 28,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

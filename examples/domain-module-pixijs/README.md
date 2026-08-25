@@ -15,9 +15,11 @@ template/scenario, and pinned pack coordinate. It keeps fact lineage separate fr
 fictional-cue lineage, verifies expression, presentation, alignment, and temporal personality
 write-back are false, and has no dependency on the Weave Editor.
 
-The scene also consumes the checked Plug-And-Play and Dungeonpunk domain packs. Pure readers
-validate exact adapter coordinates, portable state, public check/Struggle consequences, request
-fingerprints, and host-only entropy audit envelopes whose payloads remain redacted.
+The scene also consumes the checked Plug-And-Play, Dungeonpunk, and Freehack domain packs. Pure
+readers validate exact adapter coordinates and public consequences. Freehack uses a dedicated
+public-only story/receipt schema and rejects authority event kinds, entropy, request hashes, hidden
+opposition, secret tracks/memories, and private submissions; no authority artifact is imported by
+the PixiJS bundle.
 
 ```bash
 cd examples/domain-module-pixijs
@@ -27,4 +29,4 @@ npm run build
 ```
 
 Run `npm run dev` for the browser view. The pure value-reader tests intentionally run in Node so
-CI can verify the portable boundary without a GPU or browser.
+local checks can verify the portable boundary without a GPU or browser.

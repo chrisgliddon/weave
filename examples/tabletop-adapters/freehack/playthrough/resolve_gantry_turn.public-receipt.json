@@ -1,0 +1,107 @@
+{
+  "projection_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.freehack",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+  },
+  "operation": "resolve_section",
+  "capability": "scenes",
+  "public_state_sha256": "4ecf697c46be95e478841f738183b48498193300b974bd08fcdd0baa1e55061d",
+  "public_state": {
+    "projection_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+    },
+    "owner_id": "org.weave.character.tavi_quill",
+    "tracks": [
+      {
+        "id": "fatigue",
+        "label": "Fatigue",
+        "interval": "after strenuous movement",
+        "target_count": 3,
+        "progress": 0,
+        "advances_on": "failure",
+        "consequence": "The character must pause and recover.",
+        "completed": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "gantry_turn",
+        "label": "Gantry Turn",
+        "timing": "timed",
+        "mapping": "mapped",
+        "abstraction": "objective",
+        "status": "resolved",
+        "turn_ticks": 30,
+        "elapsed_ticks": 0,
+        "participants": [
+          "ira",
+          "moss"
+        ],
+        "submitted_participants": [
+          "ira",
+          "moss"
+        ],
+        "resolved_order": [
+          "ira",
+          "moss"
+        ],
+        "public_summary": "The gantry stabilizes.",
+        "revealed_submissions": []
+      }
+    ],
+    "memories": [
+      {
+        "id": "old_channel",
+        "topic": "the old freight channel",
+        "has_experience": true,
+        "rationale": "Established explicitly during character creation."
+      },
+      {
+        "id": "tide_gate",
+        "topic": "the public tide-gate schedule",
+        "has_experience": false,
+        "rationale": "The deterministic memory check did not establish prior experience with this topic."
+      }
+    ]
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "section_resolved",
+      "capability": "scenes",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "public_summary": {
+            "kind": "string",
+            "value": "The gantry stabilizes."
+          },
+          "resolved_order": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "string",
+                "value": "ira"
+              },
+              {
+                "kind": "string",
+                "value": "moss"
+              }
+            ]
+          },
+          "section_id": {
+            "kind": "string",
+            "value": "gantry_turn"
+          }
+        }
+      }
+    }
+  ]
+}

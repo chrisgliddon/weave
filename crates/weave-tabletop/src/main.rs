@@ -7,17 +7,27 @@ use clap::{Parser, Subcommand, ValueEnum};
 use tempfile::NamedTempFile;
 use weave_tabletop::{
     AdapterManifest, AdapterSelection, DungeonpunkCreationPreview, DungeonpunkCreationRequest,
-    DungeonpunkResolver, HostAudience, PlugAndPlayCreationPreview, PlugAndPlayCreationRequest,
-    PlugAndPlayResolver, ResolutionReceipt, ResolutionRequest, ResolverRegistry,
-    TabletopCharacterProjection, TabletopError, TabletopState, adapter_manifest_schema,
-    adapter_selection_schema, canonical_fingerprint, character_projection_schema,
-    create_dungeonpunk_character, create_plug_and_play_character,
-    dungeonpunk_creation_preview_schema, dungeonpunk_creation_request_schema, dungeonpunk_manifest,
-    plug_and_play_creation_preview_schema, plug_and_play_creation_request_schema,
-    plug_and_play_manifest, project_receipt_for_audience, resolution_receipt_schema,
-    resolution_request_schema, tabletop_state_schema, validate_adapter_manifest,
-    validate_adapter_selection, validate_character_projection,
-    validate_dungeonpunk_creation_preview, validate_plug_and_play_creation_preview,
+    DungeonpunkResolver, FreehackAuthorityReceipt, FreehackCreationPreview,
+    FreehackCreationRequest, FreehackProbabilityPreview, FreehackProbabilityRequest,
+    FreehackPublicReceipt, FreehackPublicState, FreehackResolver, HostAudience,
+    PlugAndPlayCreationPreview, PlugAndPlayCreationRequest, PlugAndPlayResolver, ResolutionReceipt,
+    ResolutionRequest, ResolverRegistry, TabletopCharacterProjection, TabletopError, TabletopState,
+    adapter_manifest_schema, adapter_selection_schema, canonical_fingerprint,
+    character_projection_schema, create_dungeonpunk_character, create_freehack_character,
+    create_plug_and_play_character, dungeonpunk_creation_preview_schema,
+    dungeonpunk_creation_request_schema, dungeonpunk_manifest, freehack_authority_receipt_schema,
+    freehack_creation_preview_schema, freehack_creation_request_schema, freehack_manifest,
+    freehack_probability_preview, freehack_probability_preview_schema,
+    freehack_probability_request_schema, freehack_public_receipt_schema,
+    freehack_public_state_schema, plug_and_play_creation_preview_schema,
+    plug_and_play_creation_request_schema, plug_and_play_manifest,
+    project_freehack_authority_receipt, project_freehack_public_receipt,
+    project_receipt_for_audience, resolution_receipt_schema, resolution_request_schema,
+    tabletop_state_schema, validate_adapter_manifest, validate_adapter_selection,
+    validate_character_projection, validate_dungeonpunk_creation_preview,
+    validate_freehack_authority_receipt, validate_freehack_creation_preview,
+    validate_freehack_probability_preview, validate_freehack_public_receipt,
+    validate_freehack_public_state, validate_plug_and_play_creation_preview,
     validate_resolution_receipt_for_request, validate_resolution_request, validate_tabletop_state,
     verify_adapter_source_bundle,
 };
@@ -107,6 +117,29 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Create one deterministic campaign-configured Freehack character preview.
+    FreehackCreate {
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Calculate one exact Freehack support/opposition probability without entropy.
+    FreehackProbability {
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Resolve one Freehack request and emit explicit authority/public projections.
+    FreehackResolve {
+        request: PathBuf,
+        #[arg(long)]
+        state: PathBuf,
+        #[arg(long)]
+        authority_output: PathBuf,
+        /// Written only when the operation has a public observable event.
+        #[arg(long)]
+        public_output: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -121,6 +154,13 @@ enum ArtifactKind {
     PlugAndPlayCreationPreview,
     DungeonpunkCreationRequest,
     DungeonpunkCreationPreview,
+    FreehackCreationRequest,
+    FreehackCreationPreview,
+    FreehackProbabilityRequest,
+    FreehackProbabilityPreview,
+    FreehackPublicState,
+    FreehackPublicReceipt,
+    FreehackAuthorityReceipt,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -135,6 +175,13 @@ enum SchemaKind {
     PlugAndPlayCreationPreview,
     DungeonpunkCreationRequest,
     DungeonpunkCreationPreview,
+    FreehackCreationRequest,
+    FreehackCreationPreview,
+    FreehackProbabilityRequest,
+    FreehackProbabilityPreview,
+    FreehackPublicState,
+    FreehackPublicReceipt,
+    FreehackAuthorityReceipt,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -226,6 +273,29 @@ fn run(cli: Cli) -> Result<(), CliError> {
                         &input,
                     )?)?;
                 }
+                ArtifactKind::FreehackCreationRequest => {
+                    create_freehack_character(&read_freehack_creation_request(&input)?)?;
+                }
+                ArtifactKind::FreehackCreationPreview => {
+                    validate_freehack_creation_preview(&read_freehack_creation_preview(&input)?)?;
+                }
+                ArtifactKind::FreehackProbabilityRequest => {
+                    freehack_probability_preview(&read_freehack_probability_request(&input)?)?;
+                }
+                ArtifactKind::FreehackProbabilityPreview => {
+                    validate_freehack_probability_preview(&read_freehack_probability_preview(
+                        &input,
+                    )?)?;
+                }
+                ArtifactKind::FreehackPublicState => {
+                    validate_freehack_public_state(&read_freehack_public_state(&input)?)?;
+                }
+                ArtifactKind::FreehackPublicReceipt => {
+                    validate_freehack_public_receipt(&read_freehack_public_receipt(&input)?)?;
+                }
+                ArtifactKind::FreehackAuthorityReceipt => {
+                    validate_freehack_authority_receipt(&read_freehack_authority_receipt(&input)?)?;
+                }
             }
             println!("valid tabletop {}", kind_name(kind));
         }
@@ -241,12 +311,16 @@ fn run(cli: Cli) -> Result<(), CliError> {
             let companions = companion_artifacts
                 .into_iter()
                 .map(|path| {
-                    let name = path
-                        .file_name()
-                        .and_then(|name| name.to_str())
-                        .ok_or(CliError::UnsupportedFormat)?
-                        .to_owned();
-                    Ok((name, fs::read(path)?))
+                    let matches = manifest
+                        .provenance
+                        .additional_artifacts
+                        .iter()
+                        .filter(|artifact| path.ends_with(Path::new(&artifact.exact_artifact)))
+                        .collect::<Vec<_>>();
+                    let [artifact] = matches.as_slice() else {
+                        return Err(CliError::MissingCompanion);
+                    };
+                    Ok((artifact.exact_artifact.clone(), fs::read(path)?))
                 })
                 .collect::<Result<BTreeMap<_, _>, CliError>>()?;
             verify_adapter_source_bundle(&manifest, &source, &companions, &license)?;
@@ -269,6 +343,13 @@ fn run(cli: Cli) -> Result<(), CliError> {
                 SchemaKind::PlugAndPlayCreationPreview => plug_and_play_creation_preview_schema(),
                 SchemaKind::DungeonpunkCreationRequest => dungeonpunk_creation_request_schema(),
                 SchemaKind::DungeonpunkCreationPreview => dungeonpunk_creation_preview_schema(),
+                SchemaKind::FreehackCreationRequest => freehack_creation_request_schema(),
+                SchemaKind::FreehackCreationPreview => freehack_creation_preview_schema(),
+                SchemaKind::FreehackProbabilityRequest => freehack_probability_request_schema(),
+                SchemaKind::FreehackProbabilityPreview => freehack_probability_preview_schema(),
+                SchemaKind::FreehackPublicState => freehack_public_state_schema(),
+                SchemaKind::FreehackPublicReceipt => freehack_public_receipt_schema(),
+                SchemaKind::FreehackAuthorityReceipt => freehack_authority_receipt_schema(),
             }?;
             write_atomic(&output, schema)?;
         }
@@ -325,6 +406,49 @@ fn run(cli: Cli) -> Result<(), CliError> {
             let receipt = registry.execute(&manifest, &request, &state)?;
             write_atomic(&output, serialize_receipt(&receipt, &output)?)?;
         }
+        Command::FreehackCreate { input, output } => {
+            let request = read_freehack_creation_request(&input)?;
+            let preview = create_freehack_character(&request)?;
+            write_atomic(
+                &output,
+                serialize_freehack_creation_preview(&preview, &output)?,
+            )?;
+        }
+        Command::FreehackProbability { input, output } => {
+            let request = read_freehack_probability_request(&input)?;
+            let preview = freehack_probability_preview(&request)?;
+            write_atomic(
+                &output,
+                serialize_freehack_probability_preview(&preview, &output)?,
+            )?;
+        }
+        Command::FreehackResolve {
+            request,
+            state,
+            authority_output,
+            public_output,
+        } => {
+            let manifest = freehack_manifest();
+            let request = read_request(&request)?;
+            let state = read_state(&state)?;
+            let mut registry = ResolverRegistry::new();
+            registry.register(&manifest, FreehackResolver)?;
+            let receipt = registry.execute(&manifest, &request, &state)?;
+            let authority = project_freehack_authority_receipt(&receipt)?;
+            let authority_contents =
+                serialize_freehack_authority_receipt(&authority, &authority_output)?;
+            let public = match public_output.as_ref() {
+                Some(path) => project_freehack_public_receipt(&receipt)?
+                    .map(|public| serialize_freehack_public_receipt(&public, path))
+                    .transpose()?
+                    .map(|contents| (path, contents)),
+                None => None,
+            };
+            write_atomic(&authority_output, authority_contents)?;
+            if let Some((path, contents)) = public {
+                write_atomic(path, contents)?;
+            }
+        }
     }
     Ok(())
 }
@@ -348,6 +472,13 @@ fn kind_name(kind: ArtifactKind) -> &'static str {
         ArtifactKind::PlugAndPlayCreationPreview => "Plug-And-Play creation preview",
         ArtifactKind::DungeonpunkCreationRequest => "Dungeonpunk creation request",
         ArtifactKind::DungeonpunkCreationPreview => "Dungeonpunk creation preview",
+        ArtifactKind::FreehackCreationRequest => "Freehack creation request",
+        ArtifactKind::FreehackCreationPreview => "Freehack creation preview",
+        ArtifactKind::FreehackProbabilityRequest => "Freehack probability request",
+        ArtifactKind::FreehackProbabilityPreview => "Freehack probability preview",
+        ArtifactKind::FreehackPublicState => "Freehack public state",
+        ArtifactKind::FreehackPublicReceipt => "Freehack public receipt",
+        ArtifactKind::FreehackAuthorityReceipt => "Freehack authority receipt",
     }
 }
 
@@ -427,6 +558,62 @@ fn read_dungeonpunk_creation_preview(path: &Path) -> Result<DungeonpunkCreationP
     )
 }
 
+fn read_freehack_creation_request(path: &Path) -> Result<FreehackCreationRequest, CliError> {
+    parse(
+        path,
+        FreehackCreationRequest::from_json,
+        FreehackCreationRequest::from_ron,
+    )
+}
+
+fn read_freehack_creation_preview(path: &Path) -> Result<FreehackCreationPreview, CliError> {
+    parse(
+        path,
+        FreehackCreationPreview::from_json,
+        FreehackCreationPreview::from_ron,
+    )
+}
+
+fn read_freehack_probability_request(path: &Path) -> Result<FreehackProbabilityRequest, CliError> {
+    parse(
+        path,
+        FreehackProbabilityRequest::from_json,
+        FreehackProbabilityRequest::from_ron,
+    )
+}
+
+fn read_freehack_probability_preview(path: &Path) -> Result<FreehackProbabilityPreview, CliError> {
+    parse(
+        path,
+        FreehackProbabilityPreview::from_json,
+        FreehackProbabilityPreview::from_ron,
+    )
+}
+
+fn read_freehack_public_state(path: &Path) -> Result<FreehackPublicState, CliError> {
+    parse(
+        path,
+        FreehackPublicState::from_json,
+        FreehackPublicState::from_ron,
+    )
+}
+
+fn read_freehack_public_receipt(path: &Path) -> Result<FreehackPublicReceipt, CliError> {
+    parse(
+        path,
+        FreehackPublicReceipt::from_json,
+        FreehackPublicReceipt::from_ron,
+    )
+}
+
+fn read_freehack_authority_receipt(path: &Path) -> Result<FreehackAuthorityReceipt, CliError> {
+    parse(
+        path,
+        FreehackAuthorityReceipt::from_json,
+        FreehackAuthorityReceipt::from_ron,
+    )
+}
+
 fn parse<T>(
     path: &Path,
     json: fn(&str) -> Result<T, TabletopError>,
@@ -463,6 +650,46 @@ fn serialize_dungeonpunk_creation_preview(
     match artifact_format(path)? {
         ArtifactFormat::Json => Ok(preview.to_json()?),
         ArtifactFormat::Ron => Ok(preview.to_ron()?),
+    }
+}
+
+fn serialize_freehack_creation_preview(
+    preview: &FreehackCreationPreview,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(preview.to_json()?),
+        ArtifactFormat::Ron => Ok(preview.to_ron()?),
+    }
+}
+
+fn serialize_freehack_probability_preview(
+    preview: &FreehackProbabilityPreview,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(preview.to_json()?),
+        ArtifactFormat::Ron => Ok(preview.to_ron()?),
+    }
+}
+
+fn serialize_freehack_public_receipt(
+    receipt: &FreehackPublicReceipt,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(receipt.to_json()?),
+        ArtifactFormat::Ron => Ok(receipt.to_ron()?),
+    }
+}
+
+fn serialize_freehack_authority_receipt(
+    receipt: &FreehackAuthorityReceipt,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(receipt.to_json()?),
+        ArtifactFormat::Ron => Ok(receipt.to_ron()?),
     }
 }
 

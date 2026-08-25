@@ -1,0 +1,185 @@
+{
+  "projection_format_version": 1,
+  "character_id": "org.weave.character.tavi_quill",
+  "canonical_profile_sha256": "afc68d7072b0898b24d86ef4b746d1a12df3c48cf0188eb605a27b3f9ec75a0b",
+  "canonical_character_write_back": false,
+  "active": {
+    "adapter": {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+    },
+    "definition": {
+      "kind": "object",
+      "value": {
+        "archetype_id": {
+          "kind": "string",
+          "value": "courier"
+        },
+        "campaign_id": {
+          "kind": "string",
+          "value": "org.weave.freehack.gantry_fixture"
+        },
+        "campaign_schema_sha256": {
+          "kind": "string",
+          "value": "e8c32681b31b70c38cf6139f179d7268044190975cff15c9ad38a774113d7509"
+        },
+        "features": {
+          "kind": "object",
+          "value": {
+            "quiet_step": {
+              "kind": "object",
+              "value": {
+                "description": {
+                  "kind": "string",
+                  "value": "Moves carefully across resonant decking."
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Quiet Step"
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "catalog"
+                }
+              }
+            },
+            "tide_memory": {
+              "kind": "object",
+              "value": {
+                "description": {
+                  "kind": "string",
+                  "value": "Remembers recurring harbor currents."
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Tide Memory"
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "authored"
+                }
+              }
+            }
+          }
+        },
+        "inventory": {
+          "kind": "object",
+          "value": {
+            "line_launcher": {
+              "kind": "object",
+              "value": {
+                "cost_per_item": {
+                  "kind": "number",
+                  "value": 3.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Line Launcher"
+                },
+                "quantity": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "catalog"
+                }
+              }
+            },
+            "wax_tablet": {
+              "kind": "object",
+              "value": {
+                "cost_per_item": {
+                  "kind": "number",
+                  "value": 1.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Wax Tablet"
+                },
+                "quantity": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "authored"
+                }
+              }
+            }
+          }
+        },
+        "modifiers": {
+          "kind": "object",
+          "value": {
+            "balance": {
+              "kind": "object",
+              "value": {
+                "label": {
+                  "kind": "string",
+                  "value": "Balance"
+                },
+                "player_visible": {
+                  "kind": "bool",
+                  "value": true
+                },
+                "value": {
+                  "kind": "number",
+                  "value": 6.0
+                }
+              }
+            },
+            "clearance": {
+              "kind": "object",
+              "value": {
+                "label": {
+                  "kind": "string",
+                  "value": "Clearance"
+                },
+                "player_visible": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "value": {
+                  "kind": "number",
+                  "value": 2.0
+                }
+              }
+            },
+            "focus": {
+              "kind": "object",
+              "value": {
+                "label": {
+                  "kind": "string",
+                  "value": "Focus"
+                },
+                "player_visible": {
+                  "kind": "bool",
+                  "value": true
+                },
+                "value": {
+                  "kind": "number",
+                  "value": 4.0
+                }
+              }
+            }
+          }
+        },
+        "name": {
+          "kind": "string",
+          "value": "Tavi Quill"
+        }
+      }
+    },
+    "definition_sha256": "0a994183f1d3a7f5858c0e017651559432f2069418d0542de387dd04856fc91a",
+    "completed_creation_steps": [
+      "campaign",
+      "features_and_inventory",
+      "identity_and_modifiers"
+    ]
+  },
+  "inactive": {},
+  "suggestions": []
+}

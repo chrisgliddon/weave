@@ -1,0 +1,411 @@
+(
+    contract_version: 1,
+    pack_format_version: 1,
+    id: "org.weave.tabletop.freehack.public",
+    version: "1.0.0",
+    namespace: "freehack",
+    title: "Freehack public projection",
+    summary: "Leak-free, immutable values for player-facing Freehack story consumers.",
+    authors: [
+        (
+            name: "Weave contributors",
+            url: Some("https://github.com/chrisgliddon/weave"),
+        ),
+    ],
+    license: "MIT",
+    license_url: "https://github.com/chrisgliddon/weave/blob/dev/LICENSE",
+    weave_version: ">=0.1.0, <0.2.0",
+    capabilities: [
+        (
+            id: "data",
+            version: 1,
+        ),
+        (
+            id: "editor_schema",
+            version: 1,
+        ),
+    ],
+    dependencies: [],
+    types: {},
+    exports: {
+        "adapter": (
+            type: (
+                kind: "object",
+                fields: {
+                    "content_sha256": (
+                        type: (
+                            kind: "string",
+                            min_length: 64,
+                            max_length: 64,
+                        ),
+                        required: true,
+                        description: "Exact reviewed adapter manifest hash.",
+                    ),
+                    "id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 255,
+                        ),
+                        required: true,
+                        description: "Stable reviewed adapter identity.",
+                    ),
+                    "schema_version": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(4294967295.0),
+                        ),
+                        required: true,
+                        description: "State schema version.",
+                    ),
+                    "version": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 64,
+                        ),
+                        required: true,
+                        description: "Exact adapter semantic version.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Exact safe adapter coordinate.",
+        ),
+        "capabilities": (
+            type: (
+                kind: "object",
+                fields: {
+                    "checks_and_conflicts": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Public check presentation support.",
+                    ),
+                    "resources_and_conditions": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Public track presentation support.",
+                    ),
+                    "scenes": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Public section presentation support.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Publicly usable adapter capabilities.",
+        ),
+        "character": (
+            type: (
+                kind: "object",
+                fields: {
+                    "archetype_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Selected setting-authored archetype.",
+                    ),
+                    "feature_ids": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 128,
+                            ),
+                            min_items: 0,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Public selected feature identities.",
+                    ),
+                    "inventory_ids": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 128,
+                            ),
+                            min_items: 0,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Public selected inventory identities.",
+                    ),
+                    "modifiers": (
+                        type: (
+                            kind: "object",
+                            fields: {
+                                "balance": (
+                                    type: (
+                                        kind: "number",
+                                        integer: true,
+                                        minimum: Some(1.0),
+                                        maximum: Some(10.0),
+                                    ),
+                                    required: true,
+                                    description: "Player-visible campaign modifier.",
+                                ),
+                                "focus": (
+                                    type: (
+                                        kind: "number",
+                                        integer: true,
+                                        minimum: Some(-10.0),
+                                        maximum: Some(10.0),
+                                    ),
+                                    required: true,
+                                    description: "Player-visible campaign modifier.",
+                                ),
+                            },
+                        ),
+                        required: true,
+                        description: "Only player-visible campaign modifiers.",
+                    ),
+                    "name": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Fictional display name.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Player-visible character projection.",
+        ),
+        "snapshot": (
+            type: (
+                kind: "object",
+                fields: {
+                    "gantry_status": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "open",
+                                "resolved",
+                                "timed_out",
+                            ],
+                        ),
+                        required: true,
+                        description: "Public gantry section lifecycle.",
+                    ),
+                    "memory_count": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(256.0),
+                        ),
+                        required: true,
+                        description: "Number of public memories.",
+                    ),
+                    "section_count": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(256.0),
+                        ),
+                        required: true,
+                        description: "Number of public sections.",
+                    ),
+                    "track_count": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(256.0),
+                        ),
+                        required: true,
+                        description: "Number of public tracks.",
+                    ),
+                },
+            ),
+            required: true,
+            source: pack,
+            description: "Player-visible final-state summary.",
+        ),
+        "tracks": (
+            type: (
+                kind: "map",
+                values: (
+                    kind: "object",
+                    fields: {
+                        "advances_on": (
+                            type: (
+                                kind: "symbol",
+                                values: [
+                                    "failure",
+                                    "success",
+                                ],
+                            ),
+                            required: true,
+                            description: "Outcome that advances this public track.",
+                        ),
+                        "completed": (
+                            type: (
+                                kind: "bool",
+                            ),
+                            required: true,
+                            description: "Public completion state.",
+                        ),
+                        "consequence": (
+                            type: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 512,
+                            ),
+                            required: true,
+                            description: "Public completion consequence.",
+                        ),
+                        "id": (
+                            type: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 128,
+                            ),
+                            required: true,
+                            description: "Stable public track identity.",
+                        ),
+                        "interval": (
+                            type: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 240,
+                            ),
+                            required: true,
+                            description: "Public interval or event trigger.",
+                        ),
+                        "label": (
+                            type: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 160,
+                            ),
+                            required: true,
+                            description: "Public track label.",
+                        ),
+                        "progress": (
+                            type: (
+                                kind: "number",
+                                integer: true,
+                                minimum: Some(0.0),
+                                maximum: Some(1000000.0),
+                            ),
+                            required: true,
+                            description: "Current public progress.",
+                        ),
+                        "target_count": (
+                            type: (
+                                kind: "number",
+                                integer: true,
+                                minimum: Some(1.0),
+                                maximum: Some(1000000.0),
+                            ),
+                            required: true,
+                            description: "Public completion target.",
+                        ),
+                    },
+                ),
+                min_entries: 0,
+                max_entries: 256,
+            ),
+            required: true,
+            source: pack,
+            description: "All and only public generic tracks, addressable by stable id.",
+        ),
+    },
+    authoring: (
+        entity_collections: [],
+        read_only_paths: [
+            (
+                path: [
+                    "adapter",
+                ],
+                reason: "Generated only by the Freehack public projection boundary.",
+            ),
+            (
+                path: [
+                    "capabilities",
+                ],
+                reason: "Generated only by the Freehack public projection boundary.",
+            ),
+            (
+                path: [
+                    "character",
+                ],
+                reason: "Generated only by the Freehack public projection boundary.",
+            ),
+            (
+                path: [
+                    "snapshot",
+                ],
+                reason: "Generated only by the Freehack public projection boundary.",
+            ),
+            (
+                path: [
+                    "tracks",
+                ],
+                reason: "Generated only by the Freehack public projection boundary.",
+            ),
+        ],
+    ),
+    provenance: (
+        sources: [
+            (
+                id: "freehack_source",
+                kind: public_source,
+                url: "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.md",
+                revision: "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+                sha256: Some("cfb7910f9dfe73335bb575df107712735a7c806a4a392599958f8f4298be2c64"),
+                license: "CC0-1.0",
+                license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+                attribution: "Freehack 2.1 by Amini Allight.",
+                modified: true,
+            ),
+            (
+                id: "weave_fixture",
+                kind: original,
+                url: "https://github.com/chrisgliddon/weave",
+                revision: "freehack-public-fixture-v1",
+                license: "MIT",
+                license_url: "https://github.com/chrisgliddon/weave/blob/dev/LICENSE",
+                attribution: "Original Freehack fixture scenario and projection authored by Weave contributors.",
+                modified: false,
+            ),
+        ],
+        transformations: [
+            (
+                id: "public_projection",
+                inputs: [
+                    "freehack_source",
+                    "weave_fixture",
+                ],
+                description: "Projects only explicitly disclosed adapter, character, track, section, and memory facts into an immutable story module; no private resolution data is carried.",
+            ),
+        ],
+        claims: {
+            "manifest": [
+                "public_projection",
+            ],
+        },
+    ),
+)

@@ -1,0 +1,387 @@
+{
+  "$defs": {
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EntropyState": {
+      "additionalProperties": false,
+      "description": "Serializable deterministic entropy cursor.",
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "cursor": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "algorithm",
+        "seed",
+        "cursor"
+      ],
+      "type": "object"
+    },
+    "EventVisibility": {
+      "description": "Visibility assigned to one structured event payload.",
+      "enum": [
+        "public",
+        "authoring",
+        "host_only"
+      ],
+      "type": "string"
+    },
+    "ResolutionReceipt": {
+      "additionalProperties": false,
+      "description": "Atomic result of one state transition.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "after_state": {
+          "$ref": "#/$defs/TabletopState"
+        },
+        "after_state_sha256": {
+          "type": "string"
+        },
+        "before_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "before_state_sha256": {
+          "type": "string"
+        },
+        "capability": {
+          "$ref": "#/$defs/TabletopCapability"
+        },
+        "entropy_before": {
+          "$ref": "#/$defs/EntropyState"
+        },
+        "entropy_consumed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/TabletopEvent"
+          },
+          "type": "array"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "request_sha256": {
+          "type": "string"
+        },
+        "resolver_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resolver_format_version",
+        "adapter",
+        "operation",
+        "capability",
+        "request_sha256",
+        "before_state_sha256",
+        "before_revision",
+        "entropy_before",
+        "after_state_sha256",
+        "entropy_consumed",
+        "after_state",
+        "events"
+      ],
+      "type": "object"
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "TabletopCapability": {
+      "description": "Closed capability vocabulary shared by syntax, editor, resolver, and host integrations.",
+      "enum": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "advancement",
+        "encounters",
+        "clocks",
+        "scenes",
+        "factions",
+        "world_state",
+        "campaign_state"
+      ],
+      "type": "string"
+    },
+    "TabletopEvent": {
+      "additionalProperties": false,
+      "description": "Structured event envelope. Unauthorized projections omit payload but retain its fingerprint.",
+      "properties": {
+        "capability": {
+          "$ref": "#/$defs/TabletopCapability"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DomainValue"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payload_sha256": {
+          "type": "string"
+        },
+        "sequence": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "visibility": {
+          "$ref": "#/$defs/EventVisibility"
+        }
+      },
+      "required": [
+        "sequence",
+        "kind",
+        "capability",
+        "visibility",
+        "payload_sha256"
+      ],
+      "type": "object"
+    },
+    "TabletopState": {
+      "additionalProperties": false,
+      "description": "Adapter-owned mutable state kept outside the immutable definition and Character canon.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "definition_sha256": {
+          "type": "string"
+        },
+        "entropy": {
+          "$ref": "#/$defs/EntropyState"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValue"
+        }
+      },
+      "required": [
+        "state_format_version",
+        "adapter",
+        "owner_id",
+        "definition_sha256",
+        "revision",
+        "entropy",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-freehack-authority-receipt:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Authority artifact retaining the validated generic receipt and every private payload.",
+  "properties": {
+    "projection_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "receipt": {
+      "$ref": "#/$defs/ResolutionReceipt"
+    }
+  },
+  "required": [
+    "projection_format_version",
+    "receipt"
+  ],
+  "title": "Weave Freehack Authority Receipt v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

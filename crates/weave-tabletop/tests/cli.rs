@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use tempfile::tempdir;
+use weave_tabletop::FreehackAuthorityReceipt;
 
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -23,6 +24,12 @@ fn plug_and_play_fixture(name: &str) -> PathBuf {
 fn dungeonpunk_fixture(name: &str) -> PathBuf {
     root()
         .join("examples/tabletop-adapters/dungeonpunk")
+        .join(name)
+}
+
+fn freehack_fixture(name: &str) -> PathBuf {
+    root()
+        .join("examples/tabletop-adapters/freehack")
         .join(name)
 }
 
@@ -340,6 +347,241 @@ fn dungeonpunk_create_validate_resolve_and_schemas_match_goldens() {
         let generated = directory.path().join(checked);
         let output = run(&["schema", kind, "--output", path(&generated)]);
         assert!(output.status.success());
+        assert_eq!(
+            fs::read_to_string(generated).unwrap(),
+            fs::read_to_string(root().join("schemas").join(checked)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn freehack_create_probability_private_resolution_and_schemas_match_goldens() {
+    let directory = tempdir().unwrap();
+    let preview = directory.path().join("preview.ron");
+    let output = run(&[
+        "freehack-create",
+        path(&freehack_fixture("creation.tabletop-creation.json")),
+        "--output",
+        path(&preview),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&preview).unwrap(),
+        fs::read_to_string(freehack_fixture("preview.tabletop-creation-preview.ron")).unwrap()
+    );
+
+    let probability = directory.path().join("probability.json");
+    let output = run(&[
+        "freehack-probability",
+        path(&freehack_fixture("probability.freehack-probability.ron")),
+        "--output",
+        path(&probability),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&probability).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "probability-preview.freehack-probability-preview.json"
+        ))
+        .unwrap()
+    );
+
+    for (kind, artifact) in [
+        (
+            "freehack-creation-request",
+            "creation.tabletop-creation.json",
+        ),
+        (
+            "freehack-creation-preview",
+            "preview.tabletop-creation-preview.ron",
+        ),
+        (
+            "freehack-probability-request",
+            "probability.freehack-probability.ron",
+        ),
+        (
+            "freehack-probability-preview",
+            "probability-preview.freehack-probability-preview.json",
+        ),
+        (
+            "freehack-public-state",
+            "public-state.freehack-public-state.ron",
+        ),
+        (
+            "freehack-public-receipt",
+            "public-receipt.freehack-public-receipt.json",
+        ),
+        (
+            "freehack-authority-receipt",
+            "authority-receipt.freehack-authority-receipt.ron",
+        ),
+    ] {
+        let output = run(&["validate", kind, path(&freehack_fixture(artifact))]);
+        assert!(
+            output.status.success(),
+            "{}: {}",
+            artifact,
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    let preview_authority = directory.path().join("preview-authority.json");
+    let preview_public = directory.path().join("preview-public.ron");
+    let output = run(&[
+        "freehack-resolve",
+        path(&freehack_fixture(
+            "playthrough/preview_crossing_probability.tabletop-request.json",
+        )),
+        "--state",
+        path(&freehack_fixture("authority-state.tabletop-state.ron")),
+        "--authority-output",
+        path(&preview_authority),
+        "--public-output",
+        path(&preview_public),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&preview_authority).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "playthrough/preview_crossing_probability.authority-receipt.json"
+        ))
+        .unwrap()
+    );
+    assert_eq!(
+        fs::read_to_string(&preview_public).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "playthrough/preview_crossing_probability.public-receipt.ron"
+        ))
+        .unwrap()
+    );
+
+    let preview_receipt =
+        FreehackAuthorityReceipt::from_json(&fs::read_to_string(&preview_authority).unwrap())
+            .unwrap();
+    let visible_before = directory.path().join("visible-before.json");
+    fs::write(
+        &visible_before,
+        preview_receipt.receipt.after_state.to_json().unwrap(),
+    )
+    .unwrap();
+    let visible_authority = directory.path().join("visible-authority.ron");
+    let visible_public = directory.path().join("visible-public.json");
+    let output = run(&[
+        "freehack-resolve",
+        path(&freehack_fixture("request.tabletop-request.json")),
+        "--state",
+        path(&visible_before),
+        "--authority-output",
+        path(&visible_authority),
+        "--public-output",
+        path(&visible_public),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&visible_authority).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "authority-receipt.freehack-authority-receipt.ron"
+        ))
+        .unwrap()
+    );
+    assert_eq!(
+        fs::read_to_string(&visible_public).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "public-receipt.freehack-public-receipt.json"
+        ))
+        .unwrap()
+    );
+
+    let visible_receipt =
+        FreehackAuthorityReceipt::from_ron(&fs::read_to_string(&visible_authority).unwrap())
+            .unwrap();
+    let hidden_before = directory.path().join("hidden-before.ron");
+    fs::write(
+        &hidden_before,
+        visible_receipt.receipt.after_state.to_ron().unwrap(),
+    )
+    .unwrap();
+    let hidden_authority = directory.path().join("hidden-authority.json");
+    let forbidden_public = directory.path().join("hidden-public.json");
+    let output = run(&[
+        "freehack-resolve",
+        path(&freehack_fixture(
+            "playthrough/notice_hidden_signal.tabletop-request.ron",
+        )),
+        "--state",
+        path(&hidden_before),
+        "--authority-output",
+        path(&hidden_authority),
+        "--public-output",
+        path(&forbidden_public),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&hidden_authority).unwrap(),
+        fs::read_to_string(freehack_fixture(
+            "hidden-authority-receipt.freehack-authority-receipt.json"
+        ))
+        .unwrap()
+    );
+    assert!(!forbidden_public.exists());
+
+    for (kind, checked) in [
+        (
+            "freehack-creation-request",
+            "weave-tabletop-freehack-creation-request-v1.schema.json",
+        ),
+        (
+            "freehack-creation-preview",
+            "weave-tabletop-freehack-creation-preview-v1.schema.json",
+        ),
+        (
+            "freehack-probability-request",
+            "weave-tabletop-freehack-probability-request-v1.schema.json",
+        ),
+        (
+            "freehack-probability-preview",
+            "weave-tabletop-freehack-probability-preview-v1.schema.json",
+        ),
+        (
+            "freehack-public-state",
+            "weave-tabletop-freehack-public-state-v1.schema.json",
+        ),
+        (
+            "freehack-public-receipt",
+            "weave-tabletop-freehack-public-receipt-v1.schema.json",
+        ),
+        (
+            "freehack-authority-receipt",
+            "weave-tabletop-freehack-authority-receipt-v1.schema.json",
+        ),
+    ] {
+        let generated = directory.path().join(checked);
+        let output = run(&["schema", kind, "--output", path(&generated)]);
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
         assert_eq!(
             fs::read_to_string(generated).unwrap(),
             fs::read_to_string(root().join("schemas").join(checked)).unwrap()

@@ -413,6 +413,7 @@ def compile_examples() -> None:
         ROOT / "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
         ROOT / "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
         ROOT / "examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave",
+        ROOT / "examples/tabletop-adapters/freehack/runtime/tavi-quill.weave",
     }
     sources = [
         source
@@ -3725,6 +3726,7 @@ def verify_tabletop_contract() -> None:
     fixture = ROOT / "examples/tabletop-adapters/contract"
     plug_fixture = ROOT / "examples/tabletop-adapters/plug-and-play"
     dungeonpunk_fixture = ROOT / "examples/tabletop-adapters/dungeonpunk"
+    freehack_fixture = ROOT / "examples/tabletop-adapters/freehack"
     manifest_json = fixture / "synthetic.tabletop-adapter.json"
     manifest_ron = fixture / "synthetic.tabletop-adapter.ron"
     selection_json = fixture / "selection.tabletop-selection.json"
@@ -3747,6 +3749,21 @@ def verify_tabletop_contract() -> None:
             "weave-tabletop",
             "--example",
             "tabletop_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-tabletop",
+            "--example",
+            "freehack_fixture",
             "--",
             "--check",
         ],
@@ -3875,6 +3892,27 @@ def verify_tabletop_contract() -> None:
         "dungeonpunk-creation-preview": (
             "weave-tabletop-dungeonpunk-creation-preview-v1.schema.json"
         ),
+        "freehack-creation-request": (
+            "weave-tabletop-freehack-creation-request-v1.schema.json"
+        ),
+        "freehack-creation-preview": (
+            "weave-tabletop-freehack-creation-preview-v1.schema.json"
+        ),
+        "freehack-probability-request": (
+            "weave-tabletop-freehack-probability-request-v1.schema.json"
+        ),
+        "freehack-probability-preview": (
+            "weave-tabletop-freehack-probability-preview-v1.schema.json"
+        ),
+        "freehack-public-state": (
+            "weave-tabletop-freehack-public-state-v1.schema.json"
+        ),
+        "freehack-public-receipt": (
+            "weave-tabletop-freehack-public-receipt-v1.schema.json"
+        ),
+        "freehack-authority-receipt": (
+            "weave-tabletop-freehack-authority-receipt-v1.schema.json"
+        ),
     }
     with tempfile.TemporaryDirectory(prefix="weave-tabletop-contract-") as temporary:
         workspace = Path(temporary)
@@ -3966,6 +4004,37 @@ def verify_tabletop_contract() -> None:
             dungeonpunk_fixture / "runtime/vesper-ash.story.json"
         ).read_bytes():
             raise DocsError("checked Dungeonpunk source projection is stale")
+        freehack_compiled = workspace / "tavi-quill.story.json"
+        run(
+            [
+                str(compiler),
+                str(
+                    (freehack_fixture / "runtime/tavi-quill.weave").relative_to(
+                        ROOT
+                    )
+                ),
+                "--module-manifest",
+                str(
+                    (freehack_fixture / "runtime/module.weave-module.json").relative_to(
+                        ROOT
+                    )
+                ),
+                "--module-pack",
+                str(
+                    (
+                        freehack_fixture / "runtime/tavi_quill.weave-domain.json"
+                    ).relative_to(ROOT)
+                ),
+                "--format",
+                "json",
+                "--output",
+                str(freehack_compiled),
+            ]
+        )
+        if freehack_compiled.read_bytes() != (
+            freehack_fixture / "runtime/tavi-quill.story.json"
+        ).read_bytes():
+            raise DocsError("checked Freehack public source projection is stale")
 
     manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
     selection = json.loads(selection_json.read_text(encoding="utf-8"))
@@ -3997,6 +4066,39 @@ def verify_tabletop_contract() -> None:
             encoding="utf-8"
         )
     )
+    freehack_manifest = json.loads(
+        (freehack_fixture / "freehack.tabletop-adapter.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    freehack_projection = json.loads(
+        (freehack_fixture / "character.tabletop-projection.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    freehack_public = json.loads(
+        (
+            freehack_fixture / "public-receipt.freehack-public-receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    freehack_authority = json.loads(
+        (
+            freehack_fixture / "authority-receipt.freehack-authority-receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    freehack_public_text = json.dumps(freehack_public, sort_keys=True)
+    forbidden_freehack_public = (
+        "request_sha256",
+        "payload_sha256",
+        "entropy",
+        "opposition",
+        "draw_index",
+        "signed_result",
+        "_authority",
+        "sealed_current",
+        "hidden_watch",
+        "sealed_route",
+    )
     if (
         manifest.get("extension_surface", {}).get("kind")
         != "declarative_data_with_registered_resolver"
@@ -4026,12 +4128,28 @@ def verify_tabletop_contract() -> None:
             for event in dungeonpunk_runtime.get("events", [])
             if event.get("visibility") != "public"
         )
+        or freehack_manifest.get("provenance", {}).get("license") != "CC0-1.0"
+        or freehack_manifest.get("provenance", {}).get("revision")
+        != "2.1 (released 2026-07-13)"
+        or len(freehack_manifest.get("provenance", {}).get("additional_artifacts", []))
+        != 3
+        or freehack_projection.get("canonical_character_write_back") is not False
+        or freehack_public.get("projection_format_version") != 1
+        or len(freehack_public.get("events", [])) != 1
+        or any(marker in freehack_public_text for marker in forbidden_freehack_public)
+        or freehack_authority.get("projection_format_version") != 1
+        or not any(
+            event.get("kind") == "check_resolved_authority"
+            and event.get("visibility") == "host_only"
+            and event.get("payload") is not None
+            for event in freehack_authority.get("receipt", {}).get("events", [])
+        )
     ):
         raise DocsError(
             "tabletop fixture omitted declarative isolation, exact selection, write-back prohibition, or runtime redaction"
         )
     print(
-        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixtures, typed event visibility, Plug-And-Play and Dungeonpunk creation/play portability, and source-license gate",
+        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixtures, typed event visibility, Plug-And-Play, Dungeonpunk, and Freehack creation/play portability with split public/authority transport, and source-license gate",
         flush=True,
     )
 
@@ -4197,6 +4315,13 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-tabletop-plug-and-play-creation-preview-v1.schema.json",
         "weave-tabletop-dungeonpunk-creation-request-v1.schema.json",
         "weave-tabletop-dungeonpunk-creation-preview-v1.schema.json",
+        "weave-tabletop-freehack-creation-request-v1.schema.json",
+        "weave-tabletop-freehack-creation-preview-v1.schema.json",
+        "weave-tabletop-freehack-probability-request-v1.schema.json",
+        "weave-tabletop-freehack-probability-preview-v1.schema.json",
+        "weave-tabletop-freehack-public-state-v1.schema.json",
+        "weave-tabletop-freehack-public-receipt-v1.schema.json",
+        "weave-tabletop-freehack-authority-receipt-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

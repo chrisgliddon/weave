@@ -1,0 +1,28 @@
+module freehack {
+    id: "org.weave.tabletop.freehack.public"
+    version: "=1.0.0"
+    pack: "tavi_quill@=1.0.0"
+}
+
+VAR adapter_id = freehack.adapter.id
+VAR adapter_version = freehack.adapter.version
+VAR adapter_sha256 = freehack.adapter.content_sha256
+VAR checks_supported = freehack.capabilities.checks_and_conflicts
+VAR scenes_supported = freehack.capabilities.scenes
+VAR tracks_supported = freehack.capabilities.resources_and_conditions
+VAR character_name = freehack.character.name
+VAR archetype = freehack.character.archetype_id
+VAR focus = freehack.character.modifiers.focus
+VAR fatigue = freehack.tracks.fatigue.progress
+VAR section_status = freehack.snapshot.gantry_status
+VAR public_memories = freehack.snapshot.memory_count
+
+=== start ===
+{checks_supported && scenes_supported && tracks_supported:
+    {character_name}, a {archetype}, enters play with Focus {focus} and Fatigue {fatigue}.
+    The gantry section is {section_status}; {public_memories} public memories are available.
+    The active rules are {adapter_id}@{adapter_version} ({adapter_sha256}).
+- else:
+    This branch is unreachable because the public module declares checks, scenes, and tracks.
+}
+-> END

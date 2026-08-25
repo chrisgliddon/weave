@@ -69,7 +69,8 @@ pub use state::{
 };
 pub use sync::{CanonicalProjectModel, GraphEdit, GraphSync, SyncConflict, TextSync};
 pub use tabletop::{
-    PlugAndPlayCreationSession, PlugAndPlaySeedLineage, TabletopEditorCatalog,
+    DungeonpunkCreationSession, DungeonpunkSeedLineage, FreehackCreationSession,
+    FreehackSeedLineage, PlugAndPlayCreationSession, PlugAndPlaySeedLineage, TabletopEditorCatalog,
     TabletopPanelInspection,
 };
 pub use temporal_context::TemporalContextSession;

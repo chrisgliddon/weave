@@ -1,0 +1,9 @@
+(
+    probability_format_version: 1,
+    support_total: 4,
+    opposition_total: 3,
+    favorable_weight: 16,
+    unfavorable_weight: 9,
+    total_weight: 25,
+    success_basis_points_floor: 6400,
+)

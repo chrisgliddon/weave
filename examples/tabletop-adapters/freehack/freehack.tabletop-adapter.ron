@@ -1,0 +1,2895 @@
+(
+    manifest_format_version: 1,
+    id: "org.weave.tabletop.freehack",
+    version: "1.0.0",
+    schema_version: 1,
+    namespace: "freehack",
+    title: "Freehack 2.1 adapter",
+    compatibility_label: "Compatible with Freehack 2.1",
+    summary: "Setting-neutral campaign-defined characters, exact host resolution, generic tracks, memory, and simultaneous sections with explicit authority/public boundaries.",
+    weave_version: ">=0.1.0, <0.2.0",
+    character_contract_version: ">=1.0.0, <2.0.0",
+    extension_surface: (
+        kind: "declarative_data_with_registered_resolver",
+        resolver_contract_version: 1,
+    ),
+    capabilities: [
+        (
+            capability: character_creation,
+            version: 1,
+        ),
+        (
+            capability: checks_and_conflicts,
+            version: 1,
+        ),
+        (
+            capability: resources_and_conditions,
+            version: 1,
+        ),
+        (
+            capability: scenes,
+            version: 1,
+        ),
+        (
+            capability: campaign_state,
+            version: 1,
+        ),
+    ],
+    types: {
+        "Contribution": (
+            kind: "object",
+            fields: {
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable contribution identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Contribution display label.",
+                ),
+                "source": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "character",
+                            "equipment",
+                            "other",
+                            "situation",
+                        ],
+                    ),
+                    required: true,
+                    description: "Origin category used for integrity checks.",
+                ),
+                "value": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Positive contribution magnitude.",
+                ),
+            },
+        ),
+        "FeatureDefinition": (
+            kind: "object",
+            fields: {
+                "description": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Campaign or author-supplied feature detail.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Feature display label.",
+                ),
+                "source": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "catalog",
+                        ],
+                    ),
+                    required: true,
+                    description: "Feature origin.",
+                ),
+            },
+        ),
+        "InventoryDefinition": (
+            kind: "object",
+            fields: {
+                "cost_per_item": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Configured point cost.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Item display label.",
+                ),
+                "quantity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Selected item quantity.",
+                ),
+                "source": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "catalog",
+                        ],
+                    ),
+                    required: true,
+                    description: "Inventory origin.",
+                ),
+            },
+        ),
+        "MemoryState": (
+            kind: "object",
+            fields: {
+                "connected": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the topic had a prior connection.",
+                ),
+                "disclosure": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "host_only",
+                            "public",
+                        ],
+                    ),
+                    required: true,
+                    description: "Player/runtime disclosure boundary.",
+                ),
+                "draw": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10.0),
+                    ),
+                    required: true,
+                    description: "Authority-only d10 result.",
+                ),
+                "effective_obscurity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(9.0),
+                    ),
+                    required: true,
+                    description: "Connection-adjusted comparison value.",
+                ),
+                "has_experience": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether prior experience was established.",
+                ),
+                "obscurity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(9.0),
+                    ),
+                    required: true,
+                    description: "Configured topic obscurity.",
+                ),
+                "rationale": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Independent result rationale.",
+                ),
+                "topic": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Memory topic.",
+                ),
+            },
+        ),
+        "ModifierDefinition": (
+            kind: "object",
+            fields: {
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Campaign display label.",
+                ),
+                "player_visible": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether this modifier is player-visible.",
+                ),
+                "value": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Stored numeric value.",
+                ),
+            },
+        ),
+        "OutcomeState": (
+            kind: "object",
+            fields: {
+                "summary": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 1024,
+                    ),
+                    required: true,
+                    description: "Authority-authored outcome summary.",
+                ),
+            },
+        ),
+        "SectionState": (
+            kind: "object",
+            fields: {
+                "abstraction": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "automatic",
+                            "objective",
+                            "strategic",
+                        ],
+                    ),
+                    required: true,
+                    description: "Configured control scale.",
+                ),
+                "elapsed_ticks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Elapsed host timing units.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Section display label.",
+                ),
+                "mapping": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "mapped",
+                            "unmapped",
+                        ],
+                    ),
+                    required: true,
+                    description: "Position/movement mode.",
+                ),
+                "outcomes": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "OutcomeState",
+                        ),
+                        min_entries: 0,
+                        max_entries: 64,
+                    ),
+                    required: true,
+                    description: "Resolved submission outcomes.",
+                ),
+                "participants": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Stable participant order.",
+                ),
+                "public_summary": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 1024,
+                    ),
+                    required: true,
+                    description: "Summary revealed after resolution.",
+                ),
+                "resolved_order": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Deterministic participant order.",
+                ),
+                "reveal_after_resolution": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether completed submissions may enter the public state.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "open",
+                            "resolved",
+                            "timed_out",
+                        ],
+                    ),
+                    required: true,
+                    description: "Section lifecycle state.",
+                ),
+                "submissions": (
+                    type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "SubmissionState",
+                        ),
+                        min_entries: 0,
+                        max_entries: 64,
+                    ),
+                    required: true,
+                    description: "Authority-held simultaneous submissions.",
+                ),
+                "timing": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "timed",
+                            "untimed",
+                        ],
+                    ),
+                    required: true,
+                    description: "Timed or free-action mode.",
+                ),
+                "turn_ticks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Zero for untimed; positive for timed.",
+                ),
+            },
+        ),
+        "SubmissionOutcome": (
+            kind: "object",
+            fields: {
+                "action": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Submitted action.",
+                ),
+                "map_intent": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Mapped position or movement declaration.",
+                ),
+                "participant_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable participant identity.",
+                ),
+                "submission_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable submission identity.",
+                ),
+                "summary": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 1024,
+                    ),
+                    required: true,
+                    description: "Resolved outcome summary.",
+                ),
+            },
+        ),
+        "SubmissionState": (
+            kind: "object",
+            fields: {
+                "action": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Submitted fictional action.",
+                ),
+                "map_intent": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Mapped position or movement declaration.",
+                ),
+                "submission_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable submission identity.",
+                ),
+            },
+        ),
+        "TrackState": (
+            kind: "object",
+            fields: {
+                "advances_on": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Outcome that increments the track.",
+                ),
+                "completed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether progress reached the target.",
+                ),
+                "consequence": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Consequence applied at completion.",
+                ),
+                "interval": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Time or event trigger.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Track display label.",
+                ),
+                "progress": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Current qualifying outcomes.",
+                ),
+                "secret": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the track is authority-only.",
+                ),
+                "target_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Qualifying outcomes required.",
+                ),
+            },
+        ),
+    },
+    definition_type: (
+        kind: "object",
+        fields: {
+            "archetype_id": (
+                type: (
+                    kind: "string",
+                    min_length: 0,
+                    max_length: 128,
+                ),
+                required: true,
+                description: "Selected campaign archetype or an empty value.",
+            ),
+            "campaign_id": (
+                type: (
+                    kind: "string",
+                    min_length: 3,
+                    max_length: 255,
+                ),
+                required: true,
+                description: "Stable campaign-schema identity.",
+            ),
+            "campaign_schema_sha256": (
+                type: (
+                    kind: "string",
+                    min_length: 64,
+                    max_length: 64,
+                ),
+                required: true,
+                description: "Exact campaign-schema fingerprint.",
+            ),
+            "features": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "FeatureDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Selected generic features.",
+            ),
+            "inventory": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "InventoryDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Selected generic inventory.",
+            ),
+            "modifiers": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "ModifierDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Campaign-named numeric modifiers.",
+            ),
+            "name": (
+                type: (
+                    kind: "string",
+                    min_length: 1,
+                    max_length: 160,
+                ),
+                required: true,
+                description: "Fictional display name.",
+            ),
+        },
+    ),
+    state_type: (
+        kind: "object",
+        fields: {
+            "memories": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "MemoryState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Established memory records.",
+            ),
+            "sections": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "SectionState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Saved simultaneous sections.",
+            ),
+            "tracks": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "TrackState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 256,
+                ),
+                required: true,
+                description: "Generic progress tracks.",
+            ),
+        },
+    ),
+    creation_steps: [
+        (
+            id: "campaign",
+            title: "Campaign procedure",
+            description: "Choose the versioned setting-neutral schema that defines available character fields and budgets.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "campaign_schema",
+                    label: "Campaign schema",
+                    description: "Explicit adapter-owned Campaign schema input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 16384,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "identity_and_modifiers",
+            title: "Identity and modifiers",
+            description: "Name the character, accept an offered archetype when configured, and assign campaign-declared numeric values.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "name",
+                    label: "Name",
+                    description: "Explicit adapter-owned Name input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "archetype",
+                    label: "Archetype",
+                    description: "Explicit adapter-owned Archetype input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "modifiers",
+                    label: "Numeric modifiers",
+                    description: "Explicit adapter-owned Numeric modifiers input.",
+                    value_type: (
+                        kind: "map",
+                        values: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-1000000.0),
+                            maximum: Some(1000000.0),
+                        ),
+                        min_entries: 0,
+                        max_entries: 256,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "features_and_inventory",
+            title: "Features, inventory, and memories",
+            description: "Select or author permitted details while preserving configured feature counts and item budgets.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "features",
+                    label: "Features",
+                    description: "Explicit adapter-owned Features input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "inventory",
+                    label: "Inventory",
+                    description: "Explicit adapter-owned Inventory input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "memories",
+                    label: "Memories",
+                    description: "Explicit adapter-owned Memories input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        min_items: 0,
+                        max_items: 256,
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+    ],
+    operations: {
+        "advance_track": (
+            id: "advance_track",
+            title: "Advance a generic track",
+            description: "Apply one explicit success/failure result to a track and emit its consequence at the configured target.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "outcome": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "failure",
+                                "success",
+                            ],
+                        ),
+                        required: true,
+                        description: "Observed check outcome.",
+                    ),
+                    "track_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Track identity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "track_advanced",
+                "track_advanced_authority",
+                "track_completed",
+                "track_completed_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "cancel_submission": (
+            id: "cancel_submission",
+            title: "Cancel a pending action",
+            description: "Remove one participant submission while its section remains open.",
+            required_capability: scenes,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "participant_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Participant whose action is withdrawn.",
+                    ),
+                    "section_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Open section identity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "submission_cancelled",
+                "submission_cancelled_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "create_track": (
+            id: "create_track",
+            title: "Create a generic track",
+            description: "Create an interval/target/consequence track without assuming a setting subsystem.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "advances_on": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "failure",
+                                "success",
+                            ],
+                        ),
+                        required: true,
+                        description: "Outcome that increments progress.",
+                    ),
+                    "consequence": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        required: true,
+                        description: "Completion consequence.",
+                    ),
+                    "id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Stable track identity.",
+                    ),
+                    "interval": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        required: true,
+                        description: "Time or event trigger.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Track display label.",
+                    ),
+                    "secret": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Authority-only track flag.",
+                    ),
+                    "target_count": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(1000000.0),
+                        ),
+                        required: true,
+                        description: "Qualifying outcomes required.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "track_created",
+                "track_created_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "open_section": (
+            id: "open_section",
+            title: "Open a section turn",
+            description: "Declare timing, mapping, abstraction, participants, and an optional public reveal policy.",
+            required_capability: scenes,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "abstraction": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "automatic",
+                                "objective",
+                                "strategic",
+                            ],
+                        ),
+                        required: true,
+                        description: "Character-control scale.",
+                    ),
+                    "id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Stable section identity.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Section display label.",
+                    ),
+                    "mapping": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "mapped",
+                                "unmapped",
+                            ],
+                        ),
+                        required: true,
+                        description: "Map participation mode.",
+                    ),
+                    "participants": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "string",
+                                min_length: 1,
+                                max_length: 128,
+                            ),
+                            min_items: 1,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "Stable participant order.",
+                    ),
+                    "reveal_after_resolution": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Reveal actions only after resolution.",
+                    ),
+                    "timing": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "timed",
+                                "untimed",
+                            ],
+                        ),
+                        required: true,
+                        description: "Turn timing mode.",
+                    ),
+                    "turn_ticks": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(1000000.0),
+                        ),
+                        required: false,
+                        description: "Required only for timed sections.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "section_opened",
+            ],
+            consumes_entropy: false,
+        ),
+        "preview_probability": (
+            id: "preview_probability",
+            title: "Preview exact success probability",
+            description: "Return rational support/opposition weights and a deterministic basis-point display without consuming entropy.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "disclosure": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "host_only",
+                                "public",
+                            ],
+                        ),
+                        required: true,
+                        description: "Whether the roll itself is public.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        required: true,
+                        description: "Authority-authored check label.",
+                    ),
+                    "opposition": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "Contribution",
+                            ),
+                            min_items: 1,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Opposing modifiers.",
+                    ),
+                    "reveal_opposition": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the opposition total publicly.",
+                    ),
+                    "reveal_probability": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the exact probability preview publicly.",
+                    ),
+                    "reveal_support": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the support total publicly.",
+                    ),
+                    "support": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "Contribution",
+                            ),
+                            min_items: 1,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Supporting modifiers.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "probability_previewed",
+                "probability_previewed_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "recall_memory": (
+            id: "recall_memory",
+            title: "Resolve prior experience",
+            description: "Test a bounded topic obscurity, applying the declared connection adjustment before one deterministic draw.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "connected": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Prior topic connection.",
+                    ),
+                    "disclosure": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "host_only",
+                                "public",
+                            ],
+                        ),
+                        required: true,
+                        description: "Memory visibility.",
+                    ),
+                    "id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Stable memory identity.",
+                    ),
+                    "obscurity": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(9.0),
+                        ),
+                        required: true,
+                        description: "Topic obscurity.",
+                    ),
+                    "topic": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        required: true,
+                        description: "Memory topic.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "memory_resolved",
+                "memory_resolved_authority",
+            ],
+            consumes_entropy: true,
+        ),
+        "resolve_check": (
+            id: "resolve_check",
+            title: "Resolve a host-authoritative check",
+            description: "Draw uniformly over the nonzero support/opposition weight domain and calculate an exact signed magnitude.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "disclosure": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "host_only",
+                                "public",
+                            ],
+                        ),
+                        required: true,
+                        description: "Whether the roll itself is public.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        required: true,
+                        description: "Authority-authored check label.",
+                    ),
+                    "opposition": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "Contribution",
+                            ),
+                            min_items: 1,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Opposing modifiers.",
+                    ),
+                    "reveal_opposition": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the opposition total publicly.",
+                    ),
+                    "reveal_probability": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the exact probability preview publicly.",
+                    ),
+                    "reveal_support": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Expose the support total publicly.",
+                    ),
+                    "support": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "named",
+                                name: "Contribution",
+                            ),
+                            min_items: 1,
+                            max_items: 256,
+                        ),
+                        required: true,
+                        description: "Supporting modifiers.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "check_resolved",
+                "check_resolved_authority",
+                "entropy_trace",
+            ],
+            consumes_entropy: true,
+        ),
+        "resolve_section": (
+            id: "resolve_section",
+            title: "Resolve simultaneous submissions",
+            description: "Require the applicable submission set, order it by declared participants, and retain authority outcomes atomically.",
+            required_capability: scenes,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "outcomes": (
+                        type: (
+                            kind: "list",
+                            items: (
+                                kind: "object",
+                                fields: {
+                                    "submission_id": (
+                                        type: (
+                                            kind: "string",
+                                            min_length: 1,
+                                            max_length: 128,
+                                        ),
+                                        required: true,
+                                        description: "Submitted action identity.",
+                                    ),
+                                    "summary": (
+                                        type: (
+                                            kind: "string",
+                                            min_length: 1,
+                                            max_length: 1024,
+                                        ),
+                                        required: true,
+                                        description: "Authority outcome summary.",
+                                    ),
+                                },
+                            ),
+                            min_items: 1,
+                            max_items: 64,
+                        ),
+                        required: true,
+                        description: "One outcome per submitted action.",
+                    ),
+                    "public_summary": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 1024,
+                        ),
+                        required: true,
+                        description: "Public section-level result.",
+                    ),
+                    "section_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Open section identity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "section_resolved",
+                "section_resolved_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "submit_action": (
+            id: "submit_action",
+            title: "Submit one simultaneous action",
+            description: "Store one participant action privately while publishing only receipt progress until resolution.",
+            required_capability: scenes,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "action": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 2048,
+                        ),
+                        required: true,
+                        description: "Fictional action.",
+                    ),
+                    "map_intent": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 512,
+                        ),
+                        required: false,
+                        description: "Mapped position or movement intent.",
+                    ),
+                    "participant_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Submitting participant identity.",
+                    ),
+                    "section_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Open section identity.",
+                    ),
+                    "submission_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Stable submission identity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "submission_recorded",
+                "submission_recorded_authority",
+            ],
+            consumes_entropy: false,
+        ),
+        "timeout_section": (
+            id: "timeout_section",
+            title: "Time out a section turn",
+            description: "Close a timed section after its duration and deterministically identify submitted and missing participants.",
+            required_capability: scenes,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "elapsed_ticks": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(1000000.0),
+                        ),
+                        required: true,
+                        description: "Authority timing units elapsed.",
+                    ),
+                    "section_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Open timed section identity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "section_timed_out",
+                "section_timed_out_authority",
+            ],
+            consumes_entropy: false,
+        ),
+    },
+    event_types: {
+        "check_resolved": (
+            kind: "object",
+            fields: {
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Public check label.",
+                ),
+                "magnitude": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Signed margin.",
+                ),
+                "opposition_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Revealed opposition.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Success or failure.",
+                ),
+                "success_basis_points_floor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10000.0),
+                    ),
+                    required: false,
+                    description: "Floored success basis points.",
+                ),
+                "support_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Revealed support.",
+                ),
+            },
+        ),
+        "check_resolved_authority": (
+            kind: "object",
+            fields: {
+                "disclosure": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "host_only",
+                            "public",
+                        ],
+                    ),
+                    required: true,
+                    description: "Declared result visibility.",
+                ),
+                "draw_index": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1999999999999.0),
+                    ),
+                    required: true,
+                    description: "Uniform result-domain index.",
+                ),
+                "favorable_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000000000.0),
+                    ),
+                    required: true,
+                    description: "Positive result count.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Authority check label.",
+                ),
+                "magnitude": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Signed margin.",
+                ),
+                "opposition": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "Contribution",
+                        ),
+                        min_items: 1,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Opposition detail.",
+                ),
+                "opposition_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Opposition sum.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Success or failure.",
+                ),
+                "signed_result": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000000000000.0),
+                        maximum: Some(1000000000000.0),
+                    ),
+                    required: true,
+                    description: "Raw nonzero result.",
+                ),
+                "success_basis_points_floor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10000.0),
+                    ),
+                    required: true,
+                    description: "Floored success basis points.",
+                ),
+                "support": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "Contribution",
+                        ),
+                        min_items: 1,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Support detail.",
+                ),
+                "support_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Support sum.",
+                ),
+                "total_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(2.0),
+                        maximum: Some(2000000000000.0),
+                    ),
+                    required: true,
+                    description: "Nonzero result count.",
+                ),
+                "unfavorable_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000000000.0),
+                    ),
+                    required: true,
+                    description: "Negative result count.",
+                ),
+            },
+        ),
+        "entropy_trace": (
+            kind: "object",
+            fields: {
+                "cursor_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(9007199254740991.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor after one draw.",
+                ),
+                "cursor_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(9007199254740990.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor before one draw.",
+                ),
+                "draw_index": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1999999999999.0),
+                    ),
+                    required: true,
+                    description: "Bounded draw index.",
+                ),
+            },
+        ),
+        "memory_resolved": (
+            kind: "object",
+            fields: {
+                "has_experience": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Public memory result.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Memory identity.",
+                ),
+                "topic": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Memory topic.",
+                ),
+            },
+        ),
+        "memory_resolved_authority": (
+            kind: "object",
+            fields: {
+                "connected": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Connection adjustment flag.",
+                ),
+                "draw": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(10.0),
+                    ),
+                    required: true,
+                    description: "Authority d10 result.",
+                ),
+                "effective_obscurity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(9.0),
+                    ),
+                    required: true,
+                    description: "Adjusted comparison value.",
+                ),
+                "has_experience": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Memory result.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Memory identity.",
+                ),
+                "obscurity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(9.0),
+                    ),
+                    required: true,
+                    description: "Original obscurity.",
+                ),
+                "topic": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Memory topic.",
+                ),
+            },
+        ),
+        "probability_previewed": (
+            kind: "object",
+            fields: {
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Public check label.",
+                ),
+                "opposition_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Revealed opposition.",
+                ),
+                "success_basis_points_floor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10000.0),
+                    ),
+                    required: false,
+                    description: "Floored success basis points.",
+                ),
+                "support_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: false,
+                    description: "Revealed support.",
+                ),
+            },
+        ),
+        "probability_previewed_authority": (
+            kind: "object",
+            fields: {
+                "disclosure": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "host_only",
+                            "public",
+                        ],
+                    ),
+                    required: true,
+                    description: "Declared result visibility.",
+                ),
+                "favorable_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000000000.0),
+                    ),
+                    required: true,
+                    description: "Positive result count.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Authority check label.",
+                ),
+                "opposition": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "Contribution",
+                        ),
+                        min_items: 1,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Opposition detail.",
+                ),
+                "opposition_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Opposition sum.",
+                ),
+                "success_basis_points_floor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10000.0),
+                    ),
+                    required: true,
+                    description: "Floored success basis points.",
+                ),
+                "support": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "Contribution",
+                        ),
+                        min_items: 1,
+                        max_items: 256,
+                    ),
+                    required: true,
+                    description: "Support detail.",
+                ),
+                "support_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Support sum.",
+                ),
+                "total_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(2.0),
+                        maximum: Some(2000000000000.0),
+                    ),
+                    required: true,
+                    description: "Nonzero result count.",
+                ),
+                "unfavorable_weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000000000.0),
+                    ),
+                    required: true,
+                    description: "Negative result count.",
+                ),
+            },
+        ),
+        "section_opened": (
+            kind: "object",
+            fields: {
+                "abstraction": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "automatic",
+                            "objective",
+                            "strategic",
+                        ],
+                    ),
+                    required: true,
+                    description: "Control scale.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Section label.",
+                ),
+                "mapping": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "mapped",
+                            "unmapped",
+                        ],
+                    ),
+                    required: true,
+                    description: "Map mode.",
+                ),
+                "participants": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Participant order.",
+                ),
+                "timing": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "timed",
+                            "untimed",
+                        ],
+                    ),
+                    required: true,
+                    description: "Timing mode.",
+                ),
+                "turn_ticks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Zero or timed duration.",
+                ),
+            },
+        ),
+        "section_resolved": (
+            kind: "object",
+            fields: {
+                "public_summary": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 1024,
+                    ),
+                    required: true,
+                    description: "Public result summary.",
+                ),
+                "resolved_order": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Deterministic participant order.",
+                ),
+                "revealed_submissions": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "SubmissionOutcome",
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: false,
+                    description: "Actions explicitly revealed after resolution.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+            },
+        ),
+        "section_resolved_authority": (
+            kind: "object",
+            fields: {
+                "ordered_submissions": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "SubmissionOutcome",
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Private actions and outcomes in resolution order.",
+                ),
+                "public_summary": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 1024,
+                    ),
+                    required: true,
+                    description: "Public result summary.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+            },
+        ),
+        "section_timed_out": (
+            kind: "object",
+            fields: {
+                "elapsed_ticks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Elapsed timing units.",
+                ),
+                "missing_participants": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Participants without submissions.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submitted_participants": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Participants with submissions.",
+                ),
+            },
+        ),
+        "section_timed_out_authority": (
+            kind: "object",
+            fields: {
+                "elapsed_ticks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Elapsed timing units.",
+                ),
+                "missing_participants": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Participants without submissions.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submissions": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "object",
+                            fields: {
+                                "action": (
+                                    type: (
+                                        kind: "string",
+                                        min_length: 1,
+                                        max_length: 2048,
+                                    ),
+                                    required: true,
+                                    description: "Private submitted action.",
+                                ),
+                                "map_intent": (
+                                    type: (
+                                        kind: "string",
+                                        min_length: 0,
+                                        max_length: 512,
+                                    ),
+                                    required: true,
+                                    description: "Private mapped intent.",
+                                ),
+                                "participant_id": (
+                                    type: (
+                                        kind: "string",
+                                        min_length: 1,
+                                        max_length: 128,
+                                    ),
+                                    required: true,
+                                    description: "Participant identity.",
+                                ),
+                                "section_id": (
+                                    type: (
+                                        kind: "string",
+                                        min_length: 1,
+                                        max_length: 128,
+                                    ),
+                                    required: true,
+                                    description: "Section identity.",
+                                ),
+                                "submission_id": (
+                                    type: (
+                                        kind: "string",
+                                        min_length: 1,
+                                        max_length: 128,
+                                    ),
+                                    required: true,
+                                    description: "Submission identity.",
+                                ),
+                            },
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Private submissions received before timeout.",
+                ),
+            },
+        ),
+        "submission_cancelled": (
+            kind: "object",
+            fields: {
+                "participant_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identity.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submitted_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Remaining submission count.",
+                ),
+            },
+        ),
+        "submission_cancelled_authority": (
+            kind: "object",
+            fields: {
+                "action": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Private submitted action.",
+                ),
+                "map_intent": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Private mapped intent.",
+                ),
+                "participant_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identity.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submission_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Submission identity.",
+                ),
+            },
+        ),
+        "submission_recorded": (
+            kind: "object",
+            fields: {
+                "participant_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identity.",
+                ),
+                "required_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Participant count.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submitted_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(64.0),
+                    ),
+                    required: true,
+                    description: "Current submission count.",
+                ),
+            },
+        ),
+        "submission_recorded_authority": (
+            kind: "object",
+            fields: {
+                "action": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 2048,
+                    ),
+                    required: true,
+                    description: "Private submitted action.",
+                ),
+                "map_intent": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Private mapped intent.",
+                ),
+                "participant_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Participant identity.",
+                ),
+                "section_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Section identity.",
+                ),
+                "submission_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Submission identity.",
+                ),
+            },
+        ),
+        "track_advanced": (
+            kind: "object",
+            fields: {
+                "completed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Completion flag.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Track label.",
+                ),
+                "progress_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Progress after the event.",
+                ),
+                "progress_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Progress before the event.",
+                ),
+                "target_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Completion target.",
+                ),
+            },
+        ),
+        "track_advanced_authority": (
+            kind: "object",
+            fields: {
+                "completed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Completion flag.",
+                ),
+                "consequence": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Completion consequence.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Track label.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Applied outcome.",
+                ),
+                "progress_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Progress after.",
+                ),
+                "progress_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Progress before.",
+                ),
+                "secret": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Authority-only flag.",
+                ),
+                "target_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Completion target.",
+                ),
+            },
+        ),
+        "track_completed": (
+            kind: "object",
+            fields: {
+                "consequence": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Public completion consequence.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+            },
+        ),
+        "track_completed_authority": (
+            kind: "object",
+            fields: {
+                "consequence": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Completion consequence.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+                "secret": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Authority-only flag.",
+                ),
+            },
+        ),
+        "track_created": (
+            kind: "object",
+            fields: {
+                "advances_on": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Outcome that increments progress.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+                "interval": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Time or event trigger.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Track label.",
+                ),
+                "target_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Completion target.",
+                ),
+            },
+        ),
+        "track_created_authority": (
+            kind: "object",
+            fields: {
+                "advances_on": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Outcome that increments progress.",
+                ),
+                "consequence": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Completion consequence.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Track identity.",
+                ),
+                "interval": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Time or event trigger.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Track label.",
+                ),
+                "secret": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Authority-only flag.",
+                ),
+                "target_count": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Completion target.",
+                ),
+            },
+        ),
+    },
+    visibility: (
+        runtime: [
+            public,
+        ],
+        authoring: [
+            public,
+            authoring,
+        ],
+        authority_host: [
+            public,
+            authoring,
+            host_only,
+        ],
+    ),
+    migrations: [],
+    provenance: (
+        source_class: verified_cc0,
+        source_url: "https://amini-allight.itch.io/freehack",
+        exact_artifact: "freehack.pdf",
+        revision: "2.1 (released 2026-07-13)",
+        retrieved_on: "2026-08-25",
+        sha256: "ca5c0420ec05884c1b0182f2a5857a4991e23573e10b9e28ecb009157e8ad393",
+        license: "CC0-1.0",
+        license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        covered_files_or_sections: [
+            "Freehack 2.1 core mechanics: modifiers, rolls, tracks, sections, creation, and memory.",
+            "Exact integer behavior cross-checked against the official roll tool.",
+        ],
+        exclusions: [
+            community_supplements,
+            logos,
+            trade_dress,
+            artwork,
+            layout,
+            unverified_assets,
+        ],
+        attribution: "Freehack was created by Amini Allight and released under CC0-1.0; Weave\'s adapter implementation, fixtures, schemas, and explanatory copy are independently authored.",
+        required_license_text: (
+            artifact: "LICENSE-CC0-1.0.txt",
+            sha256: "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        ),
+        additional_artifacts: [
+            (
+                source_url: "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.md",
+                exact_artifact: "src/freehack.md",
+                revision: "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+                retrieved_on: "2026-08-25",
+                sha256: "cfb7910f9dfe73335bb575df107712735a7c806a4a392599958f8f4298be2c64",
+                media_type: "text/markdown",
+                purpose: "Exact source text reviewed for the core behavior boundary.",
+                redistributed: false,
+            ),
+            (
+                source_url: "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.yml",
+                exact_artifact: "src/freehack.yml",
+                revision: "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+                retrieved_on: "2026-08-25",
+                sha256: "a4b2d8bbe45b4d2f96e8ac161999d35fec5f27d4908f004bbfed871e1f1655f0",
+                media_type: "application/yaml",
+                purpose: "Publication metadata reviewed with the source revision.",
+                redistributed: false,
+            ),
+            (
+                source_url: "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/tools/roll.py",
+                exact_artifact: "tools/roll.py",
+                revision: "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+                retrieved_on: "2026-08-25",
+                sha256: "838ee10829d00fce8a66416f85401de48fc3927fa9a0b3536137e6007b9aed19",
+                media_type: "text/x-python",
+                purpose: "Official executable reference used to cross-check result bands.",
+                redistributed: false,
+            ),
+        ],
+        notices: [
+            "Only hashes and independently authored behavior are bundled; the upstream PDF, icon, stylesheet, and page layout are excluded.",
+            "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport.",
+        ],
+        compatibility_statement: "Freehack is named only to describe rules compatibility. This project is independent and does not imply endorsement by the original creator.",
+    ),
+)

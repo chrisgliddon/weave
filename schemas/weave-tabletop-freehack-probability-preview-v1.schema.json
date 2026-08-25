@@ -1,0 +1,56 @@
+{
+  "$id": "urn:weave:schema:tabletop-freehack-probability-preview:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Rational probability weights plus a deterministic, floored basis-point presentation.",
+  "properties": {
+    "favorable_weight": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "opposition_total": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "probability_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "success_basis_points_floor": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "support_total": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "total_weight": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "unfavorable_weight": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "probability_format_version",
+    "support_total",
+    "opposition_total",
+    "favorable_weight",
+    "unfavorable_weight",
+    "total_weight",
+    "success_basis_points_floor"
+  ],
+  "title": "Weave Freehack Probability Preview v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

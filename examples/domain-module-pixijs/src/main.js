@@ -11,6 +11,8 @@ import tabletopStory from "../../tabletop-adapters/plug-and-play/runtime/ember-v
 import tabletopReceipt from "../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json";
 import dungeonpunkStory from "../../tabletop-adapters/dungeonpunk/runtime/vesper-ash.story.json";
 import dungeonpunkReceipt from "../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json";
+import freehackStory from "../../tabletop-adapters/freehack/runtime/tavi-quill.story.json";
+import freehackReceipt from "../../tabletop-adapters/freehack/public-receipt.freehack-public-receipt.json";
 
 import {
   alignmentCharacterPresentation,
@@ -22,7 +24,11 @@ import {
 } from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
-import { dungeonpunkPresentation, tabletopPresentation } from "./tabletop-presentation.js";
+import {
+  dungeonpunkPresentation,
+  freehackPresentation,
+  tabletopPresentation,
+} from "./tabletop-presentation.js";
 
 const status = document.querySelector("#status");
 const canvasHost = document.querySelector("#canvas");
@@ -48,11 +54,12 @@ try {
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
   const tabletop = tabletopPresentation(tabletopStory, tabletopReceipt);
   const dungeonpunk = dungeonpunkPresentation(dungeonpunkStory, dungeonpunkReceipt);
+  const freehack = freehackPresentation(freehackStory, freehackReceipt);
 
   const app = new Application();
   await app.init({
     width: 720,
-    height: 580,
+    height: 640,
     background: composedWorld.background,
     antialias: true,
     autoDensity: true,
@@ -61,7 +68,7 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${dungeonpunk.name} · STR ${dungeonpunk.attributes.strength} DEX ${dungeonpunk.attributes.dexterity} CON ${dungeonpunk.attributes.constitution}\nStruggle ${dungeonpunk.roll.outcome} (${dungeonpunk.roll.selected}) · HP ${dungeonpunk.hp} · Stress ${dungeonpunk.stress} · XP ${dungeonpunk.xp}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${dungeonpunk.name} · STR ${dungeonpunk.attributes.strength} DEX ${dungeonpunk.attributes.dexterity} CON ${dungeonpunk.attributes.constitution}\nStruggle ${dungeonpunk.roll.outcome} (${dungeonpunk.roll.selected}) · HP ${dungeonpunk.hp} · Stress ${dungeonpunk.stress} · XP ${dungeonpunk.xp}\n${freehack.name} · ${freehack.archetype} · Focus ${freehack.modifiers.focus} · Fatigue ${freehack.fatigue}\nFreehack ${freehack.check.outcome} (${freehack.check.magnitude}) · gantry ${freehack.gantryStatus} · ${freehack.publicMemoryCount} public memories\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
@@ -75,7 +82,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read portable World, Character, Plug-And-Play, and Dungeonpunk exports; tabletop play retains exact adapter/request hashes and redacted entropy audit envelopes, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
+    "PixiJS read portable World, Character, Plug-And-Play, Dungeonpunk, and Freehack exports; Freehack uses only its explicit public story/receipt schema, tabletop play retains exact adapter hashes and redacted audit boundaries, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

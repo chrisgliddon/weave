@@ -1,0 +1,94 @@
+{
+  "projection_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.freehack",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
+  },
+  "owner_id": "org.weave.character.tavi_quill",
+  "tracks": [
+    {
+      "id": "crossing_ready",
+      "label": "Crossing Ready",
+      "interval": "after a stable crossing",
+      "target_count": 1,
+      "progress": 1,
+      "advances_on": "success",
+      "consequence": "The crossing route becomes dependable.",
+      "completed": true
+    },
+    {
+      "id": "fatigue",
+      "label": "Fatigue",
+      "interval": "after strenuous movement",
+      "target_count": 3,
+      "progress": 0,
+      "advances_on": "failure",
+      "consequence": "The character must pause and recover.",
+      "completed": false
+    }
+  ],
+  "sections": [
+    {
+      "id": "gantry_turn",
+      "label": "Gantry Turn",
+      "timing": "timed",
+      "mapping": "mapped",
+      "abstraction": "objective",
+      "status": "resolved",
+      "turn_ticks": 30,
+      "elapsed_ticks": 0,
+      "participants": [
+        "ira",
+        "moss"
+      ],
+      "submitted_participants": [
+        "ira",
+        "moss"
+      ],
+      "resolved_order": [
+        "ira",
+        "moss"
+      ],
+      "public_summary": "The gantry stabilizes.",
+      "revealed_submissions": []
+    },
+    {
+      "id": "route_turn",
+      "label": "Route Turn",
+      "timing": "timed",
+      "mapping": "unmapped",
+      "abstraction": "strategic",
+      "status": "timed_out",
+      "turn_ticks": 5,
+      "elapsed_ticks": 5,
+      "participants": [
+        "ira",
+        "moss"
+      ],
+      "submitted_participants": [
+        "ira"
+      ],
+      "resolved_order": [
+        "ira"
+      ],
+      "public_summary": null,
+      "revealed_submissions": []
+    }
+  ],
+  "memories": [
+    {
+      "id": "old_channel",
+      "topic": "the old freight channel",
+      "has_experience": true,
+      "rationale": "Established explicitly during character creation."
+    },
+    {
+      "id": "tide_gate",
+      "topic": "the public tide-gate schedule",
+      "has_experience": false,
+      "rationale": "The deterministic memory check did not establish prior experience with this topic."
+    }
+  ]
+}
