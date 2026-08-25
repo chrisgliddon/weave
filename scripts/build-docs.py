@@ -412,6 +412,7 @@ def compile_examples() -> None:
     domain_tabletop_sources = {
         ROOT / "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
         ROOT / "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
+        ROOT / "examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave",
     }
     sources = [
         source
@@ -3723,6 +3724,7 @@ def verify_tabletop_contract() -> None:
     compiler = compiler_binary()
     fixture = ROOT / "examples/tabletop-adapters/contract"
     plug_fixture = ROOT / "examples/tabletop-adapters/plug-and-play"
+    dungeonpunk_fixture = ROOT / "examples/tabletop-adapters/dungeonpunk"
     manifest_json = fixture / "synthetic.tabletop-adapter.json"
     manifest_ron = fixture / "synthetic.tabletop-adapter.ron"
     selection_json = fixture / "selection.tabletop-selection.json"
@@ -3745,6 +3747,21 @@ def verify_tabletop_contract() -> None:
             "weave-tabletop",
             "--example",
             "tabletop_fixture",
+            "--",
+            "--check",
+        ],
+        capture=True,
+        environment=cargo_environment(),
+    )
+    run(
+        [
+            "cargo",
+            "run",
+            "--locked",
+            "-p",
+            "weave-tabletop",
+            "--example",
+            "dungeonpunk_fixture",
             "--",
             "--check",
         ],
@@ -3852,6 +3869,12 @@ def verify_tabletop_contract() -> None:
         "plug-and-play-creation-preview": (
             "weave-tabletop-plug-and-play-creation-preview-v1.schema.json"
         ),
+        "dungeonpunk-creation-request": (
+            "weave-tabletop-dungeonpunk-creation-request-v1.schema.json"
+        ),
+        "dungeonpunk-creation-preview": (
+            "weave-tabletop-dungeonpunk-creation-preview-v1.schema.json"
+        ),
     }
     with tempfile.TemporaryDirectory(prefix="weave-tabletop-contract-") as temporary:
         workspace = Path(temporary)
@@ -3912,6 +3935,37 @@ def verify_tabletop_contract() -> None:
             plug_fixture / "runtime/ember-vale.story.json"
         ).read_bytes():
             raise DocsError("checked Plug-And-Play source projection is stale")
+        dungeonpunk_compiled = workspace / "vesper-ash.story.json"
+        run(
+            [
+                str(compiler),
+                str(
+                    (
+                        dungeonpunk_fixture / "runtime/vesper-ash.weave"
+                    ).relative_to(ROOT)
+                ),
+                "--module-manifest",
+                str(
+                    (
+                        dungeonpunk_fixture / "runtime/module.weave-module.json"
+                    ).relative_to(ROOT)
+                ),
+                "--module-pack",
+                str(
+                    (
+                        dungeonpunk_fixture / "runtime/vesper_ash.weave-domain.json"
+                    ).relative_to(ROOT)
+                ),
+                "--format",
+                "json",
+                "--output",
+                str(dungeonpunk_compiled),
+            ]
+        )
+        if dungeonpunk_compiled.read_bytes() != (
+            dungeonpunk_fixture / "runtime/vesper-ash.story.json"
+        ).read_bytes():
+            raise DocsError("checked Dungeonpunk source projection is stale")
 
     manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
     selection = json.loads(selection_json.read_text(encoding="utf-8"))
@@ -3928,6 +3982,21 @@ def verify_tabletop_contract() -> None:
     plug_runtime = json.loads(
         (plug_fixture / "runtime.tabletop-receipt.json").read_text(encoding="utf-8")
     )
+    dungeonpunk_manifest = json.loads(
+        (dungeonpunk_fixture / "dungeonpunk.tabletop-adapter.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    dungeonpunk_projection = json.loads(
+        (dungeonpunk_fixture / "character.tabletop-projection.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    dungeonpunk_runtime = json.loads(
+        (dungeonpunk_fixture / "runtime.tabletop-receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
     if (
         manifest.get("extension_surface", {}).get("kind")
         != "declarative_data_with_registered_resolver"
@@ -3941,12 +4010,28 @@ def verify_tabletop_contract() -> None:
         or plug_projection.get("canonical_character_write_back") is not False
         or sum(event.get("payload") is not None for event in plug_runtime.get("events", []))
         != 1
+        or dungeonpunk_manifest.get("provenance", {}).get("license") != "CC0-1.0"
+        or dungeonpunk_manifest.get("provenance", {}).get("revision")
+        != "google-doc-revision-15499"
+        or len(dungeonpunk_manifest.get("provenance", {}).get("additional_artifacts", []))
+        != 1
+        or dungeonpunk_projection.get("canonical_character_write_back") is not False
+        or sum(
+            event.get("payload") is not None
+            for event in dungeonpunk_runtime.get("events", [])
+        )
+        != 4
+        or any(
+            event.get("payload") is not None
+            for event in dungeonpunk_runtime.get("events", [])
+            if event.get("visibility") != "public"
+        )
     ):
         raise DocsError(
             "tabletop fixture omitted declarative isolation, exact selection, write-back prohibition, or runtime redaction"
         )
     print(
-        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixtures, typed event visibility, Plug-And-Play creation/play portability, and source-license gate",
+        "verified tabletop adapter selection, schemas, isolated state, deterministic replay fixtures, typed event visibility, Plug-And-Play and Dungeonpunk creation/play portability, and source-license gate",
         flush=True,
     )
 
@@ -4110,6 +4195,8 @@ def build_site(rustdoc: Path, mdbook: str) -> None:
         "weave-tabletop-resolution-receipt-v1.schema.json",
         "weave-tabletop-plug-and-play-creation-request-v1.schema.json",
         "weave-tabletop-plug-and-play-creation-preview-v1.schema.json",
+        "weave-tabletop-dungeonpunk-creation-request-v1.schema.json",
+        "weave-tabletop-dungeonpunk-creation-preview-v1.schema.json",
     ):
         shutil.copy2(ROOT / "schemas" / schema, downloads / schema)
     (BOOK / ".nojekyll").write_text("", encoding="utf-8")

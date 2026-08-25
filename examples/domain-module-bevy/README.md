@@ -20,10 +20,11 @@ Run it from the repository root:
 cargo run -p weave-example-domain-module-bevy
 ```
 
-The same `Startup` schedule also loads the generated Plug-And-Play story and runtime-projected
-receipt for Ember Vale. It reports the exact adapter coordinate, effective ratings, Fortune,
-Survivability, wound state, public check result, request fingerprint, and hidden entropy payload
-fingerprint. The entropy payload itself must remain redacted for the runtime audience.
+The same explicitly ordered `Startup` schedule also loads the generated Plug-And-Play and
+Dungeonpunk stories and runtime-projected receipts. It reports each exact adapter coordinate,
+portable character/state values, public check or Struggle consequence, request fingerprint, and
+hidden entropy payload fingerprint. The entropy payloads themselves must remain redacted for the
+runtime audience.
 
 The process performs one Bevy update and exits, so the same command is suitable for documentation
 and CI smoke checks.

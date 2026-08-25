@@ -20,6 +20,12 @@ fn plug_and_play_fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
+fn dungeonpunk_fixture(name: &str) -> PathBuf {
+    root()
+        .join("examples/tabletop-adapters/dungeonpunk")
+        .join(name)
+}
+
 fn run(arguments: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_weave-tabletop"))
         .args(arguments)
@@ -252,6 +258,83 @@ fn plug_and_play_create_validate_resolve_and_schemas_match_goldens() {
         (
             "plug-and-play-creation-preview",
             "weave-tabletop-plug-and-play-creation-preview-v1.schema.json",
+        ),
+    ] {
+        let generated = directory.path().join(checked);
+        let output = run(&["schema", kind, "--output", path(&generated)]);
+        assert!(output.status.success());
+        assert_eq!(
+            fs::read_to_string(generated).unwrap(),
+            fs::read_to_string(root().join("schemas").join(checked)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn dungeonpunk_create_validate_resolve_and_schemas_match_goldens() {
+    let directory = tempdir().unwrap();
+    let preview = directory.path().join("preview.ron");
+    let output = run(&[
+        "dungeonpunk-create",
+        path(&dungeonpunk_fixture("creation.tabletop-creation.json")),
+        "--output",
+        path(&preview),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&preview).unwrap(),
+        fs::read_to_string(dungeonpunk_fixture("preview.tabletop-creation-preview.ron")).unwrap()
+    );
+
+    for (kind, artifact) in [
+        (
+            "dungeonpunk-creation-request",
+            "creation.tabletop-creation.json",
+        ),
+        (
+            "dungeonpunk-creation-preview",
+            "preview.tabletop-creation-preview.ron",
+        ),
+    ] {
+        let output = run(&["validate", kind, path(&dungeonpunk_fixture(artifact))]);
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    let receipt = directory.path().join("receipt.json");
+    let output = run(&[
+        "dungeonpunk-resolve",
+        path(&dungeonpunk_fixture("request.tabletop-request.json")),
+        "--state",
+        path(&dungeonpunk_fixture("state.tabletop-state.ron")),
+        "--output",
+        path(&receipt),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(&receipt).unwrap(),
+        fs::read_to_string(dungeonpunk_fixture("receipt.tabletop-receipt.json")).unwrap()
+    );
+
+    for (kind, checked) in [
+        (
+            "dungeonpunk-creation-request",
+            "weave-tabletop-dungeonpunk-creation-request-v1.schema.json",
+        ),
+        (
+            "dungeonpunk-creation-preview",
+            "weave-tabletop-dungeonpunk-creation-preview-v1.schema.json",
         ),
     ] {
         let generated = directory.path().join(checked);

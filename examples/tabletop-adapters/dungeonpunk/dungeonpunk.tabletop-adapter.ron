@@ -1,0 +1,2462 @@
+(
+    manifest_format_version: 1,
+    id: "org.weave.tabletop.dungeonpunk",
+    version: "1.0.0",
+    schema_version: 1,
+    namespace: "dungeonpunk",
+    title: "Dungeonpunk compatible adapter",
+    compatibility_label: "Compatible with the CC0 Dungeonpunk core rules; not endorsed by its creators",
+    summary: "An independently implemented d6-pool adapter for creation, Struggle outcomes, Stress and HP, gear load and Brace, impairment, growth, clocks, threats, and structured GM moves.",
+    weave_version: ">=0.1.0, <0.2.0",
+    character_contract_version: ">=1.0.0, <2.0.0",
+    extension_surface: (
+        kind: "declarative_data_with_registered_resolver",
+        resolver_contract_version: 1,
+    ),
+    capabilities: [
+        (
+            capability: character_creation,
+            version: 1,
+        ),
+        (
+            capability: derived_values,
+            version: 1,
+        ),
+        (
+            capability: checks_and_conflicts,
+            version: 1,
+        ),
+        (
+            capability: resources_and_conditions,
+            version: 1,
+        ),
+        (
+            capability: equipment_and_abilities,
+            version: 1,
+        ),
+        (
+            capability: advancement,
+            version: 1,
+        ),
+        (
+            capability: encounters,
+            version: 1,
+        ),
+        (
+            capability: clocks,
+            version: 1,
+        ),
+        (
+            capability: campaign_state,
+            version: 1,
+        ),
+    ],
+    types: {
+        "Advancement": (
+            kind: "object",
+            fields: {
+                "learned_moves": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "LearnedMove",
+                        ),
+                        min_items: 0,
+                        max_items: 128,
+                    ),
+                    required: true,
+                    description: "Moves gained after creation.",
+                ),
+                "stat_increases": (
+                    type: (
+                        kind: "named",
+                        name: "Attributes",
+                    ),
+                    required: true,
+                    description: "Post-creation stat increases.",
+                ),
+            },
+        ),
+        "Attributes": (
+            kind: "object",
+            fields: {
+                "charisma": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Charisma rating.",
+                ),
+                "constitution": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Constitution rating.",
+                ),
+                "dexterity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Dexterity rating.",
+                ),
+                "intelligence": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Intelligence rating.",
+                ),
+                "strength": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Strength rating.",
+                ),
+                "wisdom": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: true,
+                    description: "Wisdom rating.",
+                ),
+            },
+        ),
+        "ClockState": (
+            kind: "object",
+            fields: {
+                "filled": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Filled segments.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Clock display label.",
+                ),
+                "segments": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Total clock segments.",
+                ),
+                "trigger": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "empty",
+                            "full",
+                        ],
+                    ),
+                    required: true,
+                    description: "Boundary that triggers an event.",
+                ),
+            },
+        ),
+        "GearDefinition": (
+            kind: "object",
+            fields: {
+                "effective_weight_half_units": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(8.0),
+                    ),
+                    required: true,
+                    description: "Load after equipped-item effects.",
+                ),
+                "equipped": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the item is worn or wielded.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "ammunition",
+                            "armor",
+                            "book",
+                            "instrument",
+                            "pack",
+                            "personal",
+                            "rations",
+                            "shield",
+                            "supplies",
+                            "tool",
+                            "weapon",
+                        ],
+                    ),
+                    required: true,
+                    description: "Portable item category.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Item display label.",
+                ),
+                "starting_uses": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: false,
+                    description: "Initial bounded use track.",
+                ),
+                "weight": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4.0),
+                    ),
+                    required: true,
+                    description: "Whole base Weight.",
+                ),
+            },
+        ),
+        "GearState": (
+            kind: "object",
+            fields: {
+                "damage_marks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(255.0),
+                    ),
+                    required: true,
+                    description: "Brace damage marks.",
+                ),
+                "destroyed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether damage marks exceeded Weight.",
+                ),
+                "uses": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: false,
+                    description: "Remaining consumable uses.",
+                ),
+            },
+        ),
+        "LearnedMove": (
+            kind: "object",
+            fields: {
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Learned move identifier.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Learned move label.",
+                ),
+            },
+        ),
+        "SpecialMove": (
+            kind: "object",
+            fields: {
+                "archetype": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "custom",
+                            "fighter",
+                            "peasant",
+                            "rogue",
+                            "wizard",
+                        ],
+                    ),
+                    required: true,
+                    description: "Core grouping or custom origin.",
+                ),
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "charisma",
+                            "constitution",
+                            "dexterity",
+                            "intelligence",
+                            "strength",
+                            "wisdom",
+                        ],
+                    ),
+                    required: false,
+                    description: "Attribute rolled by this move.",
+                ),
+                "failure": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Independent failure-band summary.",
+                ),
+                "id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Stable special-move id.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "passive",
+                            "rolled",
+                            "session",
+                        ],
+                    ),
+                    required: true,
+                    description: "Move interaction kind.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Move display label.",
+                ),
+                "source": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "authored",
+                            "core",
+                        ],
+                    ),
+                    required: true,
+                    description: "Move metadata origin.",
+                ),
+                "success": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Independent success-band summary.",
+                ),
+                "trigger": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Independent move trigger or passive effect.",
+                ),
+                "twist": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 512,
+                    ),
+                    required: true,
+                    description: "Independent twist-band summary.",
+                ),
+            },
+        ),
+        "ThreatState": (
+            kind: "object",
+            fields: {
+                "armor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(32.0),
+                    ),
+                    required: true,
+                    description: "Damage reduction.",
+                ),
+                "clock_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    description: "Related campaign clock.",
+                ),
+                "defeated": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether HP reached zero.",
+                ),
+                "hp_current": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Current threat HP.",
+                ),
+                "hp_max": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Maximum threat HP.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "affliction",
+                            "cursed_place",
+                            "foe",
+                            "overlord",
+                            "swarm",
+                            "terror",
+                        ],
+                    ),
+                    required: true,
+                    description: "Threat move category.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Threat display label.",
+                ),
+            },
+        ),
+    },
+    definition_type: (
+        kind: "object",
+        fields: {
+            "attributes": (
+                type: (
+                    kind: "named",
+                    name: "Attributes",
+                ),
+                required: true,
+                description: "Five allocated starting points.",
+            ),
+            "bonds": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    min_items: 2,
+                    max_items: 2,
+                ),
+                required: true,
+                description: "Exactly two starting bonds.",
+            ),
+            "constants": (
+                type: (
+                    kind: "object",
+                    fields: {
+                        "fate": (
+                            type: (
+                                kind: "number",
+                                integer: true,
+                                minimum: Some(1.0),
+                                maximum: Some(1.0),
+                            ),
+                            required: true,
+                            description: "Constant FATE rating.",
+                        ),
+                        "none": (
+                            type: (
+                                kind: "number",
+                                integer: true,
+                                minimum: Some(0.0),
+                                maximum: Some(0.0),
+                            ),
+                            required: true,
+                            description: "Constant NONE rating.",
+                        ),
+                    },
+                ),
+                required: true,
+                description: "Fixed roll constants.",
+            ),
+            "encumbrance_limit_half_units": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(24.0),
+                    maximum: Some(24.0),
+                ),
+                required: true,
+                description: "Twelve Weight in exact half units.",
+            ),
+            "gear": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "GearDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 64,
+                ),
+                required: true,
+                description: "Immutable starting gear definitions.",
+            ),
+            "gear_weight_half_units": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(512.0),
+                ),
+                required: true,
+                description: "Derived starting gear load.",
+            ),
+            "hp_rolls": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    min_items: 2,
+                    max_items: 3,
+                ),
+                required: true,
+                description: "Two base HP dice and an optional endurance bonus die.",
+            ),
+            "loaded_for_bear": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Equipped gear half-Weight effect.",
+            ),
+            "max_hp": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(2.0),
+                    maximum: Some(32.0),
+                ),
+                required: true,
+                description: "Derived maximum HP.",
+            ),
+            "name": (
+                type: (
+                    kind: "string",
+                    min_length: 1,
+                    max_length: 160,
+                ),
+                required: true,
+                description: "Fictional display name.",
+            ),
+            "special_moves": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "named",
+                        name: "SpecialMove",
+                    ),
+                    min_items: 3,
+                    max_items: 3,
+                ),
+                required: true,
+                description: "Three selected or independently authored moves.",
+            ),
+        },
+    ),
+    state_type: (
+        kind: "object",
+        fields: {
+            "advancement": (
+                type: (
+                    kind: "named",
+                    name: "Advancement",
+                ),
+                required: true,
+                description: "Learned moves and stat increases.",
+            ),
+            "bonds": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    min_items: 2,
+                    max_items: 32,
+                ),
+                required: true,
+                description: "Portable character bonds, initialized with exactly two entries.",
+            ),
+            "clocks": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "ClockState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 128,
+                ),
+                required: true,
+                description: "Campaign clocks.",
+            ),
+            "dead": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Final death state.",
+            ),
+            "death_check_pending": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Whether below-zero HP requires an explicit FATE roll.",
+            ),
+            "encumbered": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Whether total load exceeds twelve Weight.",
+            ),
+            "gear": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "GearState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 64,
+                ),
+                required: true,
+                description: "Mutable item state.",
+            ),
+            "gear_weight_half_units": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(512.0),
+                ),
+                required: true,
+                description: "Current carried gear load.",
+            ),
+            "hp_current": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(-128.0),
+                    maximum: Some(1024.0),
+                ),
+                required: true,
+                description: "Current HP, including below zero.",
+            ),
+            "hp_max": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(2.0),
+                    maximum: Some(1024.0),
+                ),
+                required: true,
+                description: "Current maximum HP.",
+            ),
+            "impairments": (
+                type: (
+                    kind: "list",
+                    items: (
+                        kind: "symbol",
+                        values: [
+                            "charisma",
+                            "constitution",
+                            "dexterity",
+                            "intelligence",
+                            "strength",
+                            "wisdom",
+                        ],
+                    ),
+                    min_items: 0,
+                    max_items: 6,
+                ),
+                required: true,
+                description: "Impaired stats with a one-die penalty.",
+            ),
+            "last_operation": (
+                type: (
+                    kind: "string",
+                    min_length: 0,
+                    max_length: 128,
+                ),
+                required: true,
+                description: "Most recently resolved operation.",
+            ),
+            "stress": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(512.0),
+                ),
+                required: true,
+                description: "Current Stress.",
+            ),
+            "survival_offer_pending": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Twist-band death offer awaiting a decision.",
+            ),
+            "threats": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "ThreatState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 128,
+                ),
+                required: true,
+                description: "Campaign threats.",
+            ),
+            "total_load_half_units": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(2048.0),
+                ),
+                required: true,
+                description: "Gear plus Stress load.",
+            ),
+            "unconscious": (
+                type: (
+                    kind: "bool",
+                ),
+                required: true,
+                description: "Whether the character is unconscious.",
+            ),
+            "xp": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(1000000.0),
+                ),
+                required: true,
+                description: "Unspent XP.",
+            ),
+        },
+    ),
+    creation_steps: [
+        (
+            id: "identity",
+            title: "Character identity",
+            description: "Enter an original fictional name without modifying canonical Character data.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "name",
+                    label: "Name",
+                    description: "Explicit adapter-owned Name input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "attributes",
+            title: "Allocate attributes",
+            description: "Allocate exactly five points across six stats, with each starting value from zero through three; preview deterministic HP before accepting.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "attributes",
+                    label: "Attributes",
+                    description: "Explicit adapter-owned Attributes input.",
+                    value_type: (
+                        kind: "named",
+                        name: "Attributes",
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "seed",
+                    label: "Creation seed",
+                    description: "Explicit adapter-owned Creation seed input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 20,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "moves",
+            title: "Choose special moves",
+            description: "Select core archetype entries or supply independently authored declarative moves; exactly three are required and no package code is loaded.",
+            required_capability: equipment_and_abilities,
+            fields: [
+                (
+                    id: "special_moves",
+                    label: "Special moves",
+                    description: "Explicit adapter-owned Special moves input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "named",
+                            name: "SpecialMove",
+                        ),
+                        min_items: 3,
+                        max_items: 3,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "gear_and_bonds",
+            title: "Gear, load, and bonds",
+            description: "Record carried gear with explicit Weight and uses, inspect exact derived load, and add exactly two bonds.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "gear",
+                    label: "Starting gear",
+                    description: "Explicit adapter-owned Starting gear input.",
+                    value_type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "GearDefinition",
+                        ),
+                        min_entries: 0,
+                        max_entries: 64,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "bonds",
+                    label: "Bonds",
+                    description: "Explicit adapter-owned Bonds input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        min_items: 2,
+                        max_items: 2,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "campaign",
+            title: "Campaign clocks and threats",
+            description: "Optionally initialize bounded clocks and typed threats as portable state rather than editor-only metadata.",
+            required_capability: campaign_state,
+            fields: [
+                (
+                    id: "clocks",
+                    label: "Clocks",
+                    description: "Explicit adapter-owned Clocks input.",
+                    value_type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "ClockState",
+                        ),
+                        min_entries: 0,
+                        max_entries: 128,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "threats",
+                    label: "Threats",
+                    description: "Explicit adapter-owned Threats input.",
+                    value_type: (
+                        kind: "map",
+                        values: (
+                            kind: "named",
+                            name: "ThreatState",
+                        ),
+                        min_entries: 0,
+                        max_entries: 128,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+    ],
+    operations: {
+        "damage": (
+            id: "damage",
+            title: "Roll and apply damage",
+            description: "Roll a standard-or-greater damage tier, optionally Brace with equipped armor, then record collapse or a pending FATE death check.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "brace_item_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: false,
+                        description: "Equipped armor or shield used to Brace.",
+                    ),
+                    "tier": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "catastrophic",
+                                "deadly",
+                                "serious",
+                                "standard",
+                            ],
+                        ),
+                        required: true,
+                        description: "Rolled damage tier.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "damage_applied",
+                "death_resolved",
+                "entropy_trace",
+                "equipment_changed",
+                "resource_changed",
+            ],
+            consumes_entropy: true,
+        ),
+        "death_check": (
+            id: "death_check",
+            title: "Resolve a FATE death check",
+            description: "When HP is below zero, roll FATE and resolve unconsciousness, a survival-at-cost offer, or death.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {},
+            ),
+            event_kinds: [
+                "death_resolved",
+                "entropy_trace",
+                "resource_changed",
+            ],
+            consumes_entropy: true,
+        ),
+        "gm_move": (
+            id: "gm_move",
+            title: "Select a structured GM move",
+            description: "Validate a general or threat-specific GM move and emit it as portable structured data.",
+            required_capability: campaign_state,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "category": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "escalate",
+                                "injure",
+                                "rob",
+                                "threat_specific",
+                                "twist_outcome",
+                                "warn",
+                            ],
+                        ),
+                        required: true,
+                        description: "GM move category.",
+                    ),
+                    "move": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "apparent_reward",
+                                "claim_ground",
+                                "complicate_simple_action",
+                                "damage_armor",
+                                "disgorge",
+                                "drain_resource",
+                                "false_perception",
+                                "follow_fiction",
+                                "forceful_attack",
+                                "grow",
+                                "hurt_ally",
+                                "impair_stat",
+                                "inflict_horror",
+                                "introduce_problem",
+                                "kill",
+                                "leave_mark",
+                                "lure",
+                                "negotiate",
+                                "overwhelm",
+                                "partial_success",
+                                "raise_champion",
+                                "rearrange",
+                                "seize_leverage",
+                                "show_distant_trouble",
+                                "spread",
+                                "start_or_tick_clock",
+                                "success_at_cost",
+                                "sudden_appearance",
+                                "take_or_damage_asset",
+                                "worsen_situation",
+                            ],
+                        ),
+                        required: true,
+                        description: "Closed GM move id.",
+                    ),
+                    "threat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: false,
+                        description: "Required only for threat-specific moves.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "gm_move_selected",
+            ],
+            consumes_entropy: false,
+        ),
+        "grow": (
+            id: "grow",
+            title: "Spend XP on growth",
+            description: "Spend the current move count to learn a move or twice the current stat sum to increase one stat.",
+            required_capability: advancement,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "charisma",
+                                "constitution",
+                                "dexterity",
+                                "intelligence",
+                                "strength",
+                                "wisdom",
+                            ],
+                        ),
+                        required: false,
+                        description: "Stat selected for growth.",
+                    ),
+                    "kind": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "add_move",
+                                "increase_stat",
+                            ],
+                        ),
+                        required: true,
+                        description: "Growth option.",
+                    ),
+                    "move_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: false,
+                        description: "New special-move id.",
+                    ),
+                    "move_label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: false,
+                        description: "New special-move label.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "advancement_applied",
+                "resource_changed",
+            ],
+            consumes_entropy: false,
+        ),
+        "harm_threat": (
+            id: "harm_threat",
+            title: "Roll harm against a threat",
+            description: "Roll a standard-or-greater damage tier, subtract threat armor, and update its HP and defeated state.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "threat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Threat id.",
+                    ),
+                    "tier": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "catastrophic",
+                                "deadly",
+                                "serious",
+                                "standard",
+                            ],
+                        ),
+                        required: true,
+                        description: "Rolled damage tier.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "threat_changed",
+            ],
+            consumes_entropy: true,
+        ),
+        "harm_threat_minor": (
+            id: "harm_threat_minor",
+            title: "Apply minor harm to a threat",
+            description: "Apply one point before armor without consuming entropy.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "threat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Threat id.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "threat_changed",
+            ],
+            consumes_entropy: false,
+        ),
+        "impairment": (
+            id: "impairment",
+            title: "Set or resolve an impairment",
+            description: "Add or remove the one-die penalty attached to a specific stat.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "charisma",
+                                "constitution",
+                                "dexterity",
+                                "intelligence",
+                                "strength",
+                                "wisdom",
+                            ],
+                        ),
+                        required: true,
+                        description: "Affected attribute.",
+                    ),
+                    "impaired": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Whether the impairment is active.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "impairment_changed",
+            ],
+            consumes_entropy: false,
+        ),
+        "minor_damage": (
+            id: "minor_damage",
+            title: "Apply minor damage",
+            description: "Apply one point, optionally Brace, then record collapse or a pending FATE death check without consuming entropy.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "brace_item_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: false,
+                        description: "Equipped armor or shield used to Brace.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "damage_applied",
+                "death_resolved",
+                "equipment_changed",
+                "resource_changed",
+            ],
+            consumes_entropy: false,
+        ),
+        "rest": (
+            id: "rest",
+            title: "Rest and recover",
+            description: "Recover one Stress and one HP per complete two-hour interval and recompute carried load.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "hours": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(2.0),
+                            maximum: Some(336.0),
+                        ),
+                        required: true,
+                        description: "Rest duration.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "resource_changed",
+                "rest_resolved",
+            ],
+            consumes_entropy: false,
+        ),
+        "struggle": (
+            id: "struggle",
+            title: "Resolve Struggle",
+            description: "Build a positive or fallback dice pool from stat, edge, help, push, impairment, and encumbrance; select highest or lowest and emit structured choices.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "charisma",
+                                "constitution",
+                                "dexterity",
+                                "intelligence",
+                                "strength",
+                                "wisdom",
+                            ],
+                        ),
+                        required: true,
+                        description: "Rolled stat.",
+                    ),
+                    "edge": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "neutral",
+                            ],
+                        ),
+                        required: true,
+                        description: "Fictional advantage state.",
+                    ),
+                    "helper_encumbered": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: false,
+                        description: "Whether the named helper is encumbered.",
+                    ),
+                    "helper_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: false,
+                        description: "Ally contributing one die and gaining one Stress.",
+                    ),
+                    "push": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Gain two Stress for one die.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "entropy_trace",
+                "gm_move_prompt",
+                "help_applied",
+                "resource_changed",
+                "roll_resolved",
+                "struggle_resolved",
+            ],
+            consumes_entropy: true,
+        ),
+        "survival_decision": (
+            id: "survival_decision",
+            title: "Resolve a survival offer",
+            description: "Accept survival at a required cost or reject the pending offer and die.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "accept": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Whether the offered survival is accepted.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "death_resolved",
+                "resource_changed",
+            ],
+            consumes_entropy: false,
+        ),
+        "tick_clock": (
+            id: "tick_clock",
+            title: "Tick a campaign clock",
+            description: "Move a clock up or down within its bounds and emit a separate event when its configured boundary is reached.",
+            required_capability: clocks,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "clock_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Clock id.",
+                    ),
+                    "delta": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-24.0),
+                            maximum: Some(24.0),
+                        ),
+                        required: true,
+                        description: "Signed segment change.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "clock_changed",
+                "clock_triggered",
+            ],
+            consumes_entropy: false,
+        ),
+    },
+    event_types: {
+        "advancement_applied": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "charisma",
+                            "constitution",
+                            "dexterity",
+                            "intelligence",
+                            "strength",
+                            "wisdom",
+                        ],
+                    ),
+                    required: false,
+                    description: "Increased attribute.",
+                ),
+                "cost": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "XP spent.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "add_move",
+                            "increase_stat",
+                        ],
+                    ),
+                    required: true,
+                    description: "Growth option.",
+                ),
+                "move_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    description: "Learned move identifier.",
+                ),
+                "new_rating": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(15.0),
+                    ),
+                    required: false,
+                    description: "Effective stat after growth.",
+                ),
+            },
+        ),
+        "clock_changed": (
+            kind: "object",
+            fields: {
+                "after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Filled segments after.",
+                ),
+                "before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Filled segments before.",
+                ),
+                "clock_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Clock id.",
+                ),
+                "delta": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-24.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Requested change.",
+                ),
+                "segments": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Clock size.",
+                ),
+            },
+        ),
+        "clock_triggered": (
+            kind: "object",
+            fields: {
+                "boundary": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "empty",
+                            "full",
+                        ],
+                    ),
+                    required: true,
+                    description: "Reached boundary.",
+                ),
+                "clock_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Clock id.",
+                ),
+            },
+        ),
+        "damage_applied": (
+            kind: "object",
+            fields: {
+                "applied": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(128.0),
+                    ),
+                    required: true,
+                    description: "HP removed.",
+                ),
+                "dice": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 0,
+                        max_items: 8,
+                    ),
+                    required: true,
+                    description: "Rolled damage dice.",
+                ),
+                "hp_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-128.0),
+                        maximum: Some(1024.0),
+                    ),
+                    required: true,
+                    description: "HP after damage.",
+                ),
+                "hp_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-128.0),
+                        maximum: Some(1024.0),
+                    ),
+                    required: true,
+                    description: "HP before damage.",
+                ),
+                "prevented": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(128.0),
+                    ),
+                    required: true,
+                    description: "Damage Braced.",
+                ),
+                "raw_damage": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(128.0),
+                    ),
+                    required: true,
+                    description: "Rolled or fixed harm.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "active",
+                            "dead",
+                            "death_check_pending",
+                            "survival_offer",
+                            "unconscious",
+                        ],
+                    ),
+                    required: true,
+                    description: "Resulting life state.",
+                ),
+                "tier": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "catastrophic",
+                            "deadly",
+                            "minor",
+                            "serious",
+                            "standard",
+                        ],
+                    ),
+                    required: true,
+                    description: "Damage tier.",
+                ),
+            },
+        ),
+        "death_resolved": (
+            kind: "object",
+            fields: {
+                "cost_required": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether survival requires a cost.",
+                ),
+                "fate_die": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: false,
+                    description: "FATE die result.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "dead",
+                            "survival_offer",
+                            "survived_at_cost",
+                            "unconscious",
+                        ],
+                    ),
+                    required: true,
+                    description: "Death-move result.",
+                ),
+            },
+        ),
+        "entropy_trace": (
+            kind: "object",
+            fields: {
+                "cursor_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor after.",
+                ),
+                "cursor_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(4294967295.0),
+                    ),
+                    required: true,
+                    description: "Entropy cursor before.",
+                ),
+                "draws": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 1,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Selected d6 results.",
+                ),
+                "operation": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Resolver operation.",
+                ),
+            },
+        ),
+        "equipment_changed": (
+            kind: "object",
+            fields: {
+                "damage_marks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(255.0),
+                    ),
+                    required: true,
+                    description: "Current damage marks.",
+                ),
+                "destroyed": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether marks exceeded Weight.",
+                ),
+                "item_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Affected item.",
+                ),
+            },
+        ),
+        "gm_move_prompt": (
+            kind: "object",
+            fields: {
+                "categories": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "symbol",
+                            values: [
+                                "escalate",
+                                "injure",
+                                "rob",
+                                "twist_outcome",
+                                "warn",
+                            ],
+                        ),
+                        min_items: 5,
+                        max_items: 5,
+                    ),
+                    required: true,
+                    description: "General GM categories.",
+                ),
+                "reason": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failed_roll",
+                            "needs_direction",
+                        ],
+                    ),
+                    required: true,
+                    description: "Prompt reason.",
+                ),
+                "threat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    description: "Relevant threat id.",
+                ),
+                "threat_kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "affliction",
+                            "cursed_place",
+                            "foe",
+                            "overlord",
+                            "swarm",
+                            "terror",
+                        ],
+                    ),
+                    required: false,
+                    description: "Relevant threat category.",
+                ),
+            },
+        ),
+        "gm_move_selected": (
+            kind: "object",
+            fields: {
+                "category": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "escalate",
+                            "injure",
+                            "rob",
+                            "threat_specific",
+                            "twist_outcome",
+                            "warn",
+                        ],
+                    ),
+                    required: true,
+                    description: "GM move category.",
+                ),
+                "move": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "apparent_reward",
+                            "claim_ground",
+                            "complicate_simple_action",
+                            "damage_armor",
+                            "disgorge",
+                            "drain_resource",
+                            "false_perception",
+                            "follow_fiction",
+                            "forceful_attack",
+                            "grow",
+                            "hurt_ally",
+                            "impair_stat",
+                            "inflict_horror",
+                            "introduce_problem",
+                            "kill",
+                            "leave_mark",
+                            "lure",
+                            "negotiate",
+                            "overwhelm",
+                            "partial_success",
+                            "raise_champion",
+                            "rearrange",
+                            "seize_leverage",
+                            "show_distant_trouble",
+                            "spread",
+                            "start_or_tick_clock",
+                            "success_at_cost",
+                            "sudden_appearance",
+                            "take_or_damage_asset",
+                            "worsen_situation",
+                        ],
+                    ),
+                    required: true,
+                    description: "Selected structured move.",
+                ),
+                "threat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: false,
+                    description: "Relevant threat for a specific move.",
+                ),
+            },
+        ),
+        "help_applied": (
+            kind: "object",
+            fields: {
+                "helper_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Helping ally.",
+                ),
+                "stress_delta": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    description: "Stress the helper must gain.",
+                ),
+            },
+        ),
+        "impairment_changed": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "charisma",
+                            "constitution",
+                            "dexterity",
+                            "intelligence",
+                            "strength",
+                            "wisdom",
+                        ],
+                    ),
+                    required: true,
+                    description: "Affected stat.",
+                ),
+                "impaired": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether impairment is active.",
+                ),
+            },
+        ),
+        "resource_changed": (
+            kind: "object",
+            fields: {
+                "dead": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Final death state.",
+                ),
+                "death_check_pending": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether a FATE roll is required.",
+                ),
+                "encumbered": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Current load penalty.",
+                ),
+                "hp_current": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-128.0),
+                        maximum: Some(1024.0),
+                    ),
+                    required: true,
+                    description: "Current HP.",
+                ),
+                "stress": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Current Stress.",
+                ),
+                "total_load_half_units": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(2048.0),
+                    ),
+                    required: true,
+                    description: "Current exact load.",
+                ),
+                "unconscious": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Current collapse state.",
+                ),
+                "xp": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Current XP.",
+                ),
+            },
+        ),
+        "rest_resolved": (
+            kind: "object",
+            fields: {
+                "hours": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(2.0),
+                        maximum: Some(336.0),
+                    ),
+                    required: true,
+                    description: "Rest duration.",
+                ),
+                "hp_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1024.0),
+                    ),
+                    required: true,
+                    description: "Recovered HP.",
+                ),
+                "hp_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-128.0),
+                        maximum: Some(1024.0),
+                    ),
+                    required: true,
+                    description: "HP before rest.",
+                ),
+                "stress_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Stress after rest.",
+                ),
+                "stress_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Stress before rest.",
+                ),
+            },
+        ),
+        "roll_resolved": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "charisma",
+                            "constitution",
+                            "dexterity",
+                            "intelligence",
+                            "strength",
+                            "wisdom",
+                        ],
+                    ),
+                    required: true,
+                    description: "Rolled stat.",
+                ),
+                "dice": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 1,
+                        max_items: 32,
+                    ),
+                    required: true,
+                    description: "Ordered d6 results.",
+                ),
+                "dice_pool": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-16.0),
+                        maximum: Some(32.0),
+                    ),
+                    required: true,
+                    description: "Effective pool before fallback.",
+                ),
+                "edge": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "advantage",
+                            "disadvantage",
+                            "neutral",
+                        ],
+                    ),
+                    required: true,
+                    description: "Fictional edge.",
+                ),
+                "failure_xp_gained": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Failure XP marker.",
+                ),
+                "helped": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Help contribution marker.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                            "twist",
+                        ],
+                    ),
+                    required: true,
+                    description: "Outcome band.",
+                ),
+                "push": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Push contribution marker.",
+                ),
+                "selected": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(6.0),
+                    ),
+                    required: true,
+                    description: "Selected die.",
+                ),
+                "selection": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "highest",
+                            "lowest",
+                        ],
+                    ),
+                    required: true,
+                    description: "Pool selection direction.",
+                ),
+            },
+        ),
+        "struggle_resolved": (
+            kind: "object",
+            fields: {
+                "choices": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "symbol",
+                            values: [
+                                "failure_with_cost",
+                                "failure_without_extra_cost",
+                                "full_success_with_cost",
+                                "partial_success_with_cost",
+                                "partial_success_without_cost",
+                            ],
+                        ),
+                        min_items: 1,
+                        max_items: 2,
+                    ),
+                    required: true,
+                    description: "Structured outcome choices.",
+                ),
+                "cost_required": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether a cost is mandatory.",
+                ),
+                "failure": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Failure marker.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failure",
+                            "success",
+                            "twist",
+                        ],
+                    ),
+                    required: true,
+                    description: "Rolled outcome band.",
+                ),
+                "partial": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Partial-result marker.",
+                ),
+            },
+        ),
+        "threat_changed": (
+            kind: "object",
+            fields: {
+                "applied": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(128.0),
+                    ),
+                    required: true,
+                    description: "Damage after armor.",
+                ),
+                "armor": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(32.0),
+                    ),
+                    required: true,
+                    description: "Threat armor.",
+                ),
+                "defeated": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Defeated marker.",
+                ),
+                "dice": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 0,
+                        max_items: 8,
+                    ),
+                    required: true,
+                    description: "Rolled damage dice.",
+                ),
+                "hp_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Threat HP after.",
+                ),
+                "hp_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(512.0),
+                    ),
+                    required: true,
+                    description: "Threat HP before.",
+                ),
+                "raw_damage": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(128.0),
+                    ),
+                    required: true,
+                    description: "Raw harm.",
+                ),
+                "threat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Threat id.",
+                ),
+                "tier": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "catastrophic",
+                            "deadly",
+                            "minor",
+                            "serious",
+                            "standard",
+                        ],
+                    ),
+                    required: true,
+                    description: "Damage tier.",
+                ),
+            },
+        ),
+    },
+    visibility: (
+        runtime: [
+            public,
+        ],
+        authoring: [
+            public,
+            authoring,
+        ],
+        authority_host: [
+            public,
+            authoring,
+            host_only,
+        ],
+    ),
+    migrations: [],
+    provenance: (
+        source_class: verified_cc0,
+        source_url: "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+        exact_artifact: "dungeonpunk-google-doc.pdf",
+        revision: "google-doc-revision-15499",
+        retrieved_on: "2026-08-25",
+        sha256: "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209",
+        license: "CC0-1.0",
+        license_url: "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        covered_files_or_sections: [
+            "six attributes, fixed FATE and NONE ratings, creation points, HP, Stress, XP, gear, and bonds",
+            "positive and non-positive d6 pools, outcome bands, help, push, advantage, disadvantage, and Struggle choices",
+            "encumbrance, rest, damage tiers, impairment, collapse, death, Brace, and growth",
+            "core archetype move inventory, campaign clocks, threats, foes, armor, and GM move categories",
+        ],
+        exclusions: [
+            community_supplements,
+            logos,
+            trade_dress,
+            artwork,
+            layout,
+            unverified_assets,
+        ],
+        attribution: "Compatibility implementation for Dungeonpunk by Ash McAllan, with the official core document released under CC0-1.0. Adapter code, fixture prose, scenarios, and UI summaries are independently authored for Weave.",
+        required_license_text: (
+            artifact: "LICENSE-CC0-1.0.txt",
+            sha256: "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        ),
+        additional_artifacts: [
+            (
+                source_url: "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+                exact_artifact: "dungeonpunk-google-doc.txt",
+                revision: "google-doc-revision-15499",
+                retrieved_on: "2026-08-25",
+                sha256: "85832950a335d4f8a4217e69fcefb88fc88a6a125cd663ea905d32e20bdebe2f",
+                media_type: "text/plain",
+                purpose: "Pin the stable textual content independently from the Google PDF renderer and confirm the reviewed revision\'s semantic rules surface.",
+                redistributed: false,
+            ),
+        ],
+        notices: [
+            "The official release page is https://acegiak.itch.io/dungeonpunk.",
+            "The official PDF and text exports are audit inputs and are not redistributed with Weave.",
+            "The community wiki and every third-party supplement remain outside this adapter\'s reviewed source boundary.",
+        ],
+        compatibility_statement: "This adapter is an independent compatibility implementation for the CC0 Dungeonpunk core rules. It does not bundle the official document, branding, artwork, layout, community wiki, or supplements and is not endorsed by the original creators.",
+    ),
+)

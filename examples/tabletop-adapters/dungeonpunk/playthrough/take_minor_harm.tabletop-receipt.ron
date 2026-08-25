@@ -1,0 +1,397 @@
+(
+    resolver_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.dungeonpunk",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11",
+    ),
+    operation: "minor_damage",
+    capability: resources_and_conditions,
+    request_sha256: "a6af090d20f796b99d63c7f744dde1d29c8d38b62c8d11af5cfb3893a93a3377",
+    before_state_sha256: "038176b08fc82d06f59d3d968bfcd87e1bb1ae0e0295c29576ccf04d26c9380f",
+    before_revision: 5,
+    entropy_before: (
+        algorithm: "sha256_counter_v1",
+        seed: 83,
+        cursor: 10,
+    ),
+    after_state_sha256: "96ec3af0024b5507573a84bc364384c1151011858aa1ff1a27c19c6417b52c50",
+    entropy_consumed: 0,
+    after_state: (
+        state_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.dungeonpunk",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11",
+        ),
+        owner_id: "org.weave.character.vesper_ash",
+        definition_sha256: "1b912eaa9aed443a97931831e0bb84dd821052526a9a3a85dd721a6ed5190d43",
+        revision: 6,
+        entropy: (
+            algorithm: "sha256_counter_v1",
+            seed: 83,
+            cursor: 10,
+        ),
+        value: (
+            kind: object,
+            value: {
+                "advancement": (
+                    kind: object,
+                    value: {
+                        "learned_moves": (
+                            kind: list,
+                            value: [
+                                (
+                                    kind: object,
+                                    value: {
+                                        "id": (
+                                            kind: string,
+                                            value: "bridgecraft",
+                                        ),
+                                        "label": (
+                                            kind: string,
+                                            value: "Bridgecraft",
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                        "stat_increases": (
+                            kind: object,
+                            value: {
+                                "charisma": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "constitution": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "dexterity": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "intelligence": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "strength": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "wisdom": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "bonds": (
+                    kind: list,
+                    value: [
+                        (
+                            kind: string,
+                            value: "I owe Rook a road home.",
+                        ),
+                        (
+                            kind: string,
+                            value: "Mara knows what woke below the bridge.",
+                        ),
+                    ],
+                ),
+                "clocks": (
+                    kind: object,
+                    value: {
+                        "bridge_wakes": (
+                            kind: object,
+                            value: {
+                                "filled": (
+                                    kind: number,
+                                    value: 2.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "The bridge wakes",
+                                ),
+                                "segments": (
+                                    kind: number,
+                                    value: 4.0,
+                                ),
+                                "trigger": (
+                                    kind: symbol,
+                                    value: "full",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "dead": (
+                    kind: bool,
+                    value: false,
+                ),
+                "death_check_pending": (
+                    kind: bool,
+                    value: false,
+                ),
+                "encumbered": (
+                    kind: bool,
+                    value: false,
+                ),
+                "gear": (
+                    kind: object,
+                    value: {
+                        "armor": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                        "field_pack": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                        "rations": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                        "shield": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                        "sword": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                        "tools": (
+                            kind: object,
+                            value: {
+                                "damage_marks": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "destroyed": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "gear_weight_half_units": (
+                    kind: number,
+                    value: 24.0,
+                ),
+                "hp_current": (
+                    kind: number,
+                    value: 10.0,
+                ),
+                "hp_max": (
+                    kind: number,
+                    value: 11.0,
+                ),
+                "impairments": (
+                    kind: list,
+                    value: [],
+                ),
+                "last_operation": (
+                    kind: string,
+                    value: "minor_damage",
+                ),
+                "stress": (
+                    kind: number,
+                    value: 0.0,
+                ),
+                "survival_offer_pending": (
+                    kind: bool,
+                    value: false,
+                ),
+                "threats": (
+                    kind: object,
+                    value: {
+                        "ash_hound": (
+                            kind: object,
+                            value: {
+                                "armor": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                                "clock_id": (
+                                    kind: string,
+                                    value: "bridge_wakes",
+                                ),
+                                "defeated": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "hp_current": (
+                                    kind: number,
+                                    value: 8.0,
+                                ),
+                                "hp_max": (
+                                    kind: number,
+                                    value: 8.0,
+                                ),
+                                "kind": (
+                                    kind: symbol,
+                                    value: "foe",
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Ash hound",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "total_load_half_units": (
+                    kind: number,
+                    value: 24.0,
+                ),
+                "unconscious": (
+                    kind: bool,
+                    value: false,
+                ),
+                "xp": (
+                    kind: number,
+                    value: 0.0,
+                ),
+            },
+        ),
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "damage_applied",
+            capability: resources_and_conditions,
+            visibility: public,
+            payload_sha256: "e41bc8f82f7dc36816614c34844b8d20c5236b66bbeebaef9375ae60cc3cdfb0",
+            payload: Some((
+                kind: object,
+                value: {
+                    "applied": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "dice": (
+                        kind: list,
+                        value: [],
+                    ),
+                    "hp_after": (
+                        kind: number,
+                        value: 10.0,
+                    ),
+                    "hp_before": (
+                        kind: number,
+                        value: 11.0,
+                    ),
+                    "prevented": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                    "raw_damage": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "status": (
+                        kind: symbol,
+                        value: "active",
+                    ),
+                    "tier": (
+                        kind: symbol,
+                        value: "minor",
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 1,
+            kind: "resource_changed",
+            capability: resources_and_conditions,
+            visibility: authoring,
+            payload_sha256: "162669823a6006c377db7620d67ff5654ccc318b2c49a4f547f2f140374f0f96",
+            payload: Some((
+                kind: object,
+                value: {
+                    "dead": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "death_check_pending": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "encumbered": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "hp_current": (
+                        kind: number,
+                        value: 10.0,
+                    ),
+                    "stress": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                    "total_load_half_units": (
+                        kind: number,
+                        value: 24.0,
+                    ),
+                    "unconscious": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "xp": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                },
+            )),
+        ),
+    ],
+)

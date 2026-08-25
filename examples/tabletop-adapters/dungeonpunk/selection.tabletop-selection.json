@@ -1,0 +1,19 @@
+{
+  "selection_format_version": 1,
+  "installed": [
+    {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+    }
+  ],
+  "primary": [
+    {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+    }
+  ]
+}

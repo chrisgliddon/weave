@@ -13,7 +13,7 @@ import {
   temporalCharacterPresentation,
 } from "../src/character-presentation.js";
 import { composedWorldPresentation } from "../src/world-presentation.js";
-import { tabletopPresentation } from "../src/tabletop-presentation.js";
+import { dungeonpunkPresentation, tabletopPresentation } from "../src/tabletop-presentation.js";
 
 const storyUrl = new URL("../../domain-modules/contract/tracer.story.json", import.meta.url);
 const worldStoryUrls = [
@@ -40,6 +40,14 @@ const tabletopStoryUrl = new URL(
 );
 const tabletopReceiptUrl = new URL(
   "../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json",
+  import.meta.url,
+);
+const dungeonpunkStoryUrl = new URL(
+  "../../tabletop-adapters/dungeonpunk/runtime/vesper-ash.story.json",
+  import.meta.url,
+);
+const dungeonpunkReceiptUrl = new URL(
+  "../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json",
   import.meta.url,
 );
 
@@ -82,6 +90,47 @@ test("rejects a tabletop receipt that exposes host-only entropy", async () => {
   assert.throws(
     () => tabletopPresentation(story, receipt),
     /invalid portable tabletop presentation/u,
+  );
+});
+
+test("reads Dungeonpunk state and a visibility-projected Struggle receipt", async () => {
+  const [story, receipt] = await Promise.all(
+    [dungeonpunkStoryUrl, dungeonpunkReceiptUrl].map(async (url) =>
+      JSON.parse(await readFile(url, "utf8")),
+    ),
+  );
+  const presentation = dungeonpunkPresentation(story, receipt);
+  assert.equal(presentation.adapter.id, "org.weave.tabletop.dungeonpunk");
+  assert.equal(presentation.name, "Vesper Ash");
+  assert.deepEqual(presentation.attributes, {
+    charisma: 0,
+    constitution: 1,
+    dexterity: 1,
+    intelligence: 1,
+    strength: 2,
+    wisdom: 0,
+  });
+  assert.equal(presentation.fate, 1);
+  assert.equal(presentation.none, 0);
+  assert.equal(presentation.roll.outcome, "failure");
+  assert.equal(presentation.roll.selection, "highest");
+  assert.equal(presentation.roll.helped, true);
+  assert.equal(presentation.roll.push, true);
+  assert.match(presentation.requestSha256, /^[0-9a-f]{64}$/u);
+  assert.match(presentation.hiddenEntropySha256, /^[0-9a-f]{64}$/u);
+});
+
+test("rejects a Dungeonpunk receipt that exposes host-only entropy", async () => {
+  const [story, receipt] = await Promise.all(
+    [dungeonpunkStoryUrl, dungeonpunkReceiptUrl].map(async (url) =>
+      JSON.parse(await readFile(url, "utf8")),
+    ),
+  );
+  const entropy = receipt.events.find((event) => event.kind === "entropy_trace");
+  entropy.payload = { kind: "object", value: {} };
+  assert.throws(
+    () => dungeonpunkPresentation(story, receipt),
+    /invalid portable Dungeonpunk presentation/u,
   );
 });
 

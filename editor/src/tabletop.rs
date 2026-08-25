@@ -1,12 +1,14 @@
 //! Generic editor discovery for declarative tabletop adapter contracts.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use weave_tabletop::{
-    AdapterManifest, AdapterSelection, CreationStep, PlugAndPlayCreationPreview,
-    PlugAndPlayCreationRequest, PlugAndPlayStatSource, ResolvedAdapter, TabletopCapability,
-    TabletopError, create_plug_and_play_character, has_capability, resolved_adapter,
-    validate_adapter_manifest, validate_adapter_selection, validate_plug_and_play_creation_preview,
+    AdapterManifest, AdapterSelection, CreationStep, DungeonpunkCreationPreview,
+    DungeonpunkCreationRequest, PlugAndPlayCreationPreview, PlugAndPlayCreationRequest,
+    PlugAndPlayStatSource, ResolvedAdapter, TabletopCapability, TabletopError,
+    create_dungeonpunk_character, create_plug_and_play_character, has_capability, resolved_adapter,
+    validate_adapter_manifest, validate_adapter_selection, validate_dungeonpunk_creation_preview,
+    validate_plug_and_play_creation_preview,
 };
 
 /// One manifest-driven panel; no adapter id is matched in editor code.
@@ -17,6 +19,7 @@ pub struct TabletopPanelInspection {
     pub capability_version: u32,
     pub creation_steps: Vec<CreationStep>,
     pub operations: Vec<String>,
+    pub event_types: Vec<String>,
 }
 
 /// Installed manifests, exact primary selection, and capability-driven panels.
@@ -45,6 +48,117 @@ pub struct PlugAndPlayCreationSession {
     preview: PlugAndPlayCreationPreview,
     accepted: bool,
     seed_lineage: Vec<PlugAndPlaySeedLineage>,
+}
+
+/// One explicit Dungeonpunk HP reroll edge retained for editor audit and undo presentation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DungeonpunkSeedLineage {
+    pub previous_seed: u64,
+    pub next_seed: u64,
+    pub previous_request_sha256: String,
+    pub next_request_sha256: String,
+}
+
+/// Dungeonpunk creation form, explainable derived preview, and explicit acceptance state.
+#[derive(Debug, Clone)]
+pub struct DungeonpunkCreationSession {
+    request: DungeonpunkCreationRequest,
+    preview: DungeonpunkCreationPreview,
+    accepted: bool,
+    seed_lineage: Vec<DungeonpunkSeedLineage>,
+}
+
+impl DungeonpunkCreationSession {
+    pub fn new(request: DungeonpunkCreationRequest) -> Result<Self, TabletopError> {
+        let preview = create_dungeonpunk_character(&request)?;
+        Ok(Self {
+            request,
+            preview,
+            accepted: false,
+            seed_lineage: Vec::new(),
+        })
+    }
+
+    #[must_use]
+    pub fn request(&self) -> &DungeonpunkCreationRequest {
+        &self.request
+    }
+
+    #[must_use]
+    pub fn preview(&self) -> &DungeonpunkCreationPreview {
+        &self.preview
+    }
+
+    #[must_use]
+    pub fn is_accepted(&self) -> bool {
+        self.accepted
+    }
+
+    #[must_use]
+    pub fn seed_lineage(&self) -> &[DungeonpunkSeedLineage] {
+        &self.seed_lineage
+    }
+
+    /// Replace the complete form and recompute HP/load atomically.
+    pub fn update(&mut self, request: DungeonpunkCreationRequest) -> Result<(), TabletopError> {
+        let preview = create_dungeonpunk_character(&request)?;
+        self.request = request;
+        self.preview = preview;
+        self.accepted = false;
+        Ok(())
+    }
+
+    /// Reroll only the deterministic HP dice from a deliberately supplied, different seed.
+    pub fn reroll(&mut self, next_seed: u64) -> Result<(), TabletopError> {
+        if next_seed == self.request.seed {
+            return Err(TabletopError::InvalidField {
+                path: "editor.seed".to_owned(),
+                reason: "reroll requires a different explicit seed",
+            });
+        }
+        let previous_seed = self.request.seed;
+        let previous_request_sha256 = self.preview.request_sha256.clone();
+        let mut request = self.request.clone();
+        request.seed = next_seed;
+        let preview = create_dungeonpunk_character(&request)?;
+        self.seed_lineage.push(DungeonpunkSeedLineage {
+            previous_seed,
+            next_seed,
+            previous_request_sha256,
+            next_request_sha256: preview.request_sha256.clone(),
+        });
+        self.request = request;
+        self.preview = preview;
+        self.accepted = false;
+        Ok(())
+    }
+
+    /// Accept the exact visible preview; later edits invalidate this decision.
+    pub fn accept(&mut self) -> Result<(), TabletopError> {
+        validate_dungeonpunk_creation_preview(&self.preview)?;
+        self.accepted = true;
+        Ok(())
+    }
+
+    /// Export accepted JSON for source/runtime handoff.
+    pub fn export_json(&self) -> Result<String, TabletopError> {
+        self.accepted_preview()?.to_json()
+    }
+
+    /// Export accepted RON for source/runtime handoff.
+    pub fn export_ron(&self) -> Result<String, TabletopError> {
+        self.accepted_preview()?.to_ron()
+    }
+
+    fn accepted_preview(&self) -> Result<&DungeonpunkCreationPreview, TabletopError> {
+        if !self.accepted {
+            return Err(TabletopError::InvalidField {
+                path: "editor.acceptance".to_owned(),
+                reason: "the current creation preview has not been accepted",
+            });
+        }
+        Ok(&self.preview)
+    }
 }
 
 impl PlugAndPlayCreationSession {
@@ -228,6 +342,17 @@ impl TabletopEditorCatalog {
         if !has_capability(manifest, capability) {
             return Err(TabletopError::UndeclaredCapability { capability });
         }
+        let operations = manifest
+            .operations
+            .values()
+            .filter(|operation| operation.required_capability == capability)
+            .collect::<Vec<_>>();
+        let event_types = operations
+            .iter()
+            .flat_map(|operation| operation.event_kinds.iter().cloned())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
         Ok(TabletopPanelInspection {
             adapter: coordinate.clone(),
             capability,
@@ -238,12 +363,11 @@ impl TabletopEditorCatalog {
                 .filter(|step| step.required_capability == capability)
                 .cloned()
                 .collect(),
-            operations: manifest
-                .operations
-                .values()
-                .filter(|operation| operation.required_capability == capability)
+            operations: operations
+                .into_iter()
                 .map(|operation| operation.id.clone())
                 .collect(),
+            event_types,
         })
     }
 
@@ -258,6 +382,7 @@ mod tests {
     use weave_tabletop::{
         PLUG_AND_PLAY_CREATION_FORMAT_VERSION, PlugAndPlayAttributes, PlugAndPlayMentalAttribute,
         PlugAndPlayModifier, PlugAndPlayPhysicalAttribute, PlugAndPlayRollAssignment,
+        dungeonpunk_manifest,
     };
 
     fn manifest() -> AdapterManifest {
@@ -380,6 +505,67 @@ mod tests {
         );
         assert_eq!(
             PlugAndPlayCreationPreview::from_ron(&session.export_ron().unwrap()).unwrap(),
+            *session.preview()
+        );
+    }
+
+    #[test]
+    fn dungeonpunk_panels_expose_creation_operations_and_structured_consequences() {
+        let mut catalog = TabletopEditorCatalog::new();
+        catalog.install(dungeonpunk_manifest()).unwrap();
+        catalog
+            .select_primary(Some("org.weave.tabletop.dungeonpunk"))
+            .unwrap();
+
+        let creation = catalog
+            .panel(TabletopCapability::CharacterCreation)
+            .unwrap();
+        assert_eq!(
+            creation
+                .creation_steps
+                .iter()
+                .map(|step| step.id.as_str())
+                .collect::<Vec<_>>(),
+            ["identity", "attributes", "gear_and_bonds"]
+        );
+        let checks = catalog
+            .panel(TabletopCapability::ChecksAndConflicts)
+            .unwrap();
+        assert_eq!(checks.operations, ["struggle"]);
+        assert!(checks.event_types.contains(&"roll_resolved".to_owned()));
+        assert!(checks.event_types.contains(&"struggle_resolved".to_owned()));
+        assert!(checks.event_types.contains(&"gm_move_prompt".to_owned()));
+        let campaign = catalog.panel(TabletopCapability::CampaignState).unwrap();
+        assert_eq!(campaign.operations, ["gm_move"]);
+        assert_eq!(campaign.event_types, ["gm_move_selected"]);
+    }
+
+    #[test]
+    fn dungeonpunk_preview_reroll_accept_and_export_are_explicit() {
+        let request = DungeonpunkCreationRequest::from_json(include_str!(
+            "../../examples/tabletop-adapters/dungeonpunk/creation.tabletop-creation.json"
+        ))
+        .unwrap();
+        let mut session = DungeonpunkCreationSession::new(request).unwrap();
+        assert!(!session.is_accepted());
+        assert!(session.export_json().is_err());
+        assert_eq!(session.preview().gear_weight_half_units, 24);
+        assert!(!session.preview().starting_encumbered);
+        assert_eq!(session.preview().hp_rolls.len(), 3);
+        let previous_hp = session.preview().hp_rolls.clone();
+        session.reroll(202).unwrap();
+        assert_eq!(session.seed_lineage().len(), 1);
+        assert_eq!(session.seed_lineage()[0].previous_seed, 83);
+        assert_eq!(session.seed_lineage()[0].next_seed, 202);
+        assert_ne!(previous_hp, session.preview().hp_rolls);
+        session.accept().unwrap();
+        assert!(session.is_accepted());
+        assert_eq!(
+            DungeonpunkCreationPreview::from_json(&session.export_json().unwrap()).unwrap(),
+            *session.preview()
+        );
+        assert_eq!(
+            DungeonpunkCreationPreview::from_ron(&session.export_ron().unwrap()).unwrap(),
             *session.preview()
         );
     }

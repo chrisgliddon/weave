@@ -1,0 +1,744 @@
+{
+  "creation_format_version": 1,
+  "request_sha256": "994583e3c1f3bcb99537f3bafe24380dbb4e7edc219338803ac09d9db9b12615",
+  "adapter": {
+    "id": "org.weave.tabletop.dungeonpunk",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+  },
+  "hp_rolls": [
+    5,
+    1,
+    4
+  ],
+  "attributes": {
+    "strength": 2,
+    "dexterity": 1,
+    "constitution": 1,
+    "intelligence": 1,
+    "charisma": 0,
+    "wisdom": 0
+  },
+  "fate": 1,
+  "none": 0,
+  "max_hp": 11,
+  "special_moves": [
+    {
+      "id": "hale_and_hearty",
+      "label": "Hale and Hearty",
+      "source": "core",
+      "archetype": "peasant",
+      "kind": "passive",
+      "attribute": null,
+      "trigger": "Increase the character's maximum endurance with one additional d6.",
+      "success": "",
+      "twist": "",
+      "failure": ""
+    },
+    {
+      "id": "loaded_for_bear",
+      "label": "Loaded for Bear",
+      "source": "core",
+      "archetype": "fighter",
+      "kind": "passive",
+      "attribute": null,
+      "trigger": "Equipped weapons and armor contribute half their ordinary carried Weight.",
+      "success": "",
+      "twist": "",
+      "failure": ""
+    },
+    {
+      "id": "warriors_strike",
+      "label": "Warrior's Strike",
+      "source": "core",
+      "archetype": "fighter",
+      "kind": "rolled",
+      "attribute": "strength",
+      "trigger": "Strike a foe with intent to harm.",
+      "success": "Deal harm, with an option to trade incoming harm for an extra damage die.",
+      "twist": "Deal harm and expose yourself or an ally to danger.",
+      "failure": "The attack fails and invites a GM response."
+    }
+  ],
+  "gear_weight_half_units": 24,
+  "starting_total_half_units": 24,
+  "starting_encumbered": false,
+  "definition": {
+    "adapter": {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+    },
+    "definition": {
+      "kind": "object",
+      "value": {
+        "attributes": {
+          "kind": "object",
+          "value": {
+            "charisma": {
+              "kind": "number",
+              "value": 0.0
+            },
+            "constitution": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "dexterity": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "intelligence": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "strength": {
+              "kind": "number",
+              "value": 2.0
+            },
+            "wisdom": {
+              "kind": "number",
+              "value": 0.0
+            }
+          }
+        },
+        "bonds": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "I owe Rook a road home."
+            },
+            {
+              "kind": "string",
+              "value": "Mara knows what woke below the bridge."
+            }
+          ]
+        },
+        "constants": {
+          "kind": "object",
+          "value": {
+            "fate": {
+              "kind": "number",
+              "value": 1.0
+            },
+            "none": {
+              "kind": "number",
+              "value": 0.0
+            }
+          }
+        },
+        "encumbrance_limit_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "gear": {
+          "kind": "object",
+          "value": {
+            "armor": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 4.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": true
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "armor"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Patched plate"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 4.0
+                }
+              }
+            },
+            "field_pack": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 8.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "pack"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Field pack"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 4.0
+                }
+              }
+            },
+            "rations": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 4.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "rations"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Road rations"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 2.0
+                }
+              }
+            },
+            "shield": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": true
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "shield"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Scrap shield"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 2.0
+                }
+              }
+            },
+            "sword": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 4.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": true
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "weapon"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Notched sword"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 4.0
+                }
+              }
+            },
+            "tools": {
+              "kind": "object",
+              "value": {
+                "effective_weight_half_units": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "equipped": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "tool"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Repair tools"
+                },
+                "weight": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        },
+        "gear_weight_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "hp_rolls": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "number",
+              "value": 5.0
+            },
+            {
+              "kind": "number",
+              "value": 1.0
+            },
+            {
+              "kind": "number",
+              "value": 4.0
+            }
+          ]
+        },
+        "loaded_for_bear": {
+          "kind": "bool",
+          "value": true
+        },
+        "max_hp": {
+          "kind": "number",
+          "value": 11.0
+        },
+        "name": {
+          "kind": "string",
+          "value": "Vesper Ash"
+        },
+        "special_moves": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "object",
+              "value": {
+                "archetype": {
+                  "kind": "symbol",
+                  "value": "peasant"
+                },
+                "failure": {
+                  "kind": "string",
+                  "value": ""
+                },
+                "id": {
+                  "kind": "string",
+                  "value": "hale_and_hearty"
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "passive"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Hale and Hearty"
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "core"
+                },
+                "success": {
+                  "kind": "string",
+                  "value": ""
+                },
+                "trigger": {
+                  "kind": "string",
+                  "value": "Increase the character's maximum endurance with one additional d6."
+                },
+                "twist": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            },
+            {
+              "kind": "object",
+              "value": {
+                "archetype": {
+                  "kind": "symbol",
+                  "value": "fighter"
+                },
+                "failure": {
+                  "kind": "string",
+                  "value": ""
+                },
+                "id": {
+                  "kind": "string",
+                  "value": "loaded_for_bear"
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "passive"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Loaded for Bear"
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "core"
+                },
+                "success": {
+                  "kind": "string",
+                  "value": ""
+                },
+                "trigger": {
+                  "kind": "string",
+                  "value": "Equipped weapons and armor contribute half their ordinary carried Weight."
+                },
+                "twist": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            },
+            {
+              "kind": "object",
+              "value": {
+                "archetype": {
+                  "kind": "symbol",
+                  "value": "fighter"
+                },
+                "attribute": {
+                  "kind": "symbol",
+                  "value": "strength"
+                },
+                "failure": {
+                  "kind": "string",
+                  "value": "The attack fails and invites a GM response."
+                },
+                "id": {
+                  "kind": "string",
+                  "value": "warriors_strike"
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "rolled"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Warrior's Strike"
+                },
+                "source": {
+                  "kind": "symbol",
+                  "value": "core"
+                },
+                "success": {
+                  "kind": "string",
+                  "value": "Deal harm, with an option to trade incoming harm for an extra damage die."
+                },
+                "trigger": {
+                  "kind": "string",
+                  "value": "Strike a foe with intent to harm."
+                },
+                "twist": {
+                  "kind": "string",
+                  "value": "Deal harm and expose yourself or an ally to danger."
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "definition_sha256": "1b912eaa9aed443a97931831e0bb84dd821052526a9a3a85dd721a6ed5190d43",
+    "completed_creation_steps": [
+      "attributes",
+      "campaign",
+      "gear_and_bonds",
+      "identity",
+      "moves"
+    ]
+  },
+  "initial_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+    },
+    "owner_id": "org.weave.character.vesper_ash",
+    "definition_sha256": "1b912eaa9aed443a97931831e0bb84dd821052526a9a3a85dd721a6ed5190d43",
+    "revision": 0,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 83,
+      "cursor": 3
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "advancement": {
+          "kind": "object",
+          "value": {
+            "learned_moves": {
+              "kind": "list",
+              "value": []
+            },
+            "stat_increases": {
+              "kind": "object",
+              "value": {
+                "charisma": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "constitution": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "dexterity": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "intelligence": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "strength": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "wisdom": {
+                  "kind": "number",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        },
+        "bonds": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "I owe Rook a road home."
+            },
+            {
+              "kind": "string",
+              "value": "Mara knows what woke below the bridge."
+            }
+          ]
+        },
+        "clocks": {
+          "kind": "object",
+          "value": {
+            "bridge_wakes": {
+              "kind": "object",
+              "value": {
+                "filled": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "The bridge wakes"
+                },
+                "segments": {
+                  "kind": "number",
+                  "value": 4.0
+                },
+                "trigger": {
+                  "kind": "symbol",
+                  "value": "full"
+                }
+              }
+            }
+          }
+        },
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "death_check_pending": {
+          "kind": "bool",
+          "value": false
+        },
+        "encumbered": {
+          "kind": "bool",
+          "value": false
+        },
+        "gear": {
+          "kind": "object",
+          "value": {
+            "armor": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "field_pack": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "rations": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "shield": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "sword": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "tools": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            }
+          }
+        },
+        "gear_weight_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "hp_current": {
+          "kind": "number",
+          "value": 11.0
+        },
+        "hp_max": {
+          "kind": "number",
+          "value": 11.0
+        },
+        "impairments": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": ""
+        },
+        "stress": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "survival_offer_pending": {
+          "kind": "bool",
+          "value": false
+        },
+        "threats": {
+          "kind": "object",
+          "value": {
+            "ash_hound": {
+              "kind": "object",
+              "value": {
+                "armor": {
+                  "kind": "number",
+                  "value": 1.0
+                },
+                "clock_id": {
+                  "kind": "string",
+                  "value": "bridge_wakes"
+                },
+                "defeated": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "hp_current": {
+                  "kind": "number",
+                  "value": 8.0
+                },
+                "hp_max": {
+                  "kind": "number",
+                  "value": 8.0
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "foe"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Ash hound"
+                }
+              }
+            }
+          }
+        },
+        "total_load_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "unconscious": {
+          "kind": "bool",
+          "value": false
+        },
+        "xp": {
+          "kind": "number",
+          "value": 0.0
+        }
+      }
+    }
+  },
+  "explanations": [
+    "Starting HP is two deterministic d6 results plus Constitution and any selected endurance-move bonus; play continues from the retained entropy cursor.",
+    "Load uses half-Weight units so equipped-item reductions and Stress Weight remain exact without floating-point rounding.",
+    "Core and authored special moves remain declarative data; only the trusted registered resolver can change mutable state."
+  ]
+}

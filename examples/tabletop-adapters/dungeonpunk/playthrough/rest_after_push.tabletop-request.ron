@@ -1,0 +1,407 @@
+(
+    resolver_format_version: 1,
+    request_id: "rest_after_push",
+    adapter: (
+        id: "org.weave.tabletop.dungeonpunk",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11",
+    ),
+    operation: "rest",
+    capability: resources_and_conditions,
+    definition_sha256: "1b912eaa9aed443a97931831e0bb84dd821052526a9a3a85dd721a6ed5190d43",
+    definition: (
+        kind: object,
+        value: {
+            "attributes": (
+                kind: object,
+                value: {
+                    "charisma": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                    "constitution": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "dexterity": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "intelligence": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "strength": (
+                        kind: number,
+                        value: 2.0,
+                    ),
+                    "wisdom": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                },
+            ),
+            "bonds": (
+                kind: list,
+                value: [
+                    (
+                        kind: string,
+                        value: "I owe Rook a road home.",
+                    ),
+                    (
+                        kind: string,
+                        value: "Mara knows what woke below the bridge.",
+                    ),
+                ],
+            ),
+            "constants": (
+                kind: object,
+                value: {
+                    "fate": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "none": (
+                        kind: number,
+                        value: 0.0,
+                    ),
+                },
+            ),
+            "encumbrance_limit_half_units": (
+                kind: number,
+                value: 24.0,
+            ),
+            "gear": (
+                kind: object,
+                value: {
+                    "armor": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: true,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "armor",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Patched plate",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                        },
+                    ),
+                    "field_pack": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 8.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: false,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "pack",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Field pack",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                        },
+                    ),
+                    "rations": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: false,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "rations",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Road rations",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 2.0,
+                            ),
+                        },
+                    ),
+                    "shield": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 2.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: true,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "shield",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Scrap shield",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 2.0,
+                            ),
+                        },
+                    ),
+                    "sword": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: true,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "weapon",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Notched sword",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                        },
+                    ),
+                    "tools": (
+                        kind: object,
+                        value: {
+                            "effective_weight_half_units": (
+                                kind: number,
+                                value: 2.0,
+                            ),
+                            "equipped": (
+                                kind: bool,
+                                value: false,
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "tool",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Repair tools",
+                            ),
+                            "weight": (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+            "gear_weight_half_units": (
+                kind: number,
+                value: 24.0,
+            ),
+            "hp_rolls": (
+                kind: list,
+                value: [
+                    (
+                        kind: number,
+                        value: 5.0,
+                    ),
+                    (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    (
+                        kind: number,
+                        value: 4.0,
+                    ),
+                ],
+            ),
+            "loaded_for_bear": (
+                kind: bool,
+                value: true,
+            ),
+            "max_hp": (
+                kind: number,
+                value: 11.0,
+            ),
+            "name": (
+                kind: string,
+                value: "Vesper Ash",
+            ),
+            "special_moves": (
+                kind: list,
+                value: [
+                    (
+                        kind: object,
+                        value: {
+                            "archetype": (
+                                kind: symbol,
+                                value: "peasant",
+                            ),
+                            "failure": (
+                                kind: string,
+                                value: "",
+                            ),
+                            "id": (
+                                kind: string,
+                                value: "hale_and_hearty",
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "passive",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Hale and Hearty",
+                            ),
+                            "source": (
+                                kind: symbol,
+                                value: "core",
+                            ),
+                            "success": (
+                                kind: string,
+                                value: "",
+                            ),
+                            "trigger": (
+                                kind: string,
+                                value: "Increase the character\'s maximum endurance with one additional d6.",
+                            ),
+                            "twist": (
+                                kind: string,
+                                value: "",
+                            ),
+                        },
+                    ),
+                    (
+                        kind: object,
+                        value: {
+                            "archetype": (
+                                kind: symbol,
+                                value: "fighter",
+                            ),
+                            "failure": (
+                                kind: string,
+                                value: "",
+                            ),
+                            "id": (
+                                kind: string,
+                                value: "loaded_for_bear",
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "passive",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Loaded for Bear",
+                            ),
+                            "source": (
+                                kind: symbol,
+                                value: "core",
+                            ),
+                            "success": (
+                                kind: string,
+                                value: "",
+                            ),
+                            "trigger": (
+                                kind: string,
+                                value: "Equipped weapons and armor contribute half their ordinary carried Weight.",
+                            ),
+                            "twist": (
+                                kind: string,
+                                value: "",
+                            ),
+                        },
+                    ),
+                    (
+                        kind: object,
+                        value: {
+                            "archetype": (
+                                kind: symbol,
+                                value: "fighter",
+                            ),
+                            "attribute": (
+                                kind: symbol,
+                                value: "strength",
+                            ),
+                            "failure": (
+                                kind: string,
+                                value: "The attack fails and invites a GM response.",
+                            ),
+                            "id": (
+                                kind: string,
+                                value: "warriors_strike",
+                            ),
+                            "kind": (
+                                kind: symbol,
+                                value: "rolled",
+                            ),
+                            "label": (
+                                kind: string,
+                                value: "Warrior\'s Strike",
+                            ),
+                            "source": (
+                                kind: symbol,
+                                value: "core",
+                            ),
+                            "success": (
+                                kind: string,
+                                value: "Deal harm, with an option to trade incoming harm for an extra damage die.",
+                            ),
+                            "trigger": (
+                                kind: string,
+                                value: "Strike a foe with intent to harm.",
+                            ),
+                            "twist": (
+                                kind: string,
+                                value: "Deal harm and expose yourself or an ally to danger.",
+                            ),
+                        },
+                    ),
+                ],
+            ),
+        },
+    ),
+    expected_state_sha256: "012ce03760fcda264e4da75ead4d968a5a604a29ce9099afae9c6b88ffc1eed4",
+    input: (
+        kind: object,
+        value: {
+            "hours": (
+                kind: number,
+                value: 4.0,
+            ),
+        },
+    ),
+)

@@ -1,0 +1,481 @@
+{
+  "$defs": {
+    "AdapterCharacterDefinition": {
+      "additionalProperties": false,
+      "description": "Active immutable adapter-owned character definition.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "completed_creation_steps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "definition": {
+          "$ref": "#/$defs/DomainValue"
+        },
+        "definition_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "definition",
+        "definition_sha256",
+        "completed_creation_steps"
+      ],
+      "type": "object"
+    },
+    "DomainValue": {
+      "description": "Unambiguous portable value representation shared by RON and JSON.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Explicit null.",
+          "properties": {
+            "kind": {
+              "const": "null",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Boolean.",
+          "properties": {
+            "kind": {
+              "const": "bool",
+              "type": "string"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Finite number.",
+          "properties": {
+            "kind": {
+              "const": "number",
+              "type": "string"
+            },
+            "value": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "UTF-8 text.",
+          "properties": {
+            "kind": {
+              "const": "string",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Meaning-bearing atom.",
+          "properties": {
+            "kind": {
+              "const": "symbol",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Ordered values.",
+          "properties": {
+            "kind": {
+              "const": "list",
+              "type": "string"
+            },
+            "value": {
+              "items": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Closed string-keyed value.",
+          "properties": {
+            "kind": {
+              "const": "object",
+              "type": "string"
+            },
+            "value": {
+              "additionalProperties": {
+                "$ref": "#/$defs/DomainValue"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "DungeonpunkArchetype": {
+      "description": "Broad grouping used by the official core move catalog.",
+      "enum": [
+        "peasant",
+        "fighter",
+        "rogue",
+        "wizard",
+        "custom"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkAttribute": {
+      "description": "The six ordinary character attributes.",
+      "enum": [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "charisma",
+        "wisdom"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkAttributes": {
+      "additionalProperties": false,
+      "description": "Six authored or advanced attribute ratings.",
+      "properties": {
+        "charisma": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "constitution": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "dexterity": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "intelligence": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "strength": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "wisdom": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "charisma",
+        "wisdom"
+      ],
+      "type": "object"
+    },
+    "DungeonpunkMoveKind": {
+      "description": "Whether a special move is rolled, passive, or limited by a play-session trigger.",
+      "enum": [
+        "rolled",
+        "passive",
+        "session"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkSpecialMove": {
+      "additionalProperties": false,
+      "description": "Expanded, portable special-move definition shown by generic editor and runtime hosts.",
+      "properties": {
+        "archetype": {
+          "$ref": "#/$defs/DungeonpunkArchetype"
+        },
+        "attribute": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DungeonpunkAttribute"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DungeonpunkMoveKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "success": {
+          "type": "string"
+        },
+        "trigger": {
+          "type": "string"
+        },
+        "twist": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "source",
+        "archetype",
+        "kind",
+        "trigger",
+        "success",
+        "twist",
+        "failure"
+      ],
+      "type": "object"
+    },
+    "EntropyState": {
+      "additionalProperties": false,
+      "description": "Serializable deterministic entropy cursor.",
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "cursor": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seed": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "algorithm",
+        "seed",
+        "cursor"
+      ],
+      "type": "object"
+    },
+    "ResolvedAdapter": {
+      "additionalProperties": false,
+      "description": "Exact installed adapter coordinate embedded in compiled data.",
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schema_version",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "TabletopState": {
+      "additionalProperties": false,
+      "description": "Adapter-owned mutable state kept outside the immutable definition and Character canon.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/ResolvedAdapter"
+        },
+        "definition_sha256": {
+          "type": "string"
+        },
+        "entropy": {
+          "$ref": "#/$defs/EntropyState"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state_format_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "value": {
+          "$ref": "#/$defs/DomainValue"
+        }
+      },
+      "required": [
+        "state_format_version",
+        "adapter",
+        "owner_id",
+        "definition_sha256",
+        "revision",
+        "entropy",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-dungeonpunk-creation-preview:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explainable result of creation before projection and mutable-state export.",
+  "properties": {
+    "adapter": {
+      "$ref": "#/$defs/ResolvedAdapter"
+    },
+    "attributes": {
+      "$ref": "#/$defs/DungeonpunkAttributes"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "definition": {
+      "$ref": "#/$defs/AdapterCharacterDefinition"
+    },
+    "explanations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "fate": {
+      "format": "int32",
+      "type": "integer"
+    },
+    "gear_weight_half_units": {
+      "description": "Two units represent one Weight, preserving exact half-weight gear effects.",
+      "format": "uint16",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "hp_rolls": {
+      "items": {
+        "format": "uint8",
+        "maximum": 255,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "initial_state": {
+      "$ref": "#/$defs/TabletopState"
+    },
+    "max_hp": {
+      "format": "int32",
+      "type": "integer"
+    },
+    "none": {
+      "format": "int32",
+      "type": "integer"
+    },
+    "request_sha256": {
+      "type": "string"
+    },
+    "special_moves": {
+      "items": {
+        "$ref": "#/$defs/DungeonpunkSpecialMove"
+      },
+      "type": "array"
+    },
+    "starting_encumbered": {
+      "type": "boolean"
+    },
+    "starting_total_half_units": {
+      "format": "uint16",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "request_sha256",
+    "adapter",
+    "hp_rolls",
+    "attributes",
+    "fate",
+    "none",
+    "max_hp",
+    "special_moves",
+    "gear_weight_half_units",
+    "starting_total_half_units",
+    "starting_encumbered",
+    "definition",
+    "initial_state",
+    "explanations"
+  ],
+  "title": "Weave Dungeonpunk Creation Preview v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

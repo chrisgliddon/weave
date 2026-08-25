@@ -9,6 +9,8 @@ import characterStory from "../../domain-modules/weave-character/ari-vale.story.
 import temporalCharacterStory from "../../domain-modules/weave-character/context/runtime/ari-vale-temporal.story.json";
 import tabletopStory from "../../tabletop-adapters/plug-and-play/runtime/ember-vale.story.json";
 import tabletopReceipt from "../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json";
+import dungeonpunkStory from "../../tabletop-adapters/dungeonpunk/runtime/vesper-ash.story.json";
+import dungeonpunkReceipt from "../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json";
 
 import {
   alignmentCharacterPresentation,
@@ -20,7 +22,7 @@ import {
 } from "./character-presentation.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
-import { tabletopPresentation } from "./tabletop-presentation.js";
+import { dungeonpunkPresentation, tabletopPresentation } from "./tabletop-presentation.js";
 
 const status = document.querySelector("#status");
 const canvasHost = document.querySelector("#canvas");
@@ -45,11 +47,12 @@ try {
   const projectionCharacter = projectionCharacterPresentation(characterStory);
   const temporalCharacter = temporalCharacterPresentation(temporalCharacterStory);
   const tabletop = tabletopPresentation(tabletopStory, tabletopReceipt);
+  const dungeonpunk = dungeonpunkPresentation(dungeonpunkStory, dungeonpunkReceipt);
 
   const app = new Application();
   await app.init({
     width: 720,
-    height: 500,
+    height: 580,
     background: composedWorld.background,
     antialias: true,
     autoDensity: true,
@@ -58,12 +61,12 @@ try {
   canvasHost.append(app.canvas);
 
   const reading = new Text({
-    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${label} · ${phase} · ${intensity}`,
+    text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${dungeonpunk.name} · STR ${dungeonpunk.attributes.strength} DEX ${dungeonpunk.attributes.dexterity} CON ${dungeonpunk.attributes.constitution}\nStruggle ${dungeonpunk.roll.outcome} (${dungeonpunk.roll.selected}) · HP ${dungeonpunk.hp} · Stress ${dungeonpunk.stress} · XP ${dungeonpunk.xp}\n${label} · ${phase} · ${intensity}`,
     style: {
       align: "center",
       fill: composedWorld.foreground,
       fontFamily: "ui-rounded, system-ui, sans-serif",
-      fontSize: 21,
+      fontSize: 19,
       fontWeight: "600",
       lineHeight: 42,
     },
@@ -72,7 +75,7 @@ try {
   reading.position.set(app.screen.width / 2, app.screen.height / 2);
   app.stage.addChild(reading);
   status.textContent =
-    "PixiJS read portable World, Character, and Plug-And-Play exports; tabletop play retains exact adapter/request hashes and a redacted entropy audit envelope, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
+    "PixiJS read portable World, Character, Plug-And-Play, and Dungeonpunk exports; tabletop play retains exact adapter/request hashes and redacted entropy audit envelopes, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

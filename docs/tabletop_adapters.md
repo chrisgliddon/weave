@@ -141,7 +141,7 @@ that lineage. Invalid output leaves the caller's prior state unchanged.
 
 ## Verified Plug-And-Play implementation
 
-The checked [Plug-And-Play fixture](https://github.com/chrisgliddon/weave/tree/main/examples/tabletop-adapters/plug-and-play)
+The checked [Plug-And-Play fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/plug-and-play)
 applies the contract to the public CC0-1.0 Plug-And-Play release. It is an independently authored
 compatibility implementation, not an endorsement. The official Rules and Character Sheet PDFs
 are exact hash-pinned review inputs and are not redistributed; the official plain-text CC0 legal
@@ -181,6 +181,40 @@ the same story for standalone Rust, Bevy 0.18, and PixiJS v8. Bevy loads it as a
 `Startup` schedule. PixiJS validates the portable JSON before creating static `Text`; both hosts
 show the public result and exact audit fingerprints while keeping the host-only entropy payload
 redacted.
+
+## Verified Dungeonpunk implementation
+
+The checked [Dungeonpunk fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/dungeonpunk)
+applies the same contract to the official eight-page CC0-1.0 Dungeonpunk core document. The
+adapter pins Google Doc revision `15499`, the 2026-08-25 retrieval date, and exact PDF and UTF-8
+text-export SHA-256 values. Those audit inputs are not redistributed. The community wiki,
+supplements, official wording, artwork, branding, and layout are outside the reviewed adapter
+boundary; fixture prose and scenarios are original.
+
+Creation allocates exactly five points across Strength, Dexterity, Constitution, Intelligence,
+Charisma, and Wisdom, with no starting rating above three. FATE is one, NONE is zero, and HP is a
+deterministic 2d6 plus Constitution, with a third d6 when the selected endurance move applies.
+Exactly three declarative special moves, explicit sorted gear, two distinct bonds, optional clocks,
+and typed threats produce an immutable definition and separate mutable state. Exact half-Weight
+units preserve equipped-item reductions without floating-point rounding; every Stress adds one
+Weight and load above twelve Weight sets encumbrance.
+
+The registered resolver exposes typed operations for:
+
+- Struggle pools built from stat, advantage/disadvantage, help, push, impairment, and encumbrance;
+  positive pools select the highest die, non-positive pools roll 2d6 and select the lowest, with
+  six/twist/failure bands and failure XP;
+- HP, Stress, impairment, minor and rolled damage tiers, Brace equipment marks, rest, collapse,
+  an explicit entropy-consuming FATE death check, and a reviewed survival-at-cost choice;
+- XP growth for moves and stat increases, carried load, bounded clocks and trigger events, armored
+  threat HP, and closed general/threat-specific GM moves; and
+- structured public consequences and GM prompts, authoring resource summaries, and host-only
+  entropy traces whose payloads can be redacted without dropping their hashes.
+
+The generated Vesper Ash playthrough replays every transition, round-trips JSON/RON saves, lowers
+the final definition and state through the ordinary domain-module boundary, and compiles one
+`.weave` story. Bevy 0.18 consumes its RON as a `Resource` in an explicitly ordered `Startup`
+schedule; PixiJS v8 validates the JSON and redacted Struggle receipt before rendering `Text`.
 
 ## Event visibility
 
@@ -254,20 +288,23 @@ capabilities, or lifecycle failures without echoing source payloads. Invalid sel
 fingerprints, licenses, schemas, write-back, stale state, resolver registrations, events, entropy,
 and replay all fail before state publication.
 
-Eight checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
+Ten checked schemas cover the [manifest](downloads/weave-tabletop-adapter-manifest-v1.schema.json),
 [selection](downloads/weave-tabletop-adapter-selection-v1.schema.json),
 [Character projection](downloads/weave-tabletop-character-projection-v1.schema.json),
 [mutable state](downloads/weave-tabletop-state-v1.schema.json),
 [request](downloads/weave-tabletop-resolution-request-v1.schema.json), and
 [receipt/events](downloads/weave-tabletop-resolution-receipt-v1.schema.json), plus the
 [Plug-And-Play creation request](downloads/weave-tabletop-plug-and-play-creation-request-v1.schema.json)
-and [explainable creation preview](downloads/weave-tabletop-plug-and-play-creation-preview-v1.schema.json).
+and [explainable creation preview](downloads/weave-tabletop-plug-and-play-creation-preview-v1.schema.json),
+and the Dungeonpunk [creation request](downloads/weave-tabletop-dungeonpunk-creation-request-v1.schema.json)
+and [creation preview](downloads/weave-tabletop-dungeonpunk-creation-preview-v1.schema.json).
 
 ## Reference commands
 
 ```bash
 cargo run -p weave-tabletop --example tabletop_fixture -- --check
 cargo run -p weave-tabletop --example plug_and_play_fixture -- --check
+cargo run -p weave-tabletop --example dungeonpunk_fixture -- --check
 
 cargo run -p weave-tabletop -- validate selection \
   examples/tabletop-adapters/contract/selection.tabletop-selection.json \
@@ -297,11 +334,23 @@ cargo run -p weave-tabletop -- plug-and-play-resolve \
   examples/tabletop-adapters/plug-and-play/request.tabletop-request.json \
   --state examples/tabletop-adapters/plug-and-play/state.tabletop-state.json \
   --output target/plug-and-play-receipt.json
+
+cargo run -p weave-tabletop -- dungeonpunk-create \
+  examples/tabletop-adapters/dungeonpunk/creation.tabletop-creation.json \
+  --output target/dungeonpunk-preview.ron
+
+cargo run -p weave-tabletop -- dungeonpunk-resolve \
+  examples/tabletop-adapters/dungeonpunk/request.tabletop-request.json \
+  --state examples/tabletop-adapters/dungeonpunk/state.tabletop-state.json \
+  --output target/dungeonpunk-receipt.json
 ```
 
-The checked [Lantern Trail fixture](https://github.com/chrisgliddon/weave/tree/main/examples/tabletop-adapters/contract)
+The checked [Lantern Trail fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/contract)
 provides equivalent RON/JSON, exact source and license hashes, deterministic replay, all three
 visibility levels, and invalid artifacts for conflicts, versions, and undeclared capabilities.
 The checked Plug-And-Play fixture adds a complete CC0 public-source audit, concrete creation/editor
 workflow, all supported mechanics, sequential save/reload playthrough, and standalone/Bevy/PixiJS
 consumption without adapter-specific compiler syntax.
+The checked Dungeonpunk fixture adds a second verified CC0 source boundary, manifest-driven
+creation, Struggle and structured GM consequences, portable campaign state, explicit FATE
+resolution, and the same standalone/Bevy/PixiJS boundary without compiler or editor special cases.

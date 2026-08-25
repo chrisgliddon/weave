@@ -1,0 +1,363 @@
+{
+  "$defs": {
+    "DungeonpunkAttribute": {
+      "description": "The six ordinary character attributes.",
+      "enum": [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "charisma",
+        "wisdom"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkAttributes": {
+      "additionalProperties": false,
+      "description": "Six authored or advanced attribute ratings.",
+      "properties": {
+        "charisma": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "constitution": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "dexterity": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "intelligence": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "strength": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "wisdom": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "charisma",
+        "wisdom"
+      ],
+      "type": "object"
+    },
+    "DungeonpunkClock": {
+      "additionalProperties": false,
+      "description": "Initial campaign clock stored beside character state.",
+      "properties": {
+        "filled": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "segments": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trigger": {
+          "$ref": "#/$defs/DungeonpunkClockTrigger"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "segments",
+        "filled",
+        "trigger"
+      ],
+      "type": "object"
+    },
+    "DungeonpunkClockTrigger": {
+      "description": "Boundary at which a clock emits its trigger event.",
+      "enum": [
+        "empty",
+        "full"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkGear": {
+      "additionalProperties": false,
+      "description": "One explicit piece of starting gear.",
+      "properties": {
+        "equipped": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DungeonpunkGearKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "uses": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "weight": {
+          "description": "Whole Weight before any equipped-item special move is applied.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "kind",
+        "weight",
+        "equipped"
+      ],
+      "type": "object"
+    },
+    "DungeonpunkGearKind": {
+      "description": "Portable carried-item category used for load, uses, armor, and Brace behavior.",
+      "enum": [
+        "weapon",
+        "armor",
+        "shield",
+        "ammunition",
+        "book",
+        "pack",
+        "supplies",
+        "tool",
+        "instrument",
+        "rations",
+        "personal"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkMoveChoice": {
+      "description": "Creation-time choice between one exact core move and an independently authored move.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "source": {
+              "const": "core",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "attribute": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DungeonpunkAttribute"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "failure": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/DungeonpunkMoveKind"
+            },
+            "label": {
+              "type": "string"
+            },
+            "source": {
+              "const": "authored",
+              "type": "string"
+            },
+            "success": {
+              "type": "string"
+            },
+            "trigger": {
+              "type": "string"
+            },
+            "twist": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "source",
+            "id",
+            "label",
+            "kind",
+            "trigger",
+            "success",
+            "twist",
+            "failure"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "DungeonpunkMoveKind": {
+      "description": "Whether a special move is rolled, passive, or limited by a play-session trigger.",
+      "enum": [
+        "rolled",
+        "passive",
+        "session"
+      ],
+      "type": "string"
+    },
+    "DungeonpunkThreat": {
+      "additionalProperties": false,
+      "description": "One campaign-facing threat initialized with the portable play state.",
+      "properties": {
+        "armor": {
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "clock_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hit_points": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DungeonpunkThreatKind"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "kind",
+        "hit_points",
+        "armor"
+      ],
+      "type": "object"
+    },
+    "DungeonpunkThreatKind": {
+      "description": "Closed threat categories with their own structured GM-move vocabularies.",
+      "enum": [
+        "cursed_place",
+        "overlord",
+        "swarm",
+        "affliction",
+        "terror",
+        "foe"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:weave:schema:tabletop-dungeonpunk-creation-request:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Complete, versioned input to deterministic Dungeonpunk character creation.",
+  "properties": {
+    "attributes": {
+      "$ref": "#/$defs/DungeonpunkAttributes"
+    },
+    "bonds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "character_id": {
+      "type": "string"
+    },
+    "clocks": {
+      "items": {
+        "$ref": "#/$defs/DungeonpunkClock"
+      },
+      "type": "array"
+    },
+    "creation_format_version": {
+      "const": 1,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "gear": {
+      "items": {
+        "$ref": "#/$defs/DungeonpunkGear"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "seed": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "special_moves": {
+      "items": {
+        "$ref": "#/$defs/DungeonpunkMoveChoice"
+      },
+      "type": "array"
+    },
+    "threats": {
+      "items": {
+        "$ref": "#/$defs/DungeonpunkThreat"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "creation_format_version",
+    "character_id",
+    "name",
+    "seed",
+    "attributes",
+    "special_moves",
+    "gear",
+    "bonds",
+    "clocks",
+    "threats"
+  ],
+  "title": "Weave Dungeonpunk Creation Request v1",
+  "type": "object",
+  "x-weave-tabletop-contract-version": 1
+}

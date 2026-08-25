@@ -1,0 +1,101 @@
+(
+    creation_format_version: 1,
+    character_id: "org.weave.character.vesper_ash",
+    name: "Vesper Ash",
+    seed: 83,
+    attributes: (
+        strength: 2,
+        dexterity: 1,
+        constitution: 1,
+        intelligence: 1,
+        charisma: 0,
+        wisdom: 0,
+    ),
+    special_moves: [
+        (
+            source: "core",
+            id: "hale_and_hearty",
+        ),
+        (
+            source: "core",
+            id: "loaded_for_bear",
+        ),
+        (
+            source: "core",
+            id: "warriors_strike",
+        ),
+    ],
+    gear: [
+        (
+            id: "armor",
+            label: "Patched plate",
+            kind: armor,
+            weight: 4,
+            uses: None,
+            equipped: true,
+        ),
+        (
+            id: "field_pack",
+            label: "Field pack",
+            kind: pack,
+            weight: 4,
+            uses: None,
+            equipped: false,
+        ),
+        (
+            id: "rations",
+            label: "Road rations",
+            kind: rations,
+            weight: 2,
+            uses: None,
+            equipped: false,
+        ),
+        (
+            id: "shield",
+            label: "Scrap shield",
+            kind: shield,
+            weight: 2,
+            uses: None,
+            equipped: true,
+        ),
+        (
+            id: "sword",
+            label: "Notched sword",
+            kind: weapon,
+            weight: 4,
+            uses: None,
+            equipped: true,
+        ),
+        (
+            id: "tools",
+            label: "Repair tools",
+            kind: tool,
+            weight: 1,
+            uses: None,
+            equipped: false,
+        ),
+    ],
+    bonds: [
+        "I owe Rook a road home.",
+        "Mara knows what woke below the bridge.",
+    ],
+    clocks: [
+        (
+            id: "bridge_wakes",
+            label: "The bridge wakes",
+            segments: 4,
+            filled: 2,
+            trigger: full,
+        ),
+    ],
+    threats: [
+        (
+            id: "ash_hound",
+            label: "Ash hound",
+            kind: foe,
+            hit_points: 8,
+            armor: 1,
+            clock_id: Some("bridge_wakes"),
+        ),
+    ],
+)

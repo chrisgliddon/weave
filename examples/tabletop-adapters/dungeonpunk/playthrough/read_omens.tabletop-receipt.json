@@ -1,0 +1,515 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.dungeonpunk",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+  },
+  "operation": "struggle",
+  "capability": "checks_and_conflicts",
+  "request_sha256": "e7f749c6edcb06d3137d3ea5174533dc419f85a0b7bcb2dd42aefaab2e8f0f14",
+  "before_state_sha256": "3081dfaf4ebde44920dc71caf9de4e56d4434b09f171262c79dc76637aeee8c8",
+  "before_revision": 2,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 83,
+    "cursor": 6
+  },
+  "after_state_sha256": "a55db00ad7bb0cc0389d46ed83e27aa1293cebda31e5e30af9e66cb8101cfe27",
+  "entropy_consumed": 2,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+    },
+    "owner_id": "org.weave.character.vesper_ash",
+    "definition_sha256": "1b912eaa9aed443a97931831e0bb84dd821052526a9a3a85dd721a6ed5190d43",
+    "revision": 3,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 83,
+      "cursor": 8
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "advancement": {
+          "kind": "object",
+          "value": {
+            "learned_moves": {
+              "kind": "list",
+              "value": []
+            },
+            "stat_increases": {
+              "kind": "object",
+              "value": {
+                "charisma": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "constitution": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "dexterity": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "intelligence": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "strength": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "wisdom": {
+                  "kind": "number",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        },
+        "bonds": {
+          "kind": "list",
+          "value": [
+            {
+              "kind": "string",
+              "value": "I owe Rook a road home."
+            },
+            {
+              "kind": "string",
+              "value": "Mara knows what woke below the bridge."
+            }
+          ]
+        },
+        "clocks": {
+          "kind": "object",
+          "value": {
+            "bridge_wakes": {
+              "kind": "object",
+              "value": {
+                "filled": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "The bridge wakes"
+                },
+                "segments": {
+                  "kind": "number",
+                  "value": 4.0
+                },
+                "trigger": {
+                  "kind": "symbol",
+                  "value": "full"
+                }
+              }
+            }
+          }
+        },
+        "dead": {
+          "kind": "bool",
+          "value": false
+        },
+        "death_check_pending": {
+          "kind": "bool",
+          "value": false
+        },
+        "encumbered": {
+          "kind": "bool",
+          "value": false
+        },
+        "gear": {
+          "kind": "object",
+          "value": {
+            "armor": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "field_pack": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "rations": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "shield": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "sword": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            },
+            "tools": {
+              "kind": "object",
+              "value": {
+                "damage_marks": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "destroyed": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            }
+          }
+        },
+        "gear_weight_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "hp_current": {
+          "kind": "number",
+          "value": 11.0
+        },
+        "hp_max": {
+          "kind": "number",
+          "value": 11.0
+        },
+        "impairments": {
+          "kind": "list",
+          "value": []
+        },
+        "last_operation": {
+          "kind": "string",
+          "value": "struggle"
+        },
+        "stress": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "survival_offer_pending": {
+          "kind": "bool",
+          "value": false
+        },
+        "threats": {
+          "kind": "object",
+          "value": {
+            "ash_hound": {
+              "kind": "object",
+              "value": {
+                "armor": {
+                  "kind": "number",
+                  "value": 1.0
+                },
+                "clock_id": {
+                  "kind": "string",
+                  "value": "bridge_wakes"
+                },
+                "defeated": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "hp_current": {
+                  "kind": "number",
+                  "value": 8.0
+                },
+                "hp_max": {
+                  "kind": "number",
+                  "value": 8.0
+                },
+                "kind": {
+                  "kind": "symbol",
+                  "value": "foe"
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Ash hound"
+                }
+              }
+            }
+          }
+        },
+        "total_load_half_units": {
+          "kind": "number",
+          "value": 24.0
+        },
+        "unconscious": {
+          "kind": "bool",
+          "value": false
+        },
+        "xp": {
+          "kind": "number",
+          "value": 2.0
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "roll_resolved",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "387d21b1348347c3b6e2711ab0d77f790ccbc74d5987273800e0f47764470b08",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "attribute": {
+            "kind": "symbol",
+            "value": "charisma"
+          },
+          "dice": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 1.0
+              },
+              {
+                "kind": "number",
+                "value": 2.0
+              }
+            ]
+          },
+          "dice_pool": {
+            "kind": "number",
+            "value": -1.0
+          },
+          "edge": {
+            "kind": "symbol",
+            "value": "disadvantage"
+          },
+          "failure_xp_gained": {
+            "kind": "bool",
+            "value": true
+          },
+          "helped": {
+            "kind": "bool",
+            "value": false
+          },
+          "outcome": {
+            "kind": "symbol",
+            "value": "failure"
+          },
+          "push": {
+            "kind": "bool",
+            "value": false
+          },
+          "selected": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "selection": {
+            "kind": "symbol",
+            "value": "lowest"
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "struggle_resolved",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "1482e68108b2b2e542508b2dfc34d206f84fc37bbbadb6222b044a4a76278a14",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "choices": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "symbol",
+                "value": "failure_with_cost"
+              }
+            ]
+          },
+          "cost_required": {
+            "kind": "bool",
+            "value": true
+          },
+          "failure": {
+            "kind": "bool",
+            "value": true
+          },
+          "outcome": {
+            "kind": "symbol",
+            "value": "failure"
+          },
+          "partial": {
+            "kind": "bool",
+            "value": false
+          }
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "kind": "gm_move_prompt",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "85d98e8778325840d5091c4be5953d6191154b98553987e7ebec78bb3516bb3d",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "categories": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "symbol",
+                "value": "escalate"
+              },
+              {
+                "kind": "symbol",
+                "value": "injure"
+              },
+              {
+                "kind": "symbol",
+                "value": "rob"
+              },
+              {
+                "kind": "symbol",
+                "value": "twist_outcome"
+              },
+              {
+                "kind": "symbol",
+                "value": "warn"
+              }
+            ]
+          },
+          "reason": {
+            "kind": "symbol",
+            "value": "failed_roll"
+          }
+        }
+      }
+    },
+    {
+      "sequence": 3,
+      "kind": "resource_changed",
+      "capability": "checks_and_conflicts",
+      "visibility": "authoring",
+      "payload_sha256": "7e4f581e92d113432c3489cf53ce1c9c037eea7df6c3d1f530b2249eb09922de",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "dead": {
+            "kind": "bool",
+            "value": false
+          },
+          "death_check_pending": {
+            "kind": "bool",
+            "value": false
+          },
+          "encumbered": {
+            "kind": "bool",
+            "value": false
+          },
+          "hp_current": {
+            "kind": "number",
+            "value": 11.0
+          },
+          "stress": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "total_load_half_units": {
+            "kind": "number",
+            "value": 24.0
+          },
+          "unconscious": {
+            "kind": "bool",
+            "value": false
+          },
+          "xp": {
+            "kind": "number",
+            "value": 2.0
+          }
+        }
+      }
+    },
+    {
+      "sequence": 4,
+      "kind": "entropy_trace",
+      "capability": "checks_and_conflicts",
+      "visibility": "host_only",
+      "payload_sha256": "a56230604b154bd2bf11a76bffb3e0de80920d900419c1becb33090979bff420",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "cursor_after": {
+            "kind": "number",
+            "value": 8.0
+          },
+          "cursor_before": {
+            "kind": "number",
+            "value": 6.0
+          },
+          "draws": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 1.0
+              },
+              {
+                "kind": "number",
+                "value": 2.0
+              }
+            ]
+          },
+          "operation": {
+            "kind": "string",
+            "value": "struggle"
+          }
+        }
+      }
+    }
+  ]
+}

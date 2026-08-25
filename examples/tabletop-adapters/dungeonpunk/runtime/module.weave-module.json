@@ -1,0 +1,996 @@
+{
+  "contract_version": 1,
+  "pack_format_version": 1,
+  "id": "org.weave.tabletop.dungeonpunk",
+  "version": "1.0.0",
+  "namespace": "dungeonpunk",
+  "title": "Dungeonpunk compatible adapter",
+  "summary": "An independently implemented d6-pool adapter for creation, Struggle outcomes, Stress and HP, gear load and Brace, impairment, growth, clocks, threats, and structured GM moves.",
+  "authors": [
+    {
+      "name": "Declared adapter source steward",
+      "url": "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing"
+    }
+  ],
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+  "weave_version": ">=0.1.0, <0.2.0",
+  "capabilities": [
+    {
+      "id": "data",
+      "version": 1
+    },
+    {
+      "id": "editor_schema",
+      "version": 1
+    },
+    {
+      "id": "operations",
+      "version": 1
+    },
+    {
+      "id": "state",
+      "version": 1
+    }
+  ],
+  "dependencies": [],
+  "types": {
+    "Advancement": {
+      "kind": "object",
+      "fields": {
+        "learned_moves": {
+          "type": {
+            "kind": "list",
+            "items": {
+              "kind": "named",
+              "name": "LearnedMove"
+            },
+            "min_items": 0,
+            "max_items": 128
+          },
+          "required": true,
+          "description": "Moves gained after creation."
+        },
+        "stat_increases": {
+          "type": {
+            "kind": "named",
+            "name": "Attributes"
+          },
+          "required": true,
+          "description": "Post-creation stat increases."
+        }
+      }
+    },
+    "Attributes": {
+      "kind": "object",
+      "fields": {
+        "charisma": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Charisma rating."
+        },
+        "constitution": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Constitution rating."
+        },
+        "dexterity": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Dexterity rating."
+        },
+        "intelligence": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Intelligence rating."
+        },
+        "strength": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Strength rating."
+        },
+        "wisdom": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 15.0
+          },
+          "required": true,
+          "description": "Wisdom rating."
+        }
+      }
+    },
+    "ClockState": {
+      "kind": "object",
+      "fields": {
+        "filled": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 24.0
+          },
+          "required": true,
+          "description": "Filled segments."
+        },
+        "label": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 160
+          },
+          "required": true,
+          "description": "Clock display label."
+        },
+        "segments": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 1.0,
+            "maximum": 24.0
+          },
+          "required": true,
+          "description": "Total clock segments."
+        },
+        "trigger": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "empty",
+              "full"
+            ]
+          },
+          "required": true,
+          "description": "Boundary that triggers an event."
+        }
+      }
+    },
+    "GearDefinition": {
+      "kind": "object",
+      "fields": {
+        "effective_weight_half_units": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 8.0
+          },
+          "required": true,
+          "description": "Load after equipped-item effects."
+        },
+        "equipped": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Whether the item is worn or wielded."
+        },
+        "kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "ammunition",
+              "armor",
+              "book",
+              "instrument",
+              "pack",
+              "personal",
+              "rations",
+              "shield",
+              "supplies",
+              "tool",
+              "weapon"
+            ]
+          },
+          "required": true,
+          "description": "Portable item category."
+        },
+        "label": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 160
+          },
+          "required": true,
+          "description": "Item display label."
+        },
+        "starting_uses": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 3.0
+          },
+          "required": false,
+          "description": "Initial bounded use track."
+        },
+        "weight": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 4.0
+          },
+          "required": true,
+          "description": "Whole base Weight."
+        }
+      }
+    },
+    "GearState": {
+      "kind": "object",
+      "fields": {
+        "damage_marks": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 255.0
+          },
+          "required": true,
+          "description": "Brace damage marks."
+        },
+        "destroyed": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Whether damage marks exceeded Weight."
+        },
+        "uses": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 3.0
+          },
+          "required": false,
+          "description": "Remaining consumable uses."
+        }
+      }
+    },
+    "LearnedMove": {
+      "kind": "object",
+      "fields": {
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Learned move identifier."
+        },
+        "label": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 160
+          },
+          "required": true,
+          "description": "Learned move label."
+        }
+      }
+    },
+    "SpecialMove": {
+      "kind": "object",
+      "fields": {
+        "archetype": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "custom",
+              "fighter",
+              "peasant",
+              "rogue",
+              "wizard"
+            ]
+          },
+          "required": true,
+          "description": "Core grouping or custom origin."
+        },
+        "attribute": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "charisma",
+              "constitution",
+              "dexterity",
+              "intelligence",
+              "strength",
+              "wisdom"
+            ]
+          },
+          "required": false,
+          "description": "Attribute rolled by this move."
+        },
+        "failure": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Independent failure-band summary."
+        },
+        "id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": true,
+          "description": "Stable special-move id."
+        },
+        "kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "passive",
+              "rolled",
+              "session"
+            ]
+          },
+          "required": true,
+          "description": "Move interaction kind."
+        },
+        "label": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 160
+          },
+          "required": true,
+          "description": "Move display label."
+        },
+        "source": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "authored",
+              "core"
+            ]
+          },
+          "required": true,
+          "description": "Move metadata origin."
+        },
+        "success": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Independent success-band summary."
+        },
+        "trigger": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Independent move trigger or passive effect."
+        },
+        "twist": {
+          "type": {
+            "kind": "string",
+            "min_length": 0,
+            "max_length": 512
+          },
+          "required": true,
+          "description": "Independent twist-band summary."
+        }
+      }
+    },
+    "ThreatState": {
+      "kind": "object",
+      "fields": {
+        "armor": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 32.0
+          },
+          "required": true,
+          "description": "Damage reduction."
+        },
+        "clock_id": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 128
+          },
+          "required": false,
+          "description": "Related campaign clock."
+        },
+        "defeated": {
+          "type": {
+            "kind": "bool"
+          },
+          "required": true,
+          "description": "Whether HP reached zero."
+        },
+        "hp_current": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 512.0
+          },
+          "required": true,
+          "description": "Current threat HP."
+        },
+        "hp_max": {
+          "type": {
+            "kind": "number",
+            "integer": true,
+            "minimum": 0.0,
+            "maximum": 512.0
+          },
+          "required": true,
+          "description": "Maximum threat HP."
+        },
+        "kind": {
+          "type": {
+            "kind": "symbol",
+            "values": [
+              "affliction",
+              "cursed_place",
+              "foe",
+              "overlord",
+              "swarm",
+              "terror"
+            ]
+          },
+          "required": true,
+          "description": "Threat move category."
+        },
+        "label": {
+          "type": {
+            "kind": "string",
+            "min_length": 1,
+            "max_length": 160
+          },
+          "required": true,
+          "description": "Threat display label."
+        }
+      }
+    }
+  },
+  "exports": {
+    "adapter": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "content_sha256": {
+            "type": {
+              "kind": "string",
+              "min_length": 64,
+              "max_length": 64
+            },
+            "required": true,
+            "description": "Exact validated manifest SHA-256."
+          },
+          "id": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 255
+            },
+            "required": true,
+            "description": "Globally namespaced adapter id."
+          },
+          "schema_version": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 1.0,
+              "maximum": 4294967295.0
+            },
+            "required": true,
+            "description": "Mutable state schema version."
+          },
+          "version": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 64
+            },
+            "required": true,
+            "description": "Exact adapter semantic version."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Exact adapter coordinate."
+    },
+    "capabilities": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "advancement": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "campaign_state": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "character_creation": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "checks_and_conflicts": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "clocks": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "derived_values": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "encounters": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "equipment_and_abilities": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          },
+          "resources_and_conditions": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Exact declared adapter capability."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Only capabilities explicitly declared by this adapter release."
+    },
+    "definition": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "attributes": {
+            "type": {
+              "kind": "named",
+              "name": "Attributes"
+            },
+            "required": true,
+            "description": "Five allocated starting points."
+          },
+          "bonds": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "string",
+                "min_length": 1,
+                "max_length": 240
+              },
+              "min_items": 2,
+              "max_items": 2
+            },
+            "required": true,
+            "description": "Exactly two starting bonds."
+          },
+          "constants": {
+            "type": {
+              "kind": "object",
+              "fields": {
+                "fate": {
+                  "type": {
+                    "kind": "number",
+                    "integer": true,
+                    "minimum": 1.0,
+                    "maximum": 1.0
+                  },
+                  "required": true,
+                  "description": "Constant FATE rating."
+                },
+                "none": {
+                  "type": {
+                    "kind": "number",
+                    "integer": true,
+                    "minimum": 0.0,
+                    "maximum": 0.0
+                  },
+                  "required": true,
+                  "description": "Constant NONE rating."
+                }
+              }
+            },
+            "required": true,
+            "description": "Fixed roll constants."
+          },
+          "encumbrance_limit_half_units": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 24.0,
+              "maximum": 24.0
+            },
+            "required": true,
+            "description": "Twelve Weight in exact half units."
+          },
+          "gear": {
+            "type": {
+              "kind": "map",
+              "values": {
+                "kind": "named",
+                "name": "GearDefinition"
+              },
+              "min_entries": 0,
+              "max_entries": 64
+            },
+            "required": true,
+            "description": "Immutable starting gear definitions."
+          },
+          "gear_weight_half_units": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 512.0
+            },
+            "required": true,
+            "description": "Derived starting gear load."
+          },
+          "hp_rolls": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "number",
+                "integer": true,
+                "minimum": 1.0,
+                "maximum": 6.0
+              },
+              "min_items": 2,
+              "max_items": 3
+            },
+            "required": true,
+            "description": "Two base HP dice and an optional endurance bonus die."
+          },
+          "loaded_for_bear": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Equipped gear half-Weight effect."
+          },
+          "max_hp": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 2.0,
+              "maximum": 32.0
+            },
+            "required": true,
+            "description": "Derived maximum HP."
+          },
+          "name": {
+            "type": {
+              "kind": "string",
+              "min_length": 1,
+              "max_length": 160
+            },
+            "required": true,
+            "description": "Fictional display name."
+          },
+          "special_moves": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "named",
+                "name": "SpecialMove"
+              },
+              "min_items": 3,
+              "max_items": 3
+            },
+            "required": true,
+            "description": "Three selected or independently authored moves."
+          }
+        }
+      },
+      "required": true,
+      "source": "pack",
+      "description": "Immutable adapter-owned character definition."
+    },
+    "state": {
+      "type": {
+        "kind": "object",
+        "fields": {
+          "advancement": {
+            "type": {
+              "kind": "named",
+              "name": "Advancement"
+            },
+            "required": true,
+            "description": "Learned moves and stat increases."
+          },
+          "bonds": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "string",
+                "min_length": 1,
+                "max_length": 240
+              },
+              "min_items": 2,
+              "max_items": 32
+            },
+            "required": true,
+            "description": "Portable character bonds, initialized with exactly two entries."
+          },
+          "clocks": {
+            "type": {
+              "kind": "map",
+              "values": {
+                "kind": "named",
+                "name": "ClockState"
+              },
+              "min_entries": 0,
+              "max_entries": 128
+            },
+            "required": true,
+            "description": "Campaign clocks."
+          },
+          "dead": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Final death state."
+          },
+          "death_check_pending": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Whether below-zero HP requires an explicit FATE roll."
+          },
+          "encumbered": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Whether total load exceeds twelve Weight."
+          },
+          "gear": {
+            "type": {
+              "kind": "map",
+              "values": {
+                "kind": "named",
+                "name": "GearState"
+              },
+              "min_entries": 0,
+              "max_entries": 64
+            },
+            "required": true,
+            "description": "Mutable item state."
+          },
+          "gear_weight_half_units": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 512.0
+            },
+            "required": true,
+            "description": "Current carried gear load."
+          },
+          "hp_current": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": -128.0,
+              "maximum": 1024.0
+            },
+            "required": true,
+            "description": "Current HP, including below zero."
+          },
+          "hp_max": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 2.0,
+              "maximum": 1024.0
+            },
+            "required": true,
+            "description": "Current maximum HP."
+          },
+          "impairments": {
+            "type": {
+              "kind": "list",
+              "items": {
+                "kind": "symbol",
+                "values": [
+                  "charisma",
+                  "constitution",
+                  "dexterity",
+                  "intelligence",
+                  "strength",
+                  "wisdom"
+                ]
+              },
+              "min_items": 0,
+              "max_items": 6
+            },
+            "required": true,
+            "description": "Impaired stats with a one-die penalty."
+          },
+          "last_operation": {
+            "type": {
+              "kind": "string",
+              "min_length": 0,
+              "max_length": 128
+            },
+            "required": true,
+            "description": "Most recently resolved operation."
+          },
+          "stress": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 512.0
+            },
+            "required": true,
+            "description": "Current Stress."
+          },
+          "survival_offer_pending": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Twist-band death offer awaiting a decision."
+          },
+          "threats": {
+            "type": {
+              "kind": "map",
+              "values": {
+                "kind": "named",
+                "name": "ThreatState"
+              },
+              "min_entries": 0,
+              "max_entries": 128
+            },
+            "required": true,
+            "description": "Campaign threats."
+          },
+          "total_load_half_units": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 2048.0
+            },
+            "required": true,
+            "description": "Gear plus Stress load."
+          },
+          "unconscious": {
+            "type": {
+              "kind": "bool"
+            },
+            "required": true,
+            "description": "Whether the character is unconscious."
+          },
+          "xp": {
+            "type": {
+              "kind": "number",
+              "integer": true,
+              "minimum": 0.0,
+              "maximum": 1000000.0
+            },
+            "required": true,
+            "description": "Unspent XP."
+          }
+        }
+      },
+      "required": true,
+      "source": "state",
+      "description": "Versioned mutable adapter-owned state."
+    }
+  },
+  "authoring": {
+    "entity_collections": [],
+    "read_only_paths": [
+      {
+        "path": [
+          "adapter"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      },
+      {
+        "path": [
+          "capabilities"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      },
+      {
+        "path": [
+          "definition"
+        ],
+        "reason": "Generated from the exact reviewed adapter projection; revise it through the adapter authoring workflow."
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "adapter_source",
+        "kind": "public_source",
+        "url": "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+        "revision": "google-doc-revision-15499",
+        "sha256": "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "attribution": "Compatibility implementation for Dungeonpunk by Ash McAllan, with the official core document released under CC0-1.0. Adapter code, fixture prose, scenarios, and UI summaries are independently authored for Weave.",
+        "modified": false
+      }
+    ],
+    "transformations": [],
+    "claims": {
+      "manifest": [
+        "adapter_source"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1275 @@
+{
+  "version": 4,
+  "source_name": "examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 111,
+        "end": 145,
+        "line": 7,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_id",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "id"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 145,
+        "end": 189,
+        "line": 8,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_version",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "version"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 189,
+        "end": 239,
+        "line": 9,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "adapter_sha256",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "adapter",
+              "content_sha256"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 239,
+        "end": 302,
+        "line": 10,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "checks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "capabilities",
+              "checks_and_conflicts"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 302,
+        "end": 351,
+        "line": 11,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "clocks_supported",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "capabilities",
+              "clocks"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 351,
+        "end": 394,
+        "line": 12,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "character_name",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "name"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 394,
+        "end": 446,
+        "line": 13,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "strength",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "attributes",
+              "strength"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 446,
+        "end": 489,
+        "line": 14,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "fate",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "definition",
+              "constants",
+              "fate"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 489,
+        "end": 521,
+        "line": 15,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "hp",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "hp_current"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 521,
+        "end": 553,
+        "line": 16,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "stress",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "stress"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 553,
+        "end": 577,
+        "line": 17,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "xp",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "xp"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    },
+    {
+      "span": {
+        "start": 577,
+        "end": 617,
+        "line": 18,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "encumbered",
+          "value": {
+            "kind": "path",
+            "value": [
+              "rules",
+              "state",
+              "encumbered"
+            ]
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {
+    "rules": {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "pack_id": "vesper_ash",
+      "pack_version": "1.0.0",
+      "exports": {
+        "adapter": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "content_sha256": {
+                "kind": "string",
+                "value": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
+              },
+              "id": {
+                "kind": "string",
+                "value": "org.weave.tabletop.dungeonpunk"
+              },
+              "schema_version": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "version": {
+                "kind": "string",
+                "value": "1.0.0"
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "advancement": {
+                "kind": "bool",
+                "value": true
+              },
+              "campaign_state": {
+                "kind": "bool",
+                "value": true
+              },
+              "character_creation": {
+                "kind": "bool",
+                "value": true
+              },
+              "checks_and_conflicts": {
+                "kind": "bool",
+                "value": true
+              },
+              "clocks": {
+                "kind": "bool",
+                "value": true
+              },
+              "derived_values": {
+                "kind": "bool",
+                "value": true
+              },
+              "encounters": {
+                "kind": "bool",
+                "value": true
+              },
+              "equipment_and_abilities": {
+                "kind": "bool",
+                "value": true
+              },
+              "resources_and_conditions": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          }
+        },
+        "definition": {
+          "source": "pack",
+          "value": {
+            "kind": "object",
+            "value": {
+              "attributes": {
+                "kind": "object",
+                "value": {
+                  "charisma": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "constitution": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "dexterity": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "intelligence": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "strength": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "wisdom": {
+                    "kind": "number",
+                    "value": 0.0
+                  }
+                }
+              },
+              "bonds": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "I owe Rook a road home."
+                  },
+                  {
+                    "kind": "string",
+                    "value": "Mara knows what woke below the bridge."
+                  }
+                ]
+              },
+              "constants": {
+                "kind": "object",
+                "value": {
+                  "fate": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "none": {
+                    "kind": "number",
+                    "value": 0.0
+                  }
+                }
+              },
+              "encumbrance_limit_half_units": {
+                "kind": "number",
+                "value": 24.0
+              },
+              "gear": {
+                "kind": "object",
+                "value": {
+                  "armor": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": true
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "armor"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Patched plate"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 4.0
+                      }
+                    }
+                  },
+                  "field_pack": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 8.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "pack"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Field pack"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 4.0
+                      }
+                    }
+                  },
+                  "rations": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "rations"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Road rations"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 2.0
+                      }
+                    }
+                  },
+                  "shield": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": true
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "shield"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Scrap shield"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 2.0
+                      }
+                    }
+                  },
+                  "sword": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": true
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "weapon"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Notched sword"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 4.0
+                      }
+                    }
+                  },
+                  "tools": {
+                    "kind": "object",
+                    "value": {
+                      "effective_weight_half_units": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "equipped": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "tool"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Repair tools"
+                      },
+                      "weight": {
+                        "kind": "number",
+                        "value": 1.0
+                      }
+                    }
+                  }
+                }
+              },
+              "gear_weight_half_units": {
+                "kind": "number",
+                "value": 24.0
+              },
+              "hp_rolls": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "number",
+                    "value": 5.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 4.0
+                  }
+                ]
+              },
+              "loaded_for_bear": {
+                "kind": "bool",
+                "value": true
+              },
+              "max_hp": {
+                "kind": "number",
+                "value": 11.0
+              },
+              "name": {
+                "kind": "string",
+                "value": "Vesper Ash"
+              },
+              "special_moves": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "object",
+                    "value": {
+                      "archetype": {
+                        "kind": "symbol",
+                        "value": "peasant"
+                      },
+                      "failure": {
+                        "kind": "string",
+                        "value": ""
+                      },
+                      "id": {
+                        "kind": "string",
+                        "value": "hale_and_hearty"
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "passive"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Hale and Hearty"
+                      },
+                      "source": {
+                        "kind": "symbol",
+                        "value": "core"
+                      },
+                      "success": {
+                        "kind": "string",
+                        "value": ""
+                      },
+                      "trigger": {
+                        "kind": "string",
+                        "value": "Increase the character's maximum endurance with one additional d6."
+                      },
+                      "twist": {
+                        "kind": "string",
+                        "value": ""
+                      }
+                    }
+                  },
+                  {
+                    "kind": "object",
+                    "value": {
+                      "archetype": {
+                        "kind": "symbol",
+                        "value": "fighter"
+                      },
+                      "failure": {
+                        "kind": "string",
+                        "value": ""
+                      },
+                      "id": {
+                        "kind": "string",
+                        "value": "loaded_for_bear"
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "passive"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Loaded for Bear"
+                      },
+                      "source": {
+                        "kind": "symbol",
+                        "value": "core"
+                      },
+                      "success": {
+                        "kind": "string",
+                        "value": ""
+                      },
+                      "trigger": {
+                        "kind": "string",
+                        "value": "Equipped weapons and armor contribute half their ordinary carried Weight."
+                      },
+                      "twist": {
+                        "kind": "string",
+                        "value": ""
+                      }
+                    }
+                  },
+                  {
+                    "kind": "object",
+                    "value": {
+                      "archetype": {
+                        "kind": "symbol",
+                        "value": "fighter"
+                      },
+                      "attribute": {
+                        "kind": "symbol",
+                        "value": "strength"
+                      },
+                      "failure": {
+                        "kind": "string",
+                        "value": "The attack fails and invites a GM response."
+                      },
+                      "id": {
+                        "kind": "string",
+                        "value": "warriors_strike"
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "rolled"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Warrior's Strike"
+                      },
+                      "source": {
+                        "kind": "symbol",
+                        "value": "core"
+                      },
+                      "success": {
+                        "kind": "string",
+                        "value": "Deal harm, with an option to trade incoming harm for an extra damage die."
+                      },
+                      "trigger": {
+                        "kind": "string",
+                        "value": "Strike a foe with intent to harm."
+                      },
+                      "twist": {
+                        "kind": "string",
+                        "value": "Deal harm and expose yourself or an ally to danger."
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "state": {
+          "source": "state",
+          "value": {
+            "kind": "object",
+            "value": {
+              "advancement": {
+                "kind": "object",
+                "value": {
+                  "learned_moves": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "id": {
+                            "kind": "string",
+                            "value": "bridgecraft"
+                          },
+                          "label": {
+                            "kind": "string",
+                            "value": "Bridgecraft"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "stat_increases": {
+                    "kind": "object",
+                    "value": {
+                      "charisma": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "constitution": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "dexterity": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "intelligence": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "strength": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "wisdom": {
+                        "kind": "number",
+                        "value": 0.0
+                      }
+                    }
+                  }
+                }
+              },
+              "bonds": {
+                "kind": "list",
+                "value": [
+                  {
+                    "kind": "string",
+                    "value": "I owe Rook a road home."
+                  },
+                  {
+                    "kind": "string",
+                    "value": "Mara knows what woke below the bridge."
+                  }
+                ]
+              },
+              "clocks": {
+                "kind": "object",
+                "value": {
+                  "bridge_wakes": {
+                    "kind": "object",
+                    "value": {
+                      "filled": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "The bridge wakes"
+                      },
+                      "segments": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "trigger": {
+                        "kind": "symbol",
+                        "value": "full"
+                      }
+                    }
+                  }
+                }
+              },
+              "dead": {
+                "kind": "bool",
+                "value": false
+              },
+              "death_check_pending": {
+                "kind": "bool",
+                "value": false
+              },
+              "encumbered": {
+                "kind": "bool",
+                "value": false
+              },
+              "gear": {
+                "kind": "object",
+                "value": {
+                  "armor": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  },
+                  "field_pack": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  },
+                  "rations": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  },
+                  "shield": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  },
+                  "sword": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  },
+                  "tools": {
+                    "kind": "object",
+                    "value": {
+                      "damage_marks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "destroyed": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  }
+                }
+              },
+              "gear_weight_half_units": {
+                "kind": "number",
+                "value": 24.0
+              },
+              "hp_current": {
+                "kind": "number",
+                "value": 11.0
+              },
+              "hp_max": {
+                "kind": "number",
+                "value": 11.0
+              },
+              "impairments": {
+                "kind": "list",
+                "value": []
+              },
+              "last_operation": {
+                "kind": "string",
+                "value": "gm_move"
+              },
+              "stress": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "survival_offer_pending": {
+                "kind": "bool",
+                "value": false
+              },
+              "threats": {
+                "kind": "object",
+                "value": {
+                  "ash_hound": {
+                    "kind": "object",
+                    "value": {
+                      "armor": {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      "clock_id": {
+                        "kind": "string",
+                        "value": "bridge_wakes"
+                      },
+                      "defeated": {
+                        "kind": "bool",
+                        "value": false
+                      },
+                      "hp_current": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "hp_max": {
+                        "kind": "number",
+                        "value": 8.0
+                      },
+                      "kind": {
+                        "kind": "symbol",
+                        "value": "foe"
+                      },
+                      "label": {
+                        "kind": "string",
+                        "value": "Ash hound"
+                      }
+                    }
+                  }
+                }
+              },
+              "total_load_half_units": {
+                "kind": "number",
+                "value": 24.0
+              },
+              "unconscious": {
+                "kind": "bool",
+                "value": false
+              },
+              "xp": {
+                "kind": "number",
+                "value": 0.0
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 632,
+            "end": 987,
+            "line": 21,
+            "column": 1
+          },
+          "kind": {
+            "kind": "conditional",
+            "value": {
+              "branches": [
+                {
+                  "condition": {
+                    "kind": "binary",
+                    "value": {
+                      "left": {
+                        "kind": "path",
+                        "value": [
+                          "checks_supported"
+                        ]
+                      },
+                      "operator": "and",
+                      "right": {
+                        "kind": "path",
+                        "value": [
+                          "clocks_supported"
+                        ]
+                      }
+                    }
+                  },
+                  "body": [
+                    {
+                      "span": {
+                        "start": 675,
+                        "end": 813,
+                        "line": 22,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "character_name"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " enters play with Strength "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "strength"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", FATE "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "fate"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", HP "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "hp"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", Stress "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "stress"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", XP "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "xp"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ", and encumbered set to "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "encumbered"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "."
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "start": 818,
+                        "end": 889,
+                        "line": 23,
+                        "column": 5
+                      },
+                      "kind": {
+                        "kind": "text",
+                        "value": {
+                          "parts": [
+                            {
+                              "kind": "text",
+                              "value": "The active rules are "
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_id"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": "@"
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_version"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": " ("
+                            },
+                            {
+                              "kind": "expression",
+                              "value": {
+                                "kind": "path",
+                                "value": [
+                                  "adapter_sha256"
+                                ]
+                              }
+                            },
+                            {
+                              "kind": "text",
+                              "value": ")."
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fallback": [
+                {
+                  "span": {
+                    "start": 902,
+                    "end": 985,
+                    "line": 25,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "parts": [
+                        {
+                          "kind": "text",
+                          "value": "This branch is unreachable because the selected adapter declares checks and clocks."
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 988,
+            "end": 994,
+            "line": 27,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

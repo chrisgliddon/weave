@@ -1,0 +1,27 @@
+module rules {
+    id: "org.weave.tabletop.dungeonpunk"
+    version: "=1.0.0"
+    pack: "vesper_ash@=1.0.0"
+}
+
+VAR adapter_id = rules.adapter.id
+VAR adapter_version = rules.adapter.version
+VAR adapter_sha256 = rules.adapter.content_sha256
+VAR checks_supported = rules.capabilities.checks_and_conflicts
+VAR clocks_supported = rules.capabilities.clocks
+VAR character_name = rules.definition.name
+VAR strength = rules.definition.attributes.strength
+VAR fate = rules.definition.constants.fate
+VAR hp = rules.state.hp_current
+VAR stress = rules.state.stress
+VAR xp = rules.state.xp
+VAR encumbered = rules.state.encumbered
+
+=== start ===
+{checks_supported && clocks_supported:
+    {character_name} enters play with Strength {strength}, FATE {fate}, HP {hp}, Stress {stress}, XP {xp}, and encumbered set to {encumbered}.
+    The active rules are {adapter_id}@{adapter_version} ({adapter_sha256}).
+- else:
+    This branch is unreachable because the selected adapter declares checks and clocks.
+}
+-> END

@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    {
+      "exact_artifact": "dungeonpunk-google-doc.pdf",
+      "media_type": "application/pdf",
+      "redistributed": false,
+      "sha256": "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209"
+    },
+    {
+      "exact_artifact": "dungeonpunk-google-doc.txt",
+      "media_type": "text/plain",
+      "redistributed": false,
+      "sha256": "85832950a335d4f8a4217e69fcefb88fc88a6a125cd663ea905d32e20bdebe2f"
+    },
+    {
+      "exact_artifact": "LICENSE-CC0-1.0.txt",
+      "media_type": "text/plain",
+      "redistributed": true,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt"
+    }
+  ],
+  "format_version": 1,
+  "official_release_page": "https://acegiak.itch.io/dungeonpunk",
+  "official_source": "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+  "retrieved_on": "2026-08-25",
+  "review_boundary": {
+    "excluded": [
+      "artwork",
+      "branding",
+      "community supplements",
+      "layout",
+      "logos",
+      "trade dress",
+      "unverified assets",
+      "wiki content"
+    ],
+    "included": [
+      "character creation, stats, HP, Stress, XP, gear, load, and bonds",
+      "Struggle pools and outcomes, harm, rest, Brace, death, and growth",
+      "core move inventory, clocks, threats, armor, and structured GM moves"
+    ]
+  },
+  "revision": "google-doc-revision-15499"
+}

@@ -6,17 +6,20 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand, ValueEnum};
 use tempfile::NamedTempFile;
 use weave_tabletop::{
-    AdapterManifest, AdapterSelection, HostAudience, PlugAndPlayCreationPreview,
-    PlugAndPlayCreationRequest, PlugAndPlayResolver, ResolutionReceipt, ResolutionRequest,
-    ResolverRegistry, TabletopCharacterProjection, TabletopError, TabletopState,
-    adapter_manifest_schema, adapter_selection_schema, canonical_fingerprint,
-    character_projection_schema, create_plug_and_play_character,
+    AdapterManifest, AdapterSelection, DungeonpunkCreationPreview, DungeonpunkCreationRequest,
+    DungeonpunkResolver, HostAudience, PlugAndPlayCreationPreview, PlugAndPlayCreationRequest,
+    PlugAndPlayResolver, ResolutionReceipt, ResolutionRequest, ResolverRegistry,
+    TabletopCharacterProjection, TabletopError, TabletopState, adapter_manifest_schema,
+    adapter_selection_schema, canonical_fingerprint, character_projection_schema,
+    create_dungeonpunk_character, create_plug_and_play_character,
+    dungeonpunk_creation_preview_schema, dungeonpunk_creation_request_schema, dungeonpunk_manifest,
     plug_and_play_creation_preview_schema, plug_and_play_creation_request_schema,
     plug_and_play_manifest, project_receipt_for_audience, resolution_receipt_schema,
     resolution_request_schema, tabletop_state_schema, validate_adapter_manifest,
     validate_adapter_selection, validate_character_projection,
-    validate_plug_and_play_creation_preview, validate_resolution_receipt_for_request,
-    validate_resolution_request, validate_tabletop_state, verify_adapter_source_bundle,
+    validate_dungeonpunk_creation_preview, validate_plug_and_play_creation_preview,
+    validate_resolution_receipt_for_request, validate_resolution_request, validate_tabletop_state,
+    verify_adapter_source_bundle,
 };
 
 #[derive(Debug, Parser)]
@@ -90,6 +93,20 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Create one deterministic Dungeonpunk character preview from JSON or RON.
+    DungeonpunkCreate {
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Resolve one Dungeonpunk request against an exact saved state.
+    DungeonpunkResolve {
+        request: PathBuf,
+        #[arg(long)]
+        state: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -102,6 +119,8 @@ enum ArtifactKind {
     Receipt,
     PlugAndPlayCreationRequest,
     PlugAndPlayCreationPreview,
+    DungeonpunkCreationRequest,
+    DungeonpunkCreationPreview,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -114,6 +133,8 @@ enum SchemaKind {
     Receipt,
     PlugAndPlayCreationRequest,
     PlugAndPlayCreationPreview,
+    DungeonpunkCreationRequest,
+    DungeonpunkCreationPreview,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -197,6 +218,14 @@ fn run(cli: Cli) -> Result<(), CliError> {
                         &input,
                     )?)?;
                 }
+                ArtifactKind::DungeonpunkCreationRequest => {
+                    create_dungeonpunk_character(&read_dungeonpunk_creation_request(&input)?)?;
+                }
+                ArtifactKind::DungeonpunkCreationPreview => {
+                    validate_dungeonpunk_creation_preview(&read_dungeonpunk_creation_preview(
+                        &input,
+                    )?)?;
+                }
             }
             println!("valid tabletop {}", kind_name(kind));
         }
@@ -238,6 +267,8 @@ fn run(cli: Cli) -> Result<(), CliError> {
                 SchemaKind::Receipt => resolution_receipt_schema(),
                 SchemaKind::PlugAndPlayCreationRequest => plug_and_play_creation_request_schema(),
                 SchemaKind::PlugAndPlayCreationPreview => plug_and_play_creation_preview_schema(),
+                SchemaKind::DungeonpunkCreationRequest => dungeonpunk_creation_request_schema(),
+                SchemaKind::DungeonpunkCreationPreview => dungeonpunk_creation_preview_schema(),
             }?;
             write_atomic(&output, schema)?;
         }
@@ -273,6 +304,27 @@ fn run(cli: Cli) -> Result<(), CliError> {
             let receipt = registry.execute(&manifest, &request, &state)?;
             write_atomic(&output, serialize_receipt(&receipt, &output)?)?;
         }
+        Command::DungeonpunkCreate { input, output } => {
+            let request = read_dungeonpunk_creation_request(&input)?;
+            let preview = create_dungeonpunk_character(&request)?;
+            write_atomic(
+                &output,
+                serialize_dungeonpunk_creation_preview(&preview, &output)?,
+            )?;
+        }
+        Command::DungeonpunkResolve {
+            request,
+            state,
+            output,
+        } => {
+            let manifest = dungeonpunk_manifest();
+            let request = read_request(&request)?;
+            let state = read_state(&state)?;
+            let mut registry = ResolverRegistry::new();
+            registry.register(&manifest, DungeonpunkResolver)?;
+            let receipt = registry.execute(&manifest, &request, &state)?;
+            write_atomic(&output, serialize_receipt(&receipt, &output)?)?;
+        }
     }
     Ok(())
 }
@@ -294,6 +346,8 @@ fn kind_name(kind: ArtifactKind) -> &'static str {
         ArtifactKind::Receipt => "receipt",
         ArtifactKind::PlugAndPlayCreationRequest => "Plug-And-Play creation request",
         ArtifactKind::PlugAndPlayCreationPreview => "Plug-And-Play creation preview",
+        ArtifactKind::DungeonpunkCreationRequest => "Dungeonpunk creation request",
+        ArtifactKind::DungeonpunkCreationPreview => "Dungeonpunk creation preview",
     }
 }
 
@@ -357,6 +411,22 @@ fn read_plug_and_play_creation_preview(
     )
 }
 
+fn read_dungeonpunk_creation_request(path: &Path) -> Result<DungeonpunkCreationRequest, CliError> {
+    parse(
+        path,
+        DungeonpunkCreationRequest::from_json,
+        DungeonpunkCreationRequest::from_ron,
+    )
+}
+
+fn read_dungeonpunk_creation_preview(path: &Path) -> Result<DungeonpunkCreationPreview, CliError> {
+    parse(
+        path,
+        DungeonpunkCreationPreview::from_json,
+        DungeonpunkCreationPreview::from_ron,
+    )
+}
+
 fn parse<T>(
     path: &Path,
     json: fn(&str) -> Result<T, TabletopError>,
@@ -378,6 +448,16 @@ fn serialize_receipt(receipt: &ResolutionReceipt, path: &Path) -> Result<String,
 
 fn serialize_plug_and_play_creation_preview(
     preview: &PlugAndPlayCreationPreview,
+    path: &Path,
+) -> Result<String, CliError> {
+    match artifact_format(path)? {
+        ArtifactFormat::Json => Ok(preview.to_json()?),
+        ArtifactFormat::Ron => Ok(preview.to_ron()?),
+    }
+}
+
+fn serialize_dungeonpunk_creation_preview(
+    preview: &DungeonpunkCreationPreview,
     path: &Path,
 ) -> Result<String, CliError> {
     match artifact_format(path)? {

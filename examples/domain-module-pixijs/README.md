@@ -15,6 +15,10 @@ template/scenario, and pinned pack coordinate. It keeps fact lineage separate fr
 fictional-cue lineage, verifies expression, presentation, alignment, and temporal personality
 write-back are false, and has no dependency on the Weave Editor.
 
+The scene also consumes the checked Plug-And-Play and Dungeonpunk domain packs. Pure readers
+validate exact adapter coordinates, portable state, public check/Struggle consequences, request
+fingerprints, and host-only entropy audit envelopes whose payloads remain redacted.
+
 ```bash
 cd examples/domain-module-pixijs
 npm ci

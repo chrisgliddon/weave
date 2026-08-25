@@ -6,6 +6,7 @@
 //! register resolver implementations through [`TabletopResolver`]; packages never load code.
 
 mod domain;
+mod dungeonpunk;
 mod model;
 mod plug_and_play;
 mod resolver;
@@ -15,6 +16,7 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 
 pub use domain::{tabletop_domain_manifest, tabletop_domain_pack};
+pub use dungeonpunk::*;
 pub use model::*;
 pub use plug_and_play::*;
 pub use resolver::{

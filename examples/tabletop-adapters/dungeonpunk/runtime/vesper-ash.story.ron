@@ -1,0 +1,1275 @@
+StoryIr(
+    version: 4,
+    source_name: Some("examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave"),
+    entry: "start",
+    globals: [
+        Instruction(
+            span: Span(
+                start: 111,
+                end: 145,
+                line: 7,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_id",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "id",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 145,
+                end: 189,
+                line: 8,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_version",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "version",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 189,
+                end: 239,
+                line: 9,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "adapter_sha256",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "adapter",
+                            "content_sha256",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 239,
+                end: 302,
+                line: 10,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "checks_supported",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "capabilities",
+                            "checks_and_conflicts",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 302,
+                end: 351,
+                line: 11,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "clocks_supported",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "capabilities",
+                            "clocks",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 351,
+                end: 394,
+                line: 12,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "character_name",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "name",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 394,
+                end: 446,
+                line: 13,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "strength",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "attributes",
+                            "strength",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 446,
+                end: 489,
+                line: 14,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "fate",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "definition",
+                            "constants",
+                            "fate",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 489,
+                end: 521,
+                line: 15,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "hp",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "hp_current",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 521,
+                end: 553,
+                line: 16,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "stress",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "stress",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 553,
+                end: 577,
+                line: 17,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "xp",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "xp",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+        Instruction(
+            span: Span(
+                start: 577,
+                end: 617,
+                line: 18,
+                column: 1,
+            ),
+            kind: InstructionKind(
+                kind: declare,
+                value: DeclarationIr(
+                    kind: variable,
+                    name: "encumbered",
+                    value: Expression(
+                        kind: path,
+                        value: [
+                            "rules",
+                            "state",
+                            "encumbered",
+                        ],
+                    ),
+                    allowed_states: [],
+                ),
+            ),
+        ),
+    ],
+    grammars: {},
+    patterns: {},
+    modules: {
+        "rules": DomainModuleIr(
+            id: "org.weave.tabletop.dungeonpunk",
+            version: "1.0.0",
+            pack_id: "vesper_ash",
+            pack_version: "1.0.0",
+            exports: {
+                "adapter": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "content_sha256": DomainValueIr(
+                                kind: string,
+                                value: "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11",
+                            ),
+                            "id": DomainValueIr(
+                                kind: string,
+                                value: "org.weave.tabletop.dungeonpunk",
+                            ),
+                            "schema_version": DomainValueIr(
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            "version": DomainValueIr(
+                                kind: string,
+                                value: "1.0.0",
+                            ),
+                        },
+                    ),
+                ),
+                "capabilities": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "advancement": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "campaign_state": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "character_creation": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "checks_and_conflicts": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "clocks": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "derived_values": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "encounters": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "equipment_and_abilities": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "resources_and_conditions": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                        },
+                    ),
+                ),
+                "definition": DomainExportIr(
+                    source: pack,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "attributes": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "charisma": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                    "constitution": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "dexterity": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "intelligence": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "strength": DomainValueIr(
+                                        kind: number,
+                                        value: 2.0,
+                                    ),
+                                    "wisdom": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                },
+                            ),
+                            "bonds": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "I owe Rook a road home.",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "Mara knows what woke below the bridge.",
+                                    ),
+                                ],
+                            ),
+                            "constants": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "fate": DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    "none": DomainValueIr(
+                                        kind: number,
+                                        value: 0.0,
+                                    ),
+                                },
+                            ),
+                            "encumbrance_limit_half_units": DomainValueIr(
+                                kind: number,
+                                value: 24.0,
+                            ),
+                            "gear": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "armor": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: true,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "armor",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Patched plate",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                        },
+                                    ),
+                                    "field_pack": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 8.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "pack",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Field pack",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                        },
+                                    ),
+                                    "rations": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "rations",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Road rations",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                        },
+                                    ),
+                                    "shield": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: true,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "shield",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Scrap shield",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                        },
+                                    ),
+                                    "sword": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: true,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "weapon",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Notched sword",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                        },
+                                    ),
+                                    "tools": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "effective_weight_half_units": DomainValueIr(
+                                                kind: number,
+                                                value: 2.0,
+                                            ),
+                                            "equipped": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "tool",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Repair tools",
+                                            ),
+                                            "weight": DomainValueIr(
+                                                kind: number,
+                                                value: 1.0,
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "gear_weight_half_units": DomainValueIr(
+                                kind: number,
+                                value: 24.0,
+                            ),
+                            "hp_rolls": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: number,
+                                        value: 5.0,
+                                    ),
+                                    DomainValueIr(
+                                        kind: number,
+                                        value: 1.0,
+                                    ),
+                                    DomainValueIr(
+                                        kind: number,
+                                        value: 4.0,
+                                    ),
+                                ],
+                            ),
+                            "loaded_for_bear": DomainValueIr(
+                                kind: bool,
+                                value: true,
+                            ),
+                            "max_hp": DomainValueIr(
+                                kind: number,
+                                value: 11.0,
+                            ),
+                            "name": DomainValueIr(
+                                kind: string,
+                                value: "Vesper Ash",
+                            ),
+                            "special_moves": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "archetype": DomainValueIr(
+                                                kind: symbol,
+                                                value: "peasant",
+                                            ),
+                                            "failure": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "hale_and_hearty",
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "passive",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Hale and Hearty",
+                                            ),
+                                            "source": DomainValueIr(
+                                                kind: symbol,
+                                                value: "core",
+                                            ),
+                                            "success": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                            "trigger": DomainValueIr(
+                                                kind: string,
+                                                value: "Increase the character\'s maximum endurance with one additional d6.",
+                                            ),
+                                            "twist": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                        },
+                                    ),
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "archetype": DomainValueIr(
+                                                kind: symbol,
+                                                value: "fighter",
+                                            ),
+                                            "failure": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "loaded_for_bear",
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "passive",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Loaded for Bear",
+                                            ),
+                                            "source": DomainValueIr(
+                                                kind: symbol,
+                                                value: "core",
+                                            ),
+                                            "success": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                            "trigger": DomainValueIr(
+                                                kind: string,
+                                                value: "Equipped weapons and armor contribute half their ordinary carried Weight.",
+                                            ),
+                                            "twist": DomainValueIr(
+                                                kind: string,
+                                                value: "",
+                                            ),
+                                        },
+                                    ),
+                                    DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "archetype": DomainValueIr(
+                                                kind: symbol,
+                                                value: "fighter",
+                                            ),
+                                            "attribute": DomainValueIr(
+                                                kind: symbol,
+                                                value: "strength",
+                                            ),
+                                            "failure": DomainValueIr(
+                                                kind: string,
+                                                value: "The attack fails and invites a GM response.",
+                                            ),
+                                            "id": DomainValueIr(
+                                                kind: string,
+                                                value: "warriors_strike",
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "rolled",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Warrior\'s Strike",
+                                            ),
+                                            "source": DomainValueIr(
+                                                kind: symbol,
+                                                value: "core",
+                                            ),
+                                            "success": DomainValueIr(
+                                                kind: string,
+                                                value: "Deal harm, with an option to trade incoming harm for an extra damage die.",
+                                            ),
+                                            "trigger": DomainValueIr(
+                                                kind: string,
+                                                value: "Strike a foe with intent to harm.",
+                                            ),
+                                            "twist": DomainValueIr(
+                                                kind: string,
+                                                value: "Deal harm and expose yourself or an ally to danger.",
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ),
+                "state": DomainExportIr(
+                    source: state,
+                    value: DomainValueIr(
+                        kind: object,
+                        value: {
+                            "advancement": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "learned_moves": DomainValueIr(
+                                        kind: list,
+                                        value: [
+                                            DomainValueIr(
+                                                kind: object,
+                                                value: {
+                                                    "id": DomainValueIr(
+                                                        kind: string,
+                                                        value: "bridgecraft",
+                                                    ),
+                                                    "label": DomainValueIr(
+                                                        kind: string,
+                                                        value: "Bridgecraft",
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    "stat_increases": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "charisma": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "constitution": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "dexterity": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "intelligence": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "strength": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "wisdom": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "bonds": DomainValueIr(
+                                kind: list,
+                                value: [
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "I owe Rook a road home.",
+                                    ),
+                                    DomainValueIr(
+                                        kind: string,
+                                        value: "Mara knows what woke below the bridge.",
+                                    ),
+                                ],
+                            ),
+                            "clocks": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "bridge_wakes": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "filled": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "The bridge wakes",
+                                            ),
+                                            "segments": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "trigger": DomainValueIr(
+                                                kind: symbol,
+                                                value: "full",
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "dead": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "death_check_pending": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "encumbered": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "gear": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "armor": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 1.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                    "field_pack": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                    "rations": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                    "shield": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                    "sword": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                    "tools": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "damage_marks": DomainValueIr(
+                                                kind: number,
+                                                value: 0.0,
+                                            ),
+                                            "destroyed": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "gear_weight_half_units": DomainValueIr(
+                                kind: number,
+                                value: 24.0,
+                            ),
+                            "hp_current": DomainValueIr(
+                                kind: number,
+                                value: 11.0,
+                            ),
+                            "hp_max": DomainValueIr(
+                                kind: number,
+                                value: 11.0,
+                            ),
+                            "impairments": DomainValueIr(
+                                kind: list,
+                                value: [],
+                            ),
+                            "last_operation": DomainValueIr(
+                                kind: string,
+                                value: "gm_move",
+                            ),
+                            "stress": DomainValueIr(
+                                kind: number,
+                                value: 0.0,
+                            ),
+                            "survival_offer_pending": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "threats": DomainValueIr(
+                                kind: object,
+                                value: {
+                                    "ash_hound": DomainValueIr(
+                                        kind: object,
+                                        value: {
+                                            "armor": DomainValueIr(
+                                                kind: number,
+                                                value: 1.0,
+                                            ),
+                                            "clock_id": DomainValueIr(
+                                                kind: string,
+                                                value: "bridge_wakes",
+                                            ),
+                                            "defeated": DomainValueIr(
+                                                kind: bool,
+                                                value: false,
+                                            ),
+                                            "hp_current": DomainValueIr(
+                                                kind: number,
+                                                value: 4.0,
+                                            ),
+                                            "hp_max": DomainValueIr(
+                                                kind: number,
+                                                value: 8.0,
+                                            ),
+                                            "kind": DomainValueIr(
+                                                kind: symbol,
+                                                value: "foe",
+                                            ),
+                                            "label": DomainValueIr(
+                                                kind: string,
+                                                value: "Ash hound",
+                                            ),
+                                        },
+                                    ),
+                                },
+                            ),
+                            "total_load_half_units": DomainValueIr(
+                                kind: number,
+                                value: 24.0,
+                            ),
+                            "unconscious": DomainValueIr(
+                                kind: bool,
+                                value: false,
+                            ),
+                            "xp": DomainValueIr(
+                                kind: number,
+                                value: 0.0,
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
+    },
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 632,
+                        end: 987,
+                        line: 21,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: conditional,
+                        value: ConditionalIr(
+                            branches: [
+                                ConditionalBranchIr(
+                                    condition: Expression(
+                                        kind: binary,
+                                        value: binary(
+                                            left: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "checks_supported",
+                                                ],
+                                            ),
+                                            operator: and,
+                                            right: Expression(
+                                                kind: path,
+                                                value: [
+                                                    "clocks_supported",
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    body: [
+                                        Instruction(
+                                            span: Span(
+                                                start: 675,
+                                                end: 813,
+                                                line: 22,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "character_name",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " enters play with Strength ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "strength",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", FATE ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "fate",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", HP ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "hp",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", Stress ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "stress",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", XP ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "xp",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ", and encumbered set to ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "encumbered",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ".",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                        Instruction(
+                                            span: Span(
+                                                start: 818,
+                                                end: 889,
+                                                line: 23,
+                                                column: 5,
+                                            ),
+                                            kind: InstructionKind(
+                                                kind: text,
+                                                value: Template(
+                                                    parts: [
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "The active rules are ",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_id",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: "@",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_version",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: " (",
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: expression,
+                                                            value: Expression(
+                                                                kind: path,
+                                                                value: [
+                                                                    "adapter_sha256",
+                                                                ],
+                                                            ),
+                                                        ),
+                                                        TemplatePartIr(
+                                                            kind: text,
+                                                            value: ").",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            fallback: Some([
+                                Instruction(
+                                    span: Span(
+                                        start: 902,
+                                        end: 985,
+                                        line: 25,
+                                        column: 5,
+                                    ),
+                                    kind: InstructionKind(
+                                        kind: text,
+                                        value: Template(
+                                            parts: [
+                                                TemplatePartIr(
+                                                    kind: text,
+                                                    value: "This branch is unreachable because the selected adapter declares checks and clocks.",
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ]),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 988,
+                        end: 994,
+                        line: 27,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: end,
+                    ),
+                ),
+            ],
+        ),
+    },
+)

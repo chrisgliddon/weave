@@ -5,7 +5,8 @@ use bevy::prelude::*;
 use weave_core::ir::{DomainValueIr, StoryIr};
 use weave_domain::DomainValue;
 use weave_tabletop::{
-    EventVisibility, ResolutionReceipt, plug_and_play_manifest, validate_resolution_receipt,
+    EventVisibility, ResolutionReceipt, dungeonpunk_manifest, plug_and_play_manifest,
+    validate_resolution_receipt,
 };
 
 const TRACER_STORY: &str = include_str!("../../domain-modules/contract/tracer.story.ron");
@@ -28,6 +29,10 @@ const TABLETOP_STORY: &str =
     include_str!("../../tabletop-adapters/plug-and-play/runtime/ember-vale.story.ron");
 const TABLETOP_RECEIPT: &str =
     include_str!("../../tabletop-adapters/plug-and-play/runtime.tabletop-receipt.json");
+const DUNGEONPUNK_STORY: &str =
+    include_str!("../../tabletop-adapters/dungeonpunk/runtime/vesper-ash.story.ron");
+const DUNGEONPUNK_RECEIPT: &str =
+    include_str!("../../tabletop-adapters/dungeonpunk/runtime.tabletop-receipt.json");
 
 #[derive(Resource, Debug, Clone, PartialEq)]
 struct ConstellationReading {
@@ -194,6 +199,28 @@ struct TabletopReading {
     outcome: String,
     total: f64,
     rerolled: bool,
+    request_sha256: String,
+    hidden_entropy_sha256: String,
+}
+
+#[derive(Resource, Debug, Clone, PartialEq)]
+struct DungeonpunkReading {
+    adapter_id: String,
+    adapter_version: String,
+    adapter_sha256: String,
+    character_name: String,
+    attributes: [f64; 6],
+    fate: f64,
+    hp: f64,
+    stress: f64,
+    xp: f64,
+    encumbered: bool,
+    operation: String,
+    outcome: String,
+    selected: f64,
+    dice_pool: f64,
+    helped: bool,
+    pushed: bool,
     request_sha256: String,
     hidden_entropy_sha256: String,
 }
@@ -1237,6 +1264,157 @@ fn tabletop_reading(
     })
 }
 
+fn dungeonpunk_reading(
+    story: &StoryIr,
+    receipt: &ResolutionReceipt,
+) -> Result<DungeonpunkReading, io::Error> {
+    validate_resolution_receipt(receipt, &dungeonpunk_manifest()).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Dungeonpunk receipt contract is invalid",
+        )
+    })?;
+    let module = story
+        .modules
+        .get("rules")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "rules module is absent"))?;
+    let string = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::String(value)) => Ok(value.clone()),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let number = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Number(value)) if value.is_finite() => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let boolean = |path: &[&str], message: &'static str| match module.value(path) {
+        Some(DomainValueIr::Bool(value)) => Ok(*value),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, message)),
+    };
+    let adapter_id = string(&["adapter", "id"], "Dungeonpunk adapter id is invalid")?;
+    let adapter_version = string(
+        &["adapter", "version"],
+        "Dungeonpunk adapter version is invalid",
+    )?;
+    let adapter_sha256 = string(
+        &["adapter", "content_sha256"],
+        "Dungeonpunk adapter fingerprint is invalid",
+    )?;
+    if receipt.adapter.id != adapter_id
+        || receipt.adapter.version != adapter_version
+        || receipt.adapter.content_sha256 != adapter_sha256
+        || receipt.operation != "struggle"
+        || !is_sha256(&adapter_sha256)
+        || !is_sha256(&receipt.request_sha256)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Dungeonpunk story and receipt coordinates disagree",
+        ));
+    }
+    let roll_event = receipt
+        .events
+        .iter()
+        .find(|event| event.kind == "roll_resolved")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Struggle roll is absent"))?;
+    if roll_event.visibility != EventVisibility::Public {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Struggle roll visibility is invalid",
+        ));
+    }
+    let DomainValue::Object(roll) = roll_event.payload.as_ref().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "public Struggle payload is absent",
+        )
+    })?
+    else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "public Struggle payload is invalid",
+        ));
+    };
+    let event_number = |field: &str| match roll.get(field) {
+        Some(DomainValue::Number(value)) if value.is_finite() => Ok(*value),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "public Struggle number is invalid",
+        )),
+    };
+    let event_bool = |field: &str| match roll.get(field) {
+        Some(DomainValue::Bool(value)) => Ok(*value),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "public Struggle marker is invalid",
+        )),
+    };
+    let outcome = match roll.get("outcome") {
+        Some(DomainValue::Symbol(value)) => value.clone(),
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "public Struggle outcome is invalid",
+            ));
+        }
+    };
+    let entropy = receipt
+        .events
+        .iter()
+        .find(|event| event.kind == "entropy_trace")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "entropy audit is absent"))?;
+    if entropy.visibility != EventVisibility::HostOnly
+        || entropy.payload.is_some()
+        || !is_sha256(&entropy.payload_sha256)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "runtime entropy audit visibility is invalid",
+        ));
+    }
+    Ok(DungeonpunkReading {
+        adapter_id,
+        adapter_version,
+        adapter_sha256,
+        character_name: string(&["definition", "name"], "Dungeonpunk name is invalid")?,
+        attributes: [
+            number(
+                &["definition", "attributes", "strength"],
+                "Strength is invalid",
+            )?,
+            number(
+                &["definition", "attributes", "dexterity"],
+                "Dexterity is invalid",
+            )?,
+            number(
+                &["definition", "attributes", "constitution"],
+                "Constitution is invalid",
+            )?,
+            number(
+                &["definition", "attributes", "intelligence"],
+                "Intelligence is invalid",
+            )?,
+            number(
+                &["definition", "attributes", "charisma"],
+                "Charisma is invalid",
+            )?,
+            number(&["definition", "attributes", "wisdom"], "Wisdom is invalid")?,
+        ],
+        fate: number(&["definition", "constants", "fate"], "FATE is invalid")?,
+        hp: number(&["state", "hp_current"], "HP is invalid")?,
+        stress: number(&["state", "stress"], "Stress is invalid")?,
+        xp: number(&["state", "xp"], "XP is invalid")?,
+        encumbered: boolean(&["state", "encumbered"], "encumbrance is invalid")?,
+        operation: receipt.operation.clone(),
+        outcome,
+        selected: event_number("selected")?,
+        dice_pool: event_number("dice_pool")?,
+        helped: event_bool("helped")?,
+        pushed: event_bool("push")?,
+        request_sha256: receipt.request_sha256.clone(),
+        hidden_entropy_sha256: entropy.payload_sha256.clone(),
+    })
+}
+
 fn report_reading(reading: Res<ConstellationReading>) {
     println!(
         "Bevy read {}: {} at {} intensity",
@@ -1367,6 +1545,30 @@ fn report_tabletop(reading: Res<TabletopReading>) {
     );
 }
 
+fn report_dungeonpunk(reading: Res<DungeonpunkReading>) {
+    println!(
+        "Bevy read {} in {}@{} ({}): STR/DEX/CON/INT/CHA/WIS {:?}, FATE {}, HP {}, Stress {}, XP {}, encumbered={}; {} resolved {} from pool {} at {} (helped={}, pushed={}, request={}, hidden entropy={})",
+        reading.character_name,
+        reading.adapter_id,
+        reading.adapter_version,
+        reading.adapter_sha256,
+        reading.attributes,
+        reading.fate,
+        reading.hp,
+        reading.stress,
+        reading.xp,
+        reading.encumbered,
+        reading.operation,
+        reading.outcome,
+        reading.dice_pool,
+        reading.selected,
+        reading.helped,
+        reading.pushed,
+        reading.request_sha256,
+        reading.hidden_entropy_sha256,
+    );
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let story = ron::from_str::<StoryIr>(TRACER_STORY)?;
     let reading = reading_from_story(&story)?;
@@ -1395,6 +1597,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         &ron::from_str::<StoryIr>(TABLETOP_STORY)?,
         &tabletop_receipt,
     )?;
+    let dungeonpunk_receipt = ResolutionReceipt::from_json(DUNGEONPUNK_RECEIPT)?;
+    let dungeonpunk = dungeonpunk_reading(
+        &ron::from_str::<StoryIr>(DUNGEONPUNK_STORY)?,
+        &dungeonpunk_receipt,
+    )?;
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .insert_resource(reading)
@@ -1407,6 +1614,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .insert_resource(expression)
         .insert_resource(temporal_character)
         .insert_resource(tabletop)
+        .insert_resource(dungeonpunk)
         .add_systems(
             Startup,
             (
@@ -1420,7 +1628,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 report_expression,
                 report_temporal_character,
                 report_tabletop,
-            ),
+                report_dungeonpunk,
+            )
+                .chain(),
         );
     app.update();
     Ok(())
@@ -1749,6 +1959,26 @@ mod tests {
         assert!(reading.fortune >= 0.0);
         assert!(reading.survivability >= 0.0);
         assert_eq!(reading.operation, "check");
+        assert!(is_sha256(&reading.request_sha256));
+        assert!(is_sha256(&reading.hidden_entropy_sha256));
+    }
+
+    #[test]
+    fn reads_dungeonpunk_story_and_redacted_receipt_without_editor_dependencies() {
+        let story =
+            ron::from_str::<StoryIr>(DUNGEONPUNK_STORY).expect("checked Dungeonpunk story RON");
+        let receipt = ResolutionReceipt::from_json(DUNGEONPUNK_RECEIPT)
+            .expect("checked Dungeonpunk receipt JSON");
+        let reading = dungeonpunk_reading(&story, &receipt).expect("read Dungeonpunk presentation");
+        assert_eq!(reading.adapter_id, "org.weave.tabletop.dungeonpunk");
+        assert_eq!(reading.adapter_version, "1.0.0");
+        assert_eq!(reading.character_name, "Vesper Ash");
+        assert_eq!(reading.attributes, [2.0, 1.0, 1.0, 1.0, 0.0, 0.0]);
+        assert_eq!(reading.fate, 1.0);
+        assert_eq!(reading.operation, "struggle");
+        assert_eq!(reading.outcome, "failure");
+        assert!(reading.helped);
+        assert!(reading.pushed);
         assert!(is_sha256(&reading.request_sha256));
         assert!(is_sha256(&reading.hidden_entropy_sha256));
     }
