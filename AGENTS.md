@@ -4,10 +4,18 @@ These instructions apply to the entire repository.
 
 ## Task tracking
 
-- Use `dex` as the source of truth for planned and active work. Do not hand-edit `.dex/tasks.jsonl` or dex metadata embedded in GitHub issues.
+- Use repository-local `dex` data as the source of truth for planned and active work. Do not hand-edit `.dex/tasks.jsonl` or dex metadata embedded in GitHub issues.
 - Run `dex status` and `dex list` before choosing work. Run `dex start <id>` when work begins and `dex complete <id> --result "..." --commit <sha>` when committed work is complete; use `--no-commit` only for work that intentionally has no code commit.
 - Create newly discovered work with a concrete outcome, requirements, and acceptance criteria. Record real dependencies with `--blocked-by` rather than relying on prose.
-- Repository-local dex changes synchronize to GitHub Issues automatically. Never place a secret in a dex task name, description, result, or commit message because synced data becomes public.
+- GitHub Issues synchronization is an optional public mirror, never a prerequisite for creating, inspecting, starting, completing, or querying tasks. The local task workflow must remain usable without network access or GitHub credentials.
+- Never place a secret in a dex task name, description, result, or commit message because task data may become public when mirrored.
+
+## Local-first development — mandatory
+
+- `dev` is the default integration branch. Promote verified commits from `dev` to `staging`, then from `staging` to `production`; perform and validate each promotion locally before pushing it.
+- Keep required authoring, formatting, building, testing, documentation generation, packaging, and release preparation runnable from a local checkout with documented commands.
+- Do not add GitHub Actions workflows or files below `.github/workflows/`. Do not make correctness, validation, documentation, packaging, or releases depend on GitHub-hosted automation, the GitHub API, or GitHub credentials.
+- GitHub may host repository refs and optional public mirrors, but normal development and validation must continue to work when GitHub is unavailable.
 
 ## Public-source isolation — mandatory
 

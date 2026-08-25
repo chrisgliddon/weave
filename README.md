@@ -231,7 +231,7 @@ cargo install mdbook --version 0.5.4 --locked
 python3 scripts/build-docs.py
 ```
 
-The build compiles every ordinary example story, verifies domain, World composition/export, and Character corpus-health schemas and goldens, packaging, transitive locks, the third-party tutorial, tracer and composed World RON/JSON outputs, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. GitHub Pages deployment is defined in `.github/workflows/docs.yml`.
+The build compiles every ordinary example story, verifies domain, World composition/export, and Character corpus-health schemas and goldens, packaging, transitive locks, the third-party tutorial, tracer and composed World RON/JSON outputs, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. This local command is the canonical documentation gate; the repository intentionally has no GitHub Actions or GitHub Pages deployment workflow.
 
 ### RON Output (excerpt)
 
