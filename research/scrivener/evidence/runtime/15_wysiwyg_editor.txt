@@ -1,0 +1,253 @@
+# window: {"pid": 29402, "window_id": 23639, "executable": "/Applications/Scrivener.app/Contents/MacOS/Scrivener", "launch_time": 1792601524.3089309, "title": "Weave UX"}
+# nodes: 177 truncated=False
+# gaps: []
+- AXWindow "Weave UX" {AXRaise}
+- AXSplitGroup
+  - AXGroup
+    - AXScrollArea {AXScrollLeftByPage,AXScrollRightByPage,AXScrollUpByPage,AXScrollDownByPage}
+      - AXOutline {AXShowMenu}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Novel Format {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Manuscript {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Part {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Chapter {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Chapter {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Part {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Chapter {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Scene {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Characters {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Places {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Front Matter {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Manuscript Format {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Paperback {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Ebook {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Notes {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Research {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Sample Output {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Standard Manuscript {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Paperback Novel {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Template Sheets {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Character Sketch {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Setting Sketch {AXShowMenu,AXConfirm}
+        - AXRow {AXShowDefaultUI,AXShowAlternateUI}
+          - AXCell
+            - AXTextField =Trash {AXShowMenu,AXConfirm}
+            - AXDisclosureTriangle {AXPress}
+        - AXColumn
+  - AXMenuButton "dummy" {AXShowMenu,AXPress}
+  - AXButton {AXPress}
+  - AXButton {AXPress}
+  - AXGroup
+    - AXTextField = {AXShowMenu,AXConfirm}
+      - AXButton {AXPress}
+  - AXSplitter
+  - AXSplitGroup
+    - AXGroup
+      - AXGroup
+        - AXMenuButton "100%" {AXShowMenu,AXPress}
+        - AXGroup
+          - AXStaticText =6 words
+        - AXCheckBox {AXPress}
+    - AXGroup
+      - AXScrollArea {AXScrollLeftByPage,AXScrollRightByPage,AXScrollUpByPage,AXScrollDownByPage}
+        - AXTextArea =
+
+
+
+Hello world, this is a scene.
+
+
+
+
+
+
+
+
+
+
+
+
+ {AXShowMenu}
+        - AXScrollBar
+    - AXButton {AXShowMenu,AXPress}
+    - AXButton {AXShowMenu,AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXCheckBox {AXPress}
+    - AXSplitter
+    - AXGroup
+      - AXGroup
+        - AXButton "Synopsis" {AXPress}
+        - AXDisclosureTriangle {AXPress}
+        - AXCheckBox {AXPress}
+      - AXSplitGroup
+        - AXGroup
+          - AXScrollArea {AXScrollLeftByPage,AXScrollRightByPage,AXScrollUpByPage,AXScrollDownByPage}
+            - AXTextArea = {AXShowMenu}
+        - AXTextField =Part {AXShowMenu,AXConfirm}
+        - AXSplitter
+        - AXGroup
+          - AXButton "Notes" {AXPress}
+          - AXDisclosureTriangle {AXPress}
+        - AXScrollArea {AXScrollLeftByPage,AXScrollRightByPage,AXScrollUpByPage,AXScrollDownByPage}
+          - AXTextArea = {AXShowMenu}
+    - AXCheckBox {AXPress}
+    - AXCheckBox {AXPress}
+    - AXCheckBox {AXPress}
+    - AXCheckBox {AXPress}
+    - AXCheckBox {AXPress}
+    - AXGroup
+      - AXPopUpButton =No Label {AXShowMenu,AXPress}
+      - AXPopUpButton =No Status {AXShowMenu,AXPress}
+  - AXGroup
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXButton {AXPress}
+    - AXImage
+    - AXPopUpButton =1.1 {AXShowMenu,AXPress}
+    - AXButton "a" {AXPress}
+    - AXButton {AXPress}
+    - AXMenuButton {AXShowMenu,AXPress}
+    - AXMenuButton {AXShowMenu,AXPress}
+    - AXButton {AXPress}
+- AXToolbar {AXShowMenu}
+  - AXButton {AXShowMenu,AXPress,Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXShowMenu,AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXShowMenu,AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXShowMenu,AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXGroup {Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+    - AXGroup
+      - AXCheckBox {AXPress}
+      - AXCheckBox {AXPress}
+      - AXCheckBox {AXPress}
+  - AXButton {AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Move next
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXButton {AXPress,Name:Move previous
+Target:0x0
+Selector:(null),Name:Remove from toolbar
+Target:0x0
+Selector:(null)}
+  - AXPopUpButton {AXShowMenu,AXPress}
+- AXButton {AXPress}
+- AXButton {AXPress,AXZoomWindow,AXShowMenu}
+  - AXGroup
+- AXButton {AXPress}
+- AXImage "Weave UX.scriv"
+- AXStaticText =Weave UX
