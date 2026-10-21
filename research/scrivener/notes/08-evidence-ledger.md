@@ -74,6 +74,18 @@ observations, **UNK** = not established.
 | 43 | The app exposes 328 ObjC class names, 169 `SCR`-prefixed | OBS | `__objc_classname` section of the arm64 slice | — | — |
 | 44 | The app exposes 16 042 distinct selectors, 128 drag/drop-related | OBS | `__objc_methname` section | — | — |
 | 45 | `SCRAllowDropOnsInCorkboard` is a user preference | OBS | preference-key string section | — | Default value **UNK** |
+| 46 | A label is stored as `<LabelID>`, an integer, absent when unset | OBS | setting `Blue` on a document wrote `<LabelID>11</LabelID>` into its `MetaData` | one document, one label | — |
+| 47 | Status and label lists are project-scoped, defined in the project file | OBS | `<LabelSettings>` / `<StatusSettings>` in each `.scrivx`; seven projects carry their own lists with differing ID ranges (7–12 vs 0–5) | seven project files | — |
+| 48 | `-1` is the "unset" sentinel in both lists, and is a list member | OBS | `<Label ID="-1">No Label</Label>`, `<Status ID="-1">No Status</Status>`; `DefaultLabelID`/`DefaultStatusID` are `-1` | — | — |
+| 49 | A label carries a colour; a status does not | OBS | `<Label ID="11" Color="0.702319 0.888276 0.974252">Blue</Label>` | — | — |
+| 50 | The Outliner has 17 columns and 4 title/keyword modifiers; 6 are on by default | OBS | `30_outliner_columns.txt`; `ui-common.xml` `<ColID>` list; `33_outliner_container_rows.png` | one build | — |
+| 51 | A card body shows the document's **synopsis if it has one**, otherwise its body text | OBS | `50_card_body_vs_synopsis.png` (synopsis wins) vs `51_card_body_no_synopsis.png` (body used) | one document, toggled | — |
+| 52 | A card body is not scrollable and truncates with a `…` ellipsis at the card's text-area limit | OBS | no `AXScrollBar` inside a card; `36_corkboard_with_body.png`; identical rendering for 400- and 2 000-character bodies | one build | — |
+| 53 | The synopsis and the body are stored separately | OBS | `Files/Data/<UUID>/content.rtf` and `Files/Data/<UUID>/synopsis.txt` | — | — |
+| 54 | Dragging a card onto a tree row in another container reparents it | OBS | `44_cross_container_drop.png`; the `.scrivx` shows the moved `BinderItem` under its new parent | one move | — |
+| 55 | A cross-container drop highlights the target row and previews the dragged card | OBS | `45_cross_drag_indicator.png` | — | — |
+| 56 | An in-container drop draws a vertical insertion bar in the gap and outlines the source card | OBS | `46_incontainer_drag_indicator.png`, `52_drag_indicator_top.png` | — | — |
+| 57 | The insertion point is a nearest-gap computation; top and bottom of a card give the same bar | OBS | `52_drag_indicator_top.png` vs `53_drag_indicator_bottom.png` | — | — |
 
 ---
 
@@ -102,14 +114,22 @@ are sufficient to map the feature surface — but they do not show the
 | Area | Unknown |
 | --- | --- |
 | Binder | The six `changeBinderSelectionMode:` bindings; multi-select behaviour; icon assignment rules; the `SCRBinderDocumentSortDelegate` rules beyond the three `Edit ▸ Sort` items |
-| Cards | Card body rendering rules; `Layout` and `Arrange by Label` submenus; card resize gesture; multi-card selection and multi-card drag; blank-card "ghost" rendering |
-| Drag and drop | Cross-container drops; "drop onto a card" nesting; autoscroll; undo after a drag; the "before" vs "after" indicator difference |
+| Cards | `Layout` and `Arrange by Label` submenus; card resize gesture; multi-card selection and multi-card drag; blank-card "ghost" rendering |
+| Drag and drop | "Drop onto a card" nesting; autoscroll; undo after a drag |
 | Editor | The paragraph-style list; the list/auto-number behaviours; whether the format bar is user-customisable; the split-document behaviour |
-| Metadata | The `StatusID` → name mapping; the serialised form of `Label`; the custom-metadata schema; the Snapshots and Comments tabs; whether the general pane's field set is project-configurable |
+| Metadata | The custom-metadata schema; the Snapshots and Comments tabs; whether the general pane's field set is project-configurable; whether a project can carry a second status or label list |
 | Layout | 6 of 8 layout presets not captured; split-divider behaviour; whether layouts persist per project |
 | Compile | The `CompileDraft` / `CompileFormatEditorView` behaviour; the `styles.xml` schema |
 | Search | Interaction between search results and drag-and-drop; the full query-builder surface |
 | Performance | Behaviour with very large projects |
+
+### Closed in the second pass
+
+| Area | Was unknown | Now established |
+| --- | --- | --- |
+| Cards | Card body rendering rules, scrollability, truncation length | §3.4.1 — synopsis wins over body; no scrolling; ellipsis at the text-area limit, not a character budget |
+| Drag and drop | Cross-container drops; tree-to-tree drops; the "before" vs "after" indicator | §4.5.1 — reparenting confirmed; row highlight plus a live card preview for a container drop; a nearest-gap bar for a reorder; no before/after distinction on this build |
+| Metadata | The `StatusID` → name mapping; the serialised form of a label; project vs user scope | §6.3.1 — `<LabelID>` / `<StatusID>` integers; both lists project-scoped in the `.scrivx`; `-1` is the unset sentinel |
 
 ---
 
@@ -163,6 +183,21 @@ check is wanted.
 | `tools/ax_click.py` | Post real Quartz mouse events (click, drag, drag-hold, release) |
 | `tools/scrivener_ax.applescript` | Query/select Binder rows and drive menus via System Events |
 | `tools/scrivx_analyze.py` | Parse a `.scrivx` into a tree or a per-node detail record |
+| `tools/ax_probe.py` | Read a running app through the AX API: menus (including nested submenus), and the accessibility tree of a window |
+| `tools/ax_menu.py` | Walk a menu hierarchy and report each item's check mark and enabled state |
+| `tools/ax_outliner_columns.py` | Enumerate and toggle the Outliner column set |
+| `tools/ax_select.py` | Select a Binder row by title |
+| `tools/ax_window.py` | Report a window's screen origin, so window-local coordinates can be turned into click coordinates |
+| `tools/ax_card_probe.py` | Write a document body of a given length, to measure card truncation |
+| `tools/scrivx_tree.py` | Print the full Binder tree of a `.scrivx`, including nested folders, so a reparent can be verified from the persisted file |
+
+**INF.** `tools/ax_probe.py` exists because `System Events` cannot open a
+submenu of an item that lives inside a menu bar item's own menu, and because
+`System Events` cannot read an `AXMenuItemMarkChar` for those items. The AX
+API can do both. Two details make it work: the attribute name has to be a
+real `CFStringRef` (passing a byte string crashes the process), and a menu
+bar item publishes its menu as an `AXMenu` **child** once it is pressed
+rather than through an `AXMenu` attribute on the item.
 
 ---
 
@@ -178,4 +213,7 @@ check is wanted.
 - **No capture of the Inspector's tab contents** (Bookmarks, Comments,
   Snapshots, Custom Metadata) — the tab strip could not be brought to the
   front in the observed session.
+- **No mutation of the user's own `Weave UX.scriv` project in the second
+  pass.** All second-pass observations were made against a *copy* opened as
+  a separate project window.
 - **No exercise of the compile pipeline.**

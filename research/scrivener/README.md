@@ -8,8 +8,8 @@ organization features from the UX of Scrivener 3.
 `W4QTL7X778`, installed at `/Applications/Scrivener.app`.
 
 **Method:** REA (`rea` 6.7.0) for static analysis — Interface Builder NIB
-decoding, Mach-O plist/signature/architecture inspection — plus passive
-runtime observation of the running app through the macOS accessibility tree
+decoding, Mach-O plist/signature/architecture inspection — plus runtime
+observation of the running app through the macOS accessibility tree
 (`rea observe-native-ui`) and targeted UI interaction.
 
 Every claim in these notes is tagged:
@@ -31,9 +31,9 @@ research/scrivener/
 ├── evidence/
 │   ├── ib_compact.json  structural summary of all 67 main-bundle NIBs
 │   ├── ib_nibs/         full REA decode of the 5 NIBs the notes cite
-│   ├── runtime/         11 screenshots + matching accessibility trees
+│   ├── runtime/         25 screenshots + matching accessibility trees
 │   └── obs_*.json       11 slimmed REA observations
-└── tools/               8 reusable scripts used to gather and shape evidence
+└── tools/               15 reusable scripts used to gather and shape evidence
 ```
 
 ---

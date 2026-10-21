@@ -123,7 +123,9 @@ Commit Freeform Order
 **INF.** A card has a **header/body split**: the header is chrome (icon,
 title, rule) and the body is the child's text. The rule under the title
 visually separates the title from the excerpt — a strong, cheap way to make a
-flat list of cards scannable.
+flat list of cards scannable. (The second pass established *which* text the
+body carries: the synopsis if there is one, otherwise the body text. See
+§3.4.1.)
 
 **INF.** "Cards Across" with `Auto-Fit` and a numeric 1–10 range plus
 `Other…` means the grid is *column-count* based, and `changeCardRatio:`
@@ -172,6 +174,77 @@ document's **label** and **keywords** as a visual channel on the card itself
 
 ---
 
+## 3.4.1 What a card body shows
+
+The card body rule was established by giving one document a body and a
+synopsis with different marker text, then reading the rendered card.
+
+**OBS.** With **both** a synopsis and a body set, the card shows the
+**synopsis** (`evidence/runtime/50_card_body_vs_synopsis.png`). The body
+text was not shown at all.
+
+**OBS.** With the synopsis **cleared** and the body still set, the card shows
+the **body** (`evidence/runtime/51_card_body_no_synopsis.png`).
+
+**OBS.** The two captures are the same document, differing only in whether
+the synopsis is set, so the pair isolates the rule.
+
+**INF.** The rule is:
+
+> **The card body shows the document's synopsis if it has one, and the
+> document's body text if it does not.**
+
+This corrects the first pass's guess (§3.3) that a card always carries the
+body text. The two fields are not alternatives chosen by the author — the
+synopsis *wins* whenever it exists. A card is therefore a **summary
+surface**: it shows the author's own one-line summary, and falls back to raw
+prose only when no summary was written.
+
+**OBS.** The synopsis and the body are stored **separately**. The body is
+RTF in `Files/Data/<UUID>/content.rtf`; the synopsis is plain text in
+`Files/Data/<UUID>/synopsis.txt`. A document with both has both files.
+
+**OBS.** The card body is **not scrollable**. The accessibility tree for the
+Corkboard area contains exactly two `AXTextArea` elements (one per card)
+and no `AXScrollBar` inside a card; the only scroll bar belongs to the
+board's own `AXScrollArea`. A long body is clipped, not scrollable.
+
+**OBS.** The card body **truncates with an ellipsis** rather than clipping
+mid-glyph. A body of five paragraphs rendered four paragraphs and then
+`…` on the truncated word
+(`evidence/runtime/36_corkboard_with_body.png`).
+
+**OBS.** The truncation point is **not a fixed character count**. Bodies of
+250, 290, 300, 310, 320, 400, and 2 000 characters produced the *same*
+visible card text, and the visible text is the same number of rendered
+lines each time
+(`evidence/runtime/39_corkboard_400_chars.png`,
+`evidence/runtime/40_corkboard_2000_chars.png`). The body is cut where the
+card's text area runs out, so the visible amount depends on the **line
+count**, which depends on the font metrics and the card width.
+
+**OBS.** The ellipsis character is a single `…` (U+2026) appended
+immediately after the last complete word, with no trailing space.
+
+**INF.** Weave should adopt the synopsis-first rule, because it makes the
+card a **summary surface** rather than a miniature document view. An author
+who writes a synopsis gets a clean one-liner on every card; an author who
+does not gets the opening of their prose, which is a reasonable fallback.
+The Weave model needs a distinct `synopsis` field on a chapter, separate
+from the body, and the card renderer prefers it.
+
+**INF.** Weave should also make the truncation **explicit**. A card that
+silently cuts text mid-sentence gives the reader no signal that more
+exists; the ellipsis is a small, cheap affordance and is worth copying.
+
+**INF.** Because the visible length depends on layout rather than on a
+character budget, a Weave card cannot promise a fixed "first N characters".
+If Weave wants a stable contract, it should define the rule in **lines**
+(a fixed number of rendered lines) or in **characters** — but it should pick
+one deliberately rather than inherit an accidental layout dependency.
+
+---
+
 ## 3.5 The Outliner: the table-shaped sibling of the Corkboard
 
 **OBS.** Switching to the Outliner view (screenshot
@@ -215,6 +288,135 @@ same data.
 
 ---
 
+## 3.5.1 The complete column set
+
+The column vocabulary was enumerated by reading `View ▸ Outliner Options`
+through the accessibility API, which flattens the `Columns` submenu into the
+`Outliner Options` menu. The full menu is in
+`evidence/runtime/30_outliner_columns.txt`; the resulting table is in
+`evidence/runtime/33_outliner_container_rows.png` and
+`evidence/runtime/34_outliner_row_cells.txt`.
+
+**OBS.** `View ▸ Outliner Options` contains **17 columns** and **4
+modifiers** of the title column, plus two independent options that are not
+columns at all (`Center Content`, `Use Fixed Row Height`).
+
+| # | Menu entry | Column | Enabled by default |
+| --- | --- | --- | --- |
+| 1 | `Title` | Title and Synopsis | yes |
+| 2 | `and Synopsis` | modifier of the title column | yes |
+| 3 | `with Icons` | modifier of the title column | yes |
+| 4 | `with Numbers` | modifier of the title column | no |
+| 5 | `Label` | Label | yes |
+| 6 | `Status` | Status | yes |
+| 7 | `Section Type` | Section Type | yes |
+| 8 | `Keywords` | Keywords | no |
+| 9 | `as Color Chips` | modifier of the Keywords column | yes |
+| 10 | `Created Date` | Created Date | no |
+| 11 | `Modified Date` | Modified Date | no |
+| 12 | `Word Count` | Word Count | no |
+| 13 | `Character Count` | Character Count | no |
+| 14 | `Total Word Count` | Total Word Count | no |
+| 15 | `Total Character Count` | Total Character Count | no |
+| 16 | `Include in Compile` | Include in Compile | no |
+| 17 | `Target` | Target | no |
+| 18 | `Target Type` | Target Type | no |
+| 19 | `Progress` | Progress | no |
+| 20 | `Total Target` | Total Target | yes |
+| 21 | `Total Progress` | Total Progress | yes |
+
+**OBS.** The `Columns` entry itself is a **disabled header**, not a column.
+The AX API reports the `Columns` submenu's items as siblings of the
+`Outliner Options` items, so the submenu has no separate checkable
+identity.
+
+**OBS.** The four entries that are *modifiers* rather than columns are
+`and Synopsis`, `with Icons`, `with Numbers` (all of the title column) and
+`as Color Chips` (of the Keywords column). The title column's persisted
+flags are separate booleans: `<TitlesOnly>No</TitlesOnly>`,
+`<HideIcons>No</HideIcons>`, `<ShowNumbers>No</ShowNumbers>`, and
+`<KeywordsAsChips>Yes</KeywordsAsChips>`.
+
+**OBS.** The **default visible set** is the six columns marked above:
+Title and Synopsis, Label, Status, Section Type, Total Target, Total
+Progress. This is confirmed independently by the persisted
+`Settings/ui-common.xml`:
+
+```xml
+<Outliner>
+    <Columns>
+        <ColID>title</ColID>
+        <ColID>label</ColID>
+        <ColID>status</ColID>
+        <ColID>sectionType</ColID>
+        <ColID>totalTargetCount</ColID>
+        <ColID>totalProgress</ColID>
+    </Columns>
+    <TitlesOnly>No</TitlesOnly>
+    <HideIcons>No</HideIcons>
+    <ShowNumbers>No</ShowNumbers>
+    <KeywordsAsChips>Yes</KeywordsAsChips>
+    <FixedRowHeights>No</FixedRowHeights>
+</Outliner>
+```
+
+**OBS.** The persisted column identifiers are `title`, `label`, `status`,
+`sectionType`, `totalTargetCount`, `totalProgress`. Enabling every column
+in the running app and re-reading the file adds the remaining identifiers
+in the same order the menu lists them: `keywords`, `createdDate`,
+`modifiedDate`, `wordCount`, `characterCount`, `totalWordCount`,
+`totalCharacterCount`, `includeInCompile`, `target`, `targetType`,
+`progress`.
+
+**OBS.** The **column header controls** are `AXButton`s with these titles:
+`Title and Synopsis`, `Label`, `Status`, `Section Type`, `Total Target`,
+`Total Progress`, `Keywords`, `Created Date`, `Modified Date`, `Words`,
+`Characters`, `Total Words`, `Total Characters`, `Include In Compile`,
+`Target`, `Target Type`, `Progress`. Note the menu names differ from the
+header names for four columns: `Word Count` → `Words`, `Character Count` →
+`Characters`, `Total Word Count` → `Total Words`, `Total Character Count` →
+`Total Characters`.
+
+**OBS.** The **cell editors**, read from a live row, are:
+
+| Column | Editor | Example value |
+| --- | --- | --- |
+| Title and Synopsis | `AXTextField` | `1.1.1. Scene` |
+| Label | `AXPopUpButton` | `No Label` |
+| Status | `AXPopUpButton` | `First Draft` |
+| Section Type | `AXPopUpButton` | `Scene` |
+| Keywords | `AXStaticText` | `0` |
+| Created Date | `AXTextField` | `October 21, 2026 at 9:53 AM` |
+| Modified Date | `AXTextField` | `October 21, 2026 at 10:23 AM` |
+| Word Count | `AXTextField` | `0 words` |
+| Character Count | `AXStaticText` | `0` |
+| Total Word Count | `AXTextField` | `0` |
+| Total Character Count | `AXTextField` | `0` |
+| Include in Compile | `AXCheckBox` | on |
+| Target | `AXTextField` | `0` |
+| Target Type | `AXPopUpButton` | `Words` |
+| Progress | `AXStaticText` | `0` |
+| Total Target | `AXTextField` | `0 words` |
+| Total Progress | `AXStaticText` | `0` |
+
+**OBS.** The title column shows a **computed hierarchical number**
+(`1.1.1. Scene`) alongside the title. The number is derived from the
+document's position in the tree, not stored on the document.
+
+**INF.** The column set splits cleanly into three groups: **identity**
+(title), **taxonomy** (label, status, section type, keywords), and
+**measure** (dates, counts, compile flag, target and progress). A Weave
+chapter table needs the same split, and the identity and taxonomy groups are
+the ones worth surfacing by default; the measure group is for power users
+and can start hidden.
+
+**INF.** Every taxonomy column is a **pop-up button**, not a free-text
+field. The value is therefore always one of a known set, and an unset value
+renders as an explicit `No Label` / `No Status` rather than as blank space.
+Weave's status and label editors should be the same shape.
+
+---
+
 ## 3.6 Card affordances in the footer
 
 **OBS.** The Corkboard footer (`[0, 6, ...]`) carries, left to right: a
@@ -237,12 +439,14 @@ immediate feedback that a filter or a drag changed the set size.
 
 ## Residual unknowns
 
-- **UNK** The card's body rendering rules — how much text is shown, whether
-  the card is scrollable, and how a long body truncates — were not observed
-  because the observed Chapters had no body text.
 - **UNK** The `Layout` submenu under `Corkboard Options` was not enumerated.
 - **UNK** The `Arrange by Label` submenu was not enumerated.
 - **UNK** Whether cards can be resized by dragging an edge (the
   `changeCardRatio:` / `changeCardWidth:` actions suggest a fixed ratio, but
   no resize gesture was exercised).
 - **UNK** Multi-card selection and multi-card drag were not exercised.
+
+### Closed since the first pass
+
+- The card's body rendering rules: §3.4.1.
+- The full column set and the default visible set: §3.5.1.

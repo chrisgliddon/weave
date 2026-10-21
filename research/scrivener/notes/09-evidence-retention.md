@@ -12,9 +12,13 @@ What is kept in the repository, what was discarded, and how to regenerate it.
 | `evidence/ib_nibs/InspectorView.json` | 850 KB | Full decode of the Inspector. |
 | `evidence/ib_nibs/Layouts.nib` → `Layouts.json` | 211 KB | Full decode of the window-layout chooser. |
 | `evidence/ib_nibs/CustomMetaDataInspectorView.json` | 143 KB | Full decode of the custom-metadata pane. |
-| `evidence/runtime/*.png` | 6.0 MB | 11 window screenshots, each the direct visual record of a note. |
+| `evidence/runtime/*.png` | ~16 MB | 33 window screenshots, each the direct visual record of a note. |
 | `evidence/runtime/*.txt` | small | The matching accessibility tree for each screenshot, as indented text. |
 | `evidence/obs_*.json` | ~1 MB | 11 slimmed REA observations: window identity, node list, limits and gaps. Base64 screenshots stripped. |
+
+The second pass added captures `30`–`54`, covering the Outliner column set,
+the card body rule, and the drag affordances. Each capture is named for what
+it shows, and every one is cited by a note.
 
 ## Discarded (regenerable)
 
@@ -37,6 +41,12 @@ own project.
 The five retained NIB decodes are the ones cited by name in the notes; the
 other 62 are represented in `ib_compact.json` at the level of detail the notes
 actually use.
+
+The second pass kept its evidence small on purpose. The `.evidence.json`
+files written by `save_observation.py` are the *raw* REA payloads and are
+not committed; what is committed is the PNG, the AX text tree, and — for
+the captures that carry a claim — a short `.txt` extract written by the
+targeted probe tools.
 
 ## Regenerating everything
 
@@ -70,6 +80,36 @@ python3 tools/save_observation.py evidence/obs_<name>.json \
   --out-dir evidence/runtime --name <name>
 python3 tools/slim_observations.py evidence
 ```
+
+## Regenerating the second-pass captures
+
+The second pass ran against a **copy** of the project, opened as its own
+window, so the user's own project was never mutated. Reproduce it like this:
+
+```bash
+# 1. Copy the project and open the copy as a second window
+SCRATCH=$(mktemp -d)
+cp -R "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Scrivener/Weave UX.scriv" \
+  "$SCRATCH/Scratch Research.scriv"
+rm -f "$SCRATCH/Scratch Research.scriv/Files/user.lock"
+osascript -e "tell application \"Scrivener\" to open POSIX file \"$SCRATCH/Scratch Research.scriv\""
+
+# 2. Find the new window and bind REA to it
+python3 tools/ax_window.py <PID>
+
+# 3. Read a nested menu (System Events cannot do this)
+python3 tools/ax_probe.py <PID> menus View "Outliner Options"
+
+# 4. Read the accessibility tree of a window
+python3 tools/ax_probe.py <PID> tree "Scratch Research" AXPopUpButton
+
+# 5. Verify a move from the persisted file
+python3 tools/scrivx_tree.py "$SCRATCH/Scratch Research.scriv/Scratch Research.scrivx" --meta
+```
+
+Mouse coordinates are **window-local** in a screenshot but **global** in a
+posted event, so add the window's screen origin from `ax_window.py` before
+clicking.
 
 ## Provenance
 

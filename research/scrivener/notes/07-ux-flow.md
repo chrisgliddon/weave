@@ -125,13 +125,18 @@ single-field write — matching Scrivener's small write footprint.
 The card board and the table should be **one filtered list** rendered two
 ways, so a filter applies to both.
 
-### 7.3.3 Cards carry the body text
+### 7.3.3 Cards carry a summary
 
-If a Weave chapter card is a text surface showing the chapter's opening
-paragraph, the author can write a chapter's first line without leaving the
-board. This is the Corkboard's most valuable property and it is cheap to
-copy: a card is a read-only-ish text view of the child's body, plus a
-header row (icon, title, rule).
+A Weave chapter card should be a text surface showing the chapter's
+**synopsis** when it has one, and the chapter's opening prose when it does
+not. This is what Scrivener does (see note 03 §3.4.1), and it is the right
+shape for Weave too: the synopsis is the field the author writes *for* this
+purpose, and the prose fallback means an unwritten synopsis costs the author
+nothing but a longer card.
+
+The card is a read-only-ish text view of that text, plus a header row
+(icon, title, rule). The author can read a chapter's opening line without
+leaving the board, and can start writing one without leaving it either.
 
 ### 7.3.4 One insertion affordance
 
@@ -239,12 +244,21 @@ cards" to feel right. Steps 5–7 are what make it usable at speed.
   with thousands of nodes was not exercised.
 - **UNK** The compile/export pipeline in detail; `CompileDraft.nib` and
   `CompileFormatEditorView.nib` are large and were only inventoried.
-- **UNK** Whether the Corkboard's card body shows the child's *first
-  paragraph*, its *synopsis*, or its *full text* — the observed cards were
-  empty.
 - **UNK** Multi-select behaviour in the Binder and on the card board.
 - **UNK** The interaction between the Binder's search results and
   drag-and-drop.
+
+### Closed in the second pass
+
+- **What the card body shows** — the synopsis if the document has one, the
+  body text otherwise. Established by toggling the synopsis on one document
+  and reading the card both times; see note 03 §3.4.1.
+- **How a long body truncates on a card** — at the card's text-area limit,
+  with a `…` ellipsis, and not at a fixed character count. See note 03
+  §3.4.1.
+- **Cross-container card drops** — a card dropped on a tree row in another
+  container is reparented, and the target row is highlighted with a live
+  preview of the card. See note 04 §4.5.1.
 
 ---
 

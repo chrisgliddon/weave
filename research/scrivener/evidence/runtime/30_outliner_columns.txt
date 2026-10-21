@@ -1,0 +1,25 @@
+'Columns' role=AXMenuItem mark=None enabled=False
+'Title' role=AXMenuItem mark='✓' enabled=True
+'and Synopsis' role=AXMenuItem mark='✓' enabled=True
+'with Icons' role=AXMenuItem mark='✓' enabled=True
+'with Numbers' role=AXMenuItem mark=None enabled=True
+'Label' role=AXMenuItem mark='✓' enabled=True
+'Status' role=AXMenuItem mark='✓' enabled=True
+'Section Type' role=AXMenuItem mark='✓' enabled=True
+'Keywords' role=AXMenuItem mark=None enabled=True
+'as Color Chips' role=AXMenuItem mark='✓' enabled=False
+'Created Date' role=AXMenuItem mark=None enabled=True
+'Modified Date' role=AXMenuItem mark=None enabled=True
+'Word Count' role=AXMenuItem mark=None enabled=True
+'Character Count' role=AXMenuItem mark=None enabled=True
+'Total Word Count' role=AXMenuItem mark=None enabled=True
+'Total Character Count' role=AXMenuItem mark=None enabled=True
+'Include in Compile' role=AXMenuItem mark=None enabled=True
+'Target' role=AXMenuItem mark=None enabled=True
+'Target Type' role=AXMenuItem mark=None enabled=True
+'Progress' role=AXMenuItem mark=None enabled=True
+'Total Target' role=AXMenuItem mark='✓' enabled=True
+'Total Progress' role=AXMenuItem mark='✓' enabled=True
+'' role=AXMenuItem mark=None enabled=False
+'Center Content' role=AXMenuItem mark=None enabled=True
+'Use Fixed Row Height' role=AXMenuItem mark=None enabled=True

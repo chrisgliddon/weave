@@ -263,20 +263,84 @@ drop modes are configurable.
 
 ---
 
+## 4.5.1 Cross-container and in-container drops (observed)
+
+The remaining drop questions were answered by dragging between containers in
+a scratch copy of the project, with each card's body text carrying a unique
+marker so the moved item could be identified afterwards.
+
+**OBS.** A card dragged from one container's Corkboard onto a **Binder row
+in a different container** is **reparented**. The dragged card was removed
+from the source container (its board item count went from `2 items` to
+`1 item`) and the target container gained the child. The persisted
+`.scrivx` confirmed the move: the scene's `BinderItem` changed parent, and
+the source container was left with one fewer child.
+
+**OBS.** The affordance for a cross-container drag is **not** an insertion
+bar. While the drag was in flight over a Binder row, the row was
+**highlighted in the accent colour** and a **live preview of the dragged card
+— including its own title and body text — was drawn as a floating overlay**
+next to the pointer
+(`evidence/runtime/45_cross_drag_indicator.png`). The overlay is the dragged
+item itself, so the author sees exactly what they are about to move.
+
+**OBS.** Within a container, the affordance is the **insertion bar in the
+gap** and the **source card is outlined in the accent colour**
+(`evidence/runtime/46_incontainer_drag_indicator.png`,
+`evidence/runtime/52_drag_indicator_top.png`).
+
+**OBS.** The insertion bar is **vertical** in a multi-column grid, and it
+sits **in the gap between the two cards** — not on either card
+(`evidence/runtime/52_drag_indicator_top.png` shows the bar as a thin
+vertical accent-coloured rule in the space between the cards). The earlier
+capture `evidence/runtime/11_mid_drag.png` shows the same bar in a
+single-column board, where it reads as a horizontal rule.
+
+**OBS.** The insertion point is a **nearest-gap** computation, and hovering
+the *top* or the *bottom* of a card does **not** change it. Dragging over
+the top edge of the second card and dragging over its bottom edge both
+produced the same bar in the same gap
+(`evidence/runtime/52_drag_indicator_top.png` versus
+`evidence/runtime/53_drag_indicator_bottom.png`). The bar only moves when
+the pointer enters a *different* gap.
+
+**OBS.** Dragging **past the last card** in a row removes the insertion bar
+entirely, leaving only the outlined source card
+(`evidence/runtime/54_drag_indicator_right.png`). The "no insertion point"
+state is therefore drawn as an absent bar, not as a different-coloured bar.
+
+**INF.** The two drop modes use **different affordances on purpose**:
+
+- *Reorder within a container* — the drop target is a **position**, so it is
+  drawn as a bar **in the gap** at that position.
+- *Move into another container* — the drop target is a **container**, so it is
+  drawn as **highlighting that container's row** plus a preview of what would
+  land there.
+
+Weave should keep this distinction. A single affordance would have to say
+"position or container" at once, and would be ambiguous in exactly the case
+the author cares about.
+
+**INF.** The **live preview of the dragged card** is worth copying. It makes
+the destination unambiguous: the author sees the card's own content in the
+place it would go, not just a highlight.
+
+---
+
 ## 4.6 What a Weave implementation needs
 
 **INF.** From the observed behaviour, a Weave chapter-card drag needs:
 
 | Concern | Scrivener's answer | Note |
 | --- | --- | --- |
-| Reorder within a container | Drag a card into the gap; a bar shows the insertion point | 4.2, 4.3 |
+| Reorder within a container | Drag a card into the gap; a bar shows the insertion point | 4.2, 4.3, 4.5.1 |
 | Reorder with a keyboard | `Move Up/Down/Left/Right` | 4.4 |
 | Reorder with a toolbar | Segmented move control, same handler as the menu | 4.4 |
-| Move to another container | Drag onto a card in another container (toggleable) | 4.5 |
+| Move to another container | Drag onto a container's tree row; the row highlights and the card is previewed | 4.5.1 |
 | Prevent cycles | `containsSourceOfDrag:` | 4.1 |
 | Carry arrangement data | `freeformInfo:` rides in the pasteboard | 4.1 |
 | Know if the drag is local | Per-source-kind locality predicates | 4.1 |
-| Disambiguate "on" vs "between" | Narrow drop zone near card edges | 4.1 |
+| Disambiguate "on" vs "between" | Nearest-gap computation; the bar is always in a gap | 4.5.1 |
 | Persist the result | Rewrite child order in the container's document | 4.3 |
 
 ---
@@ -285,11 +349,26 @@ drop modes are configurable.
 
 - **UNK** The exact insertion-bar geometry, colour source, and whether it
   animates were observed only as a single still frame.
-- **UNK** Cross-container card drops were not exercised.
 - **UNK** Dragging a card *onto* another card (the "nest" drop) was not
   exercised; `SCRAllowDropOnsInCorkboard` implies it exists.
 - **UNK** Autoscroll behaviour during a drag near the edge of the card area.
 - **UNK** Undo after a card drag. The `Edit` menu showed `Undo` but the
   behaviour was not exercised.
-- **UNK** Whether the drop indicator differs for "before" vs "after" — only
-  the downward variant was captured in isolation.
+- **UNK** Whether the drop indicator differs for "before" vs "after" a card.
+  Hovering the top and the bottom of a card produced the *same* insertion
+  bar, so on this build the two are not distinguished.
+
+### Closed since the first pass
+
+- Cross-container card drops: §4.5.1. A card dragged onto a tree row in
+  another container is reparented, and the row is highlighted with a live
+  preview of the card.
+- The tree-to-tree drop: the same mechanism, observed as the same
+  reparenting behaviour.
+- Whether dropping onto a card nests the item: **not** established. The
+  observed cross-container drop targeted a *tree row*, and the observed
+  in-container drop targeted a *gap*. Whether a drop onto a card body
+  reparents into that card remains open, and `SCRAllowDropOnsInCorkboard`
+  indicates it is a user preference, so it may not exist in every install.
+- Whether the drop indicator differs for "before" vs "after": on this build
+  it does **not**; both produce the same nearest-gap bar.

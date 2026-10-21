@@ -1,0 +1,16 @@
+'Cards Across' role=AXMenuItem mark=None enabled=True
+'Arrange by Label' role=AXMenuItem mark=None enabled=False
+'Arrange by Label Layout' role=AXMenuItem mark=None enabled=True
+'' role=AXMenuItem mark=None enabled=False
+'Show Label Colors Along Edges' role=AXMenuItem mark='✓' enabled=False
+'Show Status Stamps' role=AXMenuItem mark=None enabled=False
+'Show Keyword Colors' role=AXMenuItem mark=None enabled=False
+'' role=AXMenuItem mark=None enabled=False
+'Show Card Numbers' role=AXMenuItem mark=None enabled=False
+'Number Per Section' role=AXMenuItem mark=None enabled=False
+'' role=AXMenuItem mark=None enabled=False
+'Show Blank Cards as Ghosts' role=AXMenuItem mark=None enabled=False
+'' role=AXMenuItem mark=None enabled=False
+'Freeform' role=AXMenuItem mark=None enabled=False
+'Snap To Grid' role=AXMenuItem mark=None enabled=False
+'Commit Freeform Order' role=AXMenuItem mark=None enabled=False

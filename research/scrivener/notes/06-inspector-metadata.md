@@ -149,12 +149,94 @@ status as `First Draft`.
 **OBS.** `TextSettings` held `<TextSelection>915,0</TextSelection>` on the
 `Novel Format` document and `0,0` elsewhere.
 
-**OBS.** The `StatusID` value is an **integer**, not a string. The `Label`
-did not appear in the observed `.scrivx` because no document had a label set
-(the UI showed `No Label` / `No La…`).
+**OBS.** The `StatusID` value is an **integer**, not a string.
 
 **OBS.** The `__objc_classname` string section of the binary contains the
 preference key `SCRAlwaysShowSynopsisInInspector`.
+
+---
+
+## 6.3.1 The label and status lists (observed)
+
+The status and label lists were closed by setting a label and a status on a
+document in a scratch copy of the project and reading the resulting file.
+
+**OBS.** Setting `Blue` on a document through the Inspector's label popup
+wrote a `<LabelID>` element into that document's `MetaData`:
+
+```xml
+<MetaData>
+    <LabelID>11</LabelID>
+    <IncludeInCompile>Yes</IncludeInCompile>
+    <IconFileName>Information</IconFileName>
+</MetaData>
+```
+
+The element is **absent** when no label is set; the UI then shows `No Label`.
+
+**OBS.** The label and status *definitions* live in the project file, not in
+the document and not in a user-level file. The `.scrivx` root carries both
+lists:
+
+```xml
+<LabelSettings>
+    <Title>Label</Title>
+    <DefaultLabelID>-1</DefaultLabelID>
+    <Labels>
+        <Label ID="-1">No Label</Label>
+        <Label ID="7" Color="0.993495 0.701207 0.732587">Red</Label>
+        <Label ID="8" Color="0.995418 0.790946 0.652385">Orange</Label>
+        <Label ID="9" Color="0.997722 0.89273 0.652569">Yellow</Label>
+        <Label ID="10" Color="0.715855 0.948712 0.697692">Green</Label>
+        <Label ID="11" Color="0.702319 0.888276 0.974252">Blue</Label>
+        <Label ID="12" Color="0.957566 0.766747 0.999616">Purple</Label>
+    </Labels>
+</LabelSettings>
+<StatusSettings>
+    <Title>Status</Title>
+    <DefaultStatusID>-1</DefaultStatusID>
+    <StatusItems>
+        <Status ID="-1">No Status</Status>
+        <Status ID="1">To Do</Status>
+        <Status ID="6">In Progress</Status>
+        <Status ID="2">First Draft</Status>
+        <Status ID="3">Revised Draft</Status>
+        <Status ID="4">Final Draft</Status>
+        <Status ID="5">Done</Status>
+    </StatusItems>
+</StatusSettings>
+```
+
+**OBS.** A label carries a **colour** as three float components on the
+`Color` attribute. A status carries no colour.
+
+**OBS.** `-1` is the sentinel for "unset" in both lists, and is the
+`DefaultLabelID` / `DefaultStatusID` value. It is a *member* of the list
+(the popup shows `No Label` / `No Status` as the first entry), not a
+separate null.
+
+**OBS.** The lists are **project-scoped**. Each of the seven `.scriv` files
+inspected carried its own `<LabelSettings>` and `<StatusSettings>` in its
+own `.scrivx`, and the ID ranges differ between them: the template-derived
+projects use label IDs 7–12 and status IDs 1–6, while `Sun Tzu - The Art of
+War` uses label IDs 0–5 and status IDs 0–5. A user-level definition would
+have had one ID space, not two.
+
+**OBS.** The `Settings/` directory holds UI state (`ui-common.xml`,
+`ui.plist`, `projectpreferences.xml`, `compile.xml`, `templateinfo.xml`).
+No status or label definition appears in any of them; the only other file
+mentioning `StatusItems` or `<Labels>` is the `.scrivx` itself.
+
+**OBS.** The list elements are ordered *by definition order*, not by ID: the
+status list reads `To Do, In Progress, First Draft, Revised Draft, Final
+Draft, Done` while the IDs run 1, 6, 2, 3, 4, 5. The popup order therefore
+follows the file, not the numeric ID.
+
+**INF.** The metadata model is therefore: a project owns two ordered,
+ID-keyed lists; a document references a status and a label by integer ID, or
+by absence for "unset". Renaming a status rewrites one list entry, never a
+document. This is exactly the shape Weave wants for a project-scoped status
+and label.
 
 **INF.** The metadata model is:
 
@@ -273,11 +355,19 @@ surfaces them everywhere and the cost of each is small.
 
 ## Residual unknowns
 
-- **UNK** The full set of project labels and statuses, and the `StatusID` →
-  name mapping (the project settings directory would hold it).
-- **UNK** The `<Label>` element's exact serialised form, since no observed
-  document had a label.
 - **UNK** The custom-metadata schema definition format.
 - **UNK** The Snapshots and Comments tab contents.
 - **UNK** Whether the general metadata pane's field set is configurable per
   project.
+- **UNK** Whether a project can carry a *second* status or label list for a
+  different purpose; only one list of each was observed.
+
+### Closed since the first pass
+
+- The `StatusID` → name mapping: `<StatusItems>` in the project file, as
+  recorded in §6.3.1.
+- The `<Label>` element's serialised form: it is `<LabelID>`, an integer,
+  and it is absent when unset (§6.3.1).
+- Whether the status and label lists are per project or per user: **per
+  project**, proven by the differing ID ranges across seven project files
+  (§6.3.1).
