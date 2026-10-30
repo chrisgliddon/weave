@@ -1,9 +1,9 @@
 # Weave Play presentation contract
 
-Status: **draft for review.** This document is the HITL gate for
-`vqzs25nm`. The interaction contract and the visual direction below need human
-approval before `sdz9mpr9` implements anything. Open questions are collected in
-[Decisions for review](#decisions-for-review).
+Status: **approved for implementation.** The seven contract decisions were
+reviewed and resolved on 2026-10-30. Six confirmed the proposal; one changed it,
+and the typeface is now bundled rather than inherited from the host. The
+resolved answers are recorded in [Decisions](#decisions).
 
 Weave Play renders a compiled story as a staged scene instead of a diagnostic
 transcript. This document defines the portable presentation contract that the
@@ -440,8 +440,9 @@ for body text. Requirements:
 - Characters are flat ink silhouettes or line figures until an author supplies
   original artwork.
 - Transitions are at most 240ms and collapse to `cut` under reduced motion.
-- Type is set in a single family with a monospaced or tabular numeral option for
-  counts and identifiers.
+- Type is set in one bundled family, with a bundled monospaced companion for
+  counts, identifiers, and debug values. The family is fixed by the project, not
+  inherited from the host, so the scene renders identically on every platform.
 
 The nameplate is a solid ink block with inverse text, sitting above the dialogue
 measure. Narration uses no nameplate.
@@ -553,41 +554,48 @@ Before an asset or dependency ships with the repository:
 - Bundled third-party assets require an allowlist entry naming the exact
   upstream artifact, revision, and hash, and their licence text and notices
   ship beside the project.
-- A typeface is a bundled dependency. A font may ship only when its licence
-  permits redistribution; otherwise the renderer uses a host system stack and
-  the document names the stack rather than a file.
+- A typeface is a bundled dependency carrying its own licence. Weave Play ships
+  IBM Plex Sans with IBM Plex Mono for numerals and identifiers, both under SIL
+  OFL 1.1. The licence text ships beside the binaries, the family is recorded in
+  the asset allowlist with a hash, and the font files are never presented as
+  MIT-only.
+- A font may ship only when its licence permits redistribution and its licence
+  text and notices ship with it. A family that cannot meet that bar is not used,
+  and the renderer does not silently fall back to a host font.
 - No third-party interface assets, icons, illustrations, page furniture, or
   trade dress may be reproduced. The monochrome language above is original and
   is not derived from any existing visual novel or writing application.
 - Renderer dependencies are audited for licence compatibility before they are
   added.
 
-## Decisions for review
+## Decisions
 
-These are the points that need a human decision before implementation. Each
-lists the proposed answer and the alternative that was rejected.
+All seven were reviewed and resolved on 2026-10-30. Decisions 1, 2, and 4
+through 7 confirm the proposal; decision 3 changed it.
 
-1. **Sibling document versus story IR.** Proposed: a separate `weave.play`
-   document, so presentation changes never bump the story IR version.
-   Alternative: extend `StoryIr` to version 5. Rejected because it couples a
-   renderer vocabulary to the language contract.
-2. **Stage geometry.** Proposed: named slots on a normalized grid, with the
-   renderer owning coordinates. Alternative: authored normalized coordinates.
-   Rejected because coordinates make every layout change an authoring migration.
-3. **Typeface.** Proposed: host system stack by default, with bundling allowed
-   only under a recorded redistributable licence. This avoids a licence trap and
-   keeps the rendered site free of bundled font binaries.
-4. **Text reveal default.** Proposed: 18ms per character, always skippable, with
-   auto-advance disabled by default. Auto-advance, when enabled, is bounded and
+1. **Presentation document.** Resolved: a sibling `weave.play` document, so
+   presentation changes never bump the story IR version. Extending `StoryIr` to
+   version 5 was rejected because it couples a renderer vocabulary to the
+   language contract.
+2. **Stage geometry.** Resolved: named slots on a normalized grid, with the
+   renderer owning coordinates. Authored coordinates were rejected because they
+   make every layout change an authoring migration.
+3. **Typeface.** Resolved: bundle a font rather than inherit the host stack.
+   Weave Play ships IBM Plex Sans and IBM Plex Mono under SIL OFL 1.1, with the
+   licence text and notices beside the binaries and an allowlist hash entry.
+   Identical rendering on every platform is worth the redistribution obligation.
+4. **Text reveal.** Resolved: 18ms per character, always skippable, with
+   auto-advance disabled by default. When enabled, auto-advance is bounded and
    pauses on choices.
-5. **Condition scope.** Proposed: conditions may read story variables and
+5. **Condition scope.** Resolved: conditions may read story variables and
    domain-module exports but may never write. Typed World and Character
-   selection is deferred to `xpegt223`.
-6. **Cue granularity.** Proposed: cues attach to a step, not to a character,
+   selection is deferred to `xpegt223` and reuses the same mechanism.
+6. **Cue granularity.** Resolved: cues attach to a step, not to a character,
    word, or animation frame. Finer granularity would put presentation timing
    inside story ordering.
-7. **Choice layout.** Proposed: vertical list, at most five visible before
+7. **Choice layout.** Resolved: a vertical list, at most five visible before
    scrolling, never reordered or relabelled by presentation.
 
-Approval of items 1 through 7 unblocks `sdz9mpr9`. Items 2, 3, and 4 also
-constrain the visual direction the editor review approves.
+Decisions 2, 3, and 4 constrain the visual direction and are binding on the
+editor review.
+
