@@ -20,7 +20,7 @@ This document defines package ownership and dependency boundaries for the Rust w
 | `weave-web` | Browser-safe JSON loading, deterministic playback, and versioned save-state bindings | `weave-core`, `weave-patterns`, and `weave-runtime`; never Bevy or desktop APIs |
 | `weave-lsp` | Editor-independent diagnostics, navigation, completion, rename, hover, and formatting over LSP stdio | `weave-core` and `weave-fmt`; never Bevy, GPUI, or editor APIs |
 | `tree-sitter-weave` | Incremental concrete-syntax parser plus highlight, local-variable, and symbol-tag queries for downstream editors | Generated C parser with language bindings; no dependency on the Weave runtime or editor |
-| `weave_editor` | Standalone GPUI editor and explicit domain-module inspection session | Public APIs of the crates above |
+| `weave_editor` | Standalone GPUI editor, explicit domain-module inspection session, and the ordered manuscript chapter model | Public APIs of the crates above |
 
 The dependency direction is:
 
@@ -75,6 +75,8 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 Changing source semantics requires updating the language guide and parser fixtures. Changing serialized IR requires an explicit version decision and compatibility tests; the [JSON format contract](json_format.md) and its checked-in schema are authoritative for interoperable hosts. `PatternDefinition` and `StoryIr` are immutable/shareable. `PatternState` is caller-owned, serialized inside `StoryState`, and reconciled against the current definition on restore. The runtime owns only trait objects and never switches on Tarot, I-Ching, or rune identities; specialization lives behind `weave-patterns::PatternSystem`.
 
 Community package parsing, compatibility, checksums, publication, installation, and discovery live in `weave-patterns`. `weavec` resolves explicitly selected installed packages, supplies their spread signatures to static analysis, and embeds their validated data into ordinary IR. Neither the compiler nor runtime downloads packages, loads dynamic libraries, or executes package-defined hooks.
+
+The manuscript chapter model lives in `weave_editor`, not in a shared crate. It is an authoring concern rather than a language or runtime concern: the compiler and runtime have no use for an ordered tree of chapters, and nothing outside the editor consumes the model yet. The model keeps the tree in one versioned file and each chapter's body in its own file, so the tree can be reordered, diffed, and cached without reading prose, and the model can move to its own crate later if a second consumer appears.
 
 ## Quality gates
 

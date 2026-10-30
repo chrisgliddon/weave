@@ -68,6 +68,39 @@ Candidate evidence and deterministic advisory scores, issues, and proposed edits
 
 Each diagnostic link retains its stable `H###` code and id, severity, document and optional character scope, exact field path, source file, and available line/column. Selecting a link therefore navigates to the relevant Character field without retaining rejected source text in the report. Code, severity, character, and suppression filters use the shared report filter; they change only the visible diagnostics. Refresh re-audits the same retained bytes and never edits, normalizes, migrates, or applies project data. See [corpus health](character_module.md#corpus-health-drift-safety-and-coverage) and its [synthetic golden projects](https://github.com/chrisgliddon/weave/tree/main/examples/domain-modules/weave-character/health).
 
+## Manuscript chapters
+
+The editor carries a manuscript model: one ordered child list per container,
+with a stable id per child.
+
+A chapter record holds an id, a parent id, an explicit order, a kind, a title,
+a status id, a label id, a synopsis, and a body reference. The order is a
+stored value rather than an implied array position, so a reorder is a
+single-field write, and sibling order round-trips through save and reload
+without reordering.
+
+A kind is a chapter, a scene, or a note. A scene is a leaf; a chapter holds
+scenes, and a note holds notes of its own. A node can be converted between a
+leaf and a container explicitly, and a container holding children cannot
+become a leaf until they are moved, so the conversion is never silently
+lossy. A container cannot be moved into its own descendant.
+
+The tree is stored separately from the prose. The tree is a versioned
+`weave.manuscript.ron` beside the project file, and each chapter's body is
+its own file under `weave.manuscript/`. Opening a chapter reads only that
+chapter's body, so the body of a sibling is not loaded when another chapter
+is opened, and a reorder writes only the tree. A body holds paragraphs of
+styled runs, and the project-level style sheet is stored beside the bodies.
+
+Status and label are ID-backed references to project-scoped lists, so
+renaming a status or a label does not rewrite the records that use it. An
+unset status or label is `None` rather than a sentinel value. The lists are
+written into the tree file and travel with the project.
+
+Deleting a chapter moves it to a visible trash container rather than
+destroying it; emptying the trash is a separate, explicit action. The trash
+always sorts last among the root's children.
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source and updates `weave.lock` for a configured domain project. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:
