@@ -676,3 +676,40 @@ fn undo_restores_the_previous_order() {
     let restored = history.undo().expect("snapshot");
     assert_eq!(restored.child_ids(part), vec![first, second]);
 }
+
+#[test]
+fn a_chapter_session_round_trips_through_the_store() {
+    use weave_editor::manuscript::{ManuscriptSession, Position, Selection};
+
+    let directory = tempfile::tempdir().expect("temp dir");
+    let store = ManuscriptStore::in_directory(directory.path());
+    let mut session = ManuscriptSession::new();
+    session.set_selection(
+        ChapterId(2),
+        Selection::collapsed(Position {
+            paragraph: 3,
+            offset: 7,
+        }),
+    );
+    store.write_session(&session).expect("write session");
+
+    let reloaded = store.read_session().expect("read session");
+    assert_eq!(reloaded, session);
+    assert_eq!(
+        reloaded.selection(ChapterId(2)),
+        Some(Selection::collapsed(Position {
+            paragraph: 3,
+            offset: 7,
+        }))
+    );
+}
+
+#[test]
+fn a_missing_session_reads_as_empty() {
+    let directory = tempfile::tempdir().expect("temp dir");
+    let store = ManuscriptStore::in_directory(directory.path());
+    assert_eq!(
+        store.read_session().expect("read session"),
+        weave_editor::manuscript::ManuscriptSession::new()
+    );
+}

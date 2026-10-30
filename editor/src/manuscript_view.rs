@@ -14,7 +14,10 @@ use gpui::{
 };
 
 use crate::manuscript::{
-    BodyStore, Chapter, ChapterId, ChapterKind, ChapterTree, ManuscriptHistory, ManuscriptStore,
+    BodyStore, Chapter, ChapterBody, ChapterId, ChapterKind, ChapterTree, DirectFormat,
+    ManuscriptFormat, ManuscriptHistory, ManuscriptSession, ManuscriptStore, Movement, Position,
+    Selection, StyleSheet, VisualLine, apply_character_style, apply_paragraph_style, backspace,
+    insert, layout, line_layout, move_selection, split_paragraph, toggle_direct,
 };
 use crate::theme::DARK_THEME;
 
@@ -61,6 +64,8 @@ pub enum ManuscriptMode {
     Table,
     /// Project status and label definitions.
     Settings,
+    /// The chapter as a manuscript page.
+    Write,
 }
 
 impl ManuscriptMode {
@@ -71,6 +76,7 @@ impl ManuscriptMode {
             Self::Board => "Board",
             Self::Table => "Table",
             Self::Settings => "Settings",
+            Self::Write => "Write",
         }
     }
 }
@@ -821,6 +827,12 @@ pub struct ManuscriptSurface {
     dragging: Option<ChapterId>,
     drag_gap: Option<usize>,
     drag_over_row: Option<ChapterId>,
+    body: Option<ChapterBody>,
+    body_id: Option<ChapterId>,
+    selection: Selection,
+    session: ManuscriptSession,
+    styles: StyleSheet,
+    format: ManuscriptFormat,
     status: String,
     focus: FocusHandle,
     projection: ManuscriptProjection,
@@ -845,6 +857,12 @@ impl ManuscriptSurface {
             dragging: None,
             drag_gap: None,
             drag_over_row: None,
+            body: None,
+            body_id: None,
+            selection: Selection::collapsed(Position::start()),
+            session: ManuscriptSession::new(),
+            styles: StyleSheet::new(),
+            format: ManuscriptFormat::default(),
             status: "Open a project to read its manuscript".to_owned(),
             focus: cx.focus_handle(),
             projection,
@@ -861,6 +879,11 @@ impl ManuscriptSurface {
         self.history.clear();
         self.editing = None;
         self.buffer.clear();
+        self.body = None;
+        self.body_id = None;
+        self.selection = Selection::collapsed(Position::start());
+        self.session = ManuscriptSession::new();
+        self.styles = StyleSheet::new();
         self.status = "Open a project to read its manuscript".to_owned();
         self.refresh();
     }
@@ -882,6 +905,10 @@ impl ManuscriptSurface {
             Ok(tree) => {
                 self.options.selected = ChapterId::ROOT;
                 self.history.clear();
+                self.body = None;
+                self.body_id = None;
+                self.styles = store.read_styles().unwrap_or_default();
+                self.session = store.read_session().unwrap_or_default();
                 self.editing = None;
                 self.buffer.clear();
                 self.bodies = Some(store.bodies().clone());
@@ -898,6 +925,9 @@ impl ManuscriptSurface {
             }
         }
         self.refresh();
+        if self.mode == ManuscriptMode::Write {
+            self.open_body();
+        }
     }
 
     /// Select a chapter and rebuild the dense surfaces.
@@ -906,6 +936,9 @@ impl ManuscriptSurface {
             self.options.selected = selected;
             self.scroll = 0.0;
             self.refresh();
+            if self.mode == ManuscriptMode::Write {
+                self.open_body();
+            }
         }
     }
 
@@ -922,9 +955,12 @@ impl ManuscriptSurface {
         self.refresh();
     }
 
-    /// Switch between the board and the table.
-    pub const fn set_mode(&mut self, mode: ManuscriptMode) {
+    /// Switch the dense surface, loading the chapter page when entering Write.
+    pub fn set_mode(&mut self, mode: ManuscriptMode) {
         self.mode = mode;
+        if mode == ManuscriptMode::Write {
+            self.open_body();
+        }
     }
 
     /// Show or hide one metadata column.
@@ -1160,6 +1196,355 @@ impl ManuscriptSurface {
         self.clear_drag();
     }
 
+    fn open_body(&mut self) {
+        if self.mode != ManuscriptMode::Write {
+            return;
+        }
+        let id = self.options.selected;
+        if self.body_id == Some(id) {
+            return;
+        }
+        if let Some(previous) = self.body_id {
+            self.session.set_selection(previous, self.selection);
+            if let Some(store) = &self.store {
+                let _ = store.write_session(&self.session);
+            }
+        }
+        let body = self
+            .bodies
+            .as_ref()
+            .and_then(|bodies| bodies.read(id).ok())
+            .unwrap_or_default();
+        self.selection = clamp_selection(
+            &body,
+            self.session
+                .selection(id)
+                .unwrap_or_else(|| Selection::collapsed(Position::start())),
+        );
+        self.body = Some(body);
+        self.body_id = Some(id);
+    }
+
+    fn persist_edit(&mut self) {
+        let Some(id) = self.body_id else {
+            return;
+        };
+        if let Some(store) = &self.store
+            && let Some(body) = &self.body
+            && let Err(error) = store.bodies().write(id, body)
+        {
+            self.status = format!("Could not save the chapter: {error}");
+        }
+        self.session.set_selection(id, self.selection);
+        if let Some(store) = &self.store {
+            let _ = store.write_session(&self.session);
+        }
+        self.refresh();
+    }
+
+    fn current_paragraph_style(&self) -> Option<String> {
+        self.body
+            .as_ref()
+            .and_then(|body| body.paragraphs.get(self.selection.caret.paragraph))
+            .and_then(|paragraph| paragraph.style.clone())
+    }
+
+    fn current_character_style(&self) -> Option<String> {
+        self.body
+            .as_ref()
+            .and_then(|body| body.paragraphs.get(self.selection.caret.paragraph))
+            .and_then(|paragraph| {
+                let mut cursor = 0;
+                for run in &paragraph.runs {
+                    let length = run.text.chars().count();
+                    if self.selection.caret.offset <= cursor + length {
+                        return run.character_style.clone();
+                    }
+                    cursor += length;
+                }
+                None
+            })
+    }
+
+    fn cycle_paragraph_style(&mut self) {
+        let mut options: Vec<Option<String>> = vec![None];
+        options.extend(
+            self.styles
+                .paragraph_styles
+                .iter()
+                .map(|style| Some(style.name.clone())),
+        );
+        let next = next_option(&options, self.current_paragraph_style());
+        if let Some(body) = self.body.as_mut() {
+            apply_paragraph_style(body, self.selection, next.as_deref());
+        }
+        self.persist_edit();
+    }
+
+    fn cycle_character_style(&mut self) {
+        let mut options: Vec<Option<String>> = vec![None];
+        options.extend(
+            self.styles
+                .character_styles
+                .iter()
+                .map(|style| Some(style.name.clone())),
+        );
+        let next = next_option(&options, self.current_character_style());
+        let applied = self
+            .body
+            .as_mut()
+            .is_some_and(|body| apply_character_style(body, self.selection, next.as_deref()));
+        if applied {
+            self.persist_edit();
+        } else {
+            self.status = "Select text to apply a character style".to_owned();
+        }
+    }
+
+    fn apply_format(&mut self, action: FormatAction) {
+        match action {
+            FormatAction::Bold | FormatAction::Italic | FormatAction::Underline => {
+                let format = match action {
+                    FormatAction::Bold => DirectFormat::Bold,
+                    FormatAction::Italic => DirectFormat::Italic,
+                    _ => DirectFormat::Underline,
+                };
+                let toggled = self
+                    .body
+                    .as_mut()
+                    .is_some_and(|body| toggle_direct(body, self.selection, format));
+                if toggled {
+                    self.persist_edit();
+                } else {
+                    self.status = "Select text to format it".to_owned();
+                }
+            }
+            FormatAction::ParagraphStyle => self.cycle_paragraph_style(),
+            FormatAction::CharacterStyle => self.cycle_character_style(),
+        }
+    }
+
+    fn write_key(&mut self, event: &KeyDownEvent) -> bool {
+        if event.keystroke.modifiers.platform
+            || event.keystroke.modifiers.control
+            || event.keystroke.modifiers.alt
+        {
+            return false;
+        }
+        let extend = event.keystroke.modifiers.shift;
+        let key = event.keystroke.key.as_str();
+        let Some(body) = self.body.as_mut() else {
+            return false;
+        };
+        let mut edited = false;
+        match key {
+            "backspace" => {
+                self.selection = backspace(body, self.selection);
+                edited = true;
+            }
+            "enter" => {
+                self.selection = split_paragraph(body, self.selection);
+                edited = true;
+            }
+            "left" => {
+                self.selection = move_selection(body, self.selection, Movement::Left, extend);
+            }
+            "right" => {
+                self.selection = move_selection(body, self.selection, Movement::Right, extend);
+            }
+            "up" => {
+                self.selection = move_selection(body, self.selection, Movement::Up, extend);
+            }
+            "down" => {
+                self.selection = move_selection(body, self.selection, Movement::Down, extend);
+            }
+            "home" => {
+                self.selection = move_selection(body, self.selection, Movement::LineStart, extend);
+            }
+            "end" => {
+                self.selection = move_selection(body, self.selection, Movement::LineEnd, extend);
+            }
+            _ => {
+                let Some(character) = &event.keystroke.key_char else {
+                    return false;
+                };
+                self.selection = insert(body, self.selection, &character.to_string());
+                edited = true;
+            }
+        }
+        if edited {
+            self.persist_edit();
+        } else {
+            self.session
+                .set_selection(self.options.selected, self.selection);
+        }
+        true
+    }
+
+    fn write_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+        let Some(body) = self.body.as_ref() else {
+            return div()
+                .id("manuscript-write")
+                .flex_1()
+                .flex()
+                .items_center()
+                .justify_center()
+                .text_sm()
+                .text_color(rgb(DARK_THEME.muted_text))
+                .child("Select a chapter to write")
+                .into_any_element();
+        };
+        let has_selection = !self.selection.is_collapsed();
+        let mut toolbar = div()
+            .id("writer-toolbar")
+            .flex()
+            .items_center()
+            .flex_wrap()
+            .gap_1();
+        toolbar = toolbar
+            .child(self.format_button(FormatAction::Bold, "Bold", has_selection, cx))
+            .child(self.format_button(FormatAction::Italic, "Italic", has_selection, cx))
+            .child(self.format_button(FormatAction::Underline, "Underline", has_selection, cx))
+            .child(
+                div()
+                    .w(px(1.0))
+                    .h(px(16.0))
+                    .mx_1()
+                    .bg(rgb(DARK_THEME.border)),
+            )
+            .child(
+                self.format_button(
+                    FormatAction::ParagraphStyle,
+                    self.current_paragraph_style()
+                        .unwrap_or_else(|| "Default style".to_owned())
+                        .as_str(),
+                    true,
+                    cx,
+                ),
+            )
+            .child(
+                self.format_button(
+                    FormatAction::CharacterStyle,
+                    self.current_character_style()
+                        .unwrap_or_else(|| "No character style".to_owned())
+                        .as_str(),
+                    has_selection,
+                    cx,
+                ),
+            )
+            .child(
+                div()
+                    .ml_auto()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(format!("{} words", body.word_count())),
+            );
+
+        let page_width =
+            self.format.measure as f32 * (self.format.base_size * 0.62) + self.format.margin * 2.0;
+        let lines = layout(body, &self.styles, self.format);
+        let mut page = div()
+            .id("manuscript-page")
+            .w(px(page_width))
+            .p(px(self.format.margin))
+            .rounded_lg()
+            .border_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .flex()
+            .flex_col();
+        for line in &lines {
+            page = page.child(self.render_line(line));
+        }
+
+        div()
+            .id("manuscript-write")
+            .flex_1()
+            .min_w_0()
+            .flex()
+            .flex_col()
+            .gap_3()
+            .child(toolbar)
+            .child(
+                div()
+                    .id("manuscript-page-scroll")
+                    .flex_1()
+                    .overflow_y_scroll()
+                    .flex()
+                    .justify_center()
+                    .child(page),
+            )
+            .into_any_element()
+    }
+
+    fn format_button(
+        &self,
+        action: FormatAction,
+        label: &str,
+        enabled: bool,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        div()
+            .id(action.id())
+            .px_2()
+            .py_1()
+            .rounded_md()
+            .border_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .cursor_pointer()
+            .text_xs()
+            .text_color(rgb(if enabled {
+                DARK_THEME.text
+            } else {
+                DARK_THEME.muted_text
+            }))
+            .child(label.to_owned())
+            .on_click(cx.listener(move |this, _, window, cx| {
+                this.focus.focus(window, cx);
+                this.apply_format(action);
+                cx.notify();
+            }))
+            .into_any_element()
+    }
+
+    fn render_line(&self, line: &VisualLine) -> AnyElement {
+        let split = line_layout(line, self.selection);
+        let mut row = div()
+            .h(px(self.format.line_height))
+            .flex()
+            .items_center()
+            .border_b_1()
+            .border_color(rgb(0x202634))
+            .text_color(rgb(DARK_THEME.text));
+        let mut consumed = 0_usize;
+        for piece in &split.pieces {
+            let length = piece.text.chars().count();
+            let caret_here = split
+                .caret_at
+                .is_some_and(|at| at >= consumed && at < consumed + length);
+            if caret_here {
+                let at = split.caret_at.unwrap_or_default() - consumed;
+                let before: String = piece.text.chars().take(at).collect();
+                let after: String = piece.text.chars().skip(at).collect();
+                if !before.is_empty() {
+                    row = row.child(span(&before, &piece.style, piece.selected));
+                }
+                row = row.child(caret_bar(self.format.line_height));
+                if !after.is_empty() {
+                    row = row.child(span(&after, &piece.style, piece.selected));
+                }
+            } else {
+                row = row.child(span(&piece.text, &piece.style, piece.selected));
+            }
+            consumed += length;
+        }
+        if split.caret_at == Some(consumed) {
+            row = row.child(caret_bar(self.format.line_height));
+        }
+        row.into_any_element()
+    }
+
     fn persist(&mut self) {
         let Some(store) = &self.store else {
             return;
@@ -1211,6 +1596,10 @@ impl ManuscriptSurface {
                     }
                 }
             }
+            cx.notify();
+            return;
+        }
+        if self.mode == ManuscriptMode::Write && self.write_key(event) {
             cx.notify();
             return;
         }
@@ -1430,6 +1819,7 @@ impl ManuscriptSurface {
             ManuscriptMode::Board,
             ManuscriptMode::Table,
             ManuscriptMode::Settings,
+            ManuscriptMode::Write,
         ] {
             let active = self.mode == mode;
             modes = modes.child(
@@ -1438,6 +1828,7 @@ impl ManuscriptSurface {
                         ManuscriptMode::Board => "manuscript-mode-board",
                         ManuscriptMode::Table => "manuscript-mode-table",
                         ManuscriptMode::Settings => "manuscript-mode-settings",
+                        ManuscriptMode::Write => "manuscript-mode-write",
                     })
                     .px_2()
                     .py_1()
@@ -1452,13 +1843,13 @@ impl ManuscriptSurface {
                     .when(active, |element| element.bg(rgb(DARK_THEME.accent)))
                     .child(mode.label())
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        this.mode = mode;
+                        this.set_mode(mode);
                         cx.notify();
                     })),
             );
         }
         header = header.child(modes);
-        if self.mode == ManuscriptMode::Settings {
+        if matches!(self.mode, ManuscriptMode::Settings | ManuscriptMode::Write) {
             return header.into_any_element();
         }
         header = header.child(
@@ -2167,6 +2558,78 @@ impl ToolAction {
     }
 }
 
+/// One writing toolbar command.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FormatAction {
+    Bold,
+    Italic,
+    Underline,
+    ParagraphStyle,
+    CharacterStyle,
+}
+
+impl FormatAction {
+    const fn id(self) -> &'static str {
+        match self {
+            Self::Bold => "writer-bold",
+            Self::Italic => "writer-italic",
+            Self::Underline => "writer-underline",
+            Self::ParagraphStyle => "writer-paragraph-style",
+            Self::CharacterStyle => "writer-character-style",
+        }
+    }
+}
+
+fn next_option(options: &[Option<String>], current: Option<String>) -> Option<String> {
+    let index = options
+        .iter()
+        .position(|option| *option == current)
+        .map_or(0, |index| (index + 1) % options.len());
+    options[index].clone()
+}
+
+fn clamp_selection(body: &ChapterBody, selection: Selection) -> Selection {
+    let clamp = |position: Position| {
+        let paragraph = position
+            .paragraph
+            .min(body.paragraphs.len().saturating_sub(1));
+        let length = body
+            .paragraphs
+            .get(paragraph)
+            .map_or(0, |paragraph| paragraph.text().chars().count());
+        Position {
+            paragraph,
+            offset: position.offset.min(length),
+        }
+    };
+    Selection {
+        anchor: clamp(selection.anchor),
+        caret: clamp(selection.caret),
+    }
+}
+
+fn span(text: &str, style: &crate::manuscript::ResolvedStyle, selected: bool) -> AnyElement {
+    div()
+        .text_size(px(style.size * 1.3333))
+        .font_family("Menlo")
+        .when(style.bold, |element| {
+            element.font_weight(gpui::FontWeight::BOLD)
+        })
+        .when(style.italic, |element| element.italic())
+        .when(style.underline, |element| element.underline())
+        .when(selected, |element| element.bg(rgb(0x334066)))
+        .child(text.to_owned())
+        .into_any_element()
+}
+
+fn caret_bar(line_height: f32) -> AnyElement {
+    div()
+        .w(px(2.0))
+        .h(px(line_height * 0.75))
+        .bg(rgb(DARK_THEME.accent))
+        .into_any_element()
+}
+
 fn column_width(column: Column) -> f32 {
     match column {
         Column::Status => 110.0,
@@ -2181,6 +2644,7 @@ impl Render for ManuscriptSurface {
             ManuscriptMode::Board => self.board(cx),
             ManuscriptMode::Table => self.table(cx),
             ManuscriptMode::Settings => self.settings_panel(cx),
+            ManuscriptMode::Write => self.write_panel(cx),
         };
         div()
             .id("manuscript-surface")

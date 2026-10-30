@@ -242,3 +242,33 @@ fn an_empty_container_names_itself_on_the_board() {
         projection.empty_state()
     );
 }
+
+#[test]
+fn editing_a_real_chapter_updates_its_word_count() {
+    use weave_editor::manuscript::{
+        ManuscriptFormat, Position, Selection, StyleSheet, insert, layout,
+    };
+
+    let directory = corpus_root().join("alice-adventures-in-wonderland");
+    let store = ManuscriptStore::in_directory(&directory);
+    let tree = store.read_tree().expect("tree");
+    let chapter = tree.child_ids(ChapterId::ROOT)[0];
+    let mut body = store.bodies().read(chapter).expect("body");
+    let before = body.word_count();
+
+    let selection = insert(
+        &mut body,
+        Selection::collapsed(Position {
+            paragraph: 0,
+            offset: 0,
+        }),
+        "Preface. ",
+    );
+    assert_eq!(body.word_count(), before + 1);
+    assert_eq!(selection.caret.offset, 9);
+
+    let lines = layout(&body, &StyleSheet::new(), ManuscriptFormat::default());
+    assert!(lines.len() >= body.paragraphs.len());
+    assert_eq!(lines[0].paragraph, 0);
+    assert!(lines[0].segments[0].text.starts_with("Preface."));
+}

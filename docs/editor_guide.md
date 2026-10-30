@@ -218,6 +218,37 @@ are refused with a message rather than silently ignored.
 Every drop is recorded before it happens, so Undo restores the previous order,
 including a reparent.
 
+### Writing a chapter
+
+The Write view shows the selected chapter as a manuscript page: a one-inch
+margin, a 64-character measure, double-spaced lines, and a line guide on every
+baseline. The page is monospaced on purpose, so the shape of the page is the
+shape of the manuscript rather than an approximation of a browser.
+
+Type to edit. Arrow keys move the caret, Shift extends the selection, Home and
+End reach the paragraph bounds, Enter splits a paragraph, and Backspace deletes
+backwards or joins the previous paragraph. Edits are written to the chapter's
+body file as you type, and the word count in the toolbar follows the text.
+
+A paragraph keeps its own style, and each run keeps a character style plus
+direct bold, italic, and underline. The stylesheet at
+`weave.manuscript/styles.ron` supplies the named styles, so applying a style
+changes a reference rather than copying attributes onto every run.
+
+The formatting toolbar mirrors what the selection allows:
+
+- Bold, Italic, and Underline are enabled only while text is selected, because
+  direct formatting applies to text rather than to a caret.
+- The paragraph style picker is always available and applies to every paragraph
+  the selection touches.
+- The character style picker needs a selection, for the same reason as direct
+  formatting.
+
+The caret and selection are remembered per chapter in
+`weave.manuscript/session.ron`, so closing a chapter and reopening it returns to
+the same place. That file is view state, not manuscript data: losing it costs a
+caret position, never a word.
+
 ### Status and label
 
 Status and label are the attributes an author changes most while working, so they

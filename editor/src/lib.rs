@@ -48,10 +48,14 @@ pub use graph::{
 pub use graph_view::GraphSurface;
 pub use health::{CharacterHealthNavigationLink, CharacterHealthSession};
 pub use manuscript::{
-    BODY_DIR_NAME, BODY_FORMAT_VERSION, BodyStore, Chapter, ChapterBody, ChapterError, ChapterId,
-    ChapterKind, ChapterTree, DEFAULT_HISTORY_LIMIT, LabelDefinition, Manuscript,
-    ManuscriptHistory, ManuscriptStore, MoveBlocked, NamedStyle, Paragraph, StatusDefinition,
-    StyleSheet, TREE_FILE_NAME, TREE_FORMAT_VERSION, TextRun,
+    BODY_DIR_NAME, BODY_FORMAT_VERSION, BodyStore, CaretRecord, Chapter, ChapterBody, ChapterError,
+    ChapterId, ChapterKind, ChapterTree, DEFAULT_HISTORY_LIMIT, DirectFormat, LabelDefinition,
+    LineLayout, LinePiece, LineSegment, Manuscript, ManuscriptFormat, ManuscriptHistory,
+    ManuscriptSession, ManuscriptStore, MoveBlocked, Movement, NamedStyle, Paragraph, Position,
+    ResolvedStyle, SESSION_FORMAT_VERSION, Selection, StatusDefinition, StyleSheet, TREE_FILE_NAME,
+    TREE_FORMAT_VERSION, TextRun, VisualLine, all_direct, apply_character_style,
+    apply_paragraph_style, backspace, insert, layout, line_layout, move_selection, split_paragraph,
+    toggle_direct,
 };
 pub use manuscript_view::{
     ALL_COLUMNS, CARD_GAP, CARD_HEIGHT, CARD_WIDTH, CardRecord, Column, DEFAULT_COLUMNS,

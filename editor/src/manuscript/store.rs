@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use super::body::{BodyStore, StyleSheet};
+use super::session::ManuscriptSession;
 use super::tree::{BODY_DIR_NAME, ChapterError, ChapterTree, TREE_FILE_NAME, TREE_FORMAT_VERSION};
 use crate::project::atomic_write;
 
@@ -12,6 +13,7 @@ pub struct ManuscriptStore {
     tree_path: PathBuf,
     body_store: BodyStore,
     style_path: PathBuf,
+    session_path: PathBuf,
 }
 
 impl ManuscriptStore {
@@ -36,6 +38,7 @@ impl ManuscriptStore {
             tree_path: directory.join(TREE_FILE_NAME),
             body_store: BodyStore::new(directory.join(BODY_DIR_NAME)),
             style_path: directory.join(BODY_DIR_NAME).join("styles.ron"),
+            session_path: directory.join(BODY_DIR_NAME).join("session.ron"),
         }
     }
 
@@ -49,6 +52,12 @@ impl ManuscriptStore {
     #[must_use]
     pub fn style_path(&self) -> &Path {
         &self.style_path
+    }
+
+    /// The path the editor session is written to.
+    #[must_use]
+    pub fn session_path(&self) -> &Path {
+        &self.session_path
     }
 
     /// The body store.
@@ -118,6 +127,32 @@ impl ManuscriptStore {
         let encoded = ron::ser::to_string_pretty(styles, ron::ser::PrettyConfig::default())
             .map_err(|error| ChapterError::InvalidData(error.to_string()))?;
         atomic_write(&self.style_path, encoded.as_bytes())?;
+        Ok(())
+    }
+
+    /// Read the remembered caret and selection state.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the session file exists but cannot be read or
+    /// parsed.
+    pub fn read_session(&self) -> Result<ManuscriptSession, ChapterError> {
+        if !self.session_path.exists() {
+            return Ok(ManuscriptSession::new());
+        }
+        let text = std::fs::read_to_string(&self.session_path)?;
+        ron::from_str(&text).map_err(|error| ChapterError::InvalidData(error.to_string()))
+    }
+
+    /// Write the remembered caret and selection state.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the file cannot be written.
+    pub fn write_session(&self, session: &ManuscriptSession) -> Result<(), ChapterError> {
+        let encoded = ron::ser::to_string_pretty(session, ron::ser::PrettyConfig::default())
+            .map_err(|error| ChapterError::InvalidData(error.to_string()))?;
+        atomic_write(&self.session_path, encoded.as_bytes())?;
         Ok(())
     }
 

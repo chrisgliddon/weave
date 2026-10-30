@@ -7,12 +7,24 @@
 //! can be diffed on its own.
 
 pub mod body;
+pub mod editor;
+pub mod format;
 pub mod history;
+pub mod session;
 pub mod store;
 pub mod tree;
 
 pub use body::{BodyStore, ChapterBody, Manuscript, NamedStyle, Paragraph, StyleSheet, TextRun};
+pub use editor::{
+    DirectFormat, Movement, Position, Selection, all_direct, apply_character_style,
+    apply_paragraph_style, backspace, insert, move_selection, split_paragraph, toggle_direct,
+};
+pub use format::{
+    LineLayout, LinePiece, LineSegment, ManuscriptFormat, ResolvedStyle, VisualLine, layout,
+    line_layout,
+};
 pub use history::{DEFAULT_HISTORY_LIMIT, ManuscriptHistory};
+pub use session::{CaretRecord, ManuscriptSession, SESSION_FORMAT_VERSION};
 pub use store::ManuscriptStore;
 pub use tree::{
     BODY_DIR_NAME, BODY_FORMAT_VERSION, Chapter, ChapterError, ChapterId, ChapterKind, ChapterTree,
