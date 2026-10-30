@@ -15,6 +15,7 @@ pub mod manuscript;
 pub mod manuscript_view;
 pub mod node_renderers;
 pub mod pattern_browser;
+pub mod play_view;
 pub mod preview;
 pub mod project;
 pub mod projections;
@@ -72,6 +73,7 @@ pub use pattern_browser::{
     PatternBrowserEvent, PatternBrowserModel, PatternBrowserSurface, PatternFilter, PatternOrigin,
     PatternPreview, PatternRecord,
 };
+pub use play_view::{NARRATOR, PlayMode, PlayScene, scene_from_session, split_speaker};
 pub use preview::{
     PreviewCompileDebouncer, PreviewEvent, PreviewIssue, PreviewSession, PreviewStatus,
     PreviewSurface, PreviewTranscript,

@@ -2,7 +2,9 @@
 
 use std::time::{Duration, Instant};
 
-use gpui::{AnyElement, Context, EventEmitter, Window, div, prelude::*, px, rgb};
+use gpui::{
+    AnyElement, Context, EventEmitter, FocusHandle, KeyDownEvent, Window, div, prelude::*, px, rgb,
+};
 use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Span};
@@ -10,6 +12,7 @@ use weave_domain::DomainCatalog;
 use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, Story, StoryEvent, Value};
 
+use crate::play_view::{NARRATOR, PlayMode, scene_from_session};
 use crate::theme::DARK_THEME;
 
 const MAX_CONTINUE_BOUNDARIES: usize = 10_000;
@@ -405,6 +408,8 @@ impl PreviewSession {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PreviewEvent {
     RevealSource(Span),
+    /// The panel switched between the transcript and the staged scene.
+    ModeChanged(PlayMode),
 }
 
 /// Native live-play surface with a debounced pending source compiler.
@@ -412,10 +417,12 @@ pub struct PreviewSurface {
     session: PreviewSession,
     debouncer: PreviewCompileDebouncer,
     pending: Option<PendingCompile>,
+    mode: PlayMode,
+    focus: FocusHandle,
 }
 
 impl PreviewSurface {
-    pub fn new(story: Option<StoryIr>, seed: u64, revision: u64, _cx: &mut Context<Self>) -> Self {
+    pub fn new(story: Option<StoryIr>, seed: u64, revision: u64, cx: &mut Context<Self>) -> Self {
         Self {
             session: story.map_or_else(
                 || PreviewSession::empty(seed),
@@ -423,7 +430,31 @@ impl PreviewSurface {
             ),
             debouncer: PreviewCompileDebouncer::new(Duration::from_millis(250)),
             pending: None,
+            mode: PlayMode::Debug,
+            focus: cx.focus_handle(),
         }
+    }
+
+    /// Current presentation.
+    #[must_use]
+    pub const fn mode(&self) -> PlayMode {
+        self.mode
+    }
+
+    /// Switch between the transcript and the scene.
+    ///
+    /// Entering Play starts the session when it has not run yet, so the scene
+    /// opens on the first line rather than on an empty frame.
+    pub fn set_mode(&mut self, mode: PlayMode, cx: &mut Context<Self>) {
+        if self.mode == mode {
+            return;
+        }
+        self.mode = mode;
+        if mode == PlayMode::Play && self.session.transcript().is_empty() {
+            self.session.run();
+        }
+        cx.emit(PreviewEvent::ModeChanged(mode));
+        cx.notify();
     }
 
     #[must_use]
@@ -517,6 +548,210 @@ impl PreviewSurface {
 
     fn change_seed(&mut self, delta: i64, cx: &mut Context<Self>) {
         self.session.change_seed(delta);
+        cx.notify();
+    }
+
+    fn mode_bar(&self, cx: &mut Context<Self>) -> AnyElement {
+        let mut bar = div()
+            .id("preview-mode-bar")
+            .flex()
+            .items_center()
+            .gap_1()
+            .px_3()
+            .py_1()
+            .border_b_1()
+            .border_color(rgb(DARK_THEME.border));
+        for mode in [PlayMode::Debug, PlayMode::Play] {
+            let active = self.mode == mode;
+            bar = bar.child(
+                div()
+                    .id(match mode {
+                        PlayMode::Debug => "preview-mode-debug",
+                        PlayMode::Play => "preview-mode-play",
+                    })
+                    .px_2()
+                    .py_1()
+                    .rounded_md()
+                    .cursor_pointer()
+                    .text_xs()
+                    .text_color(rgb(if active {
+                        DARK_THEME.text
+                    } else {
+                        DARK_THEME.muted_text
+                    }))
+                    .when(active, |element| element.bg(rgb(DARK_THEME.accent)))
+                    .child(mode.label())
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.focus.focus(window, cx);
+                        this.set_mode(mode, cx);
+                    })),
+            );
+        }
+        bar.child(
+            div()
+                .ml_auto()
+                .text_xs()
+                .text_color(rgb(DARK_THEME.muted_text))
+                .child("Space to advance · 1-9 to choose · R to restart"),
+        )
+        .into_any_element()
+    }
+
+    fn play_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+        let scene = scene_from_session(&self.session);
+        let mut frame = div()
+            .id("play-scene")
+            .flex_1()
+            .min_h_0()
+            .flex()
+            .flex_col()
+            .overflow_hidden();
+
+        if let Some(issue) = &scene.issue {
+            frame = frame.child(
+                div()
+                    .px_3()
+                    .py_1()
+                    .bg(rgb(DARK_THEME.warning))
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(format!("Last valid frame kept: {issue}")),
+            );
+        }
+
+        let mut stage = div()
+            .id("play-stage")
+            .flex_1()
+            .min_h_0()
+            .relative()
+            .overflow_hidden()
+            .bg(rgb(0x0e1118))
+            .flex()
+            .items_end()
+            .justify_center();
+        stage = stage
+            .child(
+                div()
+                    .absolute()
+                    .left_0()
+                    .right_0()
+                    .bottom(px(38.0))
+                    .h(px(1.0))
+                    .bg(rgb(DARK_THEME.border)),
+            )
+            .child(
+                div()
+                    .w(px(120.0))
+                    .h(px(150.0))
+                    .rounded_t_full()
+                    .bg(rgb(0x1a2030))
+                    .border_1()
+                    .border_color(rgb(DARK_THEME.border)),
+            );
+        if scene.speaker != NARRATOR {
+            stage = stage.child(
+                div()
+                    .absolute()
+                    .top_3()
+                    .left_3()
+                    .px_2()
+                    .py_1()
+                    .rounded_md()
+                    .bg(rgb(DARK_THEME.chrome))
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.accent))
+                    .child(scene.speaker.clone()),
+            );
+        }
+
+        let mut dialogue = div()
+            .id("play-dialogue")
+            .flex_none()
+            .max_h(px(220.0))
+            .overflow_y_scroll()
+            .p_3()
+            .flex()
+            .flex_col()
+            .gap_2()
+            .border_t_1()
+            .border_color(rgb(DARK_THEME.border))
+            .child(div().text_lg().text_color(rgb(DARK_THEME.text)).child(
+                if scene.line.is_empty() {
+                    "Press Space to begin".to_owned()
+                } else {
+                    scene.line.clone()
+                },
+            ));
+
+        if scene.ended {
+            dialogue = dialogue.child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .child(
+                        div()
+                            .text_sm()
+                            .text_color(rgb(DARK_THEME.muted_text))
+                            .child("The end"),
+                    )
+                    .child(preview_button("Restart", "play-restart", cx, |this, cx| {
+                        this.session.restart();
+                        this.session.run();
+                        cx.notify();
+                    })),
+            );
+        } else if !scene.choices.is_empty() {
+            for (index, choice) in scene.choices.iter().enumerate() {
+                dialogue = dialogue.child(
+                    div()
+                        .id(("play-choice", index))
+                        .px_3()
+                        .py_2()
+                        .rounded_md()
+                        .border_1()
+                        .border_color(rgb(DARK_THEME.border))
+                        .bg(rgb(DARK_THEME.chrome))
+                        .cursor_pointer()
+                        .text_sm()
+                        .text_color(rgb(DARK_THEME.text))
+                        .child(format!("{}. {}", index + 1, choice.text))
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            this.session.choose(index);
+                            cx.notify();
+                        })),
+                );
+            }
+        }
+
+        frame.child(stage).child(dialogue).into_any_element()
+    }
+
+    fn preview_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
+        if self.mode != PlayMode::Play
+            || event.keystroke.modifiers.platform
+            || event.keystroke.modifiers.control
+            || event.keystroke.modifiers.alt
+        {
+            return;
+        }
+        match event.keystroke.key.as_str() {
+            "space" | "enter" => {
+                self.session.run();
+            }
+            "r" => {
+                self.session.restart();
+                self.session.run();
+            }
+            _ => {
+                if let Some(character) = &event.keystroke.key_char
+                    && let Some(digit) = character.chars().next().and_then(|c| c.to_digit(10))
+                    && digit >= 1
+                {
+                    self.session.choose(digit as usize - 1);
+                }
+            }
+        }
         cx.notify();
     }
 
@@ -736,18 +971,34 @@ impl EventEmitter<PreviewEvent> for PreviewSurface {}
 
 impl gpui::Render for PreviewSurface {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let body = match self.mode {
+            PlayMode::Debug => div()
+                .flex_1()
+                .min_h_0()
+                .p_3()
+                .flex()
+                .gap_3()
+                .child(self.transcript_panel())
+                .child(self.controls_panel(cx))
+                .child(self.state_panel())
+                .into_any_element(),
+            PlayMode::Play => self.play_panel(cx),
+        };
         div()
             .id("play-preview")
+            .key_context("WeavePreview")
+            .track_focus(&self.focus)
             .size_full()
-            .p_3()
             .flex()
-            .gap_3()
+            .flex_col()
             .bg(rgb(DARK_THEME.panel))
             .border_t_1()
             .border_color(rgb(DARK_THEME.border))
-            .child(self.transcript_panel())
-            .child(self.controls_panel(cx))
-            .child(self.state_panel())
+            .on_key_down(cx.listener(|this, event: &KeyDownEvent, _, cx| {
+                this.preview_key(event, cx);
+            }))
+            .child(self.mode_bar(cx))
+            .child(body)
     }
 }
 

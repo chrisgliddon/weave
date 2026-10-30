@@ -102,6 +102,26 @@ Deleting a chapter moves it to a visible trash container rather than
 destroying it; emptying the trash is a separate, explicit action. The trash
 always sorts last among the root's children.
 
+### Play mode
+
+The preview panel has two presentations of one session. Debug shows the
+transcript, pattern draws, variables, and playback controls. Play stages the
+current line as a scene: a synthetic background, one character placeholder, a
+speaker nameplate, the dialogue, and the pending choices as buttons.
+
+Both presentations read the session the panel already owns, so they cannot
+disagree: the same choices, the same variable values, the same pattern draws,
+and the same ending, with no second runtime and no source mutation.
+
+Space or Enter advances, the number keys choose, and R restarts. Choices are
+also clickable. A speaker is read from a short `Name: ` prefix on the line;
+anything else is narrated, so a sentence that merely contains a colon is not
+mistaken for a character name.
+
+When the source stops compiling, the last valid frame stays on screen with a
+banner naming the diagnostic. Play never blanks the scene because a draft is
+temporarily broken.
+
 ## Files and conflicts
 
 Save writes the `.weave` source atomically. When the source is valid, it also writes canonical `.ron` beside the source and updates `weave.lock` for a configured domain project. If the watched file changes externally while the editor has unsaved work, the project panel presents three explicit choices:

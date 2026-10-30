@@ -18,6 +18,7 @@ use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
 use crate::manuscript_view::{ManuscriptSurface, MoveVerb, label_display, status_display};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
+use crate::play_view::PlayMode;
 use crate::preview::{PreviewEvent, PreviewSurface};
 use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
@@ -547,6 +548,12 @@ impl EditorShell {
 
     fn handle_preview_event(&mut self, event: &PreviewEvent, cx: &mut Context<Self>) {
         match event {
+            PreviewEvent::ModeChanged(mode) => {
+                self.state.layout.bottom_height = match mode {
+                    PlayMode::Play => 460.0,
+                    PlayMode::Debug => 220.0,
+                };
+            }
             PreviewEvent::RevealSource(span) => {
                 self.text.update(cx, |text, cx| text.reveal_span(*span, cx));
                 self.state.layout.center = CenterView::Text;
