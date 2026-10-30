@@ -18,6 +18,7 @@
   - [Weave Character profiles](character_module.md)
   - [Selectable tabletop adapters](tabletop_adapters.md)
 - [Weave Editor](editor_guide.md)
+- [Weave Play presentation contract](weave_play.md)
 
 # Integration
 
