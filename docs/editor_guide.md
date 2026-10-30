@@ -192,6 +192,32 @@ command, or with the toolbar button. The history keeps the last hundred
 structural changes; because only the tree is snapshotted, undo never copies the
 prose.
 
+### Dragging chapters
+
+Cards and tree rows are drag sources. Dropping follows the research that shaped
+this model, and the two drop targets are deliberately different:
+
+- **Inside one board**, a drag draws a two-pixel accent insertion bar in the gap
+  between the two cards the chapter would land between. The bar sits in the gap,
+  never on a card, and is the only reorder affordance. Dragging past the last card
+  removes it, so there is no ambiguous "end of list" target.
+- **Onto a tree row**, the row is outlined in the accent and the drop reparents
+  the chapter into that container. A container drop has no insertion bar, because
+  it is not a sibling position.
+
+The insertion point is a nearest-gap computation: the pointer is rounded by one
+card stride, so the top and bottom halves of a card resolve to the same gap and a
+pointer near an edge still lands on exactly one position.
+
+A drag carries its chapter and its source container. The drop handler asks
+whether the payload is local to the board; a local payload reorders siblings, a
+foreign one is reparented at the drop position. A chapter cannot be dropped into
+itself or into one of its own descendants, and a leaf cannot receive one; both
+are refused with a message rather than silently ignored.
+
+Every drop is recorded before it happens, so Undo restores the previous order,
+including a reparent.
+
 ### Status and label
 
 Status and label are the attributes an author changes most while working, so they

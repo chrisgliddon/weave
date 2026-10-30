@@ -1,8 +1,8 @@
 //! Tests for the ordered chapter tree, its storage, and the chapter bodies.
 
 use weave_editor::manuscript::{
-    BodyStore, ChapterBody, ChapterError, ChapterId, ChapterKind, ChapterTree, ManuscriptStore,
-    MoveBlocked, Paragraph, StyleSheet, TextRun,
+    BodyStore, ChapterBody, ChapterError, ChapterId, ChapterKind, ChapterTree, ManuscriptHistory,
+    ManuscriptStore, MoveBlocked, Paragraph, StyleSheet, TextRun,
 };
 
 /// A tree holding one part with two scenes, and the identifiers involved.
@@ -663,4 +663,16 @@ fn an_empty_definition_name_is_rejected() {
         tree.statuses_by_id().get(&status).expect("status").name,
         "Draft"
     );
+}
+
+#[test]
+fn undo_restores_the_previous_order() {
+    let (mut tree, part, first, second) = tree_with_children();
+    let mut history = ManuscriptHistory::default();
+    history.record(&tree);
+    tree.move_down(first).expect("move down");
+    assert_eq!(tree.child_ids(part), vec![second, first]);
+
+    let restored = history.undo().expect("snapshot");
+    assert_eq!(restored.child_ids(part), vec![first, second]);
 }

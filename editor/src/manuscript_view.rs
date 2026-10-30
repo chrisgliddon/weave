@@ -659,6 +659,59 @@ pub fn cycle_kind(tree: &mut ChapterTree, id: ChapterId) -> bool {
     tree.set_kind(id, next).is_ok()
 }
 
+/// The insertion gap a pointer resolves to.
+///
+/// Gaps are indexed `0..=count`, so gap `0` is before the first card and gap
+/// `count` is after the last. Rounding the pointer's position by one card
+/// stride means the top and bottom halves of a card resolve to the same gap
+/// and a pointer near an edge still lands on exactly one insertion point.
+#[must_use]
+pub fn nearest_gap(pointer_x: f32, count: usize, stride: f32) -> usize {
+    if count == 0 || stride <= 0.0 {
+        return 0;
+    }
+    let raw = (pointer_x.max(0.0) / stride).round();
+    (raw as usize).min(count)
+}
+
+/// The insertion index under a pointer, or `None` when the pointer is past the
+/// last card.
+///
+/// Cards wrap at `columns`, so the row is resolved from the vertical position
+/// and the column from the horizontal one.
+#[must_use]
+pub fn drop_index(pointer: (f32, f32), count: usize, columns: usize) -> Option<usize> {
+    if count == 0 {
+        return Some(0);
+    }
+    let columns = columns.max(1);
+    let row = (pointer.1.max(0.0) / (CARD_HEIGHT + CARD_GAP)).floor() as usize;
+    let column = nearest_gap(pointer.0, columns, CARD_WIDTH + CARD_GAP);
+    let index = row * columns + column;
+    (index <= count).then_some(index)
+}
+
+/// Whether `dragged` may be reparented into `target`.
+///
+/// A chapter cannot be dropped into itself or into its own descendant, and a
+/// target must be able to hold children.
+#[must_use]
+pub fn can_reparent(tree: &ChapterTree, dragged: ChapterId, target: ChapterId) -> bool {
+    if dragged == target {
+        return false;
+    }
+    let Some(target_chapter) = tree.chapter(target) else {
+        return false;
+    };
+    if !target_chapter.kind.is_container() {
+        return false;
+    }
+    if target_chapter.is_descendant_of(dragged, tree) {
+        return false;
+    }
+    tree.chapter(dragged).is_some()
+}
+
 fn kind_color(kind: ChapterKind) -> u32 {
     match kind {
         ChapterKind::Chapter => DARK_THEME.accent,
@@ -682,6 +735,30 @@ pub struct SelectionContext {
     pub trashed: bool,
 }
 
+/// Payload carried while a chapter is dragged.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DragPayload {
+    /// Chapter being dragged.
+    pub id: ChapterId,
+    /// Container the drag started in.
+    pub source: ChapterId,
+    /// Display title, for the floating preview.
+    pub title: String,
+    /// Body excerpt, for the floating preview.
+    pub excerpt: String,
+}
+
+impl DragPayload {
+    /// Whether the payload started in `container`.
+    ///
+    /// The drop handler consults this to choose a reorder inside one container
+    /// over a reparent into another.
+    #[must_use]
+    pub fn is_local(&self, container: ChapterId) -> bool {
+        self.source == container
+    }
+}
+
 /// Which project list a rename edits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DefinitionKind {
@@ -696,6 +773,40 @@ struct DefinitionEdit {
     id: i64,
 }
 
+/// Floating preview drawn under the pointer during a drag.
+struct DragPreview {
+    title: String,
+    excerpt: String,
+}
+
+impl Render for DragPreview {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .w(px(CARD_WIDTH))
+            .p_3()
+            .rounded_lg()
+            .border_1()
+            .border_color(rgb(DARK_THEME.accent))
+            .bg(rgb(DARK_THEME.panel))
+            .flex()
+            .flex_col()
+            .gap_2()
+            .child(
+                div()
+                    .text_sm()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(self.title.clone()),
+            )
+            .child(
+                div()
+                    .line_clamp(3)
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(self.excerpt.clone()),
+            )
+    }
+}
+
 /// Interactive chapter tree with the card board and the chapter table.
 pub struct ManuscriptSurface {
     tree: ChapterTree,
@@ -707,6 +818,9 @@ pub struct ManuscriptSurface {
     history: ManuscriptHistory,
     editing: Option<DefinitionEdit>,
     buffer: String,
+    dragging: Option<ChapterId>,
+    drag_gap: Option<usize>,
+    drag_over_row: Option<ChapterId>,
     status: String,
     focus: FocusHandle,
     projection: ManuscriptProjection,
@@ -728,6 +842,9 @@ impl ManuscriptSurface {
             history: ManuscriptHistory::default(),
             editing: None,
             buffer: String::new(),
+            dragging: None,
+            drag_gap: None,
+            drag_over_row: None,
             status: "Open a project to read its manuscript".to_owned(),
             focus: cx.focus_handle(),
             projection,
@@ -982,6 +1099,67 @@ impl ManuscriptSurface {
             .is_some_and(|chapter| chapter.parent_id == ChapterId::TRASH)
     }
 
+    fn clear_drag(&mut self) {
+        self.dragging = None;
+        self.drag_gap = None;
+        self.drag_over_row = None;
+    }
+
+    fn drop_on_board(&mut self, payload: &DragPayload) {
+        let container = self.projection.container();
+        let Some(index) = self.drag_gap else {
+            self.clear_drag();
+            return;
+        };
+        let before = self.tree.clone();
+        let local = payload.is_local(container);
+        let result = if local {
+            self.tree.move_chapter(payload.id, index)
+        } else {
+            self.tree.reparent_to(payload.id, container, Some(index))
+        };
+        match result {
+            Ok(()) => {
+                if self.tree != before {
+                    self.history.record(&before);
+                    self.persist();
+                    self.refresh();
+                    self.status = if local {
+                        "Reordered the chapter".to_owned()
+                    } else {
+                        "Moved the chapter into this container".to_owned()
+                    };
+                }
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+        self.clear_drag();
+    }
+
+    fn drop_on_tree(&mut self, payload: &DragPayload, target: ChapterId) {
+        if payload.source == target {
+            self.status = "The chapter is already in this container".to_owned();
+            self.clear_drag();
+            return;
+        }
+        if !can_reparent(&self.tree, payload.id, target) {
+            self.status = "A chapter cannot move into itself or its own descendant".to_owned();
+            self.clear_drag();
+            return;
+        }
+        let before = self.tree.clone();
+        match self.tree.reparent_to(payload.id, target, None) {
+            Ok(()) => {
+                self.history.record(&before);
+                self.persist();
+                self.refresh();
+                self.status = "Moved the chapter into that container".to_owned();
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+        self.clear_drag();
+    }
+
     fn persist(&mut self) {
         let Some(store) = &self.store else {
             return;
@@ -1100,6 +1278,45 @@ impl ManuscriptSurface {
                     .cursor_pointer()
                     .when(row.is_selected, |element| {
                         element.bg(rgb(DARK_THEME.accent))
+                    })
+                    .when(self.drag_over_row == Some(id), |element| {
+                        element
+                            .border_1()
+                            .border_color(rgb(DARK_THEME.accent))
+                            .bg(rgb(DARK_THEME.panel))
+                    })
+                    .on_drag_move::<DragPayload>({
+                        let weak = cx.weak_entity();
+                        move |_, _, cx| {
+                            weak.update(cx, |this, _| {
+                                this.drag_gap = None;
+                                this.drag_over_row = Some(id);
+                            })
+                            .ok();
+                        }
+                    })
+                    .on_drop::<DragPayload>({
+                        let weak = cx.weak_entity();
+                        move |payload: &DragPayload, _, cx| {
+                            weak.update(cx, |this, cx| {
+                                this.drop_on_tree(payload, id);
+                                cx.notify();
+                            })
+                            .ok();
+                        }
+                    })
+                    .on_hover({
+                        let weak = cx.weak_entity();
+                        move |hovered: &bool, _, cx| {
+                            if !*hovered {
+                                weak.update(cx, |this, _| {
+                                    if this.drag_over_row == Some(id) {
+                                        this.drag_over_row = None;
+                                    }
+                                })
+                                .ok();
+                            }
+                        }
                     })
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.focus.focus(window, cx);
@@ -1609,6 +1826,7 @@ impl ManuscriptSurface {
     fn board(&self, cx: &mut Context<Self>) -> AnyElement {
         let width = self.projection.columns() as f32 * CARD_WIDTH
             + (self.projection.columns() as f32 - 1.0) * CARD_GAP;
+        let weak = cx.weak_entity();
         let board = div()
             .id("manuscript-board")
             .flex_1()
@@ -1633,15 +1851,43 @@ impl ManuscriptSurface {
                 .into_any_element();
         }
 
+        let gap_weak = weak.clone();
+        let drop_weak = weak.clone();
         let mut grid = div()
             .id("manuscript-cards")
             .w(px(width))
             .flex()
             .flex_wrap()
-            .gap(px(CARD_GAP));
+            .gap(px(CARD_GAP))
+            .on_drag_move::<DragPayload>(move |event, _, cx| {
+                let x = f32::from(event.event.position.x - event.bounds.left());
+                let y = f32::from(event.event.position.y - event.bounds.top());
+                gap_weak
+                    .update(cx, |this, _| {
+                        this.drag_over_row = None;
+                        let count = this.projection.cards().len();
+                        this.drag_gap = drop_index((x, y), count, this.projection.columns());
+                    })
+                    .ok();
+            })
+            .on_drop::<DragPayload>(move |payload: &DragPayload, _, cx| {
+                drop_weak
+                    .update(cx, |this, cx| {
+                        this.drop_on_board(payload);
+                        cx.notify();
+                    })
+                    .ok();
+            });
 
         for card in self.projection.cards() {
             let id = card.id;
+            let payload = DragPayload {
+                id,
+                source: self.projection.container(),
+                title: card.title.clone(),
+                excerpt: card.excerpt.clone(),
+            };
+            let preview_weak = weak.clone();
             let accent = self
                 .tree
                 .chapter(id)
@@ -1660,6 +1906,9 @@ impl ManuscriptSurface {
                     .border_color(rgb(DARK_THEME.border))
                     .bg(rgb(DARK_THEME.panel))
                     .cursor_pointer()
+                    .when(self.dragging == Some(id), |element| {
+                        element.border_color(rgb(DARK_THEME.accent))
+                    })
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.focus.focus(window, cx);
                         this.select(id);
@@ -1695,11 +1944,38 @@ impl ManuscriptSurface {
                             .text_xs()
                             .text_color(rgb(DARK_THEME.muted_text))
                             .child(format!("{} words", card.word_count)),
-                    ),
+                    )
+                    .on_drag(payload, move |value: &DragPayload, _, _, cx| {
+                        let id = value.id;
+                        preview_weak
+                            .update(cx, |this, _| this.dragging = Some(id))
+                            .ok();
+                        let title = value.title.clone();
+                        let excerpt = value.excerpt.clone();
+                        cx.new(|_| DragPreview { title, excerpt })
+                    }),
             );
         }
 
-        board.child(grid).into_any_element()
+        let mut surface = div().relative().w(px(width)).child(grid);
+        if let (Some(gap), Some(_)) = (self.drag_gap, self.dragging) {
+            let columns = self.projection.columns();
+            let row = gap / columns;
+            let column = gap % columns;
+            let x = (column as f32 * (CARD_WIDTH + CARD_GAP) - CARD_GAP / 2.0).max(0.0);
+            let y = row as f32 * (CARD_HEIGHT + CARD_GAP);
+            surface = surface.child(
+                div()
+                    .id("manuscript-insertion-bar")
+                    .absolute()
+                    .left(px(x))
+                    .top(px(y))
+                    .w(px(2.0))
+                    .h(px(CARD_HEIGHT))
+                    .bg(rgb(DARK_THEME.accent)),
+            );
+        }
+        board.child(surface).into_any_element()
     }
 
     fn table(&self, cx: &mut Context<Self>) -> AnyElement {
@@ -2196,6 +2472,52 @@ mod tests {
             "the row should announce its status, got {:?}",
             row.accessible_label
         );
+    }
+
+    #[test]
+    fn the_nearest_gap_rounds_to_one_insertion_point() {
+        let stride = CARD_WIDTH + CARD_GAP;
+        assert_eq!(nearest_gap(-20.0, 3, stride), 0);
+        assert_eq!(nearest_gap(10.0, 3, stride), 0);
+        assert_eq!(nearest_gap(CARD_WIDTH - 4.0, 3, stride), 1);
+        assert_eq!(nearest_gap(stride - CARD_GAP / 2.0, 3, stride), 1);
+        assert_eq!(nearest_gap(stride * 3.0 + 50.0, 3, stride), 3);
+    }
+
+    #[test]
+    fn the_drop_index_wraps_and_disappears_past_the_last_card() {
+        let stride = CARD_WIDTH + CARD_GAP;
+        assert_eq!(drop_index((10.0, 10.0), 5, 3), Some(0));
+        assert_eq!(drop_index((stride * 2.0, 10.0), 5, 3), Some(2));
+        assert_eq!(
+            drop_index((10.0, CARD_HEIGHT + CARD_GAP + 10.0), 5, 3),
+            Some(3)
+        );
+        assert_eq!(
+            drop_index((10.0, (CARD_HEIGHT + CARD_GAP) * 4.0), 5, 3),
+            None
+        );
+    }
+
+    #[test]
+    fn a_chapter_cannot_be_dropped_into_its_own_descendant() {
+        let (tree, part, scene) = tree();
+        assert!(!can_reparent(&tree, part, part));
+        assert!(!can_reparent(&tree, part, scene));
+        assert!(!can_reparent(&tree, scene, scene));
+        assert!(can_reparent(&tree, scene, part));
+    }
+
+    #[test]
+    fn the_payload_reports_whether_it_is_local() {
+        let payload = DragPayload {
+            id: ChapterId(2),
+            source: ChapterId(3),
+            title: "Opening".to_owned(),
+            excerpt: "The lantern guttered".to_owned(),
+        };
+        assert!(payload.is_local(ChapterId(3)));
+        assert!(!payload.is_local(ChapterId::ROOT));
     }
 
     #[test]

@@ -55,9 +55,10 @@ pub use manuscript::{
 };
 pub use manuscript_view::{
     ALL_COLUMNS, CARD_GAP, CARD_HEIGHT, CARD_WIDTH, CardRecord, Column, DEFAULT_COLUMNS,
-    ManuscriptAccessibility, ManuscriptMode, ManuscriptProjection, ManuscriptSurface, MoveVerb,
-    ProjectionOptions, ROW_HEIGHT, SelectionContext, TREE_WIDTH, TableRow, UNSET_LABEL,
-    UNSET_STATUS, label_display, normalize_columns, status_display,
+    DragPayload, ManuscriptAccessibility, ManuscriptMode, ManuscriptProjection, ManuscriptSurface,
+    MoveVerb, ProjectionOptions, ROW_HEIGHT, SelectionContext, TREE_WIDTH, TableRow, UNSET_LABEL,
+    UNSET_STATUS, can_reparent, drop_index, label_display, nearest_gap, normalize_columns,
+    status_display,
 };
 pub use node_renderers::{
     EdgeVisualStyle, InspectorData, NodePresentation, NodeShape, NodeVisualState, NodeVisualStyle,
