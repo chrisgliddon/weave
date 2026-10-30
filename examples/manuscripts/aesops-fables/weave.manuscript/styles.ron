@@ -1,0 +1,9 @@
+(
+    version: 1,
+    paragraph_styles: [
+        (name: "Body", size: 12.0, bold: false, italic: false),
+    ],
+    character_styles: [
+        (name: "Emphasis", size: 12.0, bold: false, italic: true),
+    ],
+)

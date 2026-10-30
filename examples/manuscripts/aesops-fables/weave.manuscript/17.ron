@@ -1,0 +1,17 @@
+(
+    version: 1,
+    paragraphs: [
+        (
+            runs: [
+                (
+                    text: "The Moon once begged her Mother to make her a gown. “How can I?” replied she; “there’s no fitting your figure. At one time you’re a New Moon, and at another you’re a Full Moon; and between whiles you’re neither one nor the other.”",
+                    character_style: None,
+                    bold: false,
+                    italic: false,
+                    underline: false,
+                ),
+            ],
+            style: None,
+        ),
+    ],
+)

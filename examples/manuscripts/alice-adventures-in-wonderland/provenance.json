@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "work": {
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll",
+    "published": 1865,
+    "language": "en"
+  },
+  "source": {
+    "publisher": "Standard Ebooks",
+    "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "public_domain": "United States; first published before 1931",
+    "retrieved": "2026-10-30",
+    "artifact": "lewis-carroll_alices-adventures-in-wonderland_john-tenniel.epub",
+    "artifact_sha256": "8f957fd0c7fabc290f8a423ea2f9a2d2215291514f5f9959d23cbb91f4bc0c7f",
+    "artifact_bytes": 18398848
+  },
+  "subset": "Chapters I to XII, complete",
+  "transformations": [
+    "XHTML parsed and markup removed; paragraphs kept in document order",
+    "Zero-width no-break space (U+FEFF) removed",
+    "Soft hyphen (U+00AD) removed",
+    "Whitespace collapsed within each paragraph",
+    "Illustrations, figures, and captions excluded"
+  ],
+  "totals": {
+    "chapters": 12,
+    "paragraphs": 791,
+    "words": 26325
+  },
+  "chapters": [
+    {
+      "id": 2,
+      "title": "Down the Rabbit-Hole",
+      "source": "chapter-1.xhtml",
+      "paragraphs": 24,
+      "words": 2140,
+      "text_sha256": "dc936c23cc79abf8401f8c2dc78fa386e8ffb3e9dc944b1bba89ebc7ede33a18",
+      "body_file": "weave.manuscript/2.ron",
+      "body_sha256": "8c501b9b12b7751946f08f27e98fbc29137ebcbc46e2837195ffc89a5a708c46"
+    },
+    {
+      "id": 3,
+      "title": "The Pool of Tears",
+      "source": "chapter-2.xhtml",
+      "paragraphs": 26,
+      "words": 2093,
+      "text_sha256": "d944172823ccea6da3ce8f774e2cd8ac964efddde59aaca9114caa13096cfa9e",
+      "body_file": "weave.manuscript/3.ron",
+      "body_sha256": "b3cc5474c61c45ead4c3abcee134a3e5a88ba8f2ffa7aad174a3535363e9b260"
+    },
+    {
+      "id": 4,
+      "title": "A Caucus-Race and a Long Tale",
+      "source": "chapter-3.xhtml",
+      "paragraphs": 48,
+      "words": 1699,
+      "text_sha256": "5aa5c2d787291f0370af75396088ffa7f5d4b2fe34bc5b015881bdaf50039b75",
+      "body_file": "weave.manuscript/4.ron",
+      "body_sha256": "8941c38a56136fa9c4c84afaf2257aa066d22ad8189d1bbdc8c8f9d797166cc6"
+    },
+    {
+      "id": 5,
+      "title": "The Rabbit Sends in a Little Bill",
+      "source": "chapter-4.xhtml",
+      "paragraphs": 42,
+      "words": 2608,
+      "text_sha256": "e5b2320cbf7f973cbff115f5b5fbdc492b2a388e6b0f7011e9c1fd69fe1a7b00",
+      "body_file": "weave.manuscript/5.ron",
+      "body_sha256": "dfb13a89ffd14b30f597b7c03f78f40f3b94cf703c73578960ea42b73b69689f"
+    },
+    {
+      "id": 6,
+      "title": "Advice from a Caterpillar",
+      "source": "chapter-5.xhtml",
+      "paragraphs": 75,
+      "words": 2160,
+      "text_sha256": "0341988125220769d9cfd444868e0d8b27c9fac45c2a3d99169571782cdde943",
+      "body_file": "weave.manuscript/6.ron",
+      "body_sha256": "2b88f440c21145e0f40e7927a5729f7d08d31750c3d33571a9c9998325321e6a"
+    },
+    {
+      "id": 7,
+      "title": "Pig and Pepper",
+      "source": "chapter-6.xhtml",
+      "paragraphs": 80,
+      "words": 2590,
+      "text_sha256": "07e037308efe145f9bf1f8a759ce214170f38f41bcbfc91cf56f056b2999b007",
+      "body_file": "weave.manuscript/7.ron",
+      "body_sha256": "32e4e87905427e615635a295a94ee677e6440696a08f82f81e573fbc92527c8c"
+    },
+    {
+      "id": 8,
+      "title": "A Mad Tea-Party",
+      "source": "chapter-7.xhtml",
+      "paragraphs": 105,
+      "words": 2284,
+      "text_sha256": "b3aa3a728a94ef8ef8adede5aa2031d56a2a511e5527cd2a70451ac59d80d23e",
+      "body_file": "weave.manuscript/8.ron",
+      "body_sha256": "7cf1dbb71f6327c3177257a9dad61e047396f5b6369e8c894100594467900182"
+    },
+    {
+      "id": 9,
+      "title": "The Queen’s Croquet-Ground",
+      "source": "chapter-8.xhtml",
+      "paragraphs": 71,
+      "words": 2482,
+      "text_sha256": "1b76206039af87dbd8530206f95acdf0b8d1eade1794de2562af952785042848",
+      "body_file": "weave.manuscript/9.ron",
+      "body_sha256": "08f95cf944de9a7bda342a68d989d7e1d6cebcee050ed971208a9caa3ebc16ff"
+    },
+    {
+      "id": 10,
+      "title": "The Mock Turtle’s Story",
+      "source": "chapter-9.xhtml",
+      "paragraphs": 92,
+      "words": 2274,
+      "text_sha256": "8f216668cac943a67c3aa467c83dbb9adeddf7bac4bb4ee6164bc37226e93f64",
+      "body_file": "weave.manuscript/10.ron",
+      "body_sha256": "26f2acd19f76cdd2bd74fc64c4b3e4786e296c17febeac4f7f22dc5814ac7544"
+    },
+    {
+      "id": 11,
+      "title": "The Lobster Quadrille",
+      "source": "chapter-10.xhtml",
+      "paragraphs": 84,
+      "words": 2022,
+      "text_sha256": "c9b27257847e8c34eb0b91c85b9e1bde74735b41fd0d16b43fa88dd06c38216f",
+      "body_file": "weave.manuscript/11.ron",
+      "body_sha256": "1b31986c1b9653b318b29d1fe04ac16b640c7ecd9ffcb20d62084cc0016937cd"
+    },
+    {
+      "id": 12,
+      "title": "Who Stole the Tarts?",
+      "source": "chapter-11.xhtml",
+      "paragraphs": 74,
+      "words": 1872,
+      "text_sha256": "938daf227c23b07ff56dfa983682dc1568fcfaf1f965f45c0d914d395fb9b81d",
+      "body_file": "weave.manuscript/12.ron",
+      "body_sha256": "676d50c5802d9d96dd54441116bcfc0441cb20b7909d1893a4a2122ea4b06b2c"
+    },
+    {
+      "id": 13,
+      "title": "Alice’s Evidence",
+      "source": "chapter-12.xhtml",
+      "paragraphs": 70,
+      "words": 2101,
+      "text_sha256": "cfef0997df037a1a66ba63e4c55b24a63f3547306b15673befcb5276260eb20f",
+      "body_file": "weave.manuscript/13.ron",
+      "body_sha256": "4e7c014a1d6bb1ef2d24998d62ecd69e1bda098562e5e15028f4fe484f5089c2"
+    }
+  ]
+}

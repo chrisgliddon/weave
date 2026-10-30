@@ -305,6 +305,7 @@ weave/
 │   ├── domain-module-bevy/  # Portable tracer/composed World RON consumed as Bevy resources
 │   ├── domain-module-pixijs/ # Portable tracer/composed World JSON rendered with PixiJS
 │   ├── tabletop-adapters/   # Synthetic contract plus verified Plug-And-Play/Dungeonpunk/Freehack fixtures
+│   ├── manuscripts/         # Public-domain example manuscripts with recorded provenance
 │   └── web-player/          # Accessible no-bundler WASM player
 │
 ├── patterns/                # Reviewed community packages and original examples

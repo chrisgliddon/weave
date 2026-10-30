@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "work": {
+    "title": "Aesop's Fables",
+    "author": "Aesop",
+    "published": 1912,
+    "language": "en"
+  },
+  "source": {
+    "publisher": "Standard Ebooks",
+    "url": "https://standardebooks.org/ebooks/aesop/fables/v-s-vernon-jones",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "public_domain": "United States; first published before 1931",
+    "retrieved": "2026-10-30",
+    "artifact": "aesop_fables_v-s-vernon-jones.epub",
+    "artifact_sha256": "09a113d3da4ab22da65f2914fa001f71132e2f762dd900d6ba0289d35539f38f",
+    "artifact_bytes": 497329
+  },
+  "subset": "The first 20 fables",
+  "transformations": [
+    "XHTML parsed and markup removed; paragraphs kept in document order",
+    "Zero-width no-break space (U+FEFF) removed",
+    "Soft hyphen (U+00AD) removed",
+    "Whitespace collapsed within each paragraph",
+    "Illustrations, figures, and captions excluded",
+    "Translated by V. S. Vernon Jones, 1912",
+    "Each fable is a scene; its moral is the final paragraph"
+  ],
+  "totals": {
+    "chapters": 20,
+    "paragraphs": 29,
+    "words": 2534
+  },
+  "chapters": [
+    {
+      "id": 2,
+      "title": "The Fox and the Grapes",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 80,
+      "text_sha256": "c41932d5d3422c3739d8f403e69af0fed55f5cef6d73ce1770cefa06f0a44104",
+      "body_file": "weave.manuscript/2.ron",
+      "body_sha256": "86163e76c5b7e868632e1b3e4c3ab7131214ba4e465ee0b67f5f7e03db24ddde"
+    },
+    {
+      "id": 3,
+      "title": "The Goose That Laid the Golden Eggs",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 106,
+      "text_sha256": "12222a8ffa8686cec704b5b740a71aec1c8b2906ce43e5f560cb066c18ba7198",
+      "body_file": "weave.manuscript/3.ron",
+      "body_sha256": "8e80b174a7e30aa3db52ae34feb1ec589bcf473efaf6802c2eb47357df0d9167"
+    },
+    {
+      "id": 4,
+      "title": "The Cat and the Mice",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 182,
+      "text_sha256": "cd0139ed1130be55297a32d60532b89d50fbfde690e2585fa19dff49f6b82bbe",
+      "body_file": "weave.manuscript/4.ron",
+      "body_sha256": "43bb09b2561bbe7d108def2898495c7fc5fb8e64aeebc5a3490ec111dcf74ceb"
+    },
+    {
+      "id": 5,
+      "title": "The Mischievous Dog",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 113,
+      "text_sha256": "033c2326b268ff93898978878991c3fd5721e71c7c01d14bdd7119bd61836db5",
+      "body_file": "weave.manuscript/5.ron",
+      "body_sha256": "228518f52884e53cae9263096428a2c907fea96056779dd38bca8c75c08b3e62"
+    },
+    {
+      "id": 6,
+      "title": "The Charcoal-Burner and the Fuller",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 98,
+      "text_sha256": "d243e735a85aca20f5f6bf06b017802dc0d0bbdc330f116a8341cde0005bad35",
+      "body_file": "weave.manuscript/6.ron",
+      "body_sha256": "7b3ad05ea3922f605e2d0b32d73de442e4ae503ccd72c0c060b712c9ac9a30e2"
+    },
+    {
+      "id": 7,
+      "title": "The Mice in Council",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 140,
+      "text_sha256": "0f5dc62ddee60e0ceed3606fcb70df3d07da0f68189bf4dad02181dcfd517299",
+      "body_file": "weave.manuscript/7.ron",
+      "body_sha256": "297294f0673e971093af447f9280eedf740f293c394277d47b8f971bd873a2d0"
+    },
+    {
+      "id": 8,
+      "title": "The Bat and the Weasels",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 150,
+      "text_sha256": "e997f5da1aa7d5c71e5bddef30787e09bf1d93f1c9f64ca4443c8091a0a51883",
+      "body_file": "weave.manuscript/8.ron",
+      "body_sha256": "0c372dc186bb1de73346385adba804bd2edbbf81e646b86ddc6f436466b50056"
+    },
+    {
+      "id": 9,
+      "title": "The Dog and the Sow",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 46,
+      "text_sha256": "12e52dc2f4d5b6a6d162d7f33f927eeb01d630ab20e58b2d3186e761de4e1877",
+      "body_file": "weave.manuscript/9.ron",
+      "body_sha256": "0fac133cc638802c9b3d87b6006f0f70d68d16c84e9c4f42cd7d1f2a0de5dd7c"
+    },
+    {
+      "id": 10,
+      "title": "The Fox and the Crow",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 136,
+      "text_sha256": "9ed232ef8c38045acb5b8cff431961e88ea27e41650d27bfae07ef3ed4e3bd84",
+      "body_file": "weave.manuscript/10.ron",
+      "body_sha256": "ec9657798ce553199ac333c50cbb03d82cb98f8aef1d535ba3d829761e7f737a"
+    },
+    {
+      "id": 11,
+      "title": "The Horse and the Groom",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 74,
+      "text_sha256": "0bb1384916ebe60a2addb372655b04b956ee053427010dca4a38bd6efacbe1be",
+      "body_file": "weave.manuscript/11.ron",
+      "body_sha256": "51bc2ef380afc6d14e9b97b163c7d6886055d71eb50341e8da64551ee42b4850"
+    },
+    {
+      "id": 12,
+      "title": "The Wolf and the Lamb",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 127,
+      "text_sha256": "a1e2f8a22a9e3330d859d4725f30269c0807cc207a1e5ffa75ecadd1cc68be83",
+      "body_file": "weave.manuscript/12.ron",
+      "body_sha256": "b9fb761d58a6f920c4325c8ad41aff7080e83ae7d52cf245a1a20ca982d3bb5c"
+    },
+    {
+      "id": 13,
+      "title": "The Peacock and the Crane",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 66,
+      "text_sha256": "43b8c55292aad732f4bd17ef70ac83023e02c27fa98ae499cf0743816bbed916",
+      "body_file": "weave.manuscript/13.ron",
+      "body_sha256": "c27f2aaf777d3275ad854e6e0b771416560134d9b104f4335b472e4fb1ec941a"
+    },
+    {
+      "id": 14,
+      "title": "The Cat and the Birds",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 75,
+      "text_sha256": "0b235b2c3304cb35c3f794ed4b7cf4c6109f6c6446823fa4af0e15b834e828ed",
+      "body_file": "weave.manuscript/14.ron",
+      "body_sha256": "b2b76f7408a1e2fcc5804333979c39108f26b7fdce6f560a4c1ee74b60742d5f"
+    },
+    {
+      "id": 15,
+      "title": "The Spendthrift and the Swallow",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 96,
+      "text_sha256": "4107df6b1bef6f337dcb254934d2e4528c78e44c41105088096a198f245c4447",
+      "body_file": "weave.manuscript/15.ron",
+      "body_sha256": "e1224eab7d74c74e2773bc656435f53a1b402a47040777e90c6e4419f26bd3f9"
+    },
+    {
+      "id": 16,
+      "title": "The Old Woman and the Doctor",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 246,
+      "text_sha256": "ada5b6024685aed411fa74b61aa0d88210a03ba4b28faa7c39e0b2a2c107e34b",
+      "body_file": "weave.manuscript/16.ron",
+      "body_sha256": "b054ae1303d09f99f985bbba51f93080a74245812f40416e7ace702cfa935164"
+    },
+    {
+      "id": 17,
+      "title": "The Moon and Her Mother",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 44,
+      "text_sha256": "9a6e9d8456d0287755aaae5dc49baf4f636e3c08d74f1b9f40ee7032a415cd9a",
+      "body_file": "weave.manuscript/17.ron",
+      "body_sha256": "70430f9dba8afcbd127199d2c4c5e3e0d3a5a504151adf550090d57d9a5f7955"
+    },
+    {
+      "id": 18,
+      "title": "Mercury and the Woodman",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 312,
+      "text_sha256": "f575903eda0434be2be346fba83bb69ae29033eb972031888625263ea448fc93",
+      "body_file": "weave.manuscript/18.ron",
+      "body_sha256": "bea178bab499f82dcf8783e7685780518a6deea5ee9c9a61a3257c4a0d67fc45"
+    },
+    {
+      "id": 19,
+      "title": "The Ass, the Fox, and the Lion",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 176,
+      "text_sha256": "8f83d515c95d1f39bb2831ed2f6b70af0f3d4dd6755633a731717d5861ecf593",
+      "body_file": "weave.manuscript/19.ron",
+      "body_sha256": "ed869ef0c39f7718d278594968d787b0b58fb699d7da7b1b4e981921bfb5f30d"
+    },
+    {
+      "id": 20,
+      "title": "The Lion and the Mouse",
+      "source": "fables.xhtml",
+      "paragraphs": 1,
+      "words": 175,
+      "text_sha256": "16f5f1c833fe2c022abdfffa65f3283c0276aa89132fd07030e5444ac8f8b4a0",
+      "body_file": "weave.manuscript/20.ron",
+      "body_sha256": "b6b76e1171a1ede46807e874a3f3e3f75737061dc1b57ef320cf44c41e26780c"
+    },
+    {
+      "id": 21,
+      "title": "The Crow and the Pitcher",
+      "source": "fables.xhtml",
+      "paragraphs": 2,
+      "words": 92,
+      "text_sha256": "5d9041a929093c6ca8a5da0813ad2e67a5eb0bc3e28fc0510f619c12de1fa326",
+      "body_file": "weave.manuscript/21.ron",
+      "body_sha256": "0330d77bc11a6041c32fc21fa2f631513c4a83e6d9744ecfd9125afaf1604d54"
+    }
+  ]
+}

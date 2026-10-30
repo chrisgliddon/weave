@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "work": {
+    "title": "The Adventures of Sherlock Holmes",
+    "author": "Arthur Conan Doyle",
+    "published": 1892,
+    "language": "en"
+  },
+  "source": {
+    "publisher": "Standard Ebooks",
+    "url": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "public_domain": "United States; first published before 1931",
+    "retrieved": "2026-10-30",
+    "artifact": "arthur-conan-doyle_the-adventures-of-sherlock-holmes.epub",
+    "artifact_sha256": "328a1cdb370d8f6d990ac1107b403c6fae8e5fc5ce80258aa785a4ba9ffb3e68",
+    "artifact_bytes": 742054
+  },
+  "subset": "Two stories, each split into its numbered parts",
+  "transformations": [
+    "XHTML parsed and markup removed; paragraphs kept in document order",
+    "Zero-width no-break space (U+FEFF) removed",
+    "Soft hyphen (U+00AD) removed",
+    "Whitespace collapsed within each paragraph",
+    "Illustrations, figures, and captions excluded",
+    "Each story is a chapter; each numbered part is a scene"
+  ],
+  "totals": {
+    "chapters": 5,
+    "paragraphs": 474,
+    "words": 17670
+  },
+  "chapters": [
+    {
+      "id": 2,
+      "title": "A Scandal in Bohemia",
+      "source": "a-scandal-in-bohemia.xhtml",
+      "paragraphs": 0,
+      "words": 0,
+      "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "body_file": "weave.manuscript/2.ron",
+      "body_sha256": "e2ec309f5d1a30b9e32a27ea1c6729a1598e408dac33b8ce7cc3cdb4eb2ea4d6"
+    },
+    {
+      "id": 3,
+      "title": "I",
+      "source": "a-scandal-in-bohemia.xhtml",
+      "paragraphs": 120,
+      "words": 3435,
+      "text_sha256": "5599ca2c112f77de4148cb92d27a98fc44fa0cad63d375a2f8421bfdb7b2b28f",
+      "body_file": "weave.manuscript/3.ron",
+      "body_sha256": "76caf7ec2d1c41b5e6d4a2428a5f784a8e89a424265d8cda9ffd8bfee0188cea"
+    },
+    {
+      "id": 4,
+      "title": "II",
+      "source": "a-scandal-in-bohemia.xhtml",
+      "paragraphs": 95,
+      "words": 4009,
+      "text_sha256": "baec78d01e823c321bf40586bee4ed1131678a79d9c3f63cd15fedc710bf291f",
+      "body_file": "weave.manuscript/4.ron",
+      "body_sha256": "e247e8de13276a67b609e3a840e1b99909519855bc7417dc4db4c82e902f0284"
+    },
+    {
+      "id": 5,
+      "title": "III",
+      "source": "a-scandal-in-bohemia.xhtml",
+      "paragraphs": 44,
+      "words": 1082,
+      "text_sha256": "4fe3f518dff761b80103323d645f57244bb50b2e4b44d5490cc97021e00d0c10",
+      "body_file": "weave.manuscript/5.ron",
+      "body_sha256": "fe61678f6974dedd82f768c9b95d7abec381da26a79aa142900f46d56865e25d"
+    },
+    {
+      "id": 6,
+      "title": "The Redheaded League",
+      "source": "the-redheaded-league.xhtml",
+      "paragraphs": 215,
+      "words": 9144,
+      "text_sha256": "8d7b87384b1a851429d6e757bb83029ba3ba14f91eb23b9136e39ea3df22bc89",
+      "body_file": "weave.manuscript/6.ron",
+      "body_sha256": "f9fe1e82a0c2d97ae9508a93ca667c68cfb12306442e2e6440091421cf0c3b20"
+    }
+  ]
+}

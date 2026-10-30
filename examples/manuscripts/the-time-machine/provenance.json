@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "work": {
+    "title": "The Time Machine",
+    "author": "H. G. Wells",
+    "published": 1895,
+    "language": "en"
+  },
+  "source": {
+    "publisher": "Standard Ebooks",
+    "url": "https://standardebooks.org/ebooks/h-g-wells/the-time-machine",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "public_domain": "United States; first published before 1931",
+    "retrieved": "2026-10-30",
+    "artifact": "h-g-wells_the-time-machine.epub",
+    "artifact_sha256": "3931b56fecfb0b0d00737f5fabcd00a46a96c26a6b1c9b8a60751d154057d9a6",
+    "artifact_bytes": 535571
+  },
+  "subset": "Chapters I to XII and the epilogue, complete",
+  "transformations": [
+    "XHTML parsed and markup removed; paragraphs kept in document order",
+    "Zero-width no-break space (U+FEFF) removed",
+    "Soft hyphen (U+00AD) removed",
+    "Whitespace collapsed within each paragraph",
+    "Illustrations, figures, and captions excluded"
+  ],
+  "totals": {
+    "chapters": 13,
+    "paragraphs": 308,
+    "words": 32263
+  },
+  "chapters": [
+    {
+      "id": 2,
+      "title": "Chapter I",
+      "source": "chapter-1.xhtml",
+      "paragraphs": 78,
+      "words": 3010,
+      "text_sha256": "a58b18624ead19b702b172f4523f6783d8315aca418432ebc03461f826fb829a",
+      "body_file": "weave.manuscript/2.ron",
+      "body_sha256": "b83d4ddf61cb09860ecb359248e7185c1643034ea41dc311033839396f0fc258"
+    },
+    {
+      "id": 3,
+      "title": "Chapter II",
+      "source": "chapter-2.xhtml",
+      "paragraphs": 23,
+      "words": 1987,
+      "text_sha256": "27a975ea97c5c3a964c7d63ac6097d9f4e465c5d78bf8d7370fbd5f5a87d5812",
+      "body_file": "weave.manuscript/3.ron",
+      "body_sha256": "0de96a641f88105cdb1598c495fa43bb744a48a94371ec7b11936e25cf8747f2"
+    },
+    {
+      "id": 4,
+      "title": "Chapter III",
+      "source": "chapter-3.xhtml",
+      "paragraphs": 14,
+      "words": 2085,
+      "text_sha256": "518f3584695fc75e842a5d57170df8c086f28a43bf259ff88495e478a35c4ea8",
+      "body_file": "weave.manuscript/4.ron",
+      "body_sha256": "464ce1118ee9a59b39ad5658e9c16a54357fb6661f5a368e8bca10fc22719bb0"
+    },
+    {
+      "id": 5,
+      "title": "Chapter IV",
+      "source": "chapter-4.xhtml",
+      "paragraphs": 32,
+      "words": 3832,
+      "text_sha256": "74d9a8ea4d819513304cccfe5dfc6be646332c635338faa36c56c80e1a7d5411",
+      "body_file": "weave.manuscript/5.ron",
+      "body_sha256": "37318d5fc56eae5629e9208d358a33dbd990da82179b1d8d807365653f989ced"
+    },
+    {
+      "id": 6,
+      "title": "Chapter V",
+      "source": "chapter-5.xhtml",
+      "paragraphs": 41,
+      "words": 6482,
+      "text_sha256": "23d9f5cb8c761f1c666b82355f5b5456df2ad76de249ea964065b03d8296e748",
+      "body_file": "weave.manuscript/6.ron",
+      "body_sha256": "470c58cc08099391cb5b71662a411ff9e540e0cb26d98b7802d269aeeca0ae13"
+    },
+    {
+      "id": 7,
+      "title": "Chapter VI",
+      "source": "chapter-6.xhtml",
+      "paragraphs": 13,
+      "words": 2155,
+      "text_sha256": "2e71bb999dd830954798959e9a64c318418aba5cb89526df93deda19b77c7be8",
+      "body_file": "weave.manuscript/7.ron",
+      "body_sha256": "50fd6c83dfc9659ca5e43026db370fbae4047fa6a48ebe3755e64323d797571e"
+    },
+    {
+      "id": 8,
+      "title": "Chapter VII",
+      "source": "chapter-7.xhtml",
+      "paragraphs": 16,
+      "words": 2521,
+      "text_sha256": "a6bfff7a17ee9f5da7d318781457860fd07161cd72841d2ed8ba8533b91ea904",
+      "body_file": "weave.manuscript/8.ron",
+      "body_sha256": "3eefd4fadfda3345fad9ca2e03a6c086e15c9e9559a3f180b1c28ed837707191"
+    },
+    {
+      "id": 9,
+      "title": "Chapter VIII",
+      "source": "chapter-8.xhtml",
+      "paragraphs": 14,
+      "words": 2439,
+      "text_sha256": "fa9e053334f728c1c2dfcfae3038a5e48863781dd6f583464de0a76ecb5a7a56",
+      "body_file": "weave.manuscript/9.ron",
+      "body_sha256": "0eef875bd6c8dbac0183ffdd41d215927727e9502bd228f9f72edf566f21731b"
+    },
+    {
+      "id": 10,
+      "title": "Chapter IX",
+      "source": "chapter-9.xhtml",
+      "paragraphs": 17,
+      "words": 2637,
+      "text_sha256": "290cdd10ebf0f52add0d1ee1d78789ff6eb321cd7d773e49f15d940acff85fed",
+      "body_file": "weave.manuscript/10.ron",
+      "body_sha256": "32e879cb5339ec635793ab3a6d8a7b2388e148a6fec4f01469db8235600b5470"
+    },
+    {
+      "id": 11,
+      "title": "Chapter X",
+      "source": "chapter-10.xhtml",
+      "paragraphs": 14,
+      "words": 1066,
+      "text_sha256": "e14a31d391171cd20923ed21f2fc92f54637c1029beeaccfb0b5630092d3dc67",
+      "body_file": "weave.manuscript/11.ron",
+      "body_sha256": "0826cadd6a11f4a0871188a23da87d84dd71c4df573dca21c3858363bd6e7e46"
+    },
+    {
+      "id": 12,
+      "title": "Chapter XI",
+      "source": "chapter-11.xhtml",
+      "paragraphs": 12,
+      "words": 1900,
+      "text_sha256": "b98d7cfca2f2488864c73e1d8fd755bd6a5097234e40e77d975d7aa1ee3ecac8",
+      "body_file": "weave.manuscript/12.ron",
+      "body_sha256": "892d2b2965d7c1d30d68a94803db95e0eb562ee8ef2ddfe7b3614d28a80782ef"
+    },
+    {
+      "id": 13,
+      "title": "Chapter XII",
+      "source": "chapter-12.xhtml",
+      "paragraphs": 33,
+      "words": 1872,
+      "text_sha256": "0c1b0e0383b9d629c9842d812abcba12dfe661ee65253a60cf516fe14ad2377b",
+      "body_file": "weave.manuscript/13.ron",
+      "body_sha256": "8d96da390dc62644a1e23d32a4e0e33d64a022c93354cd0b3dbb90b61012f437"
+    },
+    {
+      "id": 14,
+      "title": "Epilogue",
+      "source": "epilogue.xhtml",
+      "paragraphs": 1,
+      "words": 277,
+      "text_sha256": "6c18eecffc7e6e3a860e13d5bb891822e0861093f90cdd05dd7177969592807c",
+      "body_file": "weave.manuscript/14.ron",
+      "body_sha256": "9c5d041de81a0f961b55d08524b07d112f317d300051b17f86d10310628b1b34"
+    }
+  ]
+}

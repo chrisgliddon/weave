@@ -246,6 +246,18 @@ def check_quickstart_source() -> None:
         )
 
 
+def check_corpus() -> None:
+    """Verify the committed public-domain corpus against its provenance."""
+
+    run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "build-corpus.py"),
+            "--check",
+        ]
+    )
+
+
 def cargo_target_directory() -> Path:
     metadata = run(
         ["cargo", "metadata", "--format-version", "1", "--no-deps"],
@@ -4520,6 +4532,7 @@ def main() -> None:
     check_versions()
     check_source_links()
     check_quickstart_source()
+    check_corpus()
     compile_examples()
     verify_community_package()
     verify_domain_contract()
