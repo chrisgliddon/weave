@@ -2951,7 +2951,7 @@ def verify_domain_contract() -> None:
         compiled = json.loads(compiled_tracer_json.read_text(encoding="utf-8"))
         module = compiled.get("modules", {}).get("constellation", {})
         if (
-            compiled.get("version") != 4
+            compiled.get("version") != 5
             or module.get("id") != "org.weave.synthetic_constellation"
             or module.get("exports", {}).get("phase", {}).get("value", {}).get("value")
             != "twilight"
@@ -3062,7 +3062,7 @@ def verify_domain_contract() -> None:
             "write_back", {}
         ).get("value", {})
         if (
-            character_story.get("version") != 4
+            character_story.get("version") != 5
             or character_module.get("version") != "1.6.0"
             or character_profile.get("identity", {})
             .get("value", {})
@@ -3307,7 +3307,7 @@ def verify_domain_contract() -> None:
             if cue.get("record_id", {}).get("value") == "apollo_11_lunar_landing"
         ]
         if (
-            temporal_story.get("version") != 4
+            temporal_story.get("version") != 5
             or temporal_module.get("version") != "1.6.0"
             or temporal_module.get("pack_id") != "ari_vale_temporal"
             or accepted_record_ids
@@ -3382,7 +3382,7 @@ def verify_domain_contract() -> None:
             .get("value", {})
         )
         if (
-            world_story.get("version") != 4
+            world_story.get("version") != 5
             or world_seed.get("primary_biome", {}).get("value")
             != "temperate_broadleaf_and_mixed_forest"
             or world_seed.get("identity", {})
@@ -3616,7 +3616,7 @@ def verify_domain_contract() -> None:
                 .get("value")
             )
             if (
-                story.get("version") != 4
+                story.get("version") != 5
                 or preset != expected_preset
                 or resolution != expected_resolution
                 or culture_included is not False
@@ -4253,6 +4253,7 @@ def build_site(rustdoc: Path, hugo: str) -> None:
         "weave-story-ir-v2.schema.json",
         "weave-story-ir-v3.schema.json",
         "weave-story-ir-v4.schema.json",
+        "weave-story-ir-v5.schema.json",
         "community-pattern-package-v1.schema.json",
         "domain-module-manifest-v1.schema.json",
         "domain-pack-v1.schema.json",
