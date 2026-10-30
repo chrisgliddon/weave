@@ -10,9 +10,9 @@ use weave_core::ir::StoryIr;
 use weave_core::{Diagnostic, Span};
 use weave_domain::DomainCatalog;
 use weave_patterns::DrawResult;
-use weave_runtime::{ChoiceView, Story, StoryEvent, Value};
+use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
-use crate::play_view::{NARRATOR, PlayMode, scene_from_session};
+use crate::play_view::{NARRATOR, PlayMode, scene_from_session, scene_tone};
 use crate::theme::DARK_THEME;
 
 const MAX_CONTINUE_BOUNDARIES: usize = 10_000;
@@ -109,6 +109,7 @@ pub struct PreviewSession {
     status: PreviewStatus,
     transcript: Vec<PreviewTranscript>,
     pattern_draws: Vec<DrawResult>,
+    presentation: Vec<PresentationEvent>,
     issue: Option<PreviewIssue>,
     domain_catalog: DomainCatalog,
 }
@@ -125,6 +126,7 @@ impl PreviewSession {
             status: PreviewStatus::Ready,
             transcript: Vec::new(),
             pattern_draws: Vec::new(),
+            presentation: Vec::new(),
             issue: None,
             domain_catalog: DomainCatalog::new(),
         }
@@ -171,6 +173,15 @@ impl PreviewSession {
         &self.pattern_draws
     }
 
+    /// Presentation cues produced so far, in source order.
+    ///
+    /// The Play surface reads this to stage the scene. It is cleared whenever a
+    /// new story is installed, so a restart begins from an unstaged frame.
+    #[must_use]
+    pub fn presentation(&self) -> &[PresentationEvent] {
+        &self.presentation
+    }
+
     #[must_use]
     pub fn issue(&self) -> Option<&PreviewIssue> {
         self.issue.as_ref()
@@ -179,6 +190,18 @@ impl PreviewSession {
     #[must_use]
     pub fn choices(&self) -> Vec<ChoiceView> {
         self.runtime.as_ref().map_or_else(Vec::new, Story::choices)
+    }
+
+    /// Display name declared for a stage, if the story names one.
+    #[must_use]
+    pub fn stage_name(&self, id: &str) -> Option<String> {
+        self.last_valid_story
+            .as_ref()?
+            .presentation
+            .stages
+            .get(id)?
+            .name
+            .clone()
     }
 
     #[must_use]
@@ -237,6 +260,7 @@ impl PreviewSession {
         };
         let event = runtime.advance();
         self.pattern_draws.extend(runtime.take_pattern_draws());
+        self.presentation.extend(runtime.take_presentation());
         self.runtime = Some(runtime);
         match event {
             Ok(StoryEvent::Line(line)) => {
@@ -377,6 +401,7 @@ impl PreviewSession {
         match Story::with_seed(story.clone(), self.seed) {
             Ok(mut runtime) => {
                 self.pattern_draws = runtime.take_pattern_draws();
+                self.presentation = runtime.take_presentation();
                 self.last_valid_story = Some(story);
                 self.runtime = Some(runtime);
                 self.compiled_revision = Some(revision);
@@ -625,7 +650,7 @@ impl PreviewSurface {
             .min_h_0()
             .relative()
             .overflow_hidden()
-            .bg(rgb(0x0e1118))
+            .bg(rgb(scene_tone(scene.background.as_deref())))
             .flex()
             .items_end()
             .justify_center();
@@ -639,15 +664,41 @@ impl PreviewSurface {
                     .h(px(1.0))
                     .bg(rgb(DARK_THEME.border)),
             )
-            .child(
-                div()
-                    .w(px(120.0))
-                    .h(px(150.0))
-                    .rounded_t_full()
-                    .bg(rgb(0x1a2030))
-                    .border_1()
-                    .border_color(rgb(DARK_THEME.border)),
-            );
+            .when(scene.background.is_some(), |element| {
+                element.child(
+                    div()
+                        .absolute()
+                        .top_3()
+                        .right_3()
+                        .text_xs()
+                        .text_color(rgb(DARK_THEME.muted_text))
+                        .child(scene.background.clone().unwrap_or_default()),
+                )
+            })
+            .when(scene.stage.is_some(), |element| {
+                element.child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .items_center()
+                        .gap_1()
+                        .child(
+                            div()
+                                .w(px(120.0))
+                                .h(px(150.0))
+                                .rounded_t_full()
+                                .bg(rgb(0x1a2030))
+                                .border_1()
+                                .border_color(rgb(DARK_THEME.border)),
+                        )
+                        .child(
+                            div()
+                                .text_xs()
+                                .text_color(rgb(DARK_THEME.muted_text))
+                                .child(scene.stage.clone().unwrap_or_default()),
+                        ),
+                )
+            });
         if scene.speaker != NARRATOR {
             stage = stage.child(
                 div()

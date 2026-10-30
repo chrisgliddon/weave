@@ -4,7 +4,7 @@
 //! the two views cannot disagree about the story state. This module holds the
 //! derived data and the naming rules; the surface only draws it.
 
-use weave_runtime::ChoiceView;
+use weave_runtime::{ChoiceView, PresentationEvent};
 
 use crate::preview::{PreviewSession, PreviewStatus, PreviewTranscript};
 
@@ -47,6 +47,10 @@ pub struct PlayScene {
     pub line: String,
     /// Choices waiting for the author.
     pub choices: Vec<ChoiceView>,
+    /// Staged background scene id, when a cue set one.
+    pub background: Option<String>,
+    /// Staged character id, when a cue showed one.
+    pub stage: Option<String>,
     /// Session status.
     pub status: PreviewStatus,
     /// Whether the story has ended.
@@ -58,6 +62,25 @@ pub struct PlayScene {
 /// The name used when a line has no explicit speaker.
 pub const NARRATOR: &str = "Narrator";
 
+/// Flat background tones the Play surface uses for declared scenes.
+///
+/// The cue carries an asset reference; until the asset lifecycle lands the
+/// surface renders a distinct synthetic tone per scene id, so a cue change is
+/// visible without pretending an image was loaded.
+pub const SCENE_TONES: [u32; 4] = [0x101722, 0x171420, 0x141d1c, 0x1d1814];
+
+/// Pick the synthetic tone for a background cue.
+#[must_use]
+pub fn scene_tone(scene: Option<&str>) -> u32 {
+    let Some(scene) = scene else {
+        return 0x0e1118;
+    };
+    let hash = scene.bytes().fold(0_u32, |accumulator, byte| {
+        accumulator.wrapping_mul(31).wrapping_add(u32::from(byte))
+    });
+    SCENE_TONES[hash as usize % SCENE_TONES.len()]
+}
+
 /// Build the scene for the current session state.
 ///
 /// The scene reads the same runtime and transcript the debug view reads, so
@@ -65,7 +88,7 @@ pub const NARRATOR: &str = "Narrator";
 /// presentations.
 #[must_use]
 pub fn scene_from_session(session: &PreviewSession) -> PlayScene {
-    let line = session
+    let raw = session
         .transcript()
         .iter()
         .rev()
@@ -74,10 +97,34 @@ pub fn scene_from_session(session: &PreviewSession) -> PlayScene {
             PreviewTranscript::Choice(_) | PreviewTranscript::Jump(_) => None,
         })
         .unwrap_or_default();
-    let (speaker, line) = split_speaker(&line);
+    let (prose_speaker, line) = split_speaker(&raw);
+
+    let mut background = None;
+    let mut stage: Option<String> = None;
+    let mut cued_speaker: Option<Option<String>> = None;
+    for cue in session.presentation() {
+        match cue {
+            PresentationEvent::Scene(id) => background = Some(id.clone()),
+            PresentationEvent::Show(id) => stage = Some(id.clone()),
+            PresentationEvent::Hide(id) => {
+                if stage.as_deref() == Some(id.as_str()) {
+                    stage = None;
+                }
+            }
+            PresentationEvent::Speaker(name) => cued_speaker = Some(name.clone()),
+        }
+    }
+    let speaker = match cued_speaker {
+        Some(Some(id)) => session.stage_name(&id).unwrap_or(id),
+        Some(None) => NARRATOR.to_owned(),
+        None => prose_speaker,
+    };
+
     PlayScene {
         speaker,
         line,
+        background,
+        stage,
         choices: session.choices(),
         status: session.status(),
         ended: session.status() == PreviewStatus::Ended,
@@ -225,6 +272,106 @@ Mara: The ferry leaves at dusk.
         assert!(scene.line.is_empty());
         assert!(scene.choices.is_empty());
         assert!(!scene.ended);
+    }
+
+    fn cued_story() -> StoryIr {
+        let source = r#"
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@speaker mara
+Mara: The ferry leaves at dusk.
+-> END
+"#;
+        weave_compiler::compile(source, &weave_compiler::CompileOptions::default())
+            .expect("fixture compiles")
+            .story
+    }
+
+    #[test]
+    fn cues_stage_the_background_character_and_speaker() {
+        let mut session = PreviewSession::from_story(cued_story(), 3, 1);
+        session.run();
+        let scene = scene_from_session(&session);
+        assert_eq!(scene.background.as_deref(), Some("ferry_dusk"));
+        assert_eq!(scene.stage.as_deref(), Some("mara"));
+        assert_eq!(scene.speaker, "Mara");
+        assert_eq!(scene.line, "The ferry leaves at dusk.");
+    }
+
+    #[test]
+    fn an_explicit_speaker_cue_beats_the_prose_prefix() {
+        let source = r#"
+stage kell {
+    name: "Kell"
+}
+
+=== start ===
+@speaker kell
+Mara: The ferry leaves at dusk.
+-> END
+"#;
+        let story = weave_compiler::compile(source, &weave_compiler::CompileOptions::default())
+            .expect("fixture compiles")
+            .story;
+        let mut session = PreviewSession::from_story(story, 3, 1);
+        session.run();
+        let scene = scene_from_session(&session);
+        assert_eq!(scene.speaker, "Kell");
+        assert_eq!(scene.line, "The ferry leaves at dusk.");
+    }
+
+    #[test]
+    fn hiding_a_stage_clears_it() {
+        let source = r#"
+stage mara {
+    name: "Mara"
+}
+
+=== start ===
+@show mara
+@hide mara
+The stage is empty.
+-> END
+"#;
+        let story = weave_compiler::compile(source, &weave_compiler::CompileOptions::default())
+            .expect("fixture compiles")
+            .story;
+        let mut session = PreviewSession::from_story(story, 3, 1);
+        session.run();
+        let scene = scene_from_session(&session);
+        assert_eq!(scene.stage, None);
+        assert_eq!(scene.speaker, NARRATOR);
+    }
+
+    #[test]
+    fn a_restart_clears_the_staged_scene() {
+        let mut session = PreviewSession::from_story(cued_story(), 3, 1);
+        session.run();
+        assert!(scene_from_session(&session).background.is_some());
+        session.restart();
+        let scene = scene_from_session(&session);
+        assert_eq!(scene.background, None);
+        assert_eq!(scene.stage, None);
+    }
+
+    #[test]
+    fn scene_tones_are_stable_and_distinct() {
+        assert_eq!(scene_tone(None), 0x0e1118);
+        assert_eq!(
+            scene_tone(Some("ferry_dusk")),
+            scene_tone(Some("ferry_dusk"))
+        );
+        assert_ne!(scene_tone(Some("ferry_dusk")), 0x0e1118);
     }
 
     #[test]
