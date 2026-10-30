@@ -36,6 +36,7 @@ Each directory is a manuscript project:
 
 ```text
 alice-adventures-in-wonderland/
+├── story.weave                 # openable project shell
 ├── weave.manuscript.ron        # versioned chapter tree
 ├── weave.manuscript/
 │   ├── styles.ron              # project style sheet
@@ -43,6 +44,9 @@ alice-adventures-in-wonderland/
 │   └── ...
 └── provenance.json             # source, licence, hashes, counts
 ```
+
+`story.weave` is a minimal story so the editor can open the directory as a
+project; the prose lives in the manuscript files beside it.
 
 `provenance.json` records the source URL, the licence, the retrieval date, the
 SHA-256 of the downloaded edition, and per chapter the source file, paragraph

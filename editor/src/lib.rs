@@ -12,6 +12,7 @@ pub mod graph;
 pub mod graph_view;
 pub mod health;
 pub mod manuscript;
+pub mod manuscript_view;
 pub mod node_renderers;
 pub mod pattern_browser;
 pub mod preview;
@@ -50,6 +51,10 @@ pub use manuscript::{
     BODY_DIR_NAME, BODY_FORMAT_VERSION, BodyStore, Chapter, ChapterBody, ChapterError, ChapterId,
     ChapterKind, ChapterTree, LabelDefinition, Manuscript, ManuscriptStore, NamedStyle, Paragraph,
     StatusDefinition, StyleSheet, TREE_FILE_NAME, TREE_FORMAT_VERSION, TextRun,
+};
+pub use manuscript_view::{
+    CARD_GAP, CARD_HEIGHT, CARD_WIDTH, CardRecord, DEFAULT_COLUMNS, ManuscriptAccessibility,
+    ManuscriptProjection, ManuscriptSurface, TreeRow,
 };
 pub use node_renderers::{
     EdgeVisualStyle, InspectorData, NodePresentation, NodeShape, NodeVisualState, NodeVisualStyle,

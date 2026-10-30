@@ -127,3 +127,27 @@ Recovery data is separate from the project file and never silently overwrites it
 | Search in text | `Primary+F` |
 
 Every command is also available through the File, Edit, View, or Run menu. Errors are reported in the workspace instead of terminating the editing session.
+
+### Manuscript view
+
+Switch to the Manuscript view with the header tab or `secondary-3`. It shows
+two surfaces over the same ordered child list:
+
+- the tree, which is the navigation surface and lists the whole hierarchy in
+  stored order; and
+- the card board, which renders the selected container's children as index
+  cards in the same order.
+
+Selecting a container shows its children. Selecting a leaf keeps the board on
+its parent and moves the selection, so a card stays under the pointer. Each card
+has a fixed aspect ratio and reflows to a configurable number of columns. A
+container with no children shows an empty state that names it.
+
+Both surfaces read one projection of the tree, so the order they show cannot
+diverge. The board reads only the bodies of the container it displays, which is
+why a manuscript with a hundred chapters still opens quickly.
+
+The example projects in `examples/manuscripts/` are public-domain books in this
+format and can be opened directly; see their
+[README](https://github.com/chrisgliddon/weave/tree/main/examples/manuscripts)
+for provenance.

@@ -7,6 +7,8 @@ pub enum CenterView {
     Graph,
     /// Raw `.weave` source.
     Text,
+    /// Ordered manuscript chapters.
+    Manuscript,
 }
 
 impl CenterView {
@@ -16,6 +18,7 @@ impl CenterView {
         match self {
             Self::Graph => "Graph",
             Self::Text => "Text",
+            Self::Manuscript => "Manuscript",
         }
     }
 }
@@ -73,6 +76,8 @@ pub enum EditorCommand {
     ShowGraph,
     /// Select the text view.
     ShowText,
+    /// Select the manuscript view.
+    ShowManuscript,
     /// Toggle the project sidebar.
     ToggleProject,
     /// Toggle the inspector sidebar.
@@ -164,6 +169,7 @@ impl EditorState {
             }
             EditorCommand::ShowGraph => self.layout.center = CenterView::Graph,
             EditorCommand::ShowText => self.layout.center = CenterView::Text,
+            EditorCommand::ShowManuscript => self.layout.center = CenterView::Manuscript,
             EditorCommand::ToggleProject => {
                 self.layout.project_sidebar = !self.layout.project_sidebar;
             }
@@ -237,6 +243,7 @@ pub fn menu_definitions() -> Vec<MenuDefinition> {
             entries: vec![
                 MenuEntry::Command("Graph", EditorCommand::ShowGraph),
                 MenuEntry::Command("Text", EditorCommand::ShowText),
+                MenuEntry::Command("Manuscript", EditorCommand::ShowManuscript),
                 MenuEntry::Separator,
                 MenuEntry::Command("Patterns", EditorCommand::TogglePatterns),
                 MenuEntry::Command("Preview", EditorCommand::TogglePreview),

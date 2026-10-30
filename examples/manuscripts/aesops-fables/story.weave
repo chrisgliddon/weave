@@ -1,0 +1,8 @@
+// Manuscript project shell.
+//
+// The prose lives in weave.manuscript.ron and weave.manuscript/ beside this
+// file. This story exists so the editor can open the project; it is not part
+// of the public-domain text.
+
+=== start ===
+-> END

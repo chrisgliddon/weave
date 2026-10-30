@@ -15,6 +15,7 @@ use gpui::{
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
+use crate::manuscript_view::ManuscriptSurface;
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::preview::{PreviewEvent, PreviewSurface};
@@ -34,6 +35,7 @@ actions!(
         Redo,
         ShowGraph,
         ShowText,
+        ShowManuscript,
         ToggleProject,
         ToggleInspector,
         TogglePatterns,
@@ -139,6 +141,7 @@ fn install_commands_and_menus(cx: &mut App) {
         KeyBinding::new("secondary-shift-z", Redo, Some("WeaveEditor")),
         KeyBinding::new("secondary-1", ShowGraph, Some("WeaveEditor")),
         KeyBinding::new("secondary-2", ShowText, Some("WeaveEditor")),
+        KeyBinding::new("secondary-3", ShowManuscript, Some("WeaveEditor")),
         KeyBinding::new("secondary-enter", RunPreview, Some("WeaveEditor")),
     ]);
     cx.on_action(|_: &Quit, cx| cx.quit());
@@ -157,6 +160,7 @@ fn install_commands_and_menus(cx: &mut App) {
         Menu::new("View").items([
             MenuItem::action("Graph", ShowGraph),
             MenuItem::action("Text", ShowText),
+            MenuItem::action("Manuscript", ShowManuscript),
             MenuItem::separator(),
             MenuItem::action("Project", ToggleProject),
             MenuItem::action("Inspector", ToggleInspector),
@@ -184,6 +188,7 @@ struct EditorShell {
     text: Entity<TextSurface>,
     patterns: Entity<PatternBrowserSurface>,
     preview: Entity<PreviewSurface>,
+    manuscript: Entity<ManuscriptSurface>,
     focus: FocusHandle,
 }
 
@@ -236,6 +241,7 @@ impl EditorShell {
             this.handle_preview_event(event, cx);
         })
         .detach();
+        let manuscript = cx.new(ManuscriptSurface::new);
         let shell = Self {
             state,
             domain,
@@ -249,6 +255,7 @@ impl EditorShell {
             text,
             patterns,
             preview,
+            manuscript,
             focus,
         };
         shell.schedule_project_poll(cx);
@@ -554,6 +561,10 @@ impl EditorShell {
                     self.graph.update(cx, |graph, cx| graph.undo(cx));
                 }
             }
+            CenterView::Manuscript => {
+                self.state.status =
+                    crate::state::StatusMessage::Info("The manuscript has no undo yet".to_owned());
+            }
         }
         cx.notify();
     }
@@ -566,6 +577,10 @@ impl EditorShell {
                     self.state.status =
                         crate::state::StatusMessage::Info("Redid source edit".to_owned());
                 }
+            }
+            CenterView::Manuscript => {
+                self.state.status =
+                    crate::state::StatusMessage::Info("The manuscript has no redo yet".to_owned());
             }
             CenterView::Graph => {
                 if let Some(source) = self.canonical.redo() {
@@ -593,6 +608,7 @@ impl EditorShell {
     fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
         let source = self.project.source().to_owned();
         self.install_project_domain_catalog(cx);
+        self.synchronize_manuscript(cx);
         self.canonical = CanonicalProjectModel::new(source.clone());
         self.canonical_revision_seen = self.canonical.revision();
         self.text
@@ -606,6 +622,18 @@ impl EditorShell {
         let compiled = self.compile_current_source(cx);
         let _ = self.compile_preview_now(cx);
         compiled
+    }
+
+    fn synchronize_manuscript(&mut self, cx: &mut Context<Self>) {
+        let directory = self
+            .project
+            .path()
+            .and_then(Path::parent)
+            .map(Path::to_path_buf);
+        self.manuscript.update(cx, |manuscript, _| match directory {
+            Some(directory) => manuscript.load(&directory),
+            None => manuscript.clear(),
+        });
     }
 
     fn install_project_domain_catalog(&mut self, cx: &mut Context<Self>) {
@@ -730,6 +758,7 @@ impl EditorShell {
 
     fn finish_save(&mut self, diagnostic_count: usize, cx: &mut Context<Self>) {
         self.install_project_domain_catalog(cx);
+        self.synchronize_manuscript(cx);
         self.text.update(cx, |text, _| text.mark_saved());
         self.state.project_name = self.project.display_name();
         self.state.dirty = false;
@@ -1107,10 +1136,12 @@ impl gpui::Render for EditorShell {
         let active_detail = match layout.center {
             CenterView::Graph => "GPU node graph canvas",
             CenterView::Text => "Unicode source editor",
+            CenterView::Manuscript => "Ordered chapter tree and card board",
         };
         let center_content = match layout.center {
             CenterView::Graph => self.graph.clone().into_any_element(),
             CenterView::Text => self.text.clone().into_any_element(),
+            CenterView::Manuscript => self.manuscript.clone().into_any_element(),
         };
         let center = div()
             .flex()
@@ -1247,6 +1278,22 @@ impl gpui::Render for EditorShell {
                                     .child("Text")
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.apply(EditorCommand::ShowText, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-manuscript")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.center == CenterView::Manuscript, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Manuscript")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::ShowManuscript, cx);
                                     })),
                             )
                             .child(

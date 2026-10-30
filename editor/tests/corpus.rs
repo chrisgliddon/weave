@@ -7,6 +7,7 @@
 use std::path::{Path, PathBuf};
 
 use weave_editor::manuscript::{ChapterId, ManuscriptStore};
+use weave_editor::manuscript_view::ManuscriptProjection;
 
 /// The corpus lives beside the workspace, not inside the editor crate.
 fn corpus_root() -> PathBuf {
@@ -159,5 +160,76 @@ fn reading_one_corpus_chapter_does_not_pull_in_the_next() {
         first.text(),
         second.text(),
         "two chapters of Alice should not share a body"
+    );
+}
+
+#[test]
+fn the_alice_board_shows_twelve_titled_cards() {
+    let directory = corpus_root().join("alice-adventures-in-wonderland");
+    let store = ManuscriptStore::in_directory(&directory);
+    let tree = store.read_tree().expect("tree");
+    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), ChapterId::ROOT, 3);
+
+    assert_eq!(projection.container_title(), "Manuscript");
+    assert_eq!(projection.cards().len(), 12);
+    assert_eq!(projection.cards()[0].title, "Down the Rabbit-Hole");
+    assert_eq!(projection.cards()[0].ordinal, 1);
+    assert_eq!(projection.cards()[0].total, 12);
+    assert!(
+        projection.cards()[0].word_count > 1000,
+        "the first chapter should report its real word count"
+    );
+    assert!(!projection.cards()[0].excerpt.is_empty());
+    assert!(
+        projection
+            .cards()
+            .iter()
+            .all(|card| card.accessible_label.contains("index cards")),
+        "every card should name its ordinal for a screen reader"
+    );
+}
+
+#[test]
+fn selecting_a_story_shows_its_numbered_scenes() {
+    let directory = corpus_root().join("the-adventures-of-sherlock-holmes");
+    let store = ManuscriptStore::in_directory(&directory);
+    let tree = store.read_tree().expect("tree");
+    let story = tree
+        .child_ids(ChapterId::ROOT)
+        .into_iter()
+        .find(|id| {
+            tree.chapter(*id)
+                .is_some_and(|chapter| chapter.title == "A Scandal in Bohemia")
+        })
+        .expect("the sectioned story");
+
+    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), story, 3);
+    assert_eq!(projection.container_title(), "A Scandal in Bohemia");
+    assert_eq!(projection.cards().len(), 3);
+    assert_eq!(
+        projection
+            .cards()
+            .iter()
+            .map(|card| card.title.as_str())
+            .collect::<Vec<_>>(),
+        ["I", "II", "III"]
+    );
+    assert!(projection.cards().iter().all(|card| card.word_count > 0));
+}
+
+#[test]
+fn an_empty_container_names_itself_on_the_board() {
+    let directory = corpus_root().join("alice-adventures-in-wonderland");
+    let store = ManuscriptStore::in_directory(&directory);
+    let tree = store.read_tree().expect("tree");
+    let chapter = tree.child_ids(ChapterId::ROOT)[0];
+
+    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), chapter, 3);
+    assert!(projection.cards().is_empty());
+    assert!(projection.is_empty());
+    assert!(
+        projection.empty_state().contains("Down the Rabbit-Hole"),
+        "the empty state should name the container, got {:?}",
+        projection.empty_state()
     );
 }

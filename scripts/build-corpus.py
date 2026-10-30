@@ -38,6 +38,16 @@ STATUSES = ((1, "Draft"), (2, "Revised"), (3, "Done"))
 LABELS = ((1, "POV"),)
 ORDER_GAP = 1024
 
+PROJECT_STUB = """// Manuscript project shell.
+//
+// The prose lives in weave.manuscript.ron and weave.manuscript/ beside this
+// file. This story exists so the editor can open the project; it is not part
+// of the public-domain text.
+
+=== start ===
+-> END
+"""
+
 COMMON_TRANSFORMATIONS = (
     "XHTML parsed and markup removed; paragraphs kept in document order",
     "Zero-width no-break space (U+FEFF) removed",
@@ -516,6 +526,7 @@ def write_work(work: Work, chapters: list[Chapter], source: Path, target: Path) 
         emit(chapter, 0, (index + 1) * ORDER_GAP, "chapter")
 
     (bodies / "styles.ron").write_text(styles_ron(), encoding="utf-8")
+    (target / "story.weave").write_text(PROJECT_STUB, encoding="utf-8")
 
     tree = ["(", "    version: 1,", "    chapters: ["]
     tree.append(chapter_record(0, 0, 0, "chapter", "Manuscript"))
