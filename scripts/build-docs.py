@@ -22,11 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 BOOK = ROOT / "target" / "book"
 DOCS_CARGO_TARGET = ROOT / "target" / "docs-cargo"
-MDBOOK_VERSION = "0.5.4"
+HUGO_MIN_VERSION = (0, 158, 0)
 SITE_VERSION = "0.1.0"
 
 REQUIRED_CHAPTERS = {
-    "index.md",
+    "_index.md",
     "versioning.md",
     "getting_started.md",
     "language_guide.md",
@@ -148,7 +148,7 @@ def cargo_environment() -> dict[str, str]:
 def check_versions() -> None:
     """Keep the site chrome and normative language release aligned."""
 
-    book = tomllib.loads((ROOT / "book.toml").read_text(encoding="utf-8"))
+    config = tomllib.loads((ROOT / "hugo.toml").read_text(encoding="utf-8"))
     guide = (DOCS / "language_guide.md").read_text(encoding="utf-8")
     guide_match = re.search(
         r"^Language specification version: `([^`]+)`\.$", guide, re.MULTILINE
@@ -156,14 +156,15 @@ def check_versions() -> None:
     versions = {
         "workspace": workspace_version(),
         "language guide": guide_match.group(1) if guide_match else None,
+        "site configuration": str(config.get("params", {}).get("version")),
     }
     for name, version in versions.items():
         if version != SITE_VERSION:
             raise DocsError(f"{name} version is {version!r}, expected {SITE_VERSION!r}")
 
-    title = str(book["book"]["title"])
+    title = str(config["title"])
     if SITE_VERSION not in title:
-        raise DocsError(f"book title does not identify Weave {SITE_VERSION}")
+        raise DocsError(f"site title does not identify Weave {SITE_VERSION}")
 
 
 def markdown_destination(source: Path, raw_target: str) -> Path | None:
@@ -180,28 +181,36 @@ def markdown_destination(source: Path, raw_target: str) -> Path | None:
     return (source.parent / target).resolve()
 
 
+def navigation_paths() -> list[str]:
+    """Flatten the site navigation into its ordered page paths."""
+
+    nav = tomllib.loads((ROOT / "data" / "nav.toml").read_text(encoding="utf-8"))
+    paths = [str(nav["home"])]
+    for section in nav["sections"]:
+        for item in section["items"]:
+            paths.append(str(item["path"]))
+            for child in item.get("children", []):
+                paths.append(str(child["path"]))
+    return paths
+
+
 def check_source_links() -> None:
     """Reject missing Markdown chapters, includes, and local link targets."""
 
-    summary = (DOCS / "SUMMARY.md").read_text(encoding="utf-8")
-    chapters = {
-        target.split("#", maxsplit=1)[0]
-        for target in MARKDOWN_LINK.findall(summary)
-        if not urllib.parse.urlsplit(target).scheme
-    }
+    chapters = set(navigation_paths())
     missing_chapters = REQUIRED_CHAPTERS - chapters
     if missing_chapters:
-        raise DocsError(f"SUMMARY.md is missing chapters: {sorted(missing_chapters)}")
+        raise DocsError(f"data/nav.toml is missing chapters: {sorted(missing_chapters)}")
 
-    unlisted = {
-        path.name
-        for path in DOCS.glob("*.md")
-        if path.name != "SUMMARY.md" and path.name not in chapters
-    }
+    unlisted = {path.name for path in DOCS.glob("*.md") if path.name not in chapters}
     if unlisted:
         raise DocsError(
-            f"documentation pages are absent from SUMMARY.md: {sorted(unlisted)}"
+            f"documentation pages are absent from data/nav.toml: {sorted(unlisted)}"
         )
+
+    absent = sorted(name for name in chapters if not (DOCS / name).is_file())
+    if absent:
+        raise DocsError(f"data/nav.toml names missing pages: {absent}")
 
     failures: list[str] = []
     for source in sorted(DOCS.rglob("*.md")):
@@ -4193,23 +4202,34 @@ def build_rustdoc() -> Path:
     return cargo_target_directory() / "doc"
 
 
-def mdbook_binary() -> str:
-    binary = os.environ.get("MDBOOK", "mdbook")
-    result = run([binary, "--version"], capture=True)
-    match = re.search(r"(\d+\.\d+\.\d+)", result.stdout)
-    version = match.group(1) if match else None
-    if version != MDBOOK_VERSION:
+def hugo_binary() -> str:
+    binary = os.environ.get("HUGO", "hugo")
+    result = run([binary, "version"], capture=True)
+    match = re.search(r"v(\d+)\.(\d+)\.(\d+)", result.stdout)
+    found = tuple(int(part) for part in match.groups()) if match else None
+    version = ".".join(str(part) for part in found) if found else "none"
+    if found is None or found < HUGO_MIN_VERSION:
+        required = ".".join(str(part) for part in HUGO_MIN_VERSION)
         raise DocsError(
-            f"mdBook {MDBOOK_VERSION} is required, found {version!r}; "
-            f"install it with `cargo install mdbook --version {MDBOOK_VERSION} --locked`"
+            f"Hugo {required} or newer is required, found {version}; "
+            "install it from https://gohugo.io/installation/"
         )
     return binary
 
 
-def build_site(rustdoc: Path, mdbook: str) -> None:
-    """Render mdBook, then add generated API docs and downloadable schema."""
+def build_site(rustdoc: Path, hugo: str) -> None:
+    """Render Hugo, then add generated API docs and downloadable schema."""
 
-    run([mdbook, "build", str(ROOT)])
+    run(
+        [
+            hugo,
+            "--source",
+            str(ROOT),
+            "--destination",
+            str(BOOK),
+            "--cleanDestinationDir",
+        ]
+    )
     api_destination = BOOK / "api"
     if api_destination.exists():
         shutil.rmtree(api_destination)
@@ -4410,7 +4430,7 @@ def check_rendered_site() -> None:
 
     pages = parse_site_pages()
     if not pages:
-        raise DocsError("mdBook produced no HTML pages")
+        raise DocsError("the documentation build produced no HTML pages")
 
     failures: list[str] = []
     saw_skip_link = False
@@ -4430,7 +4450,7 @@ def check_rendered_site() -> None:
             )
 
         for href in page.links:
-            if href in {"#main", "#mdbook-content"}:
+            if href == "#main":
                 saw_skip_link = True
             if "/docs/docs/" in href:
                 failures.append(
@@ -4496,7 +4516,7 @@ def check_rendered_site() -> None:
 
 
 def main() -> None:
-    mdbook = mdbook_binary()
+    hugo = hugo_binary()
     check_versions()
     check_source_links()
     check_quickstart_source()
@@ -4507,7 +4527,7 @@ def main() -> None:
     run_finite_examples()
     verify_pixijs_domain_consumer()
     rustdoc = build_rustdoc()
-    build_site(rustdoc, mdbook)
+    build_site(rustdoc, hugo)
     check_rendered_site()
     print(f"documentation site ready at {BOOK.relative_to(ROOT)}", flush=True)
 

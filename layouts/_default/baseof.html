@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default "en" }}">
+{{ partial "head.html" . }}
+<body>
+  <a class="weave-skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <a class="site-title" href="{{ "" | relURL }}">{{ site.Title }}</a>
+    <div class="site-search" role="search">
+      <label class="visually-hidden" for="site-search-input">Search the documentation</label>
+      <input
+        id="site-search-input"
+        type="search"
+        placeholder="Search"
+        autocomplete="off"
+        aria-controls="search-results"
+        aria-expanded="false"
+        data-search-input>
+      <div id="search-results" class="search-results" hidden></div>
+    </div>
+  </header>
+  <div class="site-body">
+    {{ partial "sidebar.html" . }}
+    <main id="main" class="site-content">
+      {{ block "main" . }}{{ end }}
+    </main>
+  </div>
+  <script src="{{ "js/search.js" | relURL }}" defer></script>
+</body>
+</html>

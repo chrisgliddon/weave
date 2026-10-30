@@ -1,0 +1,7 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ partial "page-title.html" . }}{{ if not .IsHome }} · {{ site.Title }}{{ end }}</title>
+  <meta name="description" content="{{ site.Params.description }}">
+  <link rel="stylesheet" href="{{ "css/weave.css" | relURL }}">
+</head>

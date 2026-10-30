@@ -1,0 +1,107 @@
+# Documentation navigation.
+#
+# This file is the single source of truth for the site sidebar and for the
+# documentation gate in scripts/build-docs.py. Every page under docs/ must
+# appear here exactly once.
+
+home = "_index.md"
+
+[[sections]]
+title = "Weave 0.1.0"
+
+[[sections.items]]
+title = "Version and compatibility"
+path = "versioning.md"
+
+[[sections.items]]
+title = "Five-minute quickstart"
+path = "getting_started.md"
+
+[[sections]]
+title = "Authoring"
+
+[[sections.items]]
+title = "Language guide"
+path = "language_guide.md"
+
+[[sections.items]]
+title = "Pattern systems"
+path = "pattern_systems.md"
+
+[[sections.items]]
+title = "Community pattern packages"
+path = "community_patterns.md"
+
+[[sections.items]]
+title = "Pluggable domain modules"
+path = "domain_modules.md"
+
+[[sections.items.children]]
+title = "Build a third-party domain module"
+path = "domain_module_tutorial.md"
+
+[[sections.items.children]]
+title = "Weave World reference seeds"
+path = "world_module.md"
+
+[[sections.items.children]]
+title = "Weave Character profiles"
+path = "character_module.md"
+
+[[sections.items.children]]
+title = "Selectable tabletop adapters"
+path = "tabletop_adapters.md"
+
+[[sections.items]]
+title = "Weave Editor"
+path = "editor_guide.md"
+
+[[sections.items]]
+title = "Weave Play presentation contract"
+path = "weave_play.md"
+
+[[sections]]
+title = "Integration"
+
+[[sections.items]]
+title = "Compiler and JSON"
+path = "json_format.md"
+
+[[sections.items]]
+title = "Rust API entry points"
+path = "api_reference.md"
+
+[[sections.items]]
+title = "Bevy"
+path = "bevy_integration.md"
+
+[[sections.items]]
+title = "Browser and WASM"
+path = "web_player.md"
+
+[[sections.items]]
+title = "Language server"
+path = "language_server.md"
+
+[[sections.items]]
+title = "Tree-sitter"
+path = "tree_sitter.md"
+
+[[sections.items]]
+title = "Runnable examples"
+path = "examples.md"
+
+[[sections]]
+title = "Project"
+
+[[sections.items]]
+title = "Architecture"
+path = "architecture.md"
+
+[[sections.items]]
+title = "Contributing"
+path = "contributing.md"
+
+[[sections.items]]
+title = "Security"
+path = "security.md"

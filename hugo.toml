@@ -1,0 +1,30 @@
+baseURL = "/weave/"
+title = "Weave 0.1.0 Documentation"
+locale = "en"
+defaultContentLanguage = "en"
+contentDir = "docs"
+publishDir = "target/book"
+uglyURLs = true
+disableKinds = ["taxonomy", "term", "RSS", "sitemap"]
+
+[params]
+description = "Language, runtime, editor, and integration documentation for Weave."
+version = "0.1.0"
+repository = "https://github.com/chrisgliddon/weave"
+editTemplate = "https://github.com/chrisgliddon/weave/edit/main/docs/%s"
+
+[outputs]
+home = ["HTML", "SearchIndex"]
+
+[outputFormats.SearchIndex]
+mediaType = "application/json"
+baseName = "searchindex"
+isPlainText = true
+notAlternative = true
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[markup.goldmark.parser]
+autoHeadingID = true
+wrapStandAloneImageWithinParagraph = false

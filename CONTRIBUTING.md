@@ -194,10 +194,10 @@ cargo test --workspace
 cargo build --workspace
 ```
 
-Build and verify the complete documentation site with the pinned mdBook release:
+Build and verify the complete documentation site with Hugo 0.158 or newer:
 
 ```bash
-cargo install mdbook --version 0.5.4 --locked
+brew install hugo   # or see https://gohugo.io/installation/
 python3 scripts/build-docs.py
 ```
 

@@ -1,0 +1,29 @@
+{{- $current := "" -}}
+{{- with .File -}}{{- $current = .Path -}}{{- end -}}
+<nav class="site-nav" aria-label="Documentation">
+  <a class="nav-home{{ if eq $current hugo.Data.nav.home }} is-current{{ end }}"
+     href="{{ "" | relURL }}">Start here</a>
+  {{ range hugo.Data.nav.sections }}
+  <section class="nav-section">
+    <h2 class="nav-section-title">{{ .title }}</h2>
+    <ul class="nav-list">
+      {{ range .items }}
+      <li>
+        <a class="nav-link{{ if eq $current .path }} is-current{{ end }}"
+           href="{{ .path | replaceRE `\.md$` ".html" | relURL }}">{{ .title }}</a>
+        {{ with .children }}
+        <ul class="nav-sublist">
+          {{ range . }}
+          <li>
+            <a class="nav-link{{ if eq $current .path }} is-current{{ end }}"
+               href="{{ .path | replaceRE `\.md$` ".html" | relURL }}">{{ .title }}</a>
+          </li>
+          {{ end }}
+        </ul>
+        {{ end }}
+      </li>
+      {{ end }}
+    </ul>
+  </section>
+  {{ end }}
+</nav>

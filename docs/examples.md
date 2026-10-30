@@ -33,7 +33,7 @@ Every `.weave` source below is compiled by the documentation gate. The finite Ru
 Install the pinned site generator once, then run the repository-owned build:
 
 ```bash
-cargo install mdbook --version 0.5.4 --locked
+brew install hugo   # or see https://gohugo.io/installation/
 python3 scripts/build-docs.py
 ```
 

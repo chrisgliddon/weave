@@ -1,0 +1,11 @@
+{{- $dest := .Destination -}}
+{{- $fragment := "" -}}
+{{- if strings.Contains $dest "#" -}}
+  {{- $parts := split $dest "#" -}}
+  {{- $dest = index $parts 0 -}}
+  {{- $fragment = printf "#%s" (index $parts 1) -}}
+{{- end -}}
+{{- if and (not (hasPrefix $dest "http")) (not (hasPrefix $dest "/")) (strings.HasSuffix $dest ".md") -}}
+  {{- $dest = printf "%s.html" (strings.TrimSuffix ".md" $dest) -}}
+{{- end -}}
+<a href="{{ $dest }}{{ $fragment }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text }}</a>

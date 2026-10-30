@@ -1,0 +1,10 @@
+{{ define "main" }}
+<article class="doc">
+  {{ .Content }}
+  <footer class="doc-footer">
+    {{ with .File }}
+    <a href="{{ printf site.Params.editTemplate .Path }}">Edit this page</a>
+    {{ end }}
+  </footer>
+</article>
+{{ end }}

@@ -227,9 +227,11 @@ Editor and host integration instructions, generated-parser policy, and the langu
 The versioned, searchable documentation site is built from the canonical guides in this repository and publishes generated Rust API documentation alongside them. Build the same artifact locally with:
 
 ```bash
-cargo install mdbook --version 0.5.4 --locked
+brew install hugo   # Hugo 0.158 or newer, or see https://gohugo.io/installation/
 python3 scripts/build-docs.py
 ```
+
+For a live preview while editing a guide, run `hugo server` and open `/weave/`.
 
 The build compiles every ordinary example story, verifies domain, World composition/export, and Character corpus-health schemas and goldens, packaging, transitive locks, the third-party tutorial, tracer and composed World RON/JSON outputs, runs the finite Rust examples, tests and bundles the PixiJS consumer, checks browser JSON, regenerates rustdoc, and rejects broken local links or missing accessibility structure. This local command is the canonical documentation gate; the repository intentionally has no GitHub Actions or GitHub Pages deployment workflow.
 
@@ -308,7 +310,7 @@ weave/
 ├── patterns/                # Reviewed community packages and original examples
 │
 ├── docs/
-│   ├── index.md            # Documentation site landing page
+│   ├── _index.md           # Documentation site landing page
 │   ├── language_guide.md   # Full syntax documentation
 │   ├── language_server.md  # LSP capabilities and editor setup
 │   ├── pattern_systems.md  # How to define and use pattern systems
