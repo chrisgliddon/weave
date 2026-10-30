@@ -1,4 +1,5 @@
 use proptest::prelude::*;
+use weave_core::ast::{Cue, Statement};
 use weave_core::{Severity, parse_document, type_check};
 
 const README_STORY: &str = include_str!("fixtures/fortune_teller.weave");
@@ -51,6 +52,87 @@ fn malformed_input_has_a_source_location() {
         diagnostics
             .iter()
             .all(|diagnostic| diagnostic.span.is_some())
+    );
+}
+
+#[test]
+fn parses_scene_stage_declarations_and_presentation_cues() {
+    let source = r#"scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+
+=== start ===
+@scene ferry_dusk
+Before the crossing.
+@show mara
+@speaker mara
+Mara: The ferry leaves at dusk.
+@hide mara
+@speaker
+After she leaves.
+-> END
+"#;
+    let document = parse_document(source).expect("presentation source parses");
+
+    let scenes = document.scenes().collect::<Vec<_>>();
+    assert_eq!(scenes.len(), 1);
+    assert_eq!(scenes[0].node.name, "ferry_dusk");
+    assert_eq!(
+        scenes[0].node.background.as_deref(),
+        Some("art/ferry_dusk.png")
+    );
+    assert!(scenes[0].span.start < scenes[0].span.end);
+
+    let stages = document.stages().collect::<Vec<_>>();
+    assert_eq!(stages.len(), 1);
+    assert_eq!(stages[0].node.name, "mara");
+    assert_eq!(
+        stages[0].node.image.as_deref(),
+        Some("art/mara_neutral.png")
+    );
+    assert_eq!(stages[0].node.display_name.as_deref(), Some("Mara"));
+    assert!(stages[0].span.start < stages[0].span.end);
+
+    let knot = document.knots().next().expect("knot");
+    let cues = knot
+        .node
+        .body
+        .iter()
+        .filter_map(|statement| match &statement.node {
+            Statement::Cue(cue) => Some((cue.clone(), statement.span)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        cues.iter().map(|(cue, _)| cue.clone()).collect::<Vec<_>>(),
+        vec![
+            Cue::Scene("ferry_dusk".to_owned()),
+            Cue::Show("mara".to_owned()),
+            Cue::Speaker(Some("mara".to_owned())),
+            Cue::Hide("mara".to_owned()),
+            Cue::Speaker(None),
+        ]
+    );
+    assert!(cues.iter().all(|(_, span)| span.start < span.end));
+    assert!(
+        cues.windows(2)
+            .all(|pair| pair[0].1.start < pair[1].1.start)
+    );
+}
+
+#[test]
+fn rejects_unknown_presentation_directives() {
+    let diagnostics =
+        parse_document("=== start ===\n@shout mara\n").expect_err("unknown directive must fail");
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code.0 == "W1040")
     );
 }
 

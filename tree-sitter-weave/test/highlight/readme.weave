@@ -55,3 +55,30 @@ A fortune teller waves you over. "The cards have been calling."
 -> END
 // <- operator
 // ^ constant.builtin
+
+scene ferry_dusk {
+// <- keyword
+//    ^ type
+    background: "art/ferry_dusk.png"
+//  ^ keyword
+}
+
+stage mara {
+// <- keyword
+//    ^ type
+    image: "art/mara_neutral.png"
+//  ^ keyword
+    name: "Mara"
+//  ^ keyword
+}
+
+=== deck ===
+//  ^ function
+@scene ferry_dusk
+// <- keyword
+//     ^ function
+@show mara
+// <- keyword
+//    ^ function
+@speaker
+// <- keyword

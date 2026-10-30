@@ -1,0 +1,129 @@
+{
+  "version": 5,
+  "source_name": "crates/weave-web/tests/fixtures/error-path.weave",
+  "entry": "start",
+  "globals": [
+    {
+      "span": {
+        "start": 59,
+        "end": 74,
+        "line": 5,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "total",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 10.0
+            }
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {},
+  "presentation": {
+    "scenes": {
+      "ferry_dusk": {
+        "background": "art/ferry_dusk.png"
+      }
+    },
+    "stages": {}
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 89,
+            "end": 106,
+            "line": 8,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "scene",
+              "value": "ferry_dusk"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 107,
+            "end": 115,
+            "line": 9,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": null
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 116,
+            "end": 137,
+            "line": 10,
+            "column": 1
+          },
+          "kind": {
+            "kind": "assign",
+            "value": {
+              "name": "total",
+              "value": {
+                "kind": "binary",
+                "value": {
+                  "left": {
+                    "kind": "path",
+                    "value": [
+                      "total"
+                    ]
+                  },
+                  "operator": "divide",
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0.0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 138,
+            "end": 163,
+            "line": 11,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "parts": [
+                {
+                  "kind": "text",
+                  "value": "The ferry leaves at dusk."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

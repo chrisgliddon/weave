@@ -207,6 +207,10 @@
           "named": true
         },
         {
+          "type": "directive_statement",
+          "named": true
+        },
+        {
           "type": "divert_statement",
           "named": true
         },
@@ -458,6 +462,32 @@
     }
   },
   {
+    "type": "directive_statement",
+    "named": true,
+    "fields": {
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "cue_directive",
+            "named": true
+          }
+        ]
+      },
+      "target": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "divert_statement",
     "named": true,
     "fields": {
@@ -706,6 +736,10 @@
         },
         {
           "type": "conditional_statement",
+          "named": true
+        },
+        {
+          "type": "directive_statement",
           "named": true
         },
         {
@@ -1170,6 +1204,48 @@
     }
   },
   {
+    "type": "scene_background_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "scene_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "scene_background_setting",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -1203,6 +1279,14 @@
           "named": true
         },
         {
+          "type": "scene_declaration",
+          "named": true
+        },
+        {
+          "type": "stage_declaration",
+          "named": true
+        },
+        {
           "type": "state_declaration",
           "named": true
         },
@@ -1233,6 +1317,68 @@
         "types": [
           {
             "type": "symbol_list",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "stage_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "stage_image_setting",
+          "named": true
+        },
+        {
+          "type": "stage_name_setting",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "stage_image_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "stage_name_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
             "named": true
           }
         ]
@@ -1538,6 +1684,10 @@
     "named": false
   },
   {
+    "type": "background",
+    "named": false
+  },
+  {
     "type": "builtin",
     "named": false
   },
@@ -1549,6 +1699,10 @@
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "cue_directive",
+    "named": true
   },
   {
     "type": "draw",
@@ -1587,11 +1741,19 @@
     "named": false
   },
   {
+    "type": "image",
+    "named": false
+  },
+  {
     "type": "in",
     "named": false
   },
   {
     "type": "module",
+    "named": false
+  },
+  {
+    "type": "name",
     "named": false
   },
   {
@@ -1635,7 +1797,15 @@
     "named": false
   },
   {
+    "type": "scene",
+    "named": false
+  },
+  {
     "type": "spread",
+    "named": false
+  },
+  {
+    "type": "stage",
     "named": false
   },
   {

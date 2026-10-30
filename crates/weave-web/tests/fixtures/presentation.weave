@@ -1,0 +1,15 @@
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@speaker mara
+The ferry leaves at dusk.
+-> END

@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "source_name": "examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave",
   "entry": "start",
   "globals": [

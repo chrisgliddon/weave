@@ -1,5 +1,5 @@
 document = { SOI ~ top_item* ~ EOI }
-top_item = _{ blank_line | comment_line | module_decl | grammar_decl | pattern_decl | global_decl | knot }
+top_item = _{ blank_line | comment_line | module_decl | grammar_decl | pattern_decl | scene_decl | stage_decl | global_decl | knot }
 
 ws = _{ " " | "\t" }
 newline = _{ "\r\n" | "\n" }
@@ -101,6 +101,27 @@ global_decl = {
     ws* ~ declaration_keyword ~ ws+ ~ line_text ~ newline?
 }
 declaration_keyword = { "VAR" | "LIST" | "FLAG" | "STATE" }
+
+scene_decl = {
+    ws* ~ "scene" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    scene_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+scene_entry = _{ blank_line | comment_line | scene_background_decl }
+scene_background_decl = {
+    ws* ~ "background" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+
+stage_decl = {
+    ws* ~ "stage" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    stage_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+stage_entry = _{ blank_line | comment_line | stage_image_decl | stage_name_decl }
+stage_image_decl = {
+    ws* ~ "image" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+stage_name_decl = {
+    ws* ~ "name" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
 
 knot = { knot_header ~ knot_body }
 knot_header = { ws* ~ "===" ~ ws* ~ identifier ~ ws* ~ "===" ~ ws* ~ (newline | &EOI) }

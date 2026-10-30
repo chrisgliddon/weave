@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use weave_core::ir::StoryIr;
 use weave_patterns::DrawResult;
-use weave_runtime::{ChoiceView, RuntimeError, Story, StoryEvent, StoryState};
+use weave_runtime::{ChoiceView, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState};
 
 /// Current browser save-envelope version.
 pub const WEB_STATE_VERSION: u32 = 1;
@@ -18,6 +18,8 @@ pub enum PlayerFrame {
         text: String,
         /// Structured pattern draws produced before this boundary.
         draws: Vec<DrawResult>,
+        /// Presentation cues produced before this boundary, in source order.
+        presentation: Vec<PresentationEvent>,
     },
     /// The story is waiting for one host selection.
     Choices {
@@ -25,11 +27,15 @@ pub enum PlayerFrame {
         choices: Vec<ChoiceView>,
         /// Structured pattern draws produced before this boundary.
         draws: Vec<DrawResult>,
+        /// Presentation cues produced before this boundary, in source order.
+        presentation: Vec<PresentationEvent>,
     },
     /// The story has ended.
     Ended {
         /// Structured pattern draws produced before this boundary.
         draws: Vec<DrawResult>,
+        /// Presentation cues produced before this boundary, in source order.
+        presentation: Vec<PresentationEvent>,
     },
 }
 
@@ -63,6 +69,30 @@ pub enum PlayerError {
     Runtime(#[from] RuntimeError),
 }
 
+/// Advancement failure plus the presentation cues produced before it.
+///
+/// A host applies `presentation` in source order, then reports `error`, so a
+/// failed advance never strands cues or mixes them into a later frame.
+#[derive(Debug)]
+pub struct PlayerFailure {
+    /// Failure that ended the advance.
+    pub error: PlayerError,
+    /// Presentation cues produced before the failure, in source order.
+    pub presentation: Vec<PresentationEvent>,
+}
+
+impl std::fmt::Display for PlayerFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.error.fmt(formatter)
+    }
+}
+
+impl std::error::Error for PlayerFailure {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.error)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedState {
     version: u32,
@@ -88,13 +118,39 @@ impl Player {
     }
 
     /// Advance to the next line, choice set, or ending.
-    pub fn advance(&mut self) -> Result<PlayerFrame, PlayerError> {
-        let event = self.story.advance()?;
+    ///
+    /// On failure the returned [`PlayerFailure`] carries the presentation cues
+    /// produced before the failure, in source order. The host applies them and
+    /// then reports the error.
+    pub fn advance(&mut self) -> Result<PlayerFrame, PlayerFailure> {
+        let event = match self.story.advance() {
+            Ok(event) => event,
+            Err(error) => {
+                let presentation = self.story.take_presentation();
+                let _ = self.story.take_pattern_draws();
+                return Err(PlayerFailure {
+                    error: PlayerError::from(error),
+                    presentation,
+                });
+            }
+        };
         let draws = self.story.take_pattern_draws();
+        let presentation = self.story.take_presentation();
         Ok(match event {
-            StoryEvent::Line(text) => PlayerFrame::Line { text, draws },
-            StoryEvent::Choices(choices) => PlayerFrame::Choices { choices, draws },
-            StoryEvent::Ended => PlayerFrame::Ended { draws },
+            StoryEvent::Line(text) => PlayerFrame::Line {
+                text,
+                draws,
+                presentation,
+            },
+            StoryEvent::Choices(choices) => PlayerFrame::Choices {
+                choices,
+                draws,
+                presentation,
+            },
+            StoryEvent::Ended => PlayerFrame::Ended {
+                draws,
+                presentation,
+            },
         })
     }
 
@@ -102,6 +158,12 @@ impl Player {
     #[must_use]
     pub fn choices(&self) -> Vec<ChoiceView> {
         self.story.choices()
+    }
+
+    /// Presentation cues waiting to be drained.
+    #[must_use]
+    pub fn pending_presentation(&self) -> &[PresentationEvent] {
+        self.story.pending_presentation()
     }
 
     /// Select one currently eligible choice by zero-based index.
@@ -190,9 +252,16 @@ mod bindings {
         }
 
         /// Advance to the next host-visible story boundary.
+        ///
+        /// A failure becomes a thrown JavaScript error.
         #[wasm_bindgen(js_name = continue)]
         pub fn continue_story(&mut self) -> Result<JsValue, JsError> {
-            to_js(&self.inner.advance().map_err(js_error)?)
+            to_js(
+                &self
+                    .inner
+                    .advance()
+                    .map_err(|failure| js_error(failure.error))?,
+            )
         }
 
         /// Return the currently eligible choices.

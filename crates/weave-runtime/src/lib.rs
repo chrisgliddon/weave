@@ -11,9 +11,10 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use weave_core::Span;
 use weave_core::ir::{
-    BinaryOperatorIr, ChoiceIr, ConditionalIr, DeclarationIr, DomainExportSourceIr, DomainModuleIr,
-    DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind, ListOperationIr, StoryIr,
-    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    BinaryOperatorIr, ChoiceIr, ConditionalIr, CueIr, DeclarationIr, DomainExportSourceIr,
+    DomainModuleIr, DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind,
+    ListOperationIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral,
+    VariableKindIr,
 };
 use weave_patterns::{
     DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
@@ -213,6 +214,20 @@ pub enum StoryEvent {
     Ended,
 }
 
+/// One visual or speaker cue produced while advancing a story.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
+pub enum PresentationEvent {
+    /// Switch to a declared background scene.
+    Scene(String),
+    /// Show a declared character stage.
+    Show(String),
+    /// Hide a declared character stage.
+    Hide(String),
+    /// Set the current speaker; `None` is narration.
+    Speaker(Option<String>),
+}
+
 /// Structured failure category for malformed IR or invalid runtime behavior.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum RuntimeErrorKind {
@@ -306,6 +321,7 @@ pub struct Story {
     patterns: BTreeMap<String, Arc<dyn PatternSystem>>,
     state: StoryState,
     pending_pattern_draws: Vec<DrawResult>,
+    pending_presentation: Vec<PresentationEvent>,
 }
 
 impl Story {
@@ -342,6 +358,7 @@ impl Story {
             },
             patterns,
             pending_pattern_draws: Vec::new(),
+            pending_presentation: Vec::new(),
         };
         story.execute_globals()?;
         Ok(story)
@@ -358,6 +375,7 @@ impl Story {
             patterns,
             state,
             pending_pattern_draws: Vec::new(),
+            pending_presentation: Vec::new(),
         };
         story.validate_state()?;
         Ok(story)
@@ -427,6 +445,18 @@ impl Story {
         std::mem::take(&mut self.pending_pattern_draws)
     }
 
+    /// Drain presentation cues produced since the previous call in source order.
+    #[must_use]
+    pub fn take_presentation(&mut self) -> Vec<PresentationEvent> {
+        std::mem::take(&mut self.pending_presentation)
+    }
+
+    /// Presentation cues waiting to be drained, in source order.
+    #[must_use]
+    pub fn pending_presentation(&self) -> &[PresentationEvent] {
+        &self.pending_presentation
+    }
+
     /// Advance until a line, choice set, or end boundary is reached.
     pub fn advance(&mut self) -> Result<StoryEvent, RuntimeError> {
         if self.state.ended {
@@ -486,6 +516,9 @@ impl Story {
                 }
                 InstructionKind::Divert(target) => self.jump(&target)?,
                 InstructionKind::Thread(target) => self.thread(&target, span)?,
+                InstructionKind::Cue(cue) => {
+                    self.pending_presentation.push(presentation_event(cue));
+                }
                 InstructionKind::End => {
                     self.end();
                     return Ok(StoryEvent::Ended);
@@ -1197,6 +1230,15 @@ impl Story {
         let value = random.next_u64();
         self.state.random_draws = self.state.random_draws.saturating_add(1);
         (value % length as u64) as usize
+    }
+}
+
+fn presentation_event(cue: CueIr) -> PresentationEvent {
+    match cue {
+        CueIr::Scene(name) => PresentationEvent::Scene(name),
+        CueIr::Show(name) => PresentationEvent::Show(name),
+        CueIr::Hide(name) => PresentationEvent::Hide(name),
+        CueIr::Speaker(name) => PresentationEvent::Speaker(name),
     }
 }
 

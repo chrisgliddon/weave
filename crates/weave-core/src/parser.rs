@@ -9,10 +9,11 @@ use pest_derive::Parser;
 
 use crate::Diagnostic;
 use crate::ast::{
-    BinaryOperator, Choice, Conditional, ConditionalBranch, Declaration, Document, Expr,
+    BinaryOperator, Choice, Conditional, ConditionalBranch, Cue, Declaration, Document, Expr,
     GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, ModuleDecl,
     ModuleEntry, PatternCollection, PatternDecl, PatternDrawMethod, PatternElement, PatternEntry,
-    Span, Spanned, SpreadDecl, Statement, UnaryOperator, VariableKind,
+    SceneDecl, SceneEntry, Span, Spanned, SpreadDecl, StageDecl, StageEntry, Statement,
+    UnaryOperator, VariableKind,
 };
 
 #[derive(Parser)]
@@ -40,6 +41,8 @@ pub fn parse_document(source: &str) -> Result<Document, Vec<Diagnostic>> {
             Rule::module_decl => build_module(pair),
             Rule::grammar_decl => build_grammar(pair),
             Rule::pattern_decl => build_pattern(pair),
+            Rule::scene_decl => build_scene(pair),
+            Rule::stage_decl => build_stage(pair),
             Rule::global_decl => build_global(pair),
             Rule::knot => build_knot(pair),
             Rule::EOI => continue,
@@ -410,6 +413,173 @@ fn build_spread(pair: Pair<'_, Rule>) -> Result<Spanned<PatternEntry>, Diagnosti
         }),
         span,
     ))
+}
+
+fn build_scene(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
+    let outer_span = span_for(&pair);
+    let mut name = None;
+    let mut background = None;
+    let mut background_span = None;
+    let mut entries = Vec::new();
+    let mut diagnostics = Vec::new();
+
+    for inner in pair.into_inner() {
+        match inner.as_rule() {
+            Rule::identifier if name.is_none() => name = Some(inner.as_str().to_owned()),
+            Rule::blank_line => entries.push(Spanned::new(SceneEntry::Blank, span_for(&inner))),
+            Rule::comment_line => {
+                let span = span_for(&inner);
+                entries.push(Spanned::new(SceneEntry::Comment(comment_from(inner)), span));
+            }
+            Rule::scene_background_decl => {
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::string_literal)
+                else {
+                    diagnostics.push(internal_parser_error("scene field has no string value"));
+                    continue;
+                };
+                let value_span = span_for(&value);
+                match decode_string(value.as_str(), value_span) {
+                    Ok(value) => {
+                        if background.replace(value.clone()).is_some() {
+                            diagnostics.push(
+                                Diagnostic::error(
+                                    "W1041",
+                                    "scene repeats its `background` setting",
+                                )
+                                .with_span(span),
+                            );
+                        } else {
+                            background_span = Some(value_span);
+                            entries.push(Spanned::new(SceneEntry::Background(value), span));
+                        }
+                    }
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let Some(name) = name else {
+        diagnostics.push(internal_parser_error("scene has no name"));
+        return Err(diagnostics);
+    };
+    if diagnostics.is_empty() {
+        let scene = Spanned::new(
+            SceneDecl {
+                name,
+                background,
+                background_span,
+                entries,
+            },
+            outer_span,
+        );
+        Ok(Spanned::new(Item::Scene(scene), outer_span))
+    } else {
+        Err(diagnostics)
+    }
+}
+
+fn build_stage(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
+    let outer_span = span_for(&pair);
+    let mut name = None;
+    let mut image = None;
+    let mut image_span = None;
+    let mut display_name = None;
+    let mut display_name_span = None;
+    let mut entries = Vec::new();
+    let mut diagnostics = Vec::new();
+
+    for inner in pair.into_inner() {
+        match inner.as_rule() {
+            Rule::identifier if name.is_none() => name = Some(inner.as_str().to_owned()),
+            Rule::blank_line => entries.push(Spanned::new(StageEntry::Blank, span_for(&inner))),
+            Rule::comment_line => {
+                let span = span_for(&inner);
+                entries.push(Spanned::new(StageEntry::Comment(comment_from(inner)), span));
+            }
+            Rule::stage_image_decl | Rule::stage_name_decl => {
+                let rule = inner.as_rule();
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::string_literal)
+                else {
+                    diagnostics.push(internal_parser_error("stage field has no string value"));
+                    continue;
+                };
+                let value_span = span_for(&value);
+                match decode_string(value.as_str(), value_span) {
+                    Ok(value) => {
+                        let (slot, span_slot, label): (
+                            &mut Option<String>,
+                            &mut Option<Span>,
+                            &str,
+                        ) = match rule {
+                            Rule::stage_image_decl => (&mut image, &mut image_span, "image"),
+                            Rule::stage_name_decl => {
+                                (&mut display_name, &mut display_name_span, "name")
+                            }
+                            _ => {
+                                diagnostics.push(internal_parser_error(
+                                    "stage declaration contains an unexpected field",
+                                ));
+                                continue;
+                            }
+                        };
+                        if slot.replace(value.clone()).is_some() {
+                            diagnostics.push(
+                                Diagnostic::error(
+                                    "W1042",
+                                    format!("stage repeats its `{label}` setting"),
+                                )
+                                .with_span(span),
+                            );
+                        } else {
+                            *span_slot = Some(value_span);
+                            let entry = match rule {
+                                Rule::stage_image_decl => StageEntry::Image(value),
+                                Rule::stage_name_decl => StageEntry::Name(value),
+                                _ => {
+                                    diagnostics.push(internal_parser_error(
+                                        "stage declaration contains an unexpected field",
+                                    ));
+                                    continue;
+                                }
+                            };
+                            entries.push(Spanned::new(entry, span));
+                        }
+                    }
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let Some(name) = name else {
+        diagnostics.push(internal_parser_error("stage has no name"));
+        return Err(diagnostics);
+    };
+    if diagnostics.is_empty() {
+        let stage = Spanned::new(
+            StageDecl {
+                name,
+                image,
+                image_span,
+                display_name,
+                display_name_span,
+                entries,
+            },
+            outer_span,
+        );
+        Ok(Spanned::new(Item::Stage(stage), outer_span))
+    } else {
+        Err(diagnostics)
+    }
 }
 
 fn build_global(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
@@ -818,6 +988,9 @@ fn parse_simple_statement(line: &BodyLine) -> Result<Statement, Diagnostic> {
     if source.is_empty() {
         return Ok(Statement::Blank);
     }
+    if source.starts_with('@') {
+        return parse_cue(line);
+    }
     if let Some(target) = source.strip_prefix("->") {
         let target = target.trim();
         if target.is_empty() {
@@ -893,6 +1066,50 @@ fn strip_required_space(source: &str) -> Option<&str> {
     source
         .strip_prefix(char::is_whitespace)
         .map(str::trim_start)
+}
+
+fn parse_cue(line: &BodyLine) -> Result<Statement, Diagnostic> {
+    let source = line.trimmed.as_str();
+    let rest = source.strip_prefix('@').unwrap_or(source);
+    let (directive, argument) = match rest.split_once(char::is_whitespace) {
+        Some((directive, argument)) => (directive, argument.trim()),
+        None => (rest, ""),
+    };
+    let cue = match directive {
+        "scene" => Cue::Scene(cue_target(line, directive, argument, "scene")?),
+        "show" => Cue::Show(cue_target(line, directive, argument, "stage")?),
+        "hide" => Cue::Hide(cue_target(line, directive, argument, "stage")?),
+        "speaker" if argument.is_empty() => Cue::Speaker(None),
+        "speaker" => {
+            validate_identifier(argument, line.span())?;
+            Cue::Speaker(Some(argument.to_owned()))
+        }
+        _ => {
+            return Err(Diagnostic::error(
+                "W1040",
+                format!("unknown presentation directive `@{directive}`"),
+            )
+            .with_span(line.span())
+            .with_help("use `@scene`, `@show`, `@hide`, or `@speaker`"));
+        }
+    };
+    Ok(Statement::Cue(cue))
+}
+
+fn cue_target(
+    line: &BodyLine,
+    directive: &str,
+    argument: &str,
+    kind: &str,
+) -> Result<String, Diagnostic> {
+    if argument.is_empty() {
+        return Err(
+            Diagnostic::error("W1043", format!("`@{directive}` requires a {kind} name"))
+                .with_span(line.span()),
+        );
+    }
+    validate_identifier(argument, line.span())?;
+    Ok(argument.to_owned())
 }
 
 fn parse_declaration(

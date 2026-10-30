@@ -11,16 +11,16 @@ use weave_domain::{
 };
 
 use weave_core::ast::{
-    BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
+    BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
     ModuleDecl, ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator,
     VariableKind,
 };
 use weave_core::ir::{
-    BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
+    BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr, CueIr,
     DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainOverrideIr,
     DomainValueIr, Expression, GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr,
-    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SpreadIr, StoryIr,
-    Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SceneIr, SpreadIr,
+    StageIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_core::{
     Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplatePart, has_errors,
@@ -31,7 +31,7 @@ use weave_core::{
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
 /// Stable identifier published in the machine-readable JSON Schema.
-pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:4";
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:5";
 
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -569,7 +569,7 @@ pub fn json_schema() -> Result<String, SerializeError> {
         );
         root.insert(
             "title".to_owned(),
-            serde_json::Value::String("Weave Story IR v4".to_owned()),
+            serde_json::Value::String("Weave Story IR v5".to_owned()),
         );
         root.insert(
             "x-weave-ir-version".to_owned(),
@@ -764,6 +764,23 @@ impl Lowerer {
                         story.globals.push(instruction);
                     }
                 }
+                Item::Scene(scene) => {
+                    story.presentation.scenes.insert(
+                        scene.node.name.clone(),
+                        SceneIr {
+                            background: scene.node.background.clone(),
+                        },
+                    );
+                }
+                Item::Stage(stage) => {
+                    story.presentation.stages.insert(
+                        stage.node.name.clone(),
+                        StageIr {
+                            image: stage.node.image.clone(),
+                            name: stage.node.display_name.clone(),
+                        },
+                    );
+                }
                 Item::Knot(knot) => {
                     self.current_knot.clone_from(&knot.node.name);
                     let content = self.lower_block(&knot.node.body, "root");
@@ -851,6 +868,7 @@ impl Lowerer {
             }
             Statement::Divert(target) => InstructionKind::Divert(target.clone()),
             Statement::Thread(target) => InstructionKind::Thread(target.clone()),
+            Statement::Cue(cue) => InstructionKind::Cue(lower_cue(cue)),
             Statement::End => InstructionKind::End,
             Statement::Comment(_) | Statement::Blank => return None,
         };
@@ -882,6 +900,15 @@ impl Lowerer {
                 Template::default()
             }
         }
+    }
+}
+
+fn lower_cue(cue: &Cue) -> CueIr {
+    match cue {
+        Cue::Scene(name) => CueIr::Scene(name.clone()),
+        Cue::Show(name) => CueIr::Show(name.clone()),
+        Cue::Hide(name) => CueIr::Hide(name.clone()),
+        Cue::Speaker(name) => CueIr::Speaker(name.clone()),
     }
 }
 

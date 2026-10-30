@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "source_name": "examples/domain-modules/contract/tracer.weave",
   "entry": "start",
   "globals": [

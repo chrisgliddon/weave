@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "source_name": "examples/domain-modules/weave-character/ari-vale.weave",
   "entry": "start",
   "globals": [

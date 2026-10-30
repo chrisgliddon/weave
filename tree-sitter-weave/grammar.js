@@ -38,6 +38,8 @@ export default grammar({
       $.module_declaration,
       $.grammar_declaration,
       $.pattern_declaration,
+      $.scene_declaration,
+      $.stage_declaration,
       $.variable_declaration,
       $.list_declaration,
       $.flag_declaration,
@@ -162,6 +164,45 @@ export default grammar({
       "}",
     ),
 
+    scene_declaration: $ => seq(
+      "scene",
+      field("name", $.identifier),
+      "{",
+      repeat(choice($.scene_background_setting, $._newline)),
+      "}",
+    ),
+
+    scene_background_setting: $ => seq(
+      "background",
+      ":",
+      field("value", $.string),
+    ),
+
+    stage_declaration: $ => seq(
+      "stage",
+      field("name", $.identifier),
+      "{",
+      repeat(choice($._stage_entry, $._newline)),
+      "}",
+    ),
+
+    _stage_entry: $ => choice(
+      $.stage_image_setting,
+      $.stage_name_setting,
+    ),
+
+    stage_image_setting: $ => seq(
+      "image",
+      ":",
+      field("value", $.string),
+    ),
+
+    stage_name_setting: $ => seq(
+      "name",
+      ":",
+      field("value", $.string),
+    ),
+
     knot: $ => prec.right(seq(
       $.knot_header,
       repeat(choice($._statement, $._newline)),
@@ -185,8 +226,16 @@ export default grammar({
       $.list_mutation_statement,
       $.divert_statement,
       $.thread_statement,
+      $.directive_statement,
       $.narrative_statement,
     ),
+
+    directive_statement: $ => seq(
+      field("directive", $.cue_directive),
+      optional(field("target", $.identifier)),
+    ),
+
+    cue_directive: _ => token(prec(2, /@[A-Za-z_][A-Za-z0-9_]*/)),
 
     choice_statement: $ => seq(
       field("kind", $.choice_marker),

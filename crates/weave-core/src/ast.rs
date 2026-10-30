@@ -107,6 +107,22 @@ impl Document {
             _ => None,
         })
     }
+
+    /// Iterate over all scene declarations in source order.
+    pub fn scenes(&self) -> impl Iterator<Item = &Spanned<SceneDecl>> {
+        self.items.iter().filter_map(|item| match &item.node {
+            Item::Scene(scene) => Some(scene),
+            _ => None,
+        })
+    }
+
+    /// Iterate over all stage declarations in source order.
+    pub fn stages(&self) -> impl Iterator<Item = &Spanned<StageDecl>> {
+        self.items.iter().filter_map(|item| match &item.node {
+            Item::Stage(stage) => Some(stage),
+            _ => None,
+        })
+    }
 }
 
 /// Top-level source item.
@@ -118,6 +134,10 @@ pub enum Item {
     Grammar(Spanned<GrammarDecl>),
     /// Meaning-bearing pattern definition.
     Pattern(Spanned<PatternDecl>),
+    /// Background scene usable by presentation cues.
+    Scene(Spanned<SceneDecl>),
+    /// Character stage usable by presentation cues.
+    Stage(Spanned<StageDecl>),
     /// Story-scoped declaration executed at startup.
     Global(Spanned<Statement>),
     /// Named narrative block.
@@ -256,6 +276,65 @@ pub struct SpreadDecl {
     pub positions: Vec<String>,
 }
 
+/// Named background scene.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SceneDecl {
+    /// Scene identifier used by `@scene` cues.
+    pub name: String,
+    /// Optional relative background asset path.
+    pub background: Option<String>,
+    /// Location of the `background` string literal when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub background_span: Option<Span>,
+    /// Fields and trivia in source order.
+    #[serde(default)]
+    pub entries: Vec<Spanned<SceneEntry>>,
+}
+
+/// One field or trivia item in a scene declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum SceneEntry {
+    /// Relative background asset path.
+    Background(String),
+    /// Source comment without its marker.
+    Comment(String),
+    /// Blank source line.
+    Blank,
+}
+
+/// Named character stage.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StageDecl {
+    /// Stage identifier used by `@show`, `@hide`, and `@speaker` cues.
+    pub name: String,
+    /// Optional relative character image asset path.
+    pub image: Option<String>,
+    /// Location of the `image` string literal when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_span: Option<Span>,
+    /// Optional author-facing display name.
+    pub display_name: Option<String>,
+    /// Location of the `name` string literal when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name_span: Option<Span>,
+    /// Fields and trivia in source order.
+    #[serde(default)]
+    pub entries: Vec<Spanned<StageEntry>>,
+}
+
+/// One field or trivia item in a stage declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum StageEntry {
+    /// Relative character image asset path.
+    Image(String),
+    /// Author-facing display name.
+    Name(String),
+    /// Source comment without its marker.
+    Comment(String),
+    /// Blank source line.
+    Blank,
+}
+
 /// Named narrative block.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Knot {
@@ -298,10 +377,26 @@ pub enum Statement {
     Thread(String),
     /// End story execution.
     End,
+    /// Presentation directive applied to the current scene or stage.
+    Cue(Cue),
     /// Source comment without its marker.
     Comment(String),
     /// Blank source line.
     Blank,
+}
+
+/// Presentation directive written with `@` inside a knot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
+pub enum Cue {
+    /// Switch to a declared background scene.
+    Scene(String),
+    /// Show a declared character stage.
+    Show(String),
+    /// Hide a declared character stage.
+    Hide(String),
+    /// Set the current speaker; `None` is narration.
+    Speaker(Option<String>),
 }
 
 /// Variable declaration.

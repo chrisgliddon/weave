@@ -1,0 +1,111 @@
+==================
+Scene and stage declarations with presentation cues
+==================
+
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@speaker mara
+The ferry leaves at dusk.
+@hide mara
+@speaker
+After she leaves.
+-> END
+
+---
+
+(source_file
+  (scene_declaration
+    name: (identifier)
+    (scene_background_setting
+      value: (string
+        (string_content))))
+  (stage_declaration
+    name: (identifier)
+    (stage_image_setting
+      value: (string
+        (string_content)))
+    (stage_name_setting
+      value: (string
+        (string_content))))
+  (knot
+    (knot_header
+      name: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      target: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      target: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      target: (identifier))
+    (narrative_statement
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text))
+    (directive_statement
+      directive: (cue_directive)
+      target: (identifier))
+    (directive_statement
+      directive: (cue_directive))
+    (narrative_statement
+      (narrative_text)
+      (narrative_text)
+      (narrative_text))
+    (divert_statement)))
+
+==================
+Erroneous and incomplete presentation forms
+==================
+
+scene ferry_dusk
+    background: "art/ferry_dusk.png"
+
+@show mara
+
+stage mara {
+    image: "art/mara_neutral.png"
+    image: "art/mara_alt.png"
+}
+
+=== start ===
+@scene
+-> END
+
+---
+
+(source_file
+  (ERROR
+    (identifier)
+    (identifier)
+    (identifier)
+    (identifier))
+  (ERROR
+    (cue_directive)
+    (identifier))
+  (stage_declaration
+    (identifier)
+    (stage_image_setting
+      (string
+        (string_content)))
+    (stage_image_setting
+      (string
+        (string_content))))
+  (knot
+    (knot_header
+      (identifier))
+    (directive_statement
+      (cue_directive))
+    (divert_statement)))

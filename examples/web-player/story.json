@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "source_name": "examples/web-player/story.weave",
   "entry": "start",
   "globals": [

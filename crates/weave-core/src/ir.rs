@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 4;
+pub const IR_VERSION: u32 = 5;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -27,6 +27,9 @@ pub struct StoryIr {
     pub patterns: BTreeMap<String, PatternSystemIr>,
     /// Active, validated domain modules keyed by story-local alias.
     pub modules: BTreeMap<String, DomainModuleIr>,
+    /// Declared background scenes and character stages.
+    #[serde(default, skip_serializing_if = "PresentationIr::is_empty")]
+    pub presentation: PresentationIr,
     /// Sorted knot definitions.
     pub knots: BTreeMap<String, KnotIr>,
 }
@@ -43,9 +46,43 @@ impl StoryIr {
             grammars: BTreeMap::new(),
             patterns: BTreeMap::new(),
             modules: BTreeMap::new(),
+            presentation: PresentationIr::default(),
             knots: BTreeMap::new(),
         }
     }
+}
+
+/// Declared visual assets addressable by presentation cues.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct PresentationIr {
+    /// Sorted background scenes keyed by scene identifier.
+    pub scenes: BTreeMap<String, SceneIr>,
+    /// Sorted character stages keyed by stage identifier.
+    pub stages: BTreeMap<String, StageIr>,
+}
+
+impl PresentationIr {
+    /// Whether no scenes or stages are declared.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.scenes.is_empty() && self.stages.is_empty()
+    }
+}
+
+/// Compiled background scene.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SceneIr {
+    /// Optional relative background asset path.
+    pub background: Option<String>,
+}
+
+/// Compiled character stage.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct StageIr {
+    /// Optional relative character image asset path.
+    pub image: Option<String>,
+    /// Optional author-facing display name.
+    pub name: Option<String>,
 }
 
 /// One exact, validated domain-module activation embedded for runtime hosts.
@@ -257,8 +294,24 @@ pub enum InstructionKind {
     Divert(String),
     /// Call another knot and return on natural completion.
     Thread(String),
+    /// Apply one presentation directive without ending the current advance.
+    Cue(CueIr),
     /// End the story.
     End,
+}
+
+/// Compiled presentation cue.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
+pub enum CueIr {
+    /// Switch to a declared background scene.
+    Scene(String),
+    /// Show a declared character stage.
+    Show(String),
+    /// Hide a declared character stage.
+    Hide(String),
+    /// Set the current speaker; `None` is narration.
+    Speaker(Option<String>),
 }
 
 /// Compiled declaration.

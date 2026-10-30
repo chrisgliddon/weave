@@ -744,6 +744,8 @@ const fn lsp_symbol_kind(kind: WeaveSymbolKind) -> SymbolKind {
         WeaveSymbolKind::Pattern => SymbolKind::CLASS,
         WeaveSymbolKind::Collection => SymbolKind::ARRAY,
         WeaveSymbolKind::Spread => SymbolKind::STRUCT,
+        WeaveSymbolKind::Scene => SymbolKind::STRUCT,
+        WeaveSymbolKind::Stage => SymbolKind::CLASS,
         WeaveSymbolKind::Variable => SymbolKind::VARIABLE,
     }
 }
@@ -756,6 +758,8 @@ const fn completion_kind(kind: WeaveSymbolKind) -> CompletionItemKind {
         WeaveSymbolKind::Pattern => CompletionItemKind::CLASS,
         WeaveSymbolKind::Collection => CompletionItemKind::FIELD,
         WeaveSymbolKind::Spread => CompletionItemKind::STRUCT,
+        WeaveSymbolKind::Scene => CompletionItemKind::STRUCT,
+        WeaveSymbolKind::Stage => CompletionItemKind::CLASS,
         WeaveSymbolKind::Variable => CompletionItemKind::VARIABLE,
     }
 }
@@ -781,6 +785,8 @@ fn reference_applies_to_diagnostic(target: &ReferenceTarget, code: &str) -> bool
         ("W2029", ReferenceTarget::Exact(key)) => {
             key.starts_with("pattern:") || key.starts_with("spread:")
         }
+        ("W2202", ReferenceTarget::Exact(key)) => key.starts_with("scene:"),
+        ("W2203", ReferenceTarget::Exact(key)) => key.starts_with("stage:"),
         _ => false,
     }
 }

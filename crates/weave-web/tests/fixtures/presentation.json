@@ -1,0 +1,103 @@
+{
+  "version": 5,
+  "source_name": "crates/weave-web/tests/fixtures/presentation.weave",
+  "entry": "start",
+  "globals": [],
+  "grammars": {},
+  "patterns": {},
+  "modules": {},
+  "presentation": {
+    "scenes": {
+      "ferry_dusk": {
+        "background": "art/ferry_dusk.png"
+      }
+    },
+    "stages": {
+      "mara": {
+        "image": "art/mara_neutral.png",
+        "name": "Mara"
+      }
+    }
+  },
+  "knots": {
+    "start": {
+      "content": [
+        {
+          "span": {
+            "start": 140,
+            "end": 157,
+            "line": 11,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "scene",
+              "value": "ferry_dusk"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 158,
+            "end": 168,
+            "line": 12,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "show",
+              "value": "mara"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 169,
+            "end": 182,
+            "line": 13,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": "mara"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 183,
+            "end": 208,
+            "line": 14,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "parts": [
+                {
+                  "kind": "text",
+                  "value": "The ferry leaves at dusk."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 209,
+            "end": 215,
+            "line": 15,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

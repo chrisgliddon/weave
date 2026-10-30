@@ -15,6 +15,11 @@
   "override"
   "grammar"
   "pattern"
+  "scene"
+  "stage"
+  "background"
+  "image"
+  "name"
   "spread"
   "builtin"
   "draw"
@@ -47,6 +52,9 @@
 (grammar_declaration name: (identifier) @module)
 (grammar_rule name: (identifier) @property)
 (pattern_declaration name: (identifier) @type)
+(scene_declaration name: (identifier) @type)
+(stage_declaration name: (identifier) @type)
+(cue_directive) @keyword
 (pattern_collection name: (identifier) @variable.member)
 (spread_declaration name: (identifier) @function.method)
 (pattern_field name: (identifier) @property)
@@ -68,6 +76,7 @@
 (divert_statement target: (identifier) @function)
 (thread_statement target: (identifier) @function)
 (inline_divert target: (identifier) @function)
+(directive_statement target: (identifier) @function)
 
 (choice_marker) @operator
 

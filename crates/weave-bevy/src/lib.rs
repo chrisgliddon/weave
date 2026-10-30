@@ -19,7 +19,9 @@ use bevy::reflect::TypePath;
 use weave_compiler::{CompileOptions, compile};
 use weave_core::ir::StoryIr;
 use weave_patterns::{DrawResult, PatternValue};
-use weave_runtime::{ChoiceView, RuntimeError, Story, StoryEvent, StoryState, VariableState};
+use weave_runtime::{
+    ChoiceView, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState, VariableState,
+};
 
 /// Bevy version targeted by this integration.
 pub const BEVY_VERSION: &str = "0.18";
@@ -212,6 +214,13 @@ impl Deref for DeliverChoices {
     }
 }
 
+/// One presentation cue emitted before the boundary it applies to.
+#[derive(Event, Debug, Clone, PartialEq, Eq)]
+pub struct PresentationCued {
+    /// The cue in source order.
+    pub cue: PresentationEvent,
+}
+
 /// Emitted when the story reaches its end boundary.
 #[derive(Event, Debug, Clone, Copy)]
 pub struct StoryEnded;
@@ -384,26 +393,37 @@ impl Command for WeaveAction {
             return;
         };
         let result = match story_resource.runtime.as_mut() {
-            Some(runtime) => match apply_action(runtime, self) {
-                Ok(event) => Ok((runtime.take_pattern_draws(), event)),
-                Err(error) => {
-                    let _ = runtime.take_pattern_draws();
-                    Err(error)
-                }
-            },
-            None => Err(None),
+            Some(runtime) => {
+                let result = apply_action(runtime, self);
+                let draws = runtime.take_pattern_draws();
+                let presentation = runtime.take_presentation();
+                Some((result, draws, presentation))
+            }
+            None => None,
         };
         world.insert_resource(story_resource);
         match result {
-            Ok((draws, event)) => {
+            Some((Ok(event), draws, presentation)) => {
                 trigger_pattern_draws(world, draws);
+                trigger_presentation(world, presentation);
                 trigger_story_event(world, event);
             }
-            Err(Some(error)) => world.trigger(StoryFailed {
-                message: error.to_string(),
-                runtime_error: Some(error),
-            }),
-            Err(None) => world.trigger(StoryFailed {
+            Some((Err(error), _, presentation)) => {
+                // A failure must not strand the cues that already executed: the
+                // host applies them in order before it observes the error.
+                trigger_presentation(world, presentation);
+                match error {
+                    Some(error) => world.trigger(StoryFailed {
+                        message: error.to_string(),
+                        runtime_error: Some(error),
+                    }),
+                    None => world.trigger(StoryFailed {
+                        message: "Weave story is not ready".to_owned(),
+                        runtime_error: None,
+                    }),
+                }
+            }
+            None => world.trigger(StoryFailed {
                 message: "Weave story is not ready".to_owned(),
                 runtime_error: None,
             }),
@@ -446,6 +466,12 @@ fn apply_action(
     }
 }
 
+fn trigger_presentation(world: &mut World, presentation: Vec<PresentationEvent>) {
+    for cue in presentation {
+        world.trigger(PresentationCued { cue });
+    }
+}
+
 fn trigger_story_event(world: &mut World, event: StoryEvent) {
     match event {
         StoryEvent::Line(text) => world.trigger(DeliverLine { text }),
@@ -457,8 +483,8 @@ fn trigger_story_event(world: &mut World, event: StoryEvent) {
 /// Commonly used integration types.
 pub mod prelude {
     pub use crate::{
-        DeliverChoices, DeliverLine, PatternDrawn, StoryEnded, StoryFailed, StoryReady,
-        StoryReloaded, WeaveAsset, WeaveCommandsExt, WeavePlugin, WeaveSet, WeaveStory,
+        DeliverChoices, DeliverLine, PatternDrawn, PresentationCued, StoryEnded, StoryFailed,
+        StoryReady, StoryReloaded, WeaveAsset, WeaveCommandsExt, WeavePlugin, WeaveSet, WeaveStory,
     };
 }
 
@@ -475,6 +501,9 @@ mod tests {
 
     #[derive(Resource, Default)]
     struct PatternPayloadLog(Vec<PatternDrawn>);
+
+    #[derive(Resource, Default)]
+    struct PresentationLog(Vec<PresentationEvent>);
 
     fn ready(_: On<StoryReady>, mut log: ResMut<EventLog>, mut commands: Commands) {
         log.0.push("ready".to_owned());
@@ -500,6 +529,10 @@ mod tests {
 
     fn record_pattern_payload(event: On<PatternDrawn>, mut log: ResMut<PatternPayloadLog>) {
         log.0.push(event.clone());
+    }
+
+    fn presentation(event: On<PresentationCued>, mut log: ResMut<PresentationLog>) {
+        log.0.push(event.cue.clone());
     }
 
     fn reloaded(_: On<StoryReloaded>, mut log: ResMut<EventLog>) {
@@ -682,6 +715,104 @@ Reading: {reading.dawn.name}.
                 .patterns()["omens"]
                 .last_draw,
             ["wolf"]
+        );
+    }
+
+    #[test]
+    fn presentation_cues_reach_observers_and_leave_nothing_pending() {
+        let source = r#"scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@speaker mara
+The ferry leaves at dusk.
+-> END
+"#;
+        let runtime = Story::with_seed(test_asset(source).story, 7).expect("runtime starts");
+        let mut story = WeaveStory::new("unused.weave");
+        story.runtime = Some(runtime);
+
+        let mut app = App::new();
+        app.init_resource::<EventLog>()
+            .init_resource::<PresentationLog>()
+            .add_observer(presentation)
+            .add_observer(line)
+            .insert_resource(story);
+        WeaveAction::Continue.apply(app.world_mut());
+
+        assert_eq!(
+            app.world().resource::<PresentationLog>().0,
+            vec![
+                PresentationEvent::Scene("ferry_dusk".to_owned()),
+                PresentationEvent::Show("mara".to_owned()),
+                PresentationEvent::Speaker(Some("mara".to_owned())),
+            ]
+        );
+        assert!(
+            app.world()
+                .resource::<WeaveStory>()
+                .runtime()
+                .expect("runtime survives the action")
+                .pending_presentation()
+                .is_empty(),
+            "the host must drain every cue it received"
+        );
+    }
+
+    #[test]
+    fn a_failed_action_delivers_the_cues_that_ran_before_it() {
+        let source = r#"scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+VAR total = 10
+
+=== start ===
+@scene ferry_dusk
+@speaker
+SET total = total / 0
+The ferry leaves at dusk.
+"#;
+        let runtime = Story::with_seed(test_asset(source).story, 7).expect("runtime starts");
+        let mut story = WeaveStory::new("unused.weave");
+        story.runtime = Some(runtime);
+
+        let mut app = App::new();
+        app.init_resource::<EventLog>()
+            .init_resource::<PresentationLog>()
+            .add_observer(presentation)
+            .add_observer(failed)
+            .insert_resource(story);
+        WeaveAction::Continue.apply(app.world_mut());
+
+        assert_eq!(
+            app.world().resource::<PresentationLog>().0,
+            vec![
+                PresentationEvent::Scene("ferry_dusk".to_owned()),
+                PresentationEvent::Speaker(None),
+            ],
+            "the host applies the cues produced before the failure, in order"
+        );
+        assert_eq!(
+            app.world().resource::<EventLog>().0,
+            ["failed:division or remainder by zero at 10:1"]
+        );
+        assert!(
+            app.world()
+                .resource::<WeaveStory>()
+                .runtime()
+                .expect("runtime survives the action")
+                .pending_presentation()
+                .is_empty(),
+            "a failure must not strand cues for a later action"
         );
     }
 

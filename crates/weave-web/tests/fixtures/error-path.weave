@@ -1,0 +1,11 @@
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+VAR total = 10
+
+=== start ===
+@scene ferry_dusk
+@speaker
+SET total = total / 0
+The ferry leaves at dusk.

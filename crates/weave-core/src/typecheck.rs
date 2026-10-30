@@ -6,7 +6,7 @@ use std::fmt;
 use weave_domain::{ModuleManifest, TypeExpression};
 
 use crate::ast::{
-    BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
+    BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
     PatternDrawMethod, PatternEntry, Span, Spanned, Statement, UnaryOperator, VariableKind,
 };
 use crate::diagnostic::{Diagnostic, Severity};
@@ -136,6 +136,8 @@ struct Checker {
     patterns: BTreeMap<String, PatternInfo>,
     module_signatures: BTreeMap<String, DomainModuleSignature>,
     module_aliases: BTreeMap<String, Span>,
+    scenes: BTreeMap<String, Span>,
+    stages: BTreeMap<String, Span>,
     knots: BTreeSet<String>,
 }
 
@@ -148,6 +150,8 @@ impl Checker {
             patterns: BTreeMap::new(),
             module_signatures: BTreeMap::new(),
             module_aliases: BTreeMap::new(),
+            scenes: BTreeMap::new(),
+            stages: BTreeMap::new(),
             knots: BTreeSet::new(),
         }
     }
@@ -570,6 +574,36 @@ impl Checker {
                         self.duplicate("W2011", "knot", &knot.node.name, knot.span);
                     }
                 }
+                Item::Scene(scene) => {
+                    let name = &scene.node.name;
+                    if self.scenes.insert(name.clone(), scene.span).is_some() {
+                        self.duplicate("W2200", "scene", name, scene.span);
+                    }
+                    if let Some(background) = &scene.node.background {
+                        self.check_asset_path(
+                            "scene",
+                            name,
+                            "background",
+                            background,
+                            scene.node.background_span.unwrap_or(scene.span),
+                        );
+                    }
+                }
+                Item::Stage(stage) => {
+                    let name = &stage.node.name;
+                    if self.stages.insert(name.clone(), stage.span).is_some() {
+                        self.duplicate("W2201", "stage", name, stage.span);
+                    }
+                    if let Some(image) = &stage.node.image {
+                        self.check_asset_path(
+                            "stage",
+                            name,
+                            "image",
+                            image,
+                            stage.node.image_span.unwrap_or(stage.span),
+                        );
+                    }
+                }
                 Item::Global(_) | Item::Comment(_) | Item::Blank => {}
             }
         }
@@ -577,6 +611,8 @@ impl Checker {
             if self.grammars.contains_key(alias)
                 || self.patterns.contains_key(alias)
                 || self.variables.contains_key(alias)
+                || self.scenes.contains_key(alias)
+                || self.stages.contains_key(alias)
                 || self.knots.contains(alias)
             {
                 self.diagnostics.push(
@@ -793,7 +829,48 @@ impl Checker {
             }
             Statement::Divert(target) => self.check_target(target, statement.span, false),
             Statement::Thread(target) => self.check_target(target, statement.span, false),
+            Statement::Cue(cue) => self.check_cue(cue, statement.span),
             Statement::End | Statement::Comment(_) | Statement::Blank => {}
+        }
+    }
+
+    fn check_cue(&mut self, cue: &Cue, span: Span) {
+        match cue {
+            Cue::Scene(name) => {
+                if !self.scenes.contains_key(name) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2202", format!("unknown scene `{name}`"))
+                            .with_span(span)
+                            .with_help("declare the scene with `scene <id> { ... }`"),
+                    );
+                }
+            }
+            Cue::Show(name) | Cue::Hide(name) | Cue::Speaker(Some(name)) => {
+                if !self.stages.contains_key(name) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2203", format!("unknown stage `{name}`"))
+                            .with_span(span)
+                            .with_help("declare the stage with `stage <id> { ... }`"),
+                    );
+                }
+            }
+            Cue::Speaker(None) => {}
+        }
+    }
+
+    fn check_asset_path(&mut self, kind: &str, owner: &str, field: &str, path: &str, span: Span) {
+        if let Some(problem) = asset_path_problem(path) {
+            self.diagnostics.push(
+                Diagnostic::error(
+                    "W2204",
+                    // Debug-quote the rejected path so control characters and NUL
+                    // reach the terminal inert instead of as raw escape bytes.
+                    format!(
+                        "invalid `{field}` asset path {path:?} for {kind} `{owner}`: {problem}"
+                    ),
+                )
+                .with_span(span),
+            );
         }
     }
 
@@ -1350,6 +1427,71 @@ fn pattern_has_spread(info: &PatternInfo, spread: &str) -> bool {
             (info.builtin.as_deref(), spread),
             (Some("tarot"), "three_card") | (Some("elder_futhark"), "three_rune")
         )
+}
+
+/// Windows device names that are reserved in every directory, with or without
+/// an extension.
+const WINDOWS_DEVICE_NAMES: &[&str] = &[
+    "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8",
+    "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+];
+
+/// Describe the first portability problem with a declared relative asset path.
+fn asset_path_problem(path: &str) -> Option<&'static str> {
+    if path.is_empty() {
+        return Some("the path is empty");
+    }
+    if path.starts_with('~') {
+        return Some("the path cannot start with a `~` home-directory prefix");
+    }
+    if path.starts_with('/') {
+        return Some("the path must be relative and cannot start with `/`");
+    }
+    if path.contains('\\') {
+        return Some("the path must use `/` separators, not `\\`");
+    }
+    if path.contains(':') {
+        return Some("the path cannot contain a `:` scheme");
+    }
+    if path.contains('%') {
+        return Some("the path cannot contain percent-encoded sequences");
+    }
+    if path.ends_with('/') {
+        return Some("the path cannot end with `/`");
+    }
+    if !path.is_ascii() {
+        return Some("the path must contain only ASCII characters");
+    }
+    if path.chars().any(char::is_control) {
+        return Some("the path cannot contain control characters");
+    }
+    for segment in path.split('/') {
+        match segment {
+            "" => return Some("the path cannot contain an empty segment"),
+            "." => return Some("the path cannot contain a `.` segment"),
+            ".." => return Some("the path cannot contain a `..` segment"),
+            _ => {}
+        }
+        if segment.ends_with('.') {
+            return Some("no path segment may end with `.`");
+        }
+        if segment.ends_with(' ') {
+            return Some("no path segment may end with a space");
+        }
+        let stem = segment.split('.').next().unwrap_or(segment);
+        if WINDOWS_DEVICE_NAMES.contains(&stem.to_ascii_lowercase().as_str()) {
+            return Some("the path cannot use a Windows reserved device name");
+        }
+    }
+    if path.chars().any(|character| {
+        !matches!(
+            character,
+            'A'..='Z' | 'a'..='z' | '0'..='9' | '_' | '-' | '.' | '/'
+        )
+    }) {
+        return Some("the path may contain only ASCII letters, digits, `_`, `-`, `.`, and `/`");
+    }
+    None
 }
 
 /// Check declarations, references, expressions, and control flow.

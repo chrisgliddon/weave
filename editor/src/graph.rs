@@ -834,6 +834,7 @@ impl GraphBuilder {
                     self.knot_row += 1;
                 }
                 Item::Comment(_) | Item::Blank => {}
+                Item::Scene(_) | Item::Stage(_) => {}
             }
         }
     }
@@ -923,6 +924,7 @@ impl GraphBuilder {
                 Statement::Text(_)
                 | Statement::Assign { .. }
                 | Statement::MutateList { .. }
+                | Statement::Cue(_)
                 | Statement::End
                 | Statement::Comment(_)
                 | Statement::Blank => {}

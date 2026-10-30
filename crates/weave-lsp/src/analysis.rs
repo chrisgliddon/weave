@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use weave_core::ast::{
-    Conditional, Expr, GrammarEntry, Item, PatternEntry, Span, Spanned, Statement,
+    Conditional, Cue, Expr, GrammarEntry, Item, PatternEntry, Span, Spanned, Statement,
 };
 use weave_core::{Diagnostic, TemplatePart, Type, parse_document, parse_template, type_check};
 
@@ -13,6 +13,8 @@ pub enum SymbolKind {
     Pattern,
     Collection,
     Spread,
+    Scene,
+    Stage,
     Variable,
 }
 
@@ -26,6 +28,8 @@ impl SymbolKind {
             Self::Pattern => "pattern system",
             Self::Collection => "pattern collection",
             Self::Spread => "pattern spread",
+            Self::Scene => "scene",
+            Self::Stage => "stage",
             Self::Variable => "variable",
         }
     }
@@ -267,6 +271,46 @@ pub fn analyze(source: &str) -> Analysis {
                     children,
                 });
             }
+            Item::Scene(scene) => {
+                let selection = identifier_span(source, item.span, &scene.node.name);
+                analysis.symbols.push(Symbol {
+                    key: format!("scene:{}", scene.node.name),
+                    name: scene.node.name.clone(),
+                    kind: SymbolKind::Scene,
+                    span: item.span,
+                    selection,
+                    detail: "background scene".to_owned(),
+                    container: None,
+                });
+                analysis.outlines.push(Outline {
+                    name: scene.node.name.clone(),
+                    kind: SymbolKind::Scene,
+                    span: item.span,
+                    selection,
+                    detail: "background scene".to_owned(),
+                    children: Vec::new(),
+                });
+            }
+            Item::Stage(stage) => {
+                let selection = identifier_span(source, item.span, &stage.node.name);
+                analysis.symbols.push(Symbol {
+                    key: format!("stage:{}", stage.node.name),
+                    name: stage.node.name.clone(),
+                    kind: SymbolKind::Stage,
+                    span: item.span,
+                    selection,
+                    detail: "character stage".to_owned(),
+                    container: None,
+                });
+                analysis.outlines.push(Outline {
+                    name: stage.node.name.clone(),
+                    kind: SymbolKind::Stage,
+                    span: item.span,
+                    selection,
+                    detail: "character stage".to_owned(),
+                    children: Vec::new(),
+                });
+            }
             Item::Global(statement) => collect_statement(source, statement, &mut analysis),
             Item::Comment(_) | Item::Blank => {}
         }
@@ -345,6 +389,20 @@ fn collect_statement(source: &str, statement: &Spanned<Statement>, analysis: &mu
             target,
             last_identifier_span(source, statement.span, target),
         ),
+        Statement::Cue(cue) => {
+            let (key_prefix, name) = match cue {
+                Cue::Scene(name) => ("scene", name),
+                Cue::Show(name) | Cue::Hide(name) => ("stage", name),
+                Cue::Speaker(Some(name)) => ("stage", name),
+                Cue::Speaker(None) => return,
+            };
+            push_reference(
+                analysis,
+                ReferenceTarget::Exact(format!("{key_prefix}:{name}")),
+                name,
+                identifier_span(source, statement.span, name),
+            );
+        }
         Statement::End | Statement::Comment(_) | Statement::Blank => {}
     }
 }
@@ -697,5 +755,63 @@ VAR draw = tarot.spread.single.draw()
     fn ignores_grammar_markers_in_comments() {
         let analysis = analyze("// #ghost.rule#\n=== start ===\n-> END\n");
         assert!(analysis.references.is_empty());
+    }
+
+    #[test]
+    fn resolves_scene_and_stage_symbols_and_cue_targets() {
+        let source = r#"scene ferry {
+    background: "art/ferry.png"
+}
+
+stage mara {
+    image: "art/mara.png"
+}
+
+=== start ===
+@scene ferry
+@show mara
+@speaker mara
+-> END
+"#;
+        let analysis = analyze(source);
+        assert!(
+            analysis
+                .symbols
+                .iter()
+                .any(|symbol| symbol.key == "scene:ferry" && symbol.kind == SymbolKind::Scene),
+            "{:?}",
+            analysis.diagnostics
+        );
+        assert!(
+            analysis
+                .symbols
+                .iter()
+                .any(|symbol| symbol.key == "stage:mara" && symbol.kind == SymbolKind::Stage)
+        );
+        assert!(
+            analysis
+                .outlines
+                .iter()
+                .any(|outline| outline.name == "ferry")
+        );
+        assert!(
+            analysis
+                .outlines
+                .iter()
+                .any(|outline| outline.name == "mara")
+        );
+
+        for (directive, expected) in [
+            ("@scene ", "scene:ferry"),
+            ("@show ", "stage:mara"),
+            ("@speaker ", "stage:mara"),
+        ] {
+            let offset = source.find(directive).expect("directive") + directive.len() + 1;
+            assert_eq!(
+                analysis.target_at(offset),
+                Some(ReferenceTarget::Exact(expected.to_owned())),
+                "cue {directive} did not resolve to {expected}"
+            );
+        }
     }
 }

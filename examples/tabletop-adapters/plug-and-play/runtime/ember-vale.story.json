@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "source_name": "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
   "entry": "start",
   "globals": [

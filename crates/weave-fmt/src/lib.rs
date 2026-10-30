@@ -4,8 +4,9 @@ use std::fmt::Write;
 
 use weave_core::Diagnostic;
 use weave_core::ast::{
-    BinaryOperator, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator, VariableKind,
+    BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
+    ModuleEntry, PatternDrawMethod, PatternEntry, SceneEntry, Spanned, StageEntry, Statement,
+    UnaryOperator, VariableKind,
 };
 
 /// Current canonical formatting contract.
@@ -184,6 +185,48 @@ impl Formatter {
                     self.line(0, "}");
                 }
                 Item::Global(statement) => self.statement(statement, 0),
+                Item::Scene(scene) => {
+                    self.line(0, &format!("scene {} {{", scene.node.name));
+                    let mut seen_content = false;
+                    for entry in &scene.node.entries {
+                        match &entry.node {
+                            SceneEntry::Background(background) => {
+                                seen_content = true;
+                                self.line(1, &format!("background: {}", quote(background)));
+                            }
+                            SceneEntry::Comment(comment) => {
+                                seen_content = true;
+                                self.comment(1, comment);
+                            }
+                            SceneEntry::Blank if seen_content => self.blank(),
+                            SceneEntry::Blank => {}
+                        }
+                    }
+                    self.line(0, "}");
+                }
+                Item::Stage(stage) => {
+                    self.line(0, &format!("stage {} {{", stage.node.name));
+                    let mut seen_content = false;
+                    for entry in &stage.node.entries {
+                        match &entry.node {
+                            StageEntry::Image(image) => {
+                                seen_content = true;
+                                self.line(1, &format!("image: {}", quote(image)));
+                            }
+                            StageEntry::Name(name) => {
+                                seen_content = true;
+                                self.line(1, &format!("name: {}", quote(name)));
+                            }
+                            StageEntry::Comment(comment) => {
+                                seen_content = true;
+                                self.comment(1, comment);
+                            }
+                            StageEntry::Blank if seen_content => self.blank(),
+                            StageEntry::Blank => {}
+                        }
+                    }
+                    self.line(0, "}");
+                }
                 Item::Knot(knot) => {
                     self.line(0, &format!("=== {} ===", knot.node.name));
                     self.block(&knot.node.body, 0);
@@ -255,6 +298,7 @@ impl Formatter {
             }
             Statement::Divert(target) => self.line(depth, &format!("-> {target}")),
             Statement::Thread(target) => self.line(depth, &format!("<- {target}")),
+            Statement::Cue(cue) => self.line(depth, &format_cue(cue)),
             Statement::End => self.line(depth, "-> END"),
             Statement::Comment(comment) => self.comment(depth, comment),
             Statement::Blank => self.blank(),
@@ -281,6 +325,16 @@ impl Formatter {
         if !self.output.ends_with("\n\n") && !self.output.is_empty() {
             self.output.push('\n');
         }
+    }
+}
+
+fn format_cue(cue: &Cue) -> String {
+    match cue {
+        Cue::Scene(name) => format!("@scene {name}"),
+        Cue::Show(name) => format!("@show {name}"),
+        Cue::Hide(name) => format!("@hide {name}"),
+        Cue::Speaker(Some(name)) => format!("@speaker {name}"),
+        Cue::Speaker(None) => "@speaker".to_owned(),
     }
 }
 
@@ -538,5 +592,32 @@ aside
         let formatted = format_source("=== start ===\nVAR value = 10 - (3 - 1)\n-> END\n")
             .expect("source should format");
         assert!(formatted.contains("10 - (3 - 1)"));
+    }
+
+    #[test]
+    fn preserves_comments_inside_scene_and_stage_declarations() {
+        let source = r#"scene ferry {
+    // backdrop
+    background: "art/ferry.png"
+}
+
+stage mara {
+    // portrait
+    image: "art/mara.png"
+    // display name
+    name: "Mara"
+}
+
+=== start ===
+-> END
+"#;
+        let once = format_source(source).expect("source should format");
+        assert!(once.contains("    // backdrop"));
+        assert!(once.contains("    // portrait"));
+        assert!(once.contains("    // display name"));
+        assert_eq!(once, source);
+
+        let twice = format_source(&once).expect("formatted source should parse");
+        assert_eq!(once, twice);
     }
 }
