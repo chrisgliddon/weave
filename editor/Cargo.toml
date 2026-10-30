@@ -10,6 +10,7 @@ repository.workspace = true
 [dependencies]
 gpui.workspace = true
 gpui-flow.workspace = true
+image.workspace = true
 notify.workspace = true
 ron.workspace = true
 semver.workspace = true

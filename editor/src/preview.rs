@@ -1,9 +1,11 @@
 //! Debounced compiler integration and isolated live story playback panel.
 
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use gpui::{
-    AnyElement, Context, EventEmitter, FocusHandle, KeyDownEvent, Window, div, prelude::*, px, rgb,
+    AnyElement, Context, EventEmitter, FocusHandle, ImageSource, KeyDownEvent, ObjectFit, Window,
+    div, img, prelude::*, px, rgb,
 };
 use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::StoryIr;
@@ -13,6 +15,7 @@ use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
 use crate::play_view::{NARRATOR, PlayMode, scene_from_session, scene_tone};
+use crate::presentation_assets::PresentationAssets;
 use crate::theme::DARK_THEME;
 
 const MAX_CONTINUE_BOUNDARIES: usize = 10_000;
@@ -202,6 +205,30 @@ impl PreviewSession {
             .get(id)?
             .name
             .clone()
+    }
+
+    /// Project-relative background image declared by a scene, if it names one.
+    #[must_use]
+    pub fn scene_background(&self, id: &str) -> Option<&str> {
+        self.last_valid_story
+            .as_ref()?
+            .presentation
+            .scenes
+            .get(id)?
+            .background
+            .as_deref()
+    }
+
+    /// Project-relative character image declared by a stage, if it names one.
+    #[must_use]
+    pub fn stage_image(&self, id: &str) -> Option<&str> {
+        self.last_valid_story
+            .as_ref()?
+            .presentation
+            .stages
+            .get(id)?
+            .image
+            .as_deref()
     }
 
     #[must_use]
@@ -442,6 +469,7 @@ pub struct PreviewSurface {
     session: PreviewSession,
     debouncer: PreviewCompileDebouncer,
     pending: Option<PendingCompile>,
+    assets: PresentationAssets,
     mode: PlayMode,
     focus: FocusHandle,
 }
@@ -455,9 +483,38 @@ impl PreviewSurface {
             ),
             debouncer: PreviewCompileDebouncer::new(Duration::from_millis(250)),
             pending: None,
+            assets: PresentationAssets::unbound(),
             mode: PlayMode::Debug,
             focus: cx.focus_handle(),
         }
+    }
+
+    /// Bind presentation images to the open project directory.
+    ///
+    /// Rebinding clears the image cache, so opening or saving a different
+    /// project cannot stage a frame decoded from the previous one.
+    pub fn set_project_directory(&mut self, directory: Option<PathBuf>, cx: &mut Context<Self>) {
+        if self.assets.rebind(directory) {
+            cx.notify();
+        }
+    }
+
+    /// Re-stat staged images and repaint when one changed on disk.
+    ///
+    /// The editor polls this beside the source compile poll, which is enough to
+    /// pick up a replaced image within a tick without a second file watcher.
+    pub fn refresh_assets(&mut self, cx: &mut Context<Self>) -> bool {
+        let changed = self.assets.refresh();
+        if changed {
+            cx.notify();
+        }
+        changed
+    }
+
+    /// Image loader currently bound to the preview.
+    #[must_use]
+    pub fn assets(&self) -> &PresentationAssets {
+        &self.assets
     }
 
     /// Current presentation.
@@ -622,8 +679,67 @@ impl PreviewSurface {
         .into_any_element()
     }
 
-    fn play_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn play_panel(&mut self, cx: &mut Context<Self>) -> AnyElement {
         let scene = scene_from_session(&self.session);
+        let background_asset = scene.background.as_deref().and_then(|id| {
+            self.session
+                .scene_background(id)
+                .map(|path| (id.to_owned(), path.to_owned()))
+        });
+        let stage_asset = scene.stage.as_deref().and_then(|id| {
+            self.session
+                .stage_image(id)
+                .map(|path| (id.to_owned(), path.to_owned()))
+        });
+        let background_image = background_asset
+            .as_ref()
+            .and_then(|(id, path)| self.assets.background(id, path));
+        let stage_image = stage_asset
+            .as_ref()
+            .and_then(|(id, path)| self.assets.stage(id, path));
+        let mut notes = Vec::new();
+        for (_, path) in background_asset.iter().chain(stage_asset.iter()) {
+            if let Some(note) = self.assets.failure(path) {
+                notes.push(note.to_owned());
+            }
+        }
+        let stage_label = scene
+            .stage
+            .as_deref()
+            .map(|id| self.session.stage_name(id).unwrap_or_else(|| id.to_owned()));
+        let character = match (&scene.stage, stage_label) {
+            (Some(_), Some(label)) => {
+                let mut character = div().flex().flex_col().items_center().gap_1();
+                character = match stage_image {
+                    Some(image) => character.child(
+                        img(ImageSource::Render(image))
+                            .w(px(120.0))
+                            .h(px(150.0))
+                            .object_fit(ObjectFit::Contain),
+                    ),
+                    None => character.child(
+                        div()
+                            .w(px(120.0))
+                            .h(px(150.0))
+                            .rounded_t_full()
+                            .bg(rgb(0x1a2030))
+                            .border_1()
+                            .border_color(rgb(DARK_THEME.border)),
+                    ),
+                };
+                Some(
+                    character
+                        .child(
+                            div()
+                                .text_xs()
+                                .text_color(rgb(DARK_THEME.muted_text))
+                                .child(label),
+                        )
+                        .into_any_element(),
+                )
+            }
+            _ => None,
+        };
         let mut frame = div()
             .id("play-scene")
             .flex_1()
@@ -654,6 +770,17 @@ impl PreviewSurface {
             .flex()
             .items_end()
             .justify_center();
+        if let Some(image) = background_image {
+            stage = stage.child(
+                img(ImageSource::Render(image))
+                    .absolute()
+                    .top_0()
+                    .left_0()
+                    .right_0()
+                    .bottom_0()
+                    .object_fit(ObjectFit::Cover),
+            );
+        }
         stage = stage
             .child(
                 div()
@@ -675,30 +802,7 @@ impl PreviewSurface {
                         .child(scene.background.clone().unwrap_or_default()),
                 )
             })
-            .when(scene.stage.is_some(), |element| {
-                element.child(
-                    div()
-                        .flex()
-                        .flex_col()
-                        .items_center()
-                        .gap_1()
-                        .child(
-                            div()
-                                .w(px(120.0))
-                                .h(px(150.0))
-                                .rounded_t_full()
-                                .bg(rgb(0x1a2030))
-                                .border_1()
-                                .border_color(rgb(DARK_THEME.border)),
-                        )
-                        .child(
-                            div()
-                                .text_xs()
-                                .text_color(rgb(DARK_THEME.muted_text))
-                                .child(scene.stage.clone().unwrap_or_default()),
-                        ),
-                )
-            });
+            .when_some(character, |element, character| element.child(character));
         if scene.speaker != NARRATOR {
             stage = stage.child(
                 div()
@@ -712,6 +816,22 @@ impl PreviewSurface {
                     .text_xs()
                     .text_color(rgb(DARK_THEME.accent))
                     .child(scene.speaker.clone()),
+            );
+        }
+        if !notes.is_empty() {
+            stage = stage.child(
+                div()
+                    .absolute()
+                    .bottom_3()
+                    .left_3()
+                    .right_3()
+                    .px_2()
+                    .py_1()
+                    .rounded_md()
+                    .bg(rgb(DARK_THEME.chrome))
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(notes.join(" · ")),
             );
         }
 
