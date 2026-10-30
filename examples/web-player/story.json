@@ -85,14 +85,42 @@
     }
   },
   "modules": {},
+  "presentation": {
+    "scenes": {
+      "observatory_night": {
+        "background": "art/observatory-night.svg"
+      }
+    },
+    "stages": {
+      "observer": {
+        "image": null,
+        "name": "The Observer"
+      }
+    }
+  },
   "knots": {
     "start": {
       "content": [
         {
           "span": {
-            "start": 340,
-            "end": 446,
-            "line": 14,
+            "start": 458,
+            "end": 482,
+            "line": 22,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "scene",
+              "value": "observatory_night"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 483,
+            "end": 589,
+            "line": 23,
             "column": 1
           },
           "kind": {
@@ -137,15 +165,15 @@
         },
         {
           "span": {
-            "start": 448,
-            "end": 469,
-            "line": 16,
+            "start": 591,
+            "end": 612,
+            "line": 25,
             "column": 1
           },
           "kind": {
             "kind": "choice",
             "value": {
-              "id": "start:root.1",
+              "id": "start:root.2",
               "once": true,
               "text": {
                 "parts": [
@@ -159,9 +187,24 @@
               "body": [
                 {
                   "span": {
-                    "start": 474,
-                    "end": 543,
-                    "line": 17,
+                    "start": 617,
+                    "end": 634,
+                    "line": 26,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "cue",
+                    "value": {
+                      "kind": "speaker",
+                      "value": "observer"
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 639,
+                    "end": 735,
+                    "line": 27,
                     "column": 5
                   },
                   "kind": {
@@ -170,7 +213,7 @@
                       "parts": [
                         {
                           "kind": "text",
-                          "value": "You turn the brass wheel. A thin road of light opens beyond the dome."
+                          "value": "\"The road of light only opens for a patient eye,\" the observer murmurs as the brass wheel turns."
                         }
                       ]
                     }
@@ -178,9 +221,9 @@
                 },
                 {
                   "span": {
-                    "start": 548,
-                    "end": 554,
-                    "line": 18,
+                    "start": 740,
+                    "end": 746,
+                    "line": 28,
                     "column": 5
                   },
                   "kind": {
@@ -194,15 +237,15 @@
         },
         {
           "span": {
-            "start": 556,
-            "end": 579,
-            "line": 20,
+            "start": 748,
+            "end": 771,
+            "line": 30,
             "column": 1
           },
           "kind": {
             "kind": "choice",
             "value": {
-              "id": "start:root.2",
+              "id": "start:root.3",
               "once": true,
               "text": {
                 "parts": [
@@ -216,9 +259,24 @@
               "body": [
                 {
                   "span": {
-                    "start": 584,
-                    "end": 665,
-                    "line": 21,
+                    "start": 776,
+                    "end": 784,
+                    "line": 31,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "cue",
+                    "value": {
+                      "kind": "speaker",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 789,
+                    "end": 870,
+                    "line": 32,
                     "column": 5
                   },
                   "kind": {
@@ -235,9 +293,9 @@
                 },
                 {
                   "span": {
-                    "start": 670,
-                    "end": 676,
-                    "line": 22,
+                    "start": 875,
+                    "end": 881,
+                    "line": 33,
                     "column": 5
                   },
                   "kind": {

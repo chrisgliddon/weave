@@ -2,6 +2,8 @@ import init, { StoryPlayer } from "./pkg/weave_web.js";
 
 const STORAGE_KEY = "weave.web-player.state.v1";
 const elements = {
+  story: document.querySelector("#story"),
+  speaker: document.querySelector("#speaker"),
   transcript: document.querySelector("#transcript"),
   status: document.querySelector("#status"),
   choices: document.querySelector("#choice-fieldset"),
@@ -17,6 +19,7 @@ const elements = {
 
 let player;
 let storyJson;
+let storyPresentation = null;
 
 function savedState() {
   try {
@@ -40,6 +43,45 @@ function setReady(ready) {
 
 function unpack(field) {
   return field && Object.hasOwn(field, "value") ? field.value : field;
+}
+
+function readPresentation(source) {
+  try {
+    const presentation = JSON.parse(source)?.presentation;
+    return presentation && typeof presentation === "object" ? presentation : null;
+  } catch {
+    return null;
+  }
+}
+
+function resetPresentation() {
+  delete elements.story.dataset.scene;
+  elements.story.style.removeProperty("--scene-background");
+  elements.speaker.textContent = "";
+  elements.speaker.hidden = true;
+}
+
+function applyCue(cue) {
+  const kind = cue?.kind;
+  const value = unpack(cue?.value);
+  if (kind === "scene") {
+    if (!value) return;
+    const background = storyPresentation?.scenes?.[value]?.background;
+    elements.story.dataset.scene = value;
+    if (background) {
+      elements.story.style.setProperty("--scene-background", `url("./${background}")`);
+    } else {
+      elements.story.style.removeProperty("--scene-background");
+    }
+  } else if (kind === "speaker") {
+    const name = value ? storyPresentation?.stages?.[value]?.name ?? value : null;
+    elements.speaker.textContent = name ?? "";
+    elements.speaker.hidden = name === null;
+  }
+}
+
+function applyCues(cues) {
+  for (const cue of cues ?? []) applyCue(cue);
 }
 
 function drawLabel(draw) {
@@ -85,6 +127,7 @@ function showChoices(choices) {
 function continueStory() {
   try {
     const frame = player.continue();
+    applyCues(frame.presentation);
     if (frame.kind === "line") {
       appendLine(frame.text, frame.draws);
       setStatus("Line delivered");
@@ -96,6 +139,9 @@ function continueStory() {
       setStatus("Story complete");
     }
   } catch (error) {
+    // A failed advance throws an Error whose `presentation` property holds the
+    // cues that ran before it, in source order. Apply them before reporting.
+    applyCues(error?.presentation);
     setStatus(`Runtime error: ${error.message ?? error}`);
     elements.continue.disabled = true;
   }
@@ -119,6 +165,7 @@ function restart(seed = Number(elements.seed.value)) {
   player.restartWithSeed(safeSeed);
   elements.transcript.replaceChildren();
   hideChoices();
+  resetPresentation();
   elements.continue.disabled = false;
   setStatus(`Ready · seed ${safeSeed}`);
   continueStory();
@@ -143,6 +190,7 @@ elements.load.addEventListener("click", () => {
     player.restoreState(saved);
     elements.transcript.replaceChildren();
     hideChoices();
+    resetPresentation();
     const choices = player.choices();
     if (choices.length > 0) {
       showChoices(choices);
@@ -170,6 +218,7 @@ try {
     if (!response.ok) throw new Error(`Story request failed with ${response.status}`);
     return response.text();
   });
+  storyPresentation = readPresentation(storyJson);
   player = new StoryPlayer(storyJson, Number(elements.seed.value));
   setReady(true);
   restart(Number(elements.seed.value));

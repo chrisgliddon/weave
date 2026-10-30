@@ -10,13 +10,24 @@ pattern signals {
 
 VAR signal = signals.draw()
 
+scene observatory_night {
+    background: "art/observatory-night.svg"
+}
+
+stage observer {
+    name: "The Observer"
+}
+
 === start ===
+@scene observatory_night
 The hilltop observatory wakes beneath a sky of moving ink. The dial marks {signal.name}: {signal.meaning}.
 
 * [Follow the signal]
-    You turn the brass wheel. A thin road of light opens beyond the dome.
+    @speaker observer
+    "The road of light only opens for a patient eye," the observer murmurs as the brass wheel turns.
     -> END
 
 * [Close the night log]
+    @speaker
     You record the sign, shutter the lens, and leave the stars to their patient work.
     -> END

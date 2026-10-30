@@ -233,7 +233,7 @@ mod bindings {
     use serde::Serialize;
     use wasm_bindgen::prelude::*;
 
-    use super::{Player, PlayerError};
+    use super::{Player, PlayerError, PlayerFailure};
 
     /// JavaScript-facing Weave story player.
     #[wasm_bindgen(js_name = StoryPlayer)]
@@ -253,15 +253,24 @@ mod bindings {
 
         /// Advance to the next host-visible story boundary.
         ///
-        /// A failure becomes a thrown JavaScript error.
+        /// A successful frame carries `presentation`: an array of cue objects in
+        /// source order, each shaped
+        /// `{ kind: "scene" | "show" | "hide" | "speaker", value: string | null }`.
+        /// A bare `@speaker` cue has `kind: "speaker"` and `value: null`.
+        ///
+        /// A failed advance throws a JavaScript `Error` whose `presentation`
+        /// property holds the cues produced before the failure, in source order,
+        /// so the host can apply them before reporting the message. Read
+        /// `error.presentation` in the `catch` block; it is an array, empty only
+        /// when no cue ran before the failure. If cue serialization itself ever
+        /// fails, `presentation` is empty and `presentationError` explains why,
+        /// so a failure never silently hides cues or changes the error type.
         #[wasm_bindgen(js_name = continue)]
-        pub fn continue_story(&mut self) -> Result<JsValue, JsError> {
-            to_js(
-                &self
-                    .inner
-                    .advance()
-                    .map_err(|failure| js_error(failure.error))?,
-            )
+        pub fn continue_story(&mut self) -> Result<JsValue, JsValue> {
+            match self.inner.advance() {
+                Ok(frame) => to_js(&frame).map_err(Into::into),
+                Err(failure) => Err(failure_to_js(failure)),
+            }
         }
 
         /// Return the currently eligible choices.
@@ -315,4 +324,33 @@ mod bindings {
     fn js_error(error: PlayerError) -> JsError {
         JsError::new(&error.to_string())
     }
+
+    /// Build the thrown object for a failed advance, attaching pre-failure cues.
+    fn failure_to_js(failure: PlayerFailure) -> JsValue {
+        let error = js_sys::Error::new(&failure.error.to_string());
+        match to_js(&failure.presentation) {
+            Ok(cues) => {
+                let _ =
+                    js_sys::Reflect::set(error.as_ref(), &JsValue::from_str("presentation"), &cues);
+            }
+            Err(serialization) => {
+                // Cue serialization cannot fail for the current cue shape, but a
+                // future one must not silently drop the failure's cues.
+                let _ = js_sys::Reflect::set(
+                    error.as_ref(),
+                    &JsValue::from_str("presentation"),
+                    &js_sys::Array::new(),
+                );
+                let _ = js_sys::Reflect::set(
+                    error.as_ref(),
+                    &JsValue::from_str("presentationError"),
+                    &serialization.into(),
+                );
+            }
+        }
+        error.into()
+    }
 }
+
+#[cfg(target_arch = "wasm32")]
+pub use bindings::WasmStoryPlayer;

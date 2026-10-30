@@ -133,6 +133,34 @@ fn presentation_cues_are_drained_into_the_frame_and_leave_nothing_pending() {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
+fn serialized_frames_and_failures_expose_cues_in_the_binding_shape() {
+    let mut player = Player::from_json(PRESENTATION_JSON, 23).expect("load presentation story");
+    let frame = serde_json::to_value(player.advance().expect("first line")).expect("frame JSON");
+    assert_eq!(frame["kind"], "line");
+    assert_eq!(
+        frame["presentation"],
+        serde_json::json!([
+            {"kind": "scene", "value": "ferry_dusk"},
+            {"kind": "show", "value": "mara"},
+            {"kind": "speaker", "value": "mara"},
+        ]),
+        "the JavaScript binding receives ordered cue objects, not opaque values"
+    );
+
+    let mut failing = Player::from_json(ERROR_PATH_JSON, 5).expect("load failing story");
+    let failure = failing.advance().expect_err("division by zero must fail");
+    assert_eq!(
+        serde_json::to_value(&failure.presentation).expect("cue JSON"),
+        serde_json::json!([
+            {"kind": "scene", "value": "ferry_dusk"},
+            {"kind": "speaker", "value": null},
+        ]),
+        "a bare speaker cue reaches the host as a null value"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
 fn a_failed_advance_reports_the_cues_that_ran_before_it() {
     use weave_runtime::PresentationEvent;
 
@@ -165,5 +193,68 @@ fn a_failed_advance_reports_the_cues_that_ran_before_it() {
             presentation: Vec::new(),
         },
         "the delivered cues are not replayed into a later frame"
+    );
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen_test::wasm_bindgen_test]
+fn wasm_frames_carry_ordered_cues_and_failures_keep_earlier_cues() {
+    use wasm_bindgen::{JsCast, JsValue};
+
+    fn cues(value: &JsValue, property: &str) -> Vec<(String, Option<String>)> {
+        let array = js_sys::Reflect::get(value, &JsValue::from_str(property))
+            .expect("cue property")
+            .dyn_into::<js_sys::Array>()
+            .expect("cue array");
+        array
+            .iter()
+            .map(|cue| {
+                let kind = js_sys::Reflect::get(&cue, &JsValue::from_str("kind"))
+                    .expect("cue kind")
+                    .as_string()
+                    .expect("kind string");
+                let value =
+                    js_sys::Reflect::get(&cue, &JsValue::from_str("value")).expect("cue value");
+                let value = if value.is_null() || value.is_undefined() {
+                    None
+                } else {
+                    Some(value.as_string().expect("value string"))
+                };
+                (kind, value)
+            })
+            .collect()
+    }
+
+    let mut player = weave_web::WasmStoryPlayer::new(PRESENTATION_JSON, 23).expect("load story");
+    let frame = player.continue_story().expect("first line");
+    assert_eq!(
+        cues(&frame, "presentation"),
+        vec![
+            ("scene".to_owned(), Some("ferry_dusk".to_owned())),
+            ("show".to_owned(), Some("mara".to_owned())),
+            ("speaker".to_owned(), Some("mara".to_owned())),
+        ]
+    );
+
+    let mut failing =
+        weave_web::WasmStoryPlayer::new(ERROR_PATH_JSON, 5).expect("load failing story");
+    let thrown = failing
+        .continue_story()
+        .expect_err("division by zero must throw");
+    let error = thrown
+        .clone()
+        .dyn_into::<js_sys::Error>()
+        .expect("a JavaScript Error is thrown");
+    assert!(
+        String::from(error.message()).contains("division"),
+        "the thrown message keeps the runtime failure"
+    );
+    assert_eq!(
+        cues(&thrown, "presentation"),
+        vec![
+            ("scene".to_owned(), Some("ferry_dusk".to_owned())),
+            ("speaker".to_owned(), None),
+        ],
+        "cues that ran before the failure are attached to the thrown error"
     );
 }

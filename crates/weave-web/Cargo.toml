@@ -20,6 +20,9 @@ weave-core = { path = "../weave-core" }
 weave-patterns = { path = "../weave-patterns" }
 weave-runtime = { path = "../weave-runtime" }
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3.104"
+
 [dev-dependencies]
 wasm-bindgen-test = "0.3.77"
 
