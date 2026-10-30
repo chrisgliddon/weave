@@ -1,5 +1,23 @@
 <head>
   <meta charset="utf-8">
+  <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const stored = localStorage.getItem("weave-theme");
+        const preference = stored === "light" || stored === "system" ? stored : "dark";
+        const dark =
+          preference === "system"
+            ? !window.matchMedia("(prefers-color-scheme: light)").matches
+            : preference === "dark";
+        root.dataset.themePreference = preference;
+        root.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        root.dataset.themePreference = "dark";
+        root.dataset.theme = "dark";
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ partial "page-title.html" . }}{{ if not .IsHome }} · {{ site.Title }}{{ end }}</title>
   <meta name="description" content="{{ site.Params.description }}">

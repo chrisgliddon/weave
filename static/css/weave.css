@@ -1,25 +1,29 @@
 :root {
+  --weave-accent: #a78bfa;
+  --weave-accent-strong: #c4b5fd;
+  --weave-on-accent: #14121a;
+  --weave-focus: #f59e0b;
+  --weave-ink: #ece9f4;
+  --weave-muted: #a9a3b8;
+  --weave-paper: #14121a;
+  --weave-panel: #1c1a24;
+  --weave-rule: #322d3f;
+  --weave-code: #221f2c;
+  --weave-width: 56rem;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
   --weave-accent: #8b5cf6;
   --weave-accent-strong: #6d28d9;
-  --weave-focus: #f59e0b;
+  --weave-on-accent: #ffffff;
   --weave-ink: #17151f;
   --weave-muted: #5f5b6b;
   --weave-paper: #ffffff;
   --weave-panel: #f6f4fb;
   --weave-rule: #ddd8e8;
   --weave-code: #f2eff8;
-  --weave-width: 56rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --weave-ink: #ece9f4;
-    --weave-muted: #a9a3b8;
-    --weave-paper: #14121a;
-    --weave-panel: #1c1a24;
-    --weave-rule: #322d3f;
-    --weave-code: #221f2c;
-  }
+  color-scheme: light;
 }
 
 *,
@@ -55,7 +59,7 @@ body {
 .weave-skip-link {
   background: var(--weave-accent-strong);
   border-radius: 0 0 0.4rem 0.4rem;
-  color: #ffffff;
+  color: var(--weave-on-accent);
   font-weight: 700;
   inset-inline-start: 1rem;
   padding: 0.65rem 0.9rem;
@@ -112,7 +116,7 @@ a:hover {
 .site-title::after {
   background: var(--weave-accent);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--weave-on-accent);
   content: "0.1.0";
   display: inline-block;
   font-size: 0.68em;
@@ -135,6 +139,52 @@ a:hover {
   font: inherit;
   min-width: 16rem;
   padding: 0.42rem 0.7rem;
+}
+
+.site-tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.theme-switch {
+  align-items: center;
+  background: var(--weave-panel);
+  border: 1px solid var(--weave-rule);
+  border-radius: 0.5rem;
+  display: inline-flex;
+  padding: 0.15rem;
+}
+
+.theme-switch input {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.theme-switch label {
+  border-radius: 0.35rem;
+  color: var(--weave-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
+}
+
+.theme-switch input:checked + label {
+  background: var(--weave-paper);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 18%);
+  color: var(--weave-ink);
+}
+
+.theme-switch input:focus-visible + label {
+  outline: 3px solid var(--weave-focus);
+  outline-offset: 2px;
 }
 
 .search-results {
@@ -375,13 +425,17 @@ a:hover {
     columns: 1;
   }
 
-  .site-search input {
-    min-width: 0;
-    width: 100%;
+  .site-tools {
+    flex: 1 1 100%;
   }
 
   .site-search {
-    flex: 1 1 100%;
+    flex: 1 1 12rem;
+  }
+
+  .site-search input {
+    min-width: 0;
+    width: 100%;
   }
 }
 

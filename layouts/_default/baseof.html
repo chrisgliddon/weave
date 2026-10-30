@@ -5,17 +5,27 @@
   <a class="weave-skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <a class="site-title" href="{{ "" | relURL }}">{{ site.Title }}</a>
-    <div class="site-search" role="search">
-      <label class="visually-hidden" for="site-search-input">Search the documentation</label>
-      <input
-        id="site-search-input"
-        type="search"
-        placeholder="Search"
-        autocomplete="off"
-        aria-controls="search-results"
-        aria-expanded="false"
-        data-search-input>
-      <div id="search-results" class="search-results" hidden></div>
+    <div class="site-tools">
+      <div class="site-search" role="search">
+        <label class="visually-hidden" for="site-search-input">Search the documentation</label>
+        <input
+          id="site-search-input"
+          type="search"
+          placeholder="Search"
+          autocomplete="off"
+          aria-controls="search-results"
+          aria-expanded="false"
+          data-search-input>
+        <div id="search-results" class="search-results" hidden></div>
+      </div>
+      <div class="theme-switch" role="group" aria-label="Colour theme">
+        <input type="radio" name="theme" id="theme-dark" value="dark" checked>
+        <label for="theme-dark">Dark</label>
+        <input type="radio" name="theme" id="theme-light" value="light">
+        <label for="theme-light">Light</label>
+        <input type="radio" name="theme" id="theme-system" value="system">
+        <label for="theme-system">System</label>
+      </div>
     </div>
   </header>
   <div class="site-body">
@@ -24,6 +34,7 @@
       {{ block "main" . }}{{ end }}
     </main>
   </div>
+  <script src="{{ "js/theme.js" | relURL }}" defer></script>
   <script src="{{ "js/search.js" | relURL }}" defer></script>
 </body>
 </html>
