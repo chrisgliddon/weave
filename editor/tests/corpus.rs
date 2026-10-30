@@ -7,7 +7,7 @@
 use std::path::{Path, PathBuf};
 
 use weave_editor::manuscript::{ChapterId, ManuscriptStore};
-use weave_editor::manuscript_view::ManuscriptProjection;
+use weave_editor::manuscript_view::{ManuscriptProjection, ProjectionOptions};
 
 /// The corpus lives beside the workspace, not inside the editor crate.
 fn corpus_root() -> PathBuf {
@@ -168,7 +168,8 @@ fn the_alice_board_shows_twelve_titled_cards() {
     let directory = corpus_root().join("alice-adventures-in-wonderland");
     let store = ManuscriptStore::in_directory(&directory);
     let tree = store.read_tree().expect("tree");
-    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), ChapterId::ROOT, 3);
+    let projection =
+        ManuscriptProjection::build(&tree, Some(store.bodies()), &ProjectionOptions::default());
 
     assert_eq!(projection.container_title(), "Manuscript");
     assert_eq!(projection.cards().len(), 12);
@@ -203,7 +204,11 @@ fn selecting_a_story_shows_its_numbered_scenes() {
         })
         .expect("the sectioned story");
 
-    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), story, 3);
+    let options = ProjectionOptions {
+        selected: story,
+        ..ProjectionOptions::default()
+    };
+    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), &options);
     assert_eq!(projection.container_title(), "A Scandal in Bohemia");
     assert_eq!(projection.cards().len(), 3);
     assert_eq!(
@@ -224,7 +229,11 @@ fn an_empty_container_names_itself_on_the_board() {
     let tree = store.read_tree().expect("tree");
     let chapter = tree.child_ids(ChapterId::ROOT)[0];
 
-    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), chapter, 3);
+    let options = ProjectionOptions {
+        selected: chapter,
+        ..ProjectionOptions::default()
+    };
+    let projection = ManuscriptProjection::build(&tree, Some(store.bodies()), &options);
     assert!(projection.cards().is_empty());
     assert!(projection.is_empty());
     assert!(

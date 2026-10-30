@@ -136,16 +136,32 @@ two surfaces over the same ordered child list:
 - the tree, which is the navigation surface and lists the whole hierarchy in
   stored order; and
 - the card board, which renders the selected container's children as index
-  cards in the same order.
+  cards in the same order; and
+- the table, which renders the same children as rows for dense metadata
+  editing.
 
 Selecting a container shows its children. Selecting a leaf keeps the board on
 its parent and moves the selection, so a card stays under the pointer. Each card
 has a fixed aspect ratio and reflows to a configurable number of columns. A
 container with no children shows an empty state that names it.
 
-Both surfaces read one projection of the tree, so the order they show cannot
-diverge. The board reads only the bodies of the container it displays, which is
-why a manuscript with a hundred chapters still opens quickly.
+All three surfaces read one projection of the tree, so the order and the filtered
+set they show cannot diverge. The board reads only the bodies of the container it
+displays, which is why a manuscript with a hundred chapters still opens quickly.
+
+The table shows the document title followed by whichever of Status, Label, and
+Type are enabled. Clicking a Status, Label, or Type cell advances that value in
+place and writes the tree; clicking the title selects the row. A chapter holding
+scenes cannot become a leaf, so that transition is refused instead of silently
+dropping its children.
+
+The filter is shared: typing narrows the table and the board to the same set, and
+the header reports how many rows survive out of the container's children. Escape
+clears it.
+
+Only the rows inside the viewport are built, with spacer rows above and below, so
+the element tree stays proportional to the window rather than to the manuscript.
+Column visibility and the active mode are remembered for the session.
 
 The example projects in `examples/manuscripts/` are public-domain books in this
 format and can be opened directly; see their

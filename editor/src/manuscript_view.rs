@@ -1,17 +1,19 @@
-//! Ordered manuscript navigation: the chapter tree and the card board.
+//! Ordered manuscript navigation: the chapter tree, the card board, and the
+//! chapter table.
 //!
-//! Both surfaces read one projection of the same ordered child list, so a
-//! selection cannot disagree between them and a later table can join them
-//! without a second data source. The projection is plain data and is tested
-//! without a window; the surface only draws it.
+//! All three surfaces read one projection of the same ordered child list, so a
+//! selection or a filter cannot disagree between them. The projection is plain
+//! data and is tested without a window; the surface only draws it.
 
+use std::ops::Range;
 use std::path::Path;
 
 use gpui::{
-    AnyElement, Context, FocusHandle, KeyDownEvent, Render, Window, div, prelude::*, px, rgb,
+    AnyElement, Context, FocusHandle, KeyDownEvent, Render, ScrollDelta, ScrollWheelEvent, Window,
+    div, prelude::*, px, rgb,
 };
 
-use crate::manuscript::{BodyStore, ChapterId, ChapterKind, ChapterTree, ManuscriptStore};
+use crate::manuscript::{BodyStore, Chapter, ChapterId, ChapterKind, ChapterTree, ManuscriptStore};
 use crate::theme::DARK_THEME;
 
 /// Width of one index card in logical pixels.
@@ -23,8 +25,82 @@ pub const CARD_HEIGHT: f32 = 176.0;
 pub const CARD_GAP: f32 = 12.0;
 /// Columns the board shows before it wraps.
 pub const DEFAULT_COLUMNS: usize = 3;
+/// Height of one table row in logical pixels.
+pub const ROW_HEIGHT: f32 = 30.0;
+/// Rows rendered beyond the viewport so scrolling does not expose a gap.
+const OVERSCAN: usize = 2;
 /// Maximum characters of body text a card shows before truncating.
 const EXCERPT_CHARS: usize = 220;
+
+/// Which dense surface the manuscript view shows beside the tree.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ManuscriptMode {
+    /// Index cards for the selected container.
+    Board,
+    /// A table of rows for the selected container.
+    Table,
+}
+
+impl ManuscriptMode {
+    /// Tab label.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Board => "Board",
+            Self::Table => "Table",
+        }
+    }
+}
+
+/// A metadata column the table can show after the document title.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Column {
+    /// Project status.
+    Status,
+    /// Project label.
+    Label,
+    /// Structural role.
+    Kind,
+}
+
+impl Column {
+    /// Column heading.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Status => "Status",
+            Self::Label => "Label",
+            Self::Kind => "Type",
+        }
+    }
+}
+
+/// Every metadata column, in canonical order.
+pub const ALL_COLUMNS: [Column; 3] = [Column::Status, Column::Label, Column::Kind];
+
+/// Inputs that shape one projection.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProjectionOptions {
+    /// Current selection.
+    pub selected: ChapterId,
+    /// Card board column count.
+    pub columns: usize,
+    /// Case-insensitive title filter.
+    pub filter: String,
+    /// Metadata columns the table shows.
+    pub visible_columns: Vec<Column>,
+}
+
+impl Default for ProjectionOptions {
+    fn default() -> Self {
+        Self {
+            selected: ChapterId::ROOT,
+            columns: DEFAULT_COLUMNS,
+            filter: String::new(),
+            visible_columns: ALL_COLUMNS.to_vec(),
+        }
+    }
+}
 
 /// One visible row of the chapter tree.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -66,20 +142,47 @@ pub struct CardRecord {
     pub accessible_label: String,
 }
 
-/// Everything the tree and the board draw, derived from one child list.
+/// One row of the chapter table.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TableRow {
+    /// Chapter the row represents.
+    pub id: ChapterId,
+    /// Display title.
+    pub title: String,
+    /// Resolved status name, when one is set.
+    pub status: Option<String>,
+    /// Resolved label name, when one is set.
+    pub label: Option<String>,
+    /// Structural role label.
+    pub kind: &'static str,
+    /// Whether this row is the current selection.
+    pub is_selected: bool,
+    /// One-based position among the visible rows.
+    pub ordinal: usize,
+    /// Number of visible rows.
+    pub total: usize,
+    /// Name a screen reader should announce for the row.
+    pub accessible_label: String,
+}
+
+/// Everything the surfaces draw, derived from one child list.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ManuscriptProjection {
     rows: Vec<TreeRow>,
     cards: Vec<CardRecord>,
+    table_rows: Vec<TableRow>,
     selected: ChapterId,
     container: ChapterId,
     container_title: String,
     columns: usize,
+    filter: String,
+    visible_columns: Vec<Column>,
+    total_children: usize,
     empty_state: String,
 }
 
 impl ManuscriptProjection {
-    /// Build the projection for a selection.
+    /// Build the projection for one selection and one filter.
     ///
     /// `bodies` is optional so the projection can be built for a project with
     /// no manuscript on disk. Only the selected container's children are read.
@@ -87,12 +190,12 @@ impl ManuscriptProjection {
     pub fn build(
         tree: &ChapterTree,
         bodies: Option<&BodyStore>,
-        selected: ChapterId,
-        columns: usize,
+        options: &ProjectionOptions,
     ) -> Self {
-        let columns = columns.clamp(1, 6);
+        let columns = options.columns.clamp(1, 6);
+        let visible_columns = normalize_columns(&options.visible_columns);
         let selected = tree
-            .chapter(selected)
+            .chapter(options.selected)
             .map_or(ChapterId::ROOT, |chapter| chapter.id);
         let container = tree.chapter(selected).map_or(ChapterId::ROOT, |chapter| {
             if chapter.kind.is_container() {
@@ -108,19 +211,27 @@ impl ManuscriptProjection {
         let mut rows = Vec::new();
         collect_rows(tree, ChapterId::ROOT, 0, selected, &mut rows);
 
-        let mut children: Vec<&crate::manuscript::Chapter> = tree
+        let mut children: Vec<&Chapter> = tree
             .children(container)
             .into_iter()
             .filter(|chapter| !(container == ChapterId::ROOT && chapter.id == ChapterId::TRASH))
             .collect();
-
-        // The trash is a container like any other, so trashed chapters stay
-        // visible and restorable from the board.
         children.sort_by_key(|chapter| chapter.order);
+        let total_children = children.len();
+
+        let needle = options.filter.trim().to_lowercase();
+        if !needle.is_empty() {
+            children.retain(|chapter| chapter.title.to_lowercase().contains(&needle));
+        }
 
         let total = children.len();
+        let statuses = tree.statuses_by_id();
+        let labels = tree.labels_by_id();
+
         let mut cards = Vec::with_capacity(total);
+        let mut table_rows = Vec::with_capacity(total);
         for (index, chapter) in children.into_iter().enumerate() {
+            let ordinal = index + 1;
             let body = bodies.and_then(|store| store.read(chapter.id).ok());
             let paragraph_text = body
                 .as_ref()
@@ -138,7 +249,6 @@ impl ManuscriptProjection {
             } else {
                 excerpt_of(&paragraph_text)
             };
-            let ordinal = index + 1;
             cards.push(CardRecord {
                 id: chapter.id,
                 title: chapter.title.clone(),
@@ -153,9 +263,40 @@ impl ManuscriptProjection {
                     chapter.title
                 ),
             });
+
+            let status = chapter
+                .status_id
+                .and_then(|id| statuses.get(&id))
+                .map(|status| status.name.clone());
+            let label = chapter
+                .label_id
+                .and_then(|id| labels.get(&id))
+                .map(|label| label.name.clone());
+            table_rows.push(TableRow {
+                id: chapter.id,
+                title: chapter.title.clone(),
+                status: status.clone(),
+                label: label.clone(),
+                kind: chapter.kind.label(),
+                is_selected: chapter.id == selected,
+                ordinal,
+                total,
+                accessible_label: format!(
+                    "Row {ordinal} of {total}: {}, {}, {}, {}",
+                    chapter.title,
+                    status.as_deref().unwrap_or("no status"),
+                    label.as_deref().unwrap_or("no label"),
+                    chapter.kind.label()
+                ),
+            });
         }
 
-        let empty_state = if container == ChapterId::ROOT {
+        let empty_state = if !needle.is_empty() {
+            format!(
+                "No chapters match \u{201c}{}\u{201d}",
+                options.filter.trim()
+            )
+        } else if container == ChapterId::ROOT {
             format!("{container_title} has no chapters yet")
         } else {
             format!("{container_title} has no scenes yet")
@@ -164,10 +305,14 @@ impl ManuscriptProjection {
         Self {
             rows,
             cards,
+            table_rows,
             selected,
             container,
             container_title,
             columns,
+            filter: options.filter.trim().to_owned(),
+            visible_columns,
+            total_children,
             empty_state,
         }
     }
@@ -184,13 +329,19 @@ impl ManuscriptProjection {
         &self.cards
     }
 
+    /// Table rows for the selected container, in tree order.
+    #[must_use]
+    pub fn table_rows(&self) -> &[TableRow] {
+        &self.table_rows
+    }
+
     /// Current selection.
     #[must_use]
     pub const fn selected(&self) -> ChapterId {
         self.selected
     }
 
-    /// Container whose children the board shows.
+    /// Container whose children the dense surfaces show.
     #[must_use]
     pub const fn container(&self) -> ChapterId {
         self.container
@@ -208,16 +359,59 @@ impl ManuscriptProjection {
         self.columns
     }
 
-    /// Text shown when the container has no children.
+    /// Active filter.
+    #[must_use]
+    pub fn filter(&self) -> &str {
+        &self.filter
+    }
+
+    /// Metadata columns the table shows.
+    #[must_use]
+    pub fn visible_columns(&self) -> &[Column] {
+        &self.visible_columns
+    }
+
+    /// Children in the container before filtering.
+    #[must_use]
+    pub const fn total_children(&self) -> usize {
+        self.total_children
+    }
+
+    /// Number of rows the filter leaves visible.
+    #[must_use]
+    pub fn visible_count(&self) -> usize {
+        self.table_rows.len()
+    }
+
+    /// Text shown when the container has no visible children.
     #[must_use]
     pub fn empty_state(&self) -> &str {
         &self.empty_state
     }
 
-    /// Whether the container has no children.
+    /// Whether the container has no visible children.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.cards.is_empty()
+        self.table_rows.is_empty()
+    }
+
+    /// Rows intersecting a viewport.
+    ///
+    /// The range is padded by [`OVERSCAN`] rows on each side so a fast scroll
+    /// does not expose a blank gap. It is clamped to the row count, so the
+    /// element tree stays proportional to the viewport rather than the
+    /// manuscript.
+    #[must_use]
+    pub fn visible_row_range(&self, scroll_offset: f32, viewport_height: f32) -> Range<usize> {
+        let total = self.table_rows.len();
+        if total == 0 || viewport_height <= 0.0 {
+            return 0..0;
+        }
+        let first = (scroll_offset.max(0.0) / ROW_HEIGHT).floor() as usize;
+        let on_screen = (viewport_height / ROW_HEIGHT).ceil() as usize + 1;
+        let start = first.saturating_sub(OVERSCAN).min(total);
+        let end = (first.saturating_add(on_screen).saturating_add(OVERSCAN)).min(total);
+        start..end.max(start)
     }
 
     /// Accessible names for the current projection.
@@ -234,6 +428,11 @@ impl ManuscriptProjection {
                 .iter()
                 .map(|card| card.accessible_label.clone())
                 .collect(),
+            table: self
+                .table_rows
+                .iter()
+                .map(|row| row.accessible_label.clone())
+                .collect(),
             container: self.container_title.clone(),
             empty_state: self.is_empty().then(|| self.empty_state.clone()),
         }
@@ -247,10 +446,21 @@ pub struct ManuscriptAccessibility {
     pub tree: Vec<String>,
     /// One label per card.
     pub cards: Vec<String>,
-    /// Title of the container the board shows.
+    /// One label per table row.
+    pub table: Vec<String>,
+    /// Title of the container the surfaces show.
     pub container: String,
-    /// Empty-state text, when the container has no children.
+    /// Empty-state text, when nothing is visible.
     pub empty_state: Option<String>,
+}
+
+/// Deduplicate metadata columns and restore canonical order.
+#[must_use]
+pub fn normalize_columns(columns: &[Column]) -> Vec<Column> {
+    let mut normalized: Vec<Column> = columns.to_vec();
+    normalized.sort();
+    normalized.dedup();
+    normalized
 }
 
 fn collect_rows(
@@ -296,6 +506,51 @@ fn excerpt_of(text: &str) -> String {
     truncated
 }
 
+fn next_in_cycle<T: PartialEq + Copy>(options: &[T], current: T) -> T {
+    let index = options.iter().position(|option| *option == current);
+    let next = index.map_or(0, |index| (index + 1) % options.len());
+    options[next]
+}
+
+/// Advance a chapter's status through the project list and back to unset.
+///
+/// Returns whether the tree changed.
+pub fn cycle_status(tree: &mut ChapterTree, id: ChapterId) -> bool {
+    let Some(chapter) = tree.chapter(id) else {
+        return false;
+    };
+    let mut options: Vec<Option<i64>> = vec![None];
+    options.extend(tree.statuses.iter().map(|status| Some(status.id)));
+    let next = next_in_cycle(&options, chapter.status_id);
+    tree.set_status(id, next).is_ok()
+}
+
+/// Advance a chapter's label through the project list and back to unset.
+///
+/// Returns whether the tree changed.
+pub fn cycle_label(tree: &mut ChapterTree, id: ChapterId) -> bool {
+    let Some(chapter) = tree.chapter(id) else {
+        return false;
+    };
+    let mut options: Vec<Option<i64>> = vec![None];
+    options.extend(tree.labels.iter().map(|label| Some(label.id)));
+    let next = next_in_cycle(&options, chapter.label_id);
+    tree.set_label(id, next).is_ok()
+}
+
+/// Advance a chapter's kind through chapter, scene, and note.
+///
+/// Returns whether the tree changed. A container holding children cannot
+/// become a leaf, so that transition is rejected rather than silently lossy.
+pub fn cycle_kind(tree: &mut ChapterTree, id: ChapterId) -> bool {
+    let Some(chapter) = tree.chapter(id) else {
+        return false;
+    };
+    let options = [ChapterKind::Chapter, ChapterKind::Scene, ChapterKind::Note];
+    let next = next_in_cycle(&options, chapter.kind);
+    tree.set_kind(id, next).is_ok()
+}
+
 fn kind_color(kind: ChapterKind) -> u32 {
     match kind {
         ChapterKind::Chapter => DARK_THEME.accent,
@@ -304,31 +559,47 @@ fn kind_color(kind: ChapterKind) -> u32 {
     }
 }
 
-/// Interactive chapter tree and card board.
+/// Interactive chapter tree with the card board and the chapter table.
 pub struct ManuscriptSurface {
     tree: ChapterTree,
+    store: Option<ManuscriptStore>,
     bodies: Option<BodyStore>,
-    selected: ChapterId,
-    columns: usize,
-    projection: ManuscriptProjection,
+    options: ProjectionOptions,
+    mode: ManuscriptMode,
+    scroll: f32,
     status: String,
     focus: FocusHandle,
+    projection: ManuscriptProjection,
 }
 
 impl ManuscriptSurface {
     /// Create an empty surface before a project is loaded.
     pub fn new(cx: &mut Context<Self>) -> Self {
         let tree = ChapterTree::new();
-        let projection = ManuscriptProjection::build(&tree, None, ChapterId::ROOT, DEFAULT_COLUMNS);
+        let options = ProjectionOptions::default();
+        let projection = ManuscriptProjection::build(&tree, None, &options);
         Self {
             tree,
+            store: None,
             bodies: None,
-            selected: ChapterId::ROOT,
-            columns: DEFAULT_COLUMNS,
-            projection,
+            options,
+            mode: ManuscriptMode::Board,
+            scroll: 0.0,
             status: "Open a project to read its manuscript".to_owned(),
             focus: cx.focus_handle(),
+            projection,
         }
+    }
+
+    /// Reset to the empty manuscript shown before a project is opened.
+    pub fn clear(&mut self) {
+        self.tree = ChapterTree::new();
+        self.store = None;
+        self.bodies = None;
+        self.options = ProjectionOptions::default();
+        self.scroll = 0.0;
+        self.status = "Open a project to read its manuscript".to_owned();
+        self.refresh();
     }
 
     /// Read the manuscript beside a project directory, if there is one.
@@ -336,21 +607,26 @@ impl ManuscriptSurface {
         let store = ManuscriptStore::in_directory(directory.to_path_buf());
         if !store.exists() {
             self.tree = ChapterTree::new();
+            self.store = None;
             self.bodies = None;
-            self.selected = ChapterId::ROOT;
+            self.options.selected = ChapterId::ROOT;
+            self.scroll = 0.0;
             self.status = "This project has no manuscript".to_owned();
             self.refresh();
             return;
         }
         match store.read_tree() {
             Ok(tree) => {
-                self.selected = ChapterId::ROOT;
+                self.options.selected = ChapterId::ROOT;
                 self.bodies = Some(store.bodies().clone());
+                self.store = Some(store);
                 self.tree = tree;
+                self.scroll = 0.0;
                 self.status = format!("{} items", self.tree.len().saturating_sub(2));
             }
             Err(error) => {
                 self.tree = ChapterTree::new();
+                self.store = None;
                 self.bodies = None;
                 self.status = format!("Manuscript could not be read: {error}");
             }
@@ -358,27 +634,69 @@ impl ManuscriptSurface {
         self.refresh();
     }
 
-    /// Reset to the empty manuscript shown before a project is opened.
-    pub fn clear(&mut self) {
-        self.tree = ChapterTree::new();
-        self.bodies = None;
-        self.selected = ChapterId::ROOT;
-        self.status = "Open a project to read its manuscript".to_owned();
-        self.refresh();
-    }
-
-    /// Select a chapter and rebuild the board.
+    /// Select a chapter and rebuild the dense surfaces.
     pub fn select(&mut self, selected: ChapterId) {
         if self.tree.chapter(selected).is_some() {
-            self.selected = selected;
+            self.options.selected = selected;
+            self.scroll = 0.0;
             self.refresh();
         }
     }
 
     /// Set how many columns the board lays out.
     pub fn set_columns(&mut self, columns: usize) {
-        self.columns = columns.clamp(1, 6);
+        self.options.columns = columns.clamp(1, 6);
         self.refresh();
+    }
+
+    /// Set the title filter shared by the board and the table.
+    pub fn set_filter(&mut self, filter: impl Into<String>) {
+        self.options.filter = filter.into();
+        self.scroll = 0.0;
+        self.refresh();
+    }
+
+    /// Switch between the board and the table.
+    pub const fn set_mode(&mut self, mode: ManuscriptMode) {
+        self.mode = mode;
+    }
+
+    /// Show or hide one metadata column.
+    pub fn toggle_column(&mut self, column: Column) {
+        let mut columns = self.options.visible_columns.clone();
+        if let Some(index) = columns.iter().position(|visible| *visible == column) {
+            columns.remove(index);
+        } else {
+            columns.push(column);
+        }
+        self.options.visible_columns = normalize_columns(&columns);
+        self.refresh();
+    }
+
+    /// Cycle a row's status in place and save the tree.
+    pub fn cycle_status(&mut self, id: ChapterId) {
+        if cycle_status(&mut self.tree, id) {
+            self.persist();
+            self.refresh();
+        }
+    }
+
+    /// Cycle a row's label in place and save the tree.
+    pub fn cycle_label(&mut self, id: ChapterId) {
+        if cycle_label(&mut self.tree, id) {
+            self.persist();
+            self.refresh();
+        }
+    }
+
+    /// Cycle a row's kind in place and save the tree.
+    pub fn cycle_kind(&mut self, id: ChapterId) {
+        if cycle_kind(&mut self.tree, id) {
+            self.persist();
+            self.refresh();
+        } else {
+            self.status = "A chapter holding scenes cannot become a leaf".to_owned();
+        }
     }
 
     /// Current projection.
@@ -387,19 +705,30 @@ impl ManuscriptSurface {
         &self.projection
     }
 
+    /// Current dense surface.
+    #[must_use]
+    pub const fn mode(&self) -> ManuscriptMode {
+        self.mode
+    }
+
     /// Accessible names for the current projection.
     #[must_use]
     pub fn accessibility(&self) -> ManuscriptAccessibility {
         self.projection.accessibility()
     }
 
+    fn persist(&mut self) {
+        let Some(store) = &self.store else {
+            return;
+        };
+        if let Err(error) = store.write_tree(&self.tree) {
+            self.status = format!("Could not save the manuscript: {error}");
+        }
+    }
+
     fn refresh(&mut self) {
-        self.projection = ManuscriptProjection::build(
-            &self.tree,
-            self.bodies.as_ref(),
-            self.selected,
-            self.columns,
-        );
+        self.projection =
+            ManuscriptProjection::build(&self.tree, self.bodies.as_ref(), &self.options);
     }
 
     fn move_selection(&mut self, forward: bool) {
@@ -407,20 +736,41 @@ impl ManuscriptSurface {
         if rows.is_empty() {
             return;
         }
-        let current = rows.iter().position(|row| row.id == self.selected);
+        let current = rows.iter().position(|row| row.id == self.options.selected);
         let next = match (current, forward) {
             (Some(index), true) => (index + 1).min(rows.len() - 1),
             (Some(index), false) => index.saturating_sub(1),
             (None, _) => 0,
         };
-        self.select(rows[next].id);
+        let id = rows[next].id;
+        self.select(id);
     }
 
     fn key_down(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
-        match event.keystroke.key.as_str() {
+        if event.keystroke.modifiers.platform
+            || event.keystroke.modifiers.control
+            || event.keystroke.modifiers.alt
+        {
+            return;
+        }
+        match event.keystroke.key.as_ref() {
             "up" => self.move_selection(false),
             "down" => self.move_selection(true),
-            _ => return,
+            "escape" => self.set_filter(String::new()),
+            "backspace" => {
+                let mut filter = self.options.filter.clone();
+                filter.pop();
+                self.set_filter(filter);
+            }
+            _ => {
+                if let Some(character) = &event.keystroke.key_char {
+                    let mut filter = self.options.filter.clone();
+                    filter.push_str(&character.to_string());
+                    self.set_filter(filter);
+                } else {
+                    return;
+                }
+            }
         }
         cx.notify();
     }
@@ -501,36 +851,130 @@ impl ManuscriptSurface {
             .into_any_element()
     }
 
+    fn header(&self, cx: &mut Context<Self>) -> AnyElement {
+        let filter_text = if self.options.filter.is_empty() {
+            "Filter chapters…".to_owned()
+        } else {
+            self.options.filter.clone()
+        };
+        let mut header = div()
+            .flex()
+            .items_center()
+            .flex_wrap()
+            .gap_2()
+            .child(
+                div()
+                    .text_lg()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(self.projection.container_title().to_owned()),
+            )
+            .child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(format!(
+                        "{} of {}",
+                        self.projection.visible_count(),
+                        self.projection.total_children()
+                    )),
+            );
+
+        let mut modes = div().flex().gap_1();
+        for mode in [ManuscriptMode::Board, ManuscriptMode::Table] {
+            let active = self.mode == mode;
+            modes = modes.child(
+                div()
+                    .id(match mode {
+                        ManuscriptMode::Board => "manuscript-mode-board",
+                        ManuscriptMode::Table => "manuscript-mode-table",
+                    })
+                    .px_2()
+                    .py_1()
+                    .rounded_md()
+                    .cursor_pointer()
+                    .text_xs()
+                    .text_color(rgb(if active {
+                        DARK_THEME.text
+                    } else {
+                        DARK_THEME.muted_text
+                    }))
+                    .when(active, |element| element.bg(rgb(DARK_THEME.accent)))
+                    .child(mode.label())
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.mode = mode;
+                        cx.notify();
+                    })),
+            );
+        }
+        header = header.child(modes).child(
+            div()
+                .id("manuscript-filter")
+                .h(px(26.0))
+                .px_2()
+                .flex()
+                .items_center()
+                .rounded_md()
+                .border_1()
+                .border_color(rgb(DARK_THEME.border))
+                .bg(rgb(DARK_THEME.chrome))
+                .text_xs()
+                .text_color(rgb(if self.options.filter.is_empty() {
+                    DARK_THEME.muted_text
+                } else {
+                    DARK_THEME.text
+                }))
+                .cursor_text()
+                .on_click(cx.listener(|this, _, window, cx| {
+                    this.focus.focus(window, cx);
+                }))
+                .child(filter_text),
+        );
+
+        if self.mode == ManuscriptMode::Table {
+            let mut columns = div().flex().gap_1();
+            for column in ALL_COLUMNS {
+                let active = self.options.visible_columns.contains(&column);
+                columns = columns.child(
+                    div()
+                        .id(match column {
+                            Column::Status => "manuscript-column-status",
+                            Column::Label => "manuscript-column-label",
+                            Column::Kind => "manuscript-column-kind",
+                        })
+                        .px_2()
+                        .py_1()
+                        .rounded_md()
+                        .cursor_pointer()
+                        .text_xs()
+                        .text_color(rgb(if active {
+                            DARK_THEME.text
+                        } else {
+                            DARK_THEME.muted_text
+                        }))
+                        .when(active, |element| element.bg(rgb(DARK_THEME.panel)))
+                        .child(column.label())
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            this.toggle_column(column);
+                            cx.notify();
+                        })),
+                );
+            }
+            header = header.child(columns);
+        }
+
+        header.into_any_element()
+    }
+
     fn board(&self, cx: &mut Context<Self>) -> AnyElement {
-        let width = self.columns as f32 * CARD_WIDTH + (self.columns as f32 - 1.0) * CARD_GAP;
-        let mut board = div()
+        let width = self.projection.columns() as f32 * CARD_WIDTH
+            + (self.projection.columns() as f32 - 1.0) * CARD_GAP;
+        let board = div()
             .id("manuscript-board")
             .flex_1()
             .min_w_0()
-            .h_full()
-            .p_4()
             .flex()
             .flex_col()
             .gap_3();
-
-        board = board.child(
-            div()
-                .flex()
-                .items_center()
-                .gap_2()
-                .child(
-                    div()
-                        .text_lg()
-                        .text_color(rgb(DARK_THEME.text))
-                        .child(self.projection.container_title().to_owned()),
-                )
-                .child(
-                    div()
-                        .text_xs()
-                        .text_color(rgb(DARK_THEME.muted_text))
-                        .child(format!("{} cards", self.projection.cards().len())),
-                ),
-        );
 
         if self.projection.is_empty() {
             return board
@@ -616,10 +1060,178 @@ impl ManuscriptSurface {
 
         board.child(grid).into_any_element()
     }
+
+    fn table(&self, cx: &mut Context<Self>) -> AnyElement {
+        let visible = self.projection.visible_columns().to_vec();
+        let mut header_row = div()
+            .flex()
+            .items_center()
+            .h(px(24.0))
+            .border_b_1()
+            .border_color(rgb(DARK_THEME.border))
+            .text_xs()
+            .text_color(rgb(DARK_THEME.muted_text))
+            .child(div().flex_1().px_2().child("Document"));
+        for column in &visible {
+            header_row = header_row.child(
+                div()
+                    .w(px(column_width(*column)))
+                    .px_2()
+                    .child(column.label()),
+            );
+        }
+
+        if self.projection.is_empty() {
+            return div()
+                .id("manuscript-table")
+                .flex_1()
+                .min_w_0()
+                .flex()
+                .flex_col()
+                .gap_2()
+                .child(header_row)
+                .child(
+                    div()
+                        .id("manuscript-empty")
+                        .flex_1()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .text_sm()
+                        .text_color(rgb(DARK_THEME.muted_text))
+                        .child(self.projection.empty_state().to_owned()),
+                )
+                .into_any_element();
+        }
+
+        let range = self
+            .projection
+            .visible_row_range(self.scroll, self.viewport_rows() * ROW_HEIGHT);
+        let before = range.start as f32 * ROW_HEIGHT;
+        let after = (self.projection.visible_count() - range.end) as f32 * ROW_HEIGHT;
+
+        let mut body = div().id("manuscript-table-rows").flex().flex_col();
+        if before > 0.0 {
+            body = body.child(div().h(px(before)));
+        }
+        for row in &self.projection.table_rows()[range.clone()] {
+            let id = row.id;
+            let mut line = div()
+                .id(("manuscript-table-row", id.0 as usize))
+                .flex()
+                .items_center()
+                .h(px(ROW_HEIGHT))
+                .border_b_1()
+                .border_color(rgb(DARK_THEME.border))
+                .text_sm()
+                .when(row.is_selected, |element| element.bg(rgb(DARK_THEME.panel)))
+                .child(
+                    div()
+                        .id(("Document", id.0 as usize))
+                        .flex_1()
+                        .min_w_0()
+                        .px_2()
+                        .cursor_pointer()
+                        .text_color(rgb(DARK_THEME.text))
+                        .overflow_hidden()
+                        .text_ellipsis()
+                        .child(row.title.clone())
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.focus.focus(window, cx);
+                            this.select(id);
+                            cx.notify();
+                        })),
+                );
+
+            for column in &visible {
+                let text = match column {
+                    Column::Status => row.status.clone().unwrap_or_else(|| "Unset".to_owned()),
+                    Column::Label => row.label.clone().unwrap_or_else(|| "Unset".to_owned()),
+                    Column::Kind => row.kind.to_owned(),
+                };
+                let muted = match column {
+                    Column::Status => row.status.is_none(),
+                    Column::Label => row.label.is_none(),
+                    Column::Kind => false,
+                };
+                let column = *column;
+                line = line.child(
+                    div()
+                        .id((column.label(), id.0 as usize))
+                        .w(px(column_width(column)))
+                        .px_2()
+                        .cursor_pointer()
+                        .text_xs()
+                        .text_color(rgb(if muted {
+                            DARK_THEME.muted_text
+                        } else {
+                            DARK_THEME.text
+                        }))
+                        .overflow_hidden()
+                        .text_ellipsis()
+                        .child(text)
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.focus.focus(window, cx);
+                            match column {
+                                Column::Status => this.cycle_status(id),
+                                Column::Label => this.cycle_label(id),
+                                Column::Kind => this.cycle_kind(id),
+                            }
+                            cx.notify();
+                        })),
+                );
+            }
+            body = body.child(line);
+        }
+        if after > 0.0 {
+            body = body.child(div().h(px(after)));
+        }
+
+        div()
+            .id("manuscript-table")
+            .flex_1()
+            .min_w_0()
+            .flex()
+            .flex_col()
+            .gap_2()
+            .child(header_row)
+            .child(
+                div()
+                    .id("manuscript-table-viewport")
+                    .flex_1()
+                    .overflow_y_scroll()
+                    .on_scroll_wheel(cx.listener(|this, event: &ScrollWheelEvent, _, cx| {
+                        let delta = match event.delta {
+                            ScrollDelta::Pixels(point) => f32::from(point.y),
+                            ScrollDelta::Lines(point) => point.y * ROW_HEIGHT,
+                        };
+                        this.scroll = (this.scroll - delta).max(0.0);
+                        cx.notify();
+                    }))
+                    .child(body),
+            )
+            .into_any_element()
+    }
+
+    fn viewport_rows(&self) -> f32 {
+        (self.projection.visible_count() as f32).min(12.0)
+    }
+}
+
+fn column_width(column: Column) -> f32 {
+    match column {
+        Column::Status => 110.0,
+        Column::Label => 100.0,
+        Column::Kind => 90.0,
+    }
 }
 
 impl Render for ManuscriptSurface {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let dense = match self.mode {
+            ManuscriptMode::Board => self.board(cx),
+            ManuscriptMode::Table => self.table(cx),
+        };
         div()
             .id("manuscript-surface")
             .key_context("WeaveManuscript")
@@ -631,7 +1243,18 @@ impl Render for ManuscriptSurface {
                 this.key_down(event, cx);
             }))
             .child(self.tree_panel(cx))
-            .child(self.board(cx))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .h_full()
+                    .p_4()
+                    .flex()
+                    .flex_col()
+                    .gap_3()
+                    .child(self.header(cx))
+                    .child(dense),
+            )
     }
 }
 
@@ -653,7 +1276,7 @@ mod tests {
     #[test]
     fn rows_follow_tree_order_and_depth() {
         let (tree, part, scene) = tree();
-        let projection = ManuscriptProjection::build(&tree, None, ChapterId::ROOT, DEFAULT_COLUMNS);
+        let projection = ManuscriptProjection::build(&tree, None, &ProjectionOptions::default());
         let rows = projection.rows();
         assert_eq!(rows[0].id, part);
         assert_eq!(rows[0].depth, 0);
@@ -666,7 +1289,11 @@ mod tests {
     #[test]
     fn selecting_a_leaf_shows_its_parents_children() {
         let (tree, part, scene) = tree();
-        let projection = ManuscriptProjection::build(&tree, None, scene, DEFAULT_COLUMNS);
+        let options = ProjectionOptions {
+            selected: scene,
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
         assert_eq!(projection.container(), part);
         assert_eq!(projection.container_title(), "Part One");
         assert_eq!(projection.cards().len(), 1);
@@ -678,7 +1305,11 @@ mod tests {
         let (mut tree, part, _scene) = tree();
         tree.add_chapter(part, ChapterKind::Scene, "Middle")
             .expect("middle");
-        let projection = ManuscriptProjection::build(&tree, None, part, DEFAULT_COLUMNS);
+        let options = ProjectionOptions {
+            selected: part,
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
         let cards = projection.cards();
         assert_eq!(cards.len(), 2);
         assert_eq!(cards[0].ordinal, 1);
@@ -693,7 +1324,7 @@ mod tests {
     #[test]
     fn the_root_board_hides_the_trash() {
         let (tree, _part, _scene) = tree();
-        let projection = ManuscriptProjection::build(&tree, None, ChapterId::ROOT, DEFAULT_COLUMNS);
+        let projection = ManuscriptProjection::build(&tree, None, &ProjectionOptions::default());
         assert!(
             projection
                 .cards()
@@ -708,7 +1339,11 @@ mod tests {
         let empty = tree
             .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "Empty Part")
             .expect("empty");
-        let projection = ManuscriptProjection::build(&tree, None, empty, DEFAULT_COLUMNS);
+        let options = ProjectionOptions {
+            selected: empty,
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
         assert!(projection.is_empty());
         assert_eq!(projection.empty_state(), "Empty Part has no scenes yet");
         assert_eq!(
@@ -720,14 +1355,16 @@ mod tests {
     #[test]
     fn columns_are_clamped_to_a_usable_range() {
         let (tree, _part, _scene) = tree();
-        assert_eq!(
-            ManuscriptProjection::build(&tree, None, ChapterId::ROOT, 0).columns(),
-            1
-        );
-        assert_eq!(
-            ManuscriptProjection::build(&tree, None, ChapterId::ROOT, 99).columns(),
-            6
-        );
+        let low = ProjectionOptions {
+            columns: 0,
+            ..ProjectionOptions::default()
+        };
+        assert_eq!(ManuscriptProjection::build(&tree, None, &low).columns(), 1);
+        let high = ProjectionOptions {
+            columns: 99,
+            ..ProjectionOptions::default()
+        };
+        assert_eq!(ManuscriptProjection::build(&tree, None, &high).columns(), 6);
     }
 
     #[test]
@@ -737,5 +1374,125 @@ mod tests {
         assert!(excerpt.chars().count() <= EXCERPT_CHARS + 1);
         assert!(excerpt.ends_with('…'));
         assert!(!excerpt.contains("wor…"));
+    }
+
+    #[test]
+    fn the_table_and_the_board_show_the_same_filtered_set() {
+        let mut tree = ChapterTree::new();
+        let part = tree
+            .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "Part One")
+            .expect("part");
+        for title in ["Opening", "The Gate", "Midnight"] {
+            tree.add_chapter(part, ChapterKind::Scene, title)
+                .expect("scene");
+        }
+        let options = ProjectionOptions {
+            selected: part,
+            filter: "the".to_owned(),
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
+
+        assert_eq!(projection.total_children(), 3);
+        assert_eq!(projection.visible_count(), 1);
+        assert_eq!(projection.cards().len(), 1);
+        assert_eq!(projection.table_rows().len(), 1);
+        assert_eq!(projection.cards()[0].id, projection.table_rows()[0].id);
+        assert_eq!(projection.cards()[0].title, "The Gate");
+    }
+
+    #[test]
+    fn a_filter_with_no_matches_reports_it() {
+        let (tree, part, _scene) = tree();
+        let options = ProjectionOptions {
+            selected: part,
+            filter: "zzz".to_owned(),
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
+        assert!(projection.is_empty());
+        assert!(projection.empty_state().contains("zzz"));
+        assert_eq!(projection.visible_count(), 0);
+    }
+
+    #[test]
+    fn visible_rows_stay_proportional_to_the_viewport() {
+        let mut tree = ChapterTree::new();
+        let part = tree
+            .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "Part One")
+            .expect("part");
+        for index in 0..200 {
+            tree.add_chapter(part, ChapterKind::Scene, &format!("Scene {index}"))
+                .expect("scene");
+        }
+        let options = ProjectionOptions {
+            selected: part,
+            ..ProjectionOptions::default()
+        };
+        let projection = ManuscriptProjection::build(&tree, None, &options);
+        assert_eq!(projection.table_rows().len(), 200);
+
+        let range = projection.visible_row_range(0.0, ROW_HEIGHT * 10.0);
+        assert_eq!(range.start, 0);
+        assert!(
+            range.len() <= 16,
+            "rendered {} rows for a 10-row viewport",
+            range.len()
+        );
+        assert!(range.end < 200);
+
+        let middle = projection.visible_row_range(ROW_HEIGHT * 100.0, ROW_HEIGHT * 10.0);
+        assert!(middle.start >= 100 - OVERSCAN);
+        assert!(middle.end - middle.start <= 16);
+
+        let end = projection.visible_row_range(ROW_HEIGHT * 1_000.0, ROW_HEIGHT * 10.0);
+        assert_eq!(end.end, 200);
+    }
+
+    #[test]
+    fn a_column_can_be_hidden_and_restored() {
+        let columns = normalize_columns(&[Column::Label, Column::Status, Column::Label]);
+        assert_eq!(columns, vec![Column::Status, Column::Label]);
+        assert_eq!(normalize_columns(&[]), Vec::<Column>::new());
+    }
+
+    #[test]
+    fn status_label_and_kind_cycle_and_wrap() {
+        let (mut tree, part, _scene) = tree();
+        tree.add_status("Draft").expect("status");
+        tree.add_label("POV", [0.5, 0.5, 0.5]).expect("label");
+        let id = part;
+
+        assert!(tree.chapter(id).expect("chapter").status_id.is_none());
+        assert!(cycle_status(&mut tree, id));
+        assert!(tree.chapter(id).expect("chapter").status_id.is_some());
+        assert!(cycle_status(&mut tree, id));
+        assert!(tree.chapter(id).expect("chapter").status_id.is_none());
+
+        assert!(cycle_label(&mut tree, id));
+        assert!(tree.chapter(id).expect("chapter").label_id.is_some());
+        assert!(cycle_label(&mut tree, id));
+        assert!(tree.chapter(id).expect("chapter").label_id.is_none());
+
+        // Kind cycling runs on a leaf: a container holding scenes cannot
+        // become a leaf, which the next test covers.
+        let leaf = tree.child_ids(part)[0];
+        assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Scene);
+        assert!(cycle_kind(&mut tree, leaf));
+        assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Note);
+        assert!(cycle_kind(&mut tree, leaf));
+        assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Chapter);
+        assert!(cycle_kind(&mut tree, leaf));
+        assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Scene);
+    }
+
+    #[test]
+    fn a_container_holding_scenes_cannot_cycle_into_a_leaf() {
+        let (mut tree, part, _scene) = tree();
+        assert!(!cycle_kind(&mut tree, part));
+        assert_eq!(
+            tree.chapter(part).expect("chapter").kind,
+            ChapterKind::Chapter
+        );
     }
 }
