@@ -7,12 +7,14 @@
 //! can be diffed on its own.
 
 pub mod body;
+pub mod history;
 pub mod store;
 pub mod tree;
 
 pub use body::{BodyStore, ChapterBody, Manuscript, NamedStyle, Paragraph, StyleSheet, TextRun};
+pub use history::{DEFAULT_HISTORY_LIMIT, ManuscriptHistory};
 pub use store::ManuscriptStore;
 pub use tree::{
     BODY_DIR_NAME, BODY_FORMAT_VERSION, Chapter, ChapterError, ChapterId, ChapterKind, ChapterTree,
-    LabelDefinition, StatusDefinition, TREE_FILE_NAME, TREE_FORMAT_VERSION,
+    LabelDefinition, MoveBlocked, StatusDefinition, TREE_FILE_NAME, TREE_FORMAT_VERSION,
 };

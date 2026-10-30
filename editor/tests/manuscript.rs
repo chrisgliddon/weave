@@ -2,7 +2,7 @@
 
 use weave_editor::manuscript::{
     BodyStore, ChapterBody, ChapterError, ChapterId, ChapterKind, ChapterTree, ManuscriptStore,
-    Paragraph, StyleSheet, TextRun,
+    MoveBlocked, Paragraph, StyleSheet, TextRun,
 };
 
 /// A tree holding one part with two scenes, and the identifiers involved.
@@ -471,4 +471,142 @@ fn a_body_write_leaves_no_partial_file() {
         .collect::<Vec<_>>();
     assert_eq!(stored.len(), 1);
     assert!(stored[0].to_string_lossy().ends_with(".ron"));
+}
+
+#[test]
+fn move_up_and_down_reorder_siblings() {
+    let (mut tree, part, first, second) = tree_with_children();
+    tree.move_down(first).expect("move down");
+    assert_eq!(tree.child_ids(part), vec![second, first]);
+    tree.move_up(first).expect("move up");
+    assert_eq!(tree.child_ids(part), vec![first, second]);
+}
+
+#[test]
+fn moving_before_the_first_sibling_is_refused() {
+    let (mut tree, _part, first, _second) = tree_with_children();
+    assert_eq!(
+        tree.move_up(first),
+        Err(ChapterError::Blocked(first, MoveBlocked::FirstSibling))
+    );
+    tree.move_down(first).expect("move down");
+}
+
+#[test]
+fn moving_past_the_last_sibling_is_refused() {
+    let (mut tree, _part, _first, second) = tree_with_children();
+    assert_eq!(
+        tree.move_down(second),
+        Err(ChapterError::Blocked(second, MoveBlocked::LastSibling))
+    );
+}
+
+#[test]
+fn move_to_front_and_back_reach_the_ends() {
+    let (mut tree, part, first, second) = tree_with_children();
+    let third = tree
+        .add_chapter(part, ChapterKind::Scene, "Third")
+        .expect("third");
+
+    tree.move_to_back(first).expect("back");
+    assert_eq!(tree.child_ids(part), vec![second, third, first]);
+    tree.move_to_front(first).expect("front");
+    assert_eq!(tree.child_ids(part), vec![first, second, third]);
+}
+
+#[test]
+fn promote_places_a_chapter_after_its_former_parent() {
+    let (mut tree, part, first, _second) = tree_with_children();
+    let other = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "Part Two")
+        .expect("other");
+
+    tree.promote(first).expect("promote");
+    assert_eq!(
+        tree.child_ids(ChapterId::ROOT),
+        vec![part, first, other, ChapterId::TRASH]
+    );
+    assert!(!tree.child_ids(part).contains(&first));
+}
+
+#[test]
+fn a_root_level_chapter_cannot_be_promoted() {
+    let (mut tree, part, _first, _second) = tree_with_children();
+    assert_eq!(
+        tree.promote(part),
+        Err(ChapterError::Blocked(part, MoveBlocked::AtRoot))
+    );
+}
+
+#[test]
+fn demote_makes_a_chapter_the_first_child_of_the_earlier_sibling() {
+    let mut tree = ChapterTree::new();
+    let a = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "A")
+        .expect("a");
+    let b = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "B")
+        .expect("b");
+    let c = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "C")
+        .expect("c");
+
+    tree.demote(c).expect("demote");
+    assert_eq!(tree.child_ids(b), vec![c]);
+    assert_eq!(
+        tree.child_ids(ChapterId::ROOT),
+        vec![a, b, ChapterId::TRASH]
+    );
+}
+
+#[test]
+fn the_first_sibling_cannot_be_demoted() {
+    let mut tree = ChapterTree::new();
+    let a = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "A")
+        .expect("a");
+    assert_eq!(
+        tree.demote(a),
+        Err(ChapterError::Blocked(a, MoveBlocked::NoEarlierSibling))
+    );
+}
+
+#[test]
+fn a_chapter_cannot_be_demoted_into_a_leaf() {
+    let mut tree = ChapterTree::new();
+    let leaf = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Scene, "Leaf")
+        .expect("leaf");
+    let later = tree
+        .add_chapter(ChapterId::ROOT, ChapterKind::Chapter, "Later")
+        .expect("later");
+    assert_eq!(
+        tree.demote(later),
+        Err(ChapterError::Blocked(later, MoveBlocked::SiblingIsLeaf))
+    );
+    assert!(tree.chapter(leaf).is_some());
+}
+
+#[test]
+fn deleting_moves_a_chapter_to_the_visible_trash_and_back() {
+    let (mut tree, part, first, second) = tree_with_children();
+    tree.trash_chapter(first).expect("trash");
+    assert_eq!(tree.child_ids(ChapterId::TRASH), vec![first]);
+    assert_eq!(tree.child_ids(part), vec![second]);
+    assert!(tree.chapter(first).is_some());
+
+    tree.restore_chapter(first).expect("restore");
+    assert!(tree.child_ids(ChapterId::ROOT).contains(&first));
+    assert!(tree.child_ids(ChapterId::TRASH).is_empty());
+}
+
+#[test]
+fn emptying_the_trash_is_the_only_permanent_delete() {
+    let (mut tree, _part, first, _second) = tree_with_children();
+    tree.trash_chapter(first).expect("trash");
+    assert!(tree.chapter(first).is_some());
+
+    let removed = tree.empty_trash();
+    assert_eq!(removed, vec![first]);
+    assert!(tree.chapter(first).is_none());
 }

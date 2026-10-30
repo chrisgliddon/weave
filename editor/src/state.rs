@@ -78,6 +78,24 @@ pub enum EditorCommand {
     ShowText,
     /// Select the manuscript view.
     ShowManuscript,
+    /// Move the selected chapter one place earlier.
+    MoveUp,
+    /// Move the selected chapter one place later.
+    MoveDown,
+    /// Promote the selected chapter one level.
+    MovePromote,
+    /// Demote the selected chapter one level.
+    MoveDemote,
+    /// Move the selected chapter to the start of its siblings.
+    MoveToFront,
+    /// Move the selected chapter to the end of its siblings.
+    MoveToBack,
+    /// Move the selected chapter to the trash.
+    Trash,
+    /// Restore the selected chapter from the trash.
+    Restore,
+    /// Permanently empty the trash.
+    EmptyTrash,
     /// Toggle the project sidebar.
     ToggleProject,
     /// Toggle the inspector sidebar.
@@ -170,6 +188,17 @@ impl EditorState {
             EditorCommand::ShowGraph => self.layout.center = CenterView::Graph,
             EditorCommand::ShowText => self.layout.center = CenterView::Text,
             EditorCommand::ShowManuscript => self.layout.center = CenterView::Manuscript,
+            // Structural chapter commands are applied by the manuscript
+            // surface, which owns the tree; the reducer only carries intent.
+            EditorCommand::MoveUp
+            | EditorCommand::MoveDown
+            | EditorCommand::MovePromote
+            | EditorCommand::MoveDemote
+            | EditorCommand::MoveToFront
+            | EditorCommand::MoveToBack
+            | EditorCommand::Trash
+            | EditorCommand::Restore
+            | EditorCommand::EmptyTrash => {}
             EditorCommand::ToggleProject => {
                 self.layout.project_sidebar = !self.layout.project_sidebar;
             }
@@ -250,6 +279,22 @@ pub fn menu_definitions() -> Vec<MenuDefinition> {
             ],
         },
         MenuDefinition {
+            title: "Chapter",
+            entries: vec![
+                MenuEntry::Command("Move Up", EditorCommand::MoveUp),
+                MenuEntry::Command("Move Down", EditorCommand::MoveDown),
+                MenuEntry::Command("Move Left", EditorCommand::MovePromote),
+                MenuEntry::Command("Move Right", EditorCommand::MoveDemote),
+                MenuEntry::Separator,
+                MenuEntry::Command("Move to Front", EditorCommand::MoveToFront),
+                MenuEntry::Command("Move to Back", EditorCommand::MoveToBack),
+                MenuEntry::Separator,
+                MenuEntry::Command("Move to Trash", EditorCommand::Trash),
+                MenuEntry::Command("Restore from Trash", EditorCommand::Restore),
+                MenuEntry::Command("Empty Trash", EditorCommand::EmptyTrash),
+            ],
+        },
+        MenuDefinition {
             title: "Run",
             entries: vec![
                 MenuEntry::Command("Compile", EditorCommand::Compile),
@@ -292,7 +337,7 @@ mod tests {
         let menus = menu_definitions();
         assert_eq!(
             menus.iter().map(|menu| menu.title).collect::<Vec<_>>(),
-            ["File", "Edit", "View", "Run"]
+            ["File", "Edit", "View", "Chapter", "Run"]
         );
         assert!(menus.iter().any(|menu| {
             menu.entries

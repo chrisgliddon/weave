@@ -373,6 +373,113 @@ impl ChapterTree {
         Ok(())
     }
 
+    /// The index of a chapter among its siblings.
+    fn sibling_index(&self, id: ChapterId) -> Result<usize, ChapterError> {
+        let chapter = self.chapter(id).ok_or(ChapterError::UnknownChapter(id))?;
+        self.child_ids(chapter.parent_id)
+            .iter()
+            .position(|sibling| *sibling == id)
+            .ok_or(ChapterError::UnknownChapter(id))
+    }
+
+    /// Move a chapter one place earlier among its siblings.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MoveBlocked::FirstSibling`] when there is no earlier place.
+    pub fn move_up(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        let index = self.sibling_index(id)?;
+        if index == 0 {
+            return Err(ChapterError::Blocked(id, MoveBlocked::FirstSibling));
+        }
+        self.move_chapter(id, index - 1)
+    }
+
+    /// Move a chapter one place later among its siblings.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MoveBlocked::LastSibling`] when there is no later place.
+    pub fn move_down(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        let index = self.sibling_index(id)?;
+        let len = self
+            .chapter(id)
+            .map(|chapter| self.child_ids(chapter.parent_id).len())
+            .unwrap_or(0);
+        if index + 1 >= len {
+            return Err(ChapterError::Blocked(id, MoveBlocked::LastSibling));
+        }
+        self.move_chapter(id, index + 1)
+    }
+
+    /// Move a chapter to the start of its sibling list.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the chapter is unknown or reserved.
+    pub fn move_to_front(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        self.move_chapter(id, 0)
+    }
+
+    /// Move a chapter to the end of its sibling list.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the chapter is unknown or reserved.
+    pub fn move_to_back(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        let chapter = self.chapter(id).ok_or(ChapterError::UnknownChapter(id))?;
+        let len = self.child_ids(chapter.parent_id).len();
+        self.move_chapter(id, len.saturating_sub(1))
+    }
+
+    /// Promote a chapter one level, placing it just after its former parent.
+    ///
+    /// This is not expressible as a drag among siblings, so it is a command of
+    /// its own.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MoveBlocked::AtRoot`] when the chapter is already a child of
+    /// the manuscript root.
+    pub fn promote(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        let chapter = self.chapter(id).ok_or(ChapterError::UnknownChapter(id))?;
+        let parent = chapter.parent_id;
+        if parent == ChapterId::ROOT {
+            return Err(ChapterError::Blocked(id, MoveBlocked::AtRoot));
+        }
+        let grandparent = self
+            .chapter(parent)
+            .ok_or(ChapterError::UnknownParent(id, parent))?
+            .parent_id;
+        let parent_index = self.sibling_index(parent)?;
+        self.reparent_to(id, grandparent, Some(parent_index + 1))
+    }
+
+    /// Demote a chapter one level, making it the first child of the sibling
+    /// before it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MoveBlocked::NoEarlierSibling`] when there is nothing before
+    /// it, and [`MoveBlocked::SiblingIsLeaf`] when that sibling cannot hold
+    /// children.
+    pub fn demote(&mut self, id: ChapterId) -> Result<(), ChapterError> {
+        let index = self.sibling_index(id)?;
+        if index == 0 {
+            return Err(ChapterError::Blocked(id, MoveBlocked::NoEarlierSibling));
+        }
+        let chapter = self.chapter(id).ok_or(ChapterError::UnknownChapter(id))?;
+        let parent = chapter.parent_id;
+        let earlier = self.child_ids(parent)[index - 1];
+        let target = self
+            .chapter(earlier)
+            .ok_or(ChapterError::UnknownChapter(earlier))?;
+        if !target.kind.is_container() {
+            return Err(ChapterError::Blocked(id, MoveBlocked::SiblingIsLeaf));
+        }
+        self.reparent_to(id, earlier, Some(0))
+    }
+
     /// Move a chapter within the siblings of one parent.
     fn move_within(
         &mut self,
@@ -761,6 +868,33 @@ impl ChapterTree {
     }
 }
 
+/// Why a positional move cannot happen.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MoveBlocked {
+    /// The chapter is already the first of its siblings.
+    FirstSibling,
+    /// The chapter is already the last of its siblings.
+    LastSibling,
+    /// The chapter is already a child of the manuscript root.
+    AtRoot,
+    /// No earlier sibling exists to nest the chapter inside.
+    NoEarlierSibling,
+    /// The earlier sibling is a leaf and cannot hold children.
+    SiblingIsLeaf,
+}
+
+impl std::fmt::Display for MoveBlocked {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(match self {
+            Self::FirstSibling => "it is already the first sibling",
+            Self::LastSibling => "it is already the last sibling",
+            Self::AtRoot => "it is already at the root level",
+            Self::NoEarlierSibling => "there is no earlier sibling to nest inside",
+            Self::SiblingIsLeaf => "the earlier sibling cannot hold children",
+        })
+    }
+}
+
 /// Something that can go wrong while editing a chapter tree.
 #[derive(Debug, thiserror::Error)]
 pub enum ChapterError {
@@ -788,6 +922,9 @@ pub enum ChapterError {
     /// The move would place a container inside its own descendant.
     #[error("chapter {0} cannot be moved into {1}")]
     Cycle(ChapterId, ChapterId),
+    /// The relative move is not possible from the current position.
+    #[error("chapter {0} cannot move: {1}")]
+    Blocked(ChapterId, MoveBlocked),
     /// The requested position is past the end of the sibling list.
     #[error("position {index} is past the end of a {len} item list")]
     IndexOutOfRange {
@@ -867,6 +1004,9 @@ impl PartialEq for ChapterError {
                 left.kind() == right.kind() && left.to_string() == right.to_string()
             }
             (Self::InvalidData(left), Self::InvalidData(right)) => left == right,
+            (Self::Blocked(left, left_reason), Self::Blocked(right, right_reason)) => {
+                left == right && left_reason == right_reason
+            }
             _ => false,
         }
     }

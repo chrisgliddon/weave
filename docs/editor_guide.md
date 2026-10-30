@@ -163,6 +163,35 @@ Only the rows inside the viewport are built, with spacer rows above and below, s
 the element tree stays proportional to the window rather than to the manuscript.
 Column visibility and the active mode are remembered for the session.
 
+### Moving and deleting chapters
+
+The Chapter menu, the toolbar above the tree, and the keyboard all dispatch to
+one handler, so the shortcuts and the menus cannot drift apart:
+
+| Command | Shortcut | Effect |
+|---|---|---|
+| Move Up | `secondary-shift-up` | One place earlier among siblings |
+| Move Down | `secondary-shift-down` | One place later among siblings |
+| Move Left | `secondary-shift-left` | Promote one level, directly after the former parent |
+| Move Right | `secondary-shift-right` | Demote one level, as the first child of the earlier sibling |
+| Move to Front | `secondary-shift-home` | To the start of the sibling list |
+| Move to Back | `secondary-shift-end` | To the end of the sibling list |
+| Move to Trash | `secondary-backspace` | Move the selection into Trash |
+
+A move is refused, with a reason, when there is no earlier or later sibling,
+when a root-level chapter cannot be promoted, or when the earlier sibling is a
+leaf and cannot hold children. A refused move changes nothing.
+
+Deleting is not destructive: a deleted chapter moves to the visible Trash
+container, where the board and table show it like any other container. Restoring
+moves it back to the manuscript root. Emptying the trash is a separate command
+and the only permanent delete.
+
+Every move, delete, restore, and emptied trash can be undone with the usual Undo
+command, or with the toolbar button. The history keeps the last hundred
+structural changes; because only the tree is snapshotted, undo never copies the
+prose.
+
 The example projects in `examples/manuscripts/` are public-domain books in this
 format and can be opened directly; see their
 [README](https://github.com/chrisgliddon/weave/tree/main/examples/manuscripts)

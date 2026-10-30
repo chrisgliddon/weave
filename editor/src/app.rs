@@ -15,7 +15,7 @@ use gpui::{
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
-use crate::manuscript_view::ManuscriptSurface;
+use crate::manuscript_view::{ManuscriptSurface, MoveVerb};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::preview::{PreviewEvent, PreviewSurface};
@@ -36,6 +36,15 @@ actions!(
         ShowGraph,
         ShowText,
         ShowManuscript,
+        MoveChapterUp,
+        MoveChapterDown,
+        MoveChapterPromote,
+        MoveChapterDemote,
+        MoveChapterToFront,
+        MoveChapterToBack,
+        TrashChapter,
+        RestoreChapter,
+        EmptyTrash,
         ToggleProject,
         ToggleInspector,
         TogglePatterns,
@@ -142,6 +151,33 @@ fn install_commands_and_menus(cx: &mut App) {
         KeyBinding::new("secondary-1", ShowGraph, Some("WeaveEditor")),
         KeyBinding::new("secondary-2", ShowText, Some("WeaveEditor")),
         KeyBinding::new("secondary-3", ShowManuscript, Some("WeaveEditor")),
+        KeyBinding::new("secondary-shift-up", MoveChapterUp, Some("WeaveManuscript")),
+        KeyBinding::new(
+            "secondary-shift-down",
+            MoveChapterDown,
+            Some("WeaveManuscript"),
+        ),
+        KeyBinding::new(
+            "secondary-shift-left",
+            MoveChapterPromote,
+            Some("WeaveManuscript"),
+        ),
+        KeyBinding::new(
+            "secondary-shift-right",
+            MoveChapterDemote,
+            Some("WeaveManuscript"),
+        ),
+        KeyBinding::new(
+            "secondary-shift-home",
+            MoveChapterToFront,
+            Some("WeaveManuscript"),
+        ),
+        KeyBinding::new(
+            "secondary-shift-end",
+            MoveChapterToBack,
+            Some("WeaveManuscript"),
+        ),
+        KeyBinding::new("secondary-backspace", TrashChapter, Some("WeaveManuscript")),
         KeyBinding::new("secondary-enter", RunPreview, Some("WeaveEditor")),
     ]);
     cx.on_action(|_: &Quit, cx| cx.quit());
@@ -166,6 +202,19 @@ fn install_commands_and_menus(cx: &mut App) {
             MenuItem::action("Inspector", ToggleInspector),
             MenuItem::action("Patterns", TogglePatterns),
             MenuItem::action("Preview", TogglePreview),
+        ]),
+        Menu::new("Chapter").items([
+            MenuItem::action("Move Up", MoveChapterUp),
+            MenuItem::action("Move Down", MoveChapterDown),
+            MenuItem::action("Move Left", MoveChapterPromote),
+            MenuItem::action("Move Right", MoveChapterDemote),
+            MenuItem::separator(),
+            MenuItem::action("Move to Front", MoveChapterToFront),
+            MenuItem::action("Move to Back", MoveChapterToBack),
+            MenuItem::separator(),
+            MenuItem::action("Move to Trash", TrashChapter),
+            MenuItem::action("Restore from Trash", RestoreChapter),
+            MenuItem::action("Empty Trash", EmptyTrash),
         ]),
         Menu::new("Run").items([
             MenuItem::action("Compile", CompileStory),
@@ -545,6 +594,38 @@ impl EditorShell {
         cx.notify();
     }
 
+    fn manuscript_move(&mut self, verb: MoveVerb, cx: &mut Context<Self>) {
+        self.state.layout.center = CenterView::Manuscript;
+        self.manuscript.update(cx, |manuscript, cx| {
+            manuscript.apply_move(verb);
+            cx.notify();
+        });
+    }
+
+    fn manuscript_trash(&mut self, cx: &mut Context<Self>) {
+        self.state.layout.center = CenterView::Manuscript;
+        self.manuscript.update(cx, |manuscript, cx| {
+            manuscript.trash_selected();
+            cx.notify();
+        });
+    }
+
+    fn manuscript_restore(&mut self, cx: &mut Context<Self>) {
+        self.state.layout.center = CenterView::Manuscript;
+        self.manuscript.update(cx, |manuscript, cx| {
+            manuscript.restore_selected();
+            cx.notify();
+        });
+    }
+
+    fn manuscript_empty_trash(&mut self, cx: &mut Context<Self>) {
+        self.state.layout.center = CenterView::Manuscript;
+        self.manuscript.update(cx, |manuscript, cx| {
+            manuscript.empty_trash();
+            cx.notify();
+        });
+    }
+
     fn undo_active_view(&mut self, cx: &mut Context<Self>) {
         match self.state.layout.center {
             CenterView::Text => {
@@ -562,8 +643,14 @@ impl EditorShell {
                 }
             }
             CenterView::Manuscript => {
-                self.state.status =
-                    crate::state::StatusMessage::Info("The manuscript has no undo yet".to_owned());
+                if self
+                    .manuscript
+                    .update(cx, |manuscript, _| manuscript.undo())
+                {
+                    self.state.status = crate::state::StatusMessage::Info(
+                        "Undid the last manuscript change".to_owned(),
+                    );
+                }
             }
         }
         cx.notify();
@@ -1200,6 +1287,36 @@ impl gpui::Render for EditorShell {
             }))
             .on_action(cx.listener(|this, _: &ShowText, _, cx| {
                 this.apply(EditorCommand::ShowText, cx);
+            }))
+            .on_action(cx.listener(|this, _: &ShowManuscript, _, cx| {
+                this.apply(EditorCommand::ShowManuscript, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterUp, _, cx| {
+                this.manuscript_move(MoveVerb::Up, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterDown, _, cx| {
+                this.manuscript_move(MoveVerb::Down, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterPromote, _, cx| {
+                this.manuscript_move(MoveVerb::Promote, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterDemote, _, cx| {
+                this.manuscript_move(MoveVerb::Demote, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterToFront, _, cx| {
+                this.manuscript_move(MoveVerb::ToFront, cx);
+            }))
+            .on_action(cx.listener(|this, _: &MoveChapterToBack, _, cx| {
+                this.manuscript_move(MoveVerb::ToBack, cx);
+            }))
+            .on_action(cx.listener(|this, _: &TrashChapter, _, cx| {
+                this.manuscript_trash(cx);
+            }))
+            .on_action(cx.listener(|this, _: &RestoreChapter, _, cx| {
+                this.manuscript_restore(cx);
+            }))
+            .on_action(cx.listener(|this, _: &EmptyTrash, _, cx| {
+                this.manuscript_empty_trash(cx);
             }))
             .on_action(cx.listener(|this, _: &ToggleProject, _, cx| {
                 this.apply(EditorCommand::ToggleProject, cx);

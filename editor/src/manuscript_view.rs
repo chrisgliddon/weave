@@ -13,7 +13,9 @@ use gpui::{
     div, prelude::*, px, rgb,
 };
 
-use crate::manuscript::{BodyStore, Chapter, ChapterId, ChapterKind, ChapterTree, ManuscriptStore};
+use crate::manuscript::{
+    BodyStore, Chapter, ChapterId, ChapterKind, ChapterTree, ManuscriptHistory, ManuscriptStore,
+};
 use crate::theme::DARK_THEME;
 
 /// Width of one index card in logical pixels.
@@ -48,6 +50,51 @@ impl ManuscriptMode {
         match self {
             Self::Board => "Board",
             Self::Table => "Table",
+        }
+    }
+}
+
+/// A positional command available from the toolbar, the menu, and the keyboard.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MoveVerb {
+    /// One place earlier among siblings.
+    Up,
+    /// One place later among siblings.
+    Down,
+    /// One level out, directly after the former parent.
+    Promote,
+    /// One level in, as the first child of the earlier sibling.
+    Demote,
+    /// To the start of the sibling list.
+    ToFront,
+    /// To the end of the sibling list.
+    ToBack,
+}
+
+impl MoveVerb {
+    /// Toolbar label.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Up => "Up",
+            Self::Down => "Down",
+            Self::Promote => "Left",
+            Self::Demote => "Right",
+            Self::ToFront => "Front",
+            Self::ToBack => "Back",
+        }
+    }
+
+    /// Status text after a successful move.
+    #[must_use]
+    pub const fn done(self) -> &'static str {
+        match self {
+            Self::Up => "Moved up",
+            Self::Down => "Moved down",
+            Self::Promote => "Promoted one level",
+            Self::Demote => "Demoted one level",
+            Self::ToFront => "Moved to the front",
+            Self::ToBack => "Moved to the back",
         }
     }
 }
@@ -567,6 +614,7 @@ pub struct ManuscriptSurface {
     options: ProjectionOptions,
     mode: ManuscriptMode,
     scroll: f32,
+    history: ManuscriptHistory,
     status: String,
     focus: FocusHandle,
     projection: ManuscriptProjection,
@@ -585,6 +633,7 @@ impl ManuscriptSurface {
             options,
             mode: ManuscriptMode::Board,
             scroll: 0.0,
+            history: ManuscriptHistory::default(),
             status: "Open a project to read its manuscript".to_owned(),
             focus: cx.focus_handle(),
             projection,
@@ -598,6 +647,7 @@ impl ManuscriptSurface {
         self.bodies = None;
         self.options = ProjectionOptions::default();
         self.scroll = 0.0;
+        self.history.clear();
         self.status = "Open a project to read its manuscript".to_owned();
         self.refresh();
     }
@@ -618,6 +668,7 @@ impl ManuscriptSurface {
         match store.read_tree() {
             Ok(tree) => {
                 self.options.selected = ChapterId::ROOT;
+                self.history.clear();
                 self.bodies = Some(store.bodies().clone());
                 self.store = Some(store);
                 self.tree = tree;
@@ -715,6 +766,122 @@ impl ManuscriptSurface {
     #[must_use]
     pub fn accessibility(&self) -> ManuscriptAccessibility {
         self.projection.accessibility()
+    }
+
+    /// Apply one positional command to the selection.
+    ///
+    /// This is the single handler behind the toolbar, the menu, and the
+    /// keyboard: each entry point calls this method.
+    pub fn apply_move(&mut self, verb: MoveVerb) {
+        let id = self.options.selected;
+        if id.is_reserved() {
+            self.status = "The built-in containers cannot be moved".to_owned();
+            return;
+        }
+        if self.tree.chapter(id).is_none() {
+            return;
+        }
+        let before = self.tree.clone();
+        let result = match verb {
+            MoveVerb::Up => self.tree.move_up(id),
+            MoveVerb::Down => self.tree.move_down(id),
+            MoveVerb::Promote => self.tree.promote(id),
+            MoveVerb::Demote => self.tree.demote(id),
+            MoveVerb::ToFront => self.tree.move_to_front(id),
+            MoveVerb::ToBack => self.tree.move_to_back(id),
+        };
+        match result {
+            Ok(()) if self.tree != before => {
+                self.history.record(&before);
+                self.persist();
+                self.status = verb.done().to_owned();
+                self.refresh();
+            }
+            Ok(()) => self.status = "Already in place".to_owned(),
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    /// Move the selection to the trash container.
+    pub fn trash_selected(&mut self) {
+        let id = self.options.selected;
+        if id.is_reserved() {
+            self.status = "The built-in containers cannot be deleted".to_owned();
+            return;
+        }
+        let before = self.tree.clone();
+        match self.tree.trash_chapter(id) {
+            Ok(()) => {
+                self.history.record(&before);
+                self.persist();
+                self.options.selected = ChapterId::TRASH;
+                self.status = "Moved to Trash".to_owned();
+                self.refresh();
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    /// Move the selection out of the trash back to the manuscript root.
+    pub fn restore_selected(&mut self) {
+        let id = self.options.selected;
+        if self.tree.chapter(id).is_none() {
+            return;
+        }
+        let before = self.tree.clone();
+        match self.tree.restore_chapter(id) {
+            Ok(()) => {
+                self.history.record(&before);
+                self.persist();
+                self.status = "Restored from Trash".to_owned();
+                self.refresh();
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    /// Empty the trash. Deletion is only permanent when this is called.
+    pub fn empty_trash(&mut self) {
+        let before = self.tree.clone();
+        let removed = self.tree.empty_trash();
+        if removed.is_empty() {
+            self.status = "The trash is already empty".to_owned();
+            return;
+        }
+        self.history.record(&before);
+        self.persist();
+        self.status = format!("Emptied the trash ({} items)", removed.len());
+        self.refresh();
+    }
+
+    /// Undo the last structural change.
+    pub fn undo(&mut self) -> bool {
+        let Some(previous) = self.history.undo() else {
+            self.status = "Nothing to undo".to_owned();
+            return false;
+        };
+        self.tree = previous;
+        if self.tree.chapter(self.options.selected).is_none() {
+            self.options.selected = ChapterId::ROOT;
+        }
+        self.persist();
+        self.status = "Undid the last manuscript change".to_owned();
+        self.refresh();
+        true
+    }
+
+    /// Whether a structural change can be undone.
+    #[must_use]
+    pub fn can_undo(&self) -> bool {
+        self.history.can_undo()
+    }
+
+    /// Whether the selection sits in the trash.
+    #[must_use]
+    pub fn selection_is_trashed(&self) -> bool {
+        self.tree
+            .chapter(self.options.selected)
+            .is_some_and(|chapter| chapter.parent_id == ChapterId::TRASH)
     }
 
     fn persist(&mut self) {
@@ -963,6 +1130,93 @@ impl ManuscriptSurface {
         }
 
         header.into_any_element()
+    }
+
+    fn toolbar(&self, cx: &mut Context<Self>) -> AnyElement {
+        let selected = self.options.selected;
+        let movable = !selected.is_reserved() && self.tree.chapter(selected).is_some();
+        let trashed = self.selection_is_trashed();
+        let mut bar = div()
+            .id("manuscript-toolbar")
+            .flex()
+            .items_center()
+            .flex_wrap()
+            .gap_1();
+
+        for verb in [
+            MoveVerb::Up,
+            MoveVerb::Down,
+            MoveVerb::Promote,
+            MoveVerb::Demote,
+            MoveVerb::ToFront,
+            MoveVerb::ToBack,
+        ] {
+            bar = bar.child(self.tool_button(ToolAction::Move(verb), verb.label(), movable, cx));
+        }
+
+        bar = bar.child(
+            div()
+                .w(px(1.0))
+                .h(px(16.0))
+                .mx_1()
+                .bg(rgb(DARK_THEME.border)),
+        );
+        bar = bar.child(self.tool_button(ToolAction::Trash, "Trash", movable && !trashed, cx));
+        bar = bar.child(self.tool_button(ToolAction::Restore, "Restore", trashed, cx));
+        bar = bar.child(self.tool_button(
+            ToolAction::EmptyTrash,
+            "Empty Trash",
+            !self.tree.child_ids(ChapterId::TRASH).is_empty(),
+            cx,
+        ));
+        bar = bar.child(
+            div()
+                .w(px(1.0))
+                .h(px(16.0))
+                .mx_1()
+                .bg(rgb(DARK_THEME.border)),
+        );
+        bar = bar.child(self.tool_button(ToolAction::Undo, "Undo", self.history.can_undo(), cx));
+        bar.into_any_element()
+    }
+
+    fn tool_button(
+        &self,
+        action: ToolAction,
+        label: &'static str,
+        enabled: bool,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        div()
+            .id(action.id())
+            .px_2()
+            .py_1()
+            .rounded_md()
+            .border_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .cursor_pointer()
+            .text_xs()
+            .text_color(rgb(if enabled {
+                DARK_THEME.text
+            } else {
+                DARK_THEME.muted_text
+            }))
+            .child(label)
+            .on_click(cx.listener(move |this, _, window, cx| {
+                this.focus.focus(window, cx);
+                match action {
+                    ToolAction::Move(verb) => this.apply_move(verb),
+                    ToolAction::Trash => this.trash_selected(),
+                    ToolAction::Restore => this.restore_selected(),
+                    ToolAction::EmptyTrash => this.empty_trash(),
+                    ToolAction::Undo => {
+                        this.undo();
+                    }
+                }
+                cx.notify();
+            }))
+            .into_any_element()
     }
 
     fn board(&self, cx: &mut Context<Self>) -> AnyElement {
@@ -1218,6 +1472,38 @@ impl ManuscriptSurface {
     }
 }
 
+/// One toolbar command.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ToolAction {
+    /// A positional move.
+    Move(MoveVerb),
+    /// Move the selection to the trash.
+    Trash,
+    /// Restore the selection from the trash.
+    Restore,
+    /// Permanently remove everything in the trash.
+    EmptyTrash,
+    /// Undo the last structural change.
+    Undo,
+}
+
+impl ToolAction {
+    const fn id(self) -> &'static str {
+        match self {
+            Self::Move(MoveVerb::Up) => "manuscript-tool-up",
+            Self::Move(MoveVerb::Down) => "manuscript-tool-down",
+            Self::Move(MoveVerb::Promote) => "manuscript-tool-promote",
+            Self::Move(MoveVerb::Demote) => "manuscript-tool-demote",
+            Self::Move(MoveVerb::ToFront) => "manuscript-tool-front",
+            Self::Move(MoveVerb::ToBack) => "manuscript-tool-back",
+            Self::Trash => "manuscript-tool-trash",
+            Self::Restore => "manuscript-tool-restore",
+            Self::EmptyTrash => "manuscript-tool-empty-trash",
+            Self::Undo => "manuscript-tool-undo",
+        }
+    }
+}
+
 fn column_width(column: Column) -> f32 {
     match column {
         Column::Status => 110.0,
@@ -1253,6 +1539,7 @@ impl Render for ManuscriptSurface {
                     .flex_col()
                     .gap_3()
                     .child(self.header(cx))
+                    .child(self.toolbar(cx))
                     .child(dense),
             )
     }
