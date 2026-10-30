@@ -1,0 +1,115 @@
+// Adaptation of Alice's Adventures in Wonderland by Lewis Carroll, first
+// published in 1865. This branching story is original connective prose; only
+// short phrases are echoed from the public-domain text. The situations come
+// from Chapter III, "A Caucus-Race and a Long Tale", and Chapter VIII, "The
+// Queen's Croquet-Ground".
+
+VAR prizes = 0
+VAR visits = 0
+LIST pocket = ["comfits", "thimble"]
+FLAG gave_thimble = false
+FLAG spoke_for_gardeners = false
+STATE race = unrun [unrun, running, finished]
+
+=== bank ===
+SET visits = visits + 1
+The pool has drained to a ring of wet grass, and the birds and beasts stand
+about in draggled feathers, cross and uncomfortable.
+{visits > 1:
+    The Dodo looks up as if it has been waiting for you all along.
+- else:
+    The Mouse clears its throat and offers to make everyone dry.
+}
+* [Join the Caucus-race]
+    SET race = running
+    Nobody says go, so everyone simply begins.
+    -> race
+* [Ask what a Caucus-race is]
+    The Dodo explains that the best way to explain it is to do it.
+    SET race = running
+    -> race
++ [Stand still and watch the others]
+    You count the Lory's feathers until the party grows impatient.
+    -> bank
+
+=== race ===
+The course is a loose circle marked in the turf, and the runners start and
+stop whenever the mood takes them.
+* [Stop and ask who has won]
+    SET race = finished
+    -> prizes
++ [Run one more circle]
+    Your feet make a soft, wet sound on the grass.
+    -> race
+
+=== prizes ===
+{race == finished:
+    The Dodo sits with one finger pressed to its forehead and thinks.
+}
+At last it announces that everybody has won, and all must have prizes.
+* [Hand round the comfits] {if "comfits" in pocket}
+    REMOVE pocket, "comfits"
+    SET prizes = prizes + 1
+    The large birds complain that they cannot taste theirs.
+    -> thimble
+* [Offer the thimble] {if "thimble" in pocket}
+    REMOVE pocket, "thimble"
+    SET gave_thimble = true
+    -> thimble
++ [Ask the Mouse for its tale instead]
+    The Mouse sighs and says its tale is long and sad.
+    -> bank
+
+=== thimble ===
+{prizes > 0:
+    The Dodo thanks you gravely for the comfits.
+- else:
+    The Dodo waits, and the party waits with it.
+}
+* [Accept the thimble as your own prize] {if gave_thimble}
+    The Dodo begs your acceptance of this elegant thimble, and everyone cheers.
+    -> garden
+* [Bow and say nothing]
+    You bow as solemnly as you can manage.
+    -> garden
++ [Ask the Mouse for its tale instead]
+    The Mouse is already walking away, and the Crab's daughter is scolded.
+    -> bank
+
+=== garden ===
+A rose-tree stands by the garden door, its white roses half painted red.
+Three gardeners in flat oblong coats drop their brushes and bow low.
+* [Ask why the roses are being painted]
+    Two whispers that the tree ought to have been red, and that heads are at
+    stake if the Queen notices.
+    -> croquet
+* [Warn the gardeners that the Queen is coming]
+    SET spoke_for_gardeners = true
+    They scatter, and the procession arrives in a long ribbon of cards.
+    -> croquet
+
+=== croquet ===
+The Queen asks whether you can play croquet, and the soldiers wait for an answer.
+{spoke_for_gardeners:
+    Three of them have hidden themselves in a flowerpot at your suggestion.
+- else:
+    The gardeners lie face down, hoping to be mistaken for the pack.
+}
+* [Say yes, and take up a flamingo mallet]
+    The flamingo twists its neck round to look at you.
+    -> heads
+* [Step back towards the garden door]
+    You keep your eyes on the Queen and move one slow pace at a time.
+    -> waking
+
+=== heads ===
+The game begins with everyone playing at once, and the Queen shouts for heads
+about once a minute. Your flamingo refuses to hold still, the hedgehog rolls
+under a rose-bush, and you decide that you have had enough of croquet.
+-> END
+
+=== waking ===
+You reach the door and the garden softens at the edges, like a picture held
+too close to the eye. Somewhere above you a voice is saying it is time to
+wake up, and the croquet-ground folds away.
+-> END

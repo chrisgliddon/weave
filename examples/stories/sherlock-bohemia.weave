@@ -1,0 +1,115 @@
+// Adaptation of "A Scandal in Bohemia" from The Adventures of Sherlock Holmes
+// by Arthur Conan Doyle, first published in 1892. This branching story is
+// original connective prose; only short phrases are echoed from the
+// public-domain text. The situations follow Holmes, Watson, the King of
+// Bohemia, and Irene Adler.
+
+VAR clues = 0
+VAR watches = 0
+LIST evidence = []
+FLAG groom_disguise = false
+FLAG smoke_ready = false
+STATE case_file = open [open, watching, resolved]
+
+=== baker_street ===
+SET watches = watches + 1
+The King of Bohemia has left a note, a photograph, and the memory of a
+quarrel. Holmes taps the paper against the mantelpiece.
+{watches > 1:
+    "You have been quiet," Holmes says. "That is usually a sign of thought."
+- else:
+    "The lady is clever," he says, "and cleverness is a kind of evidence."
+}
+* [Read the King's note twice]
+    SET clues = clues + 1
+    PUSH evidence, "the King's note"
+    A date, a church, and an address in Serpentine Avenue.
+    -> briony
+* [Put on the groom's disguise]
+    SET groom_disguise = true
+    Holmes lends you a coat that smells of horses and tobacco.
+    -> briony
++ [Wait by the fire]
+    The clock on the mantel ticks through the afternoon.
+    -> baker_street
+
+=== briony ===
+Briony Lodge keeps its curtains half drawn. A hansom waits at the corner,
+and a man with an aquiline face hurries up the steps.
+{clues > 0:
+    The address in the note matches the brass plate on the door.
+- groom_disguise:
+    Nobody looks twice at a groom with straw in his hair.
+- else:
+    You have only Holmes's word that this is the right house.
+}
+SET case_file = watching
+* [Follow the hurrying gentleman]
+    He shouts an address to the cabman and the wheels start at once.
+    -> church
+* [Watch the windows a while longer]
+    SET clues = clues + 1
+    PUSH evidence, "the wedding appointment"
+    A woman's voice gives an order through the fanlight.
+    -> briony
++ [Return to Baker Street and compare notes]
+    Holmes is already reaching for his coat.
+    -> baker_street
+
+=== church ===
+The church is nearly empty: a clergyman, a bride, a groom, and a witness
+who has been half dragged up the aisle.
+* [Stand as witness and say nothing] {if clues > 0}
+    The responses are whispered at your ear, and the ring goes on.
+    SET clues = clues + 1
+    PUSH evidence, "the marriage"
+    -> alarm
+* [Refuse, and warn the bride]
+    She looks at you once, and it is not a frightened look.
+    -> adler_wins
++ [Step back into the porch and think]
+    The door closes softly behind you.
+    -> briony
+
+=== alarm ===
+The window is open, the curtain moves, and Holmes raises one hand.
+* [Fetch the smoke-rocket from his coat]
+    SET smoke_ready = true
+    The paper casing is cold and smells faintly of sulphur.
+    -> alarm
+* [Throw the rocket and shout fire] {if smoke_ready}
+    SET clues = clues + 1
+    PUSH evidence, "the smoke-rocket"
+    -> morning
+* [Wait for a better signal]
+    The curtain settles. Somewhere inside, a chair is moved.
+    -> morning
++ [Reconsider on the pavement]
+    The lamps are being lit along Serpentine Avenue.
+    -> briony
+
+=== morning ===
+SET case_file = resolved
+The King arrives before the coffee is cold. Briony Lodge is empty: the birds
+have flown, and a letter waits in the drawer of the bell-pull.
+{clues >= 3:
+    Holmes reads it twice and laughs once, without much humour.
+- else:
+    Holmes reads it in silence and hands it to Watson.
+}
+* [Ask Holmes to keep the photograph]
+    He says he already has what he wanted, and it is not the picture.
+    -> adler_wins
+* [Accept the King's emerald ring on Holmes's behalf]
+    The ring goes back into its box unfinished.
+    -> king_ring
+
+=== adler_wins ===
+The letter is signed Irene Norton, nee Adler. Holmes files the photograph
+where he keeps his failures, and speaks of her afterwards as the woman.
+-> END
+
+=== king_ring ===
+The King pockets his ring and calls the matter successful. Holmes says
+nothing until the brougham has turned the corner, and then he says her name.
+-> END
