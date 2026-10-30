@@ -15,7 +15,7 @@ use gpui::{
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
-use crate::manuscript_view::{ManuscriptSurface, MoveVerb};
+use crate::manuscript_view::{ManuscriptSurface, MoveVerb, label_display, status_display};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::preview::{PreviewEvent, PreviewSurface};
@@ -291,6 +291,9 @@ impl EditorShell {
         })
         .detach();
         let manuscript = cx.new(ManuscriptSurface::new);
+        // The window status bar shows the manuscript selection, so the shell
+        // has to repaint when the surface changes underneath it.
+        cx.observe(&manuscript, |_, _, cx| cx.notify()).detach();
         let shell = Self {
             state,
             domain,
@@ -1465,17 +1468,82 @@ impl gpui::Render for EditorShell {
         } else {
             DARK_THEME.chrome
         };
+        let selection = if layout.center == CenterView::Manuscript {
+            self.manuscript.read(cx).selection_context()
+        } else {
+            None
+        };
+        let selection_chips = match selection {
+            Some(selection) => {
+                let mut chips = div().flex().items_center().gap_2().child(
+                    div()
+                        .text_color(rgb(DARK_THEME.muted_text))
+                        .child(selection.title.clone()),
+                );
+                chips = chips.child(
+                    div()
+                        .id("status-bar-status")
+                        .px_2()
+                        .rounded_sm()
+                        .bg(rgb(DARK_THEME.panel))
+                        .cursor_pointer()
+                        .text_color(rgb(if selection.status.is_some() {
+                            DARK_THEME.text
+                        } else {
+                            DARK_THEME.muted_text
+                        }))
+                        .child(status_display(selection.status.as_deref()).to_owned())
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.manuscript.update(cx, |manuscript, cx| {
+                                manuscript.cycle_status_selected();
+                                cx.notify();
+                            });
+                        })),
+                );
+                chips = chips.child(
+                    div()
+                        .id("status-bar-label")
+                        .px_2()
+                        .rounded_sm()
+                        .bg(rgb(DARK_THEME.panel))
+                        .cursor_pointer()
+                        .text_color(rgb(if selection.label.is_some() {
+                            DARK_THEME.text
+                        } else {
+                            DARK_THEME.muted_text
+                        }))
+                        .child(label_display(selection.label.as_deref()).to_owned())
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.manuscript.update(cx, |manuscript, cx| {
+                                manuscript.cycle_label_selected();
+                                cx.notify();
+                            });
+                        })),
+                );
+                if selection.trashed {
+                    chips = chips.child(
+                        div()
+                            .text_color(rgb(DARK_THEME.muted_text))
+                            .child("In Trash"),
+                    );
+                }
+                chips.into_any_element()
+            }
+            None => div().into_any_element(),
+        };
         root.child(
             div()
                 .h(px(26.0))
                 .flex()
                 .items_center()
+                .justify_between()
                 .px_3()
                 .bg(rgb(status_color))
                 .border_t_1()
                 .border_color(rgb(DARK_THEME.border))
                 .text_xs()
-                .child(self.state.status.text().to_owned()),
+                .child(self.state.status.text().to_owned())
+                .child(selection_chips),
         )
     }
 }

@@ -746,6 +746,42 @@ impl ChapterTree {
         Ok(())
     }
 
+    /// Rename a status without touching the chapters that reference it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the status is unknown or the name is empty.
+    pub fn rename_status(&mut self, id: i64, name: &str) -> Result<(), ChapterError> {
+        if name.trim().is_empty() {
+            return Err(ChapterError::EmptyName);
+        }
+        let status = self
+            .statuses
+            .iter_mut()
+            .find(|status| status.id == id)
+            .ok_or(ChapterError::UnknownStatus(id))?;
+        status.name = name.trim().to_string();
+        Ok(())
+    }
+
+    /// Rename a label without touching the chapters that reference it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the label is unknown or the name is empty.
+    pub fn rename_label(&mut self, id: i64, name: &str) -> Result<(), ChapterError> {
+        if name.trim().is_empty() {
+            return Err(ChapterError::EmptyName);
+        }
+        let label = self
+            .labels
+            .iter_mut()
+            .find(|label| label.id == id)
+            .ok_or(ChapterError::UnknownLabel(id))?;
+        label.name = name.trim().to_string();
+        Ok(())
+    }
+
     /// Add a status to the project-scoped list.
     ///
     /// # Errors
@@ -939,6 +975,9 @@ pub enum ChapterError {
     /// The chapter title is empty.
     #[error("a chapter needs a title")]
     EmptyTitle,
+    /// A status or label name is empty.
+    #[error("a status or label needs a name")]
+    EmptyName,
     /// The status identifier is not defined by the project.
     #[error("unknown status: {0}")]
     UnknownStatus(i64),
@@ -995,6 +1034,7 @@ impl PartialEq for ChapterError {
                 left == right && left_order == right_order
             }
             (Self::EmptyTitle, Self::EmptyTitle) => true,
+            (Self::EmptyName, Self::EmptyName) => true,
             (Self::UnknownStatus(left), Self::UnknownStatus(right)) => left == right,
             (Self::UnknownLabel(left), Self::UnknownLabel(right)) => left == right,
             (Self::DuplicateStatus(left), Self::DuplicateStatus(right)) => left == right,

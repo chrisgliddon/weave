@@ -27,12 +27,30 @@ pub const CARD_HEIGHT: f32 = 176.0;
 pub const CARD_GAP: f32 = 12.0;
 /// Columns the board shows before it wraps.
 pub const DEFAULT_COLUMNS: usize = 3;
+/// Width of the chapter tree panel in logical pixels.
+pub const TREE_WIDTH: f32 = 300.0;
 /// Height of one table row in logical pixels.
 pub const ROW_HEIGHT: f32 = 30.0;
 /// Rows rendered beyond the viewport so scrolling does not expose a gap.
 const OVERSCAN: usize = 2;
 /// Maximum characters of body text a card shows before truncating.
 const EXCERPT_CHARS: usize = 220;
+/// Text shown when a chapter has no status.
+pub const UNSET_STATUS: &str = "Unset status";
+/// Text shown when a chapter has no label.
+pub const UNSET_LABEL: &str = "Unset label";
+
+/// Display text for a status, never a blank cell.
+#[must_use]
+pub fn status_display(status: Option<&str>) -> &str {
+    status.unwrap_or(UNSET_STATUS)
+}
+
+/// Display text for a label, never a blank cell.
+#[must_use]
+pub fn label_display(label: Option<&str>) -> &str {
+    label.unwrap_or(UNSET_LABEL)
+}
 
 /// Which dense surface the manuscript view shows beside the tree.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -41,6 +59,8 @@ pub enum ManuscriptMode {
     Board,
     /// A table of rows for the selected container.
     Table,
+    /// Project status and label definitions.
+    Settings,
 }
 
 impl ManuscriptMode {
@@ -50,6 +70,7 @@ impl ManuscriptMode {
         match self {
             Self::Board => "Board",
             Self::Table => "Table",
+            Self::Settings => "Settings",
         }
     }
 }
@@ -160,6 +181,10 @@ pub struct TreeRow {
     pub title: String,
     /// Structural role label.
     pub kind: &'static str,
+    /// Resolved status name, when one is set.
+    pub status: Option<String>,
+    /// Resolved label name, when one is set.
+    pub label: Option<String>,
     /// Whether the chapter holds children.
     pub has_children: bool,
     /// Whether this row is the current selection.
@@ -177,6 +202,10 @@ pub struct CardRecord {
     pub title: String,
     /// Structural role label.
     pub kind: &'static str,
+    /// Resolved status name, when one is set.
+    pub status: Option<String>,
+    /// Resolved label name, when one is set.
+    pub label: Option<String>,
     /// Body excerpt, already truncated.
     pub excerpt: String,
     /// Words in the whole body, not just the excerpt.
@@ -255,8 +284,18 @@ impl ManuscriptProjection {
             .chapter(container)
             .map_or_else(|| "Manuscript".to_owned(), |chapter| chapter.title.clone());
 
+        let statuses = tree.statuses_by_id();
+        let labels = tree.labels_by_id();
         let mut rows = Vec::new();
-        collect_rows(tree, ChapterId::ROOT, 0, selected, &mut rows);
+        collect_rows(
+            tree,
+            ChapterId::ROOT,
+            0,
+            selected,
+            &statuses,
+            &labels,
+            &mut rows,
+        );
 
         let mut children: Vec<&Chapter> = tree
             .children(container)
@@ -272,8 +311,6 @@ impl ManuscriptProjection {
         }
 
         let total = children.len();
-        let statuses = tree.statuses_by_id();
-        let labels = tree.labels_by_id();
 
         let mut cards = Vec::with_capacity(total);
         let mut table_rows = Vec::with_capacity(total);
@@ -296,10 +333,20 @@ impl ManuscriptProjection {
             } else {
                 excerpt_of(&paragraph_text)
             };
+            let status = chapter
+                .status_id
+                .and_then(|id| statuses.get(&id))
+                .map(|status| status.name.clone());
+            let label = chapter
+                .label_id
+                .and_then(|id| labels.get(&id))
+                .map(|label| label.name.clone());
             cards.push(CardRecord {
                 id: chapter.id,
                 title: chapter.title.clone(),
                 kind: chapter.kind.label(),
+                status: status.clone(),
+                label: label.clone(),
                 excerpt,
                 word_count,
                 ordinal,
@@ -311,14 +358,6 @@ impl ManuscriptProjection {
                 ),
             });
 
-            let status = chapter
-                .status_id
-                .and_then(|id| statuses.get(&id))
-                .map(|status| status.name.clone());
-            let label = chapter
-                .label_id
-                .and_then(|id| labels.get(&id))
-                .map(|label| label.name.clone());
             table_rows.push(TableRow {
                 id: chapter.id,
                 title: chapter.title.clone(),
@@ -515,28 +554,50 @@ fn collect_rows(
     parent: ChapterId,
     depth: usize,
     selected: ChapterId,
+    statuses: &std::collections::BTreeMap<i64, &crate::manuscript::StatusDefinition>,
+    labels: &std::collections::BTreeMap<i64, &crate::manuscript::LabelDefinition>,
     rows: &mut Vec<TreeRow>,
 ) {
     let children = tree.children(parent);
     let total = children.len();
     for (index, chapter) in children.into_iter().enumerate() {
         let has_children = !tree.child_ids(chapter.id).is_empty();
+        let status = chapter
+            .status_id
+            .and_then(|id| statuses.get(&id))
+            .map(|status| status.name.clone());
+        let label = chapter
+            .label_id
+            .and_then(|id| labels.get(&id))
+            .map(|label| label.name.clone());
         rows.push(TreeRow {
             id: chapter.id,
             depth,
             title: chapter.title.clone(),
             kind: chapter.kind.label(),
+            status: status.clone(),
+            label: label.clone(),
             has_children,
             is_selected: chapter.id == selected,
             accessible_label: format!(
-                "{}, {}, {} of {}",
+                "{}, {}, {} of {}, {}, {}",
                 chapter.kind.label(),
                 chapter.title,
                 index + 1,
-                total
+                total,
+                status.as_deref().unwrap_or("no status"),
+                label.as_deref().unwrap_or("no label")
             ),
         });
-        collect_rows(tree, chapter.id, depth + 1, selected, rows);
+        collect_rows(
+            tree,
+            chapter.id,
+            depth + 1,
+            selected,
+            statuses,
+            labels,
+            rows,
+        );
     }
 }
 
@@ -606,6 +667,35 @@ fn kind_color(kind: ChapterKind) -> u32 {
     }
 }
 
+/// What the window status bar shows for the current selection.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelectionContext {
+    /// Selected chapter.
+    pub id: ChapterId,
+    /// Display title.
+    pub title: String,
+    /// Resolved status name, when one is set.
+    pub status: Option<String>,
+    /// Resolved label name, when one is set.
+    pub label: Option<String>,
+    /// Whether the selection sits in the trash.
+    pub trashed: bool,
+}
+
+/// Which project list a rename edits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DefinitionKind {
+    Status,
+    Label,
+}
+
+/// The definition currently being renamed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct DefinitionEdit {
+    kind: DefinitionKind,
+    id: i64,
+}
+
 /// Interactive chapter tree with the card board and the chapter table.
 pub struct ManuscriptSurface {
     tree: ChapterTree,
@@ -615,6 +705,8 @@ pub struct ManuscriptSurface {
     mode: ManuscriptMode,
     scroll: f32,
     history: ManuscriptHistory,
+    editing: Option<DefinitionEdit>,
+    buffer: String,
     status: String,
     focus: FocusHandle,
     projection: ManuscriptProjection,
@@ -634,6 +726,8 @@ impl ManuscriptSurface {
             mode: ManuscriptMode::Board,
             scroll: 0.0,
             history: ManuscriptHistory::default(),
+            editing: None,
+            buffer: String::new(),
             status: "Open a project to read its manuscript".to_owned(),
             focus: cx.focus_handle(),
             projection,
@@ -648,6 +742,8 @@ impl ManuscriptSurface {
         self.options = ProjectionOptions::default();
         self.scroll = 0.0;
         self.history.clear();
+        self.editing = None;
+        self.buffer.clear();
         self.status = "Open a project to read its manuscript".to_owned();
         self.refresh();
     }
@@ -669,6 +765,8 @@ impl ManuscriptSurface {
             Ok(tree) => {
                 self.options.selected = ChapterId::ROOT;
                 self.history.clear();
+                self.editing = None;
+                self.buffer.clear();
                 self.bodies = Some(store.bodies().clone());
                 self.store = Some(store);
                 self.tree = tree;
@@ -920,6 +1018,24 @@ impl ManuscriptSurface {
         {
             return;
         }
+        if self.editing.is_some() {
+            match event.keystroke.key.as_ref() {
+                "escape" => self.cancel_rename(),
+                "enter" => self.commit_rename(),
+                "backspace" => {
+                    self.buffer.pop();
+                }
+                _ => {
+                    if let Some(character) = &event.keystroke.key_char {
+                        self.buffer.push_str(&character.to_string());
+                    } else {
+                        return;
+                    }
+                }
+            }
+            cx.notify();
+            return;
+        }
         match event.keystroke.key.as_ref() {
             "up" => self.move_selection(false),
             "down" => self.move_selection(true),
@@ -945,7 +1061,7 @@ impl ManuscriptSurface {
     fn tree_panel(&self, cx: &mut Context<Self>) -> AnyElement {
         let mut panel = div()
             .id("manuscript-tree")
-            .w(px(260.0))
+            .w(px(TREE_WIDTH))
             .h_full()
             .flex_none()
             .flex()
@@ -993,6 +1109,8 @@ impl ManuscriptSurface {
                     .child(div().size(px(6.0)).rounded_sm().bg(rgb(color)))
                     .child(
                         div()
+                            .flex_1()
+                            .min_w_0()
                             .text_sm()
                             .text_color(rgb(if row.is_selected {
                                 DARK_THEME.workspace
@@ -1002,6 +1120,50 @@ impl ManuscriptSurface {
                             .overflow_hidden()
                             .text_ellipsis()
                             .child(row.title.clone()),
+                    )
+                    .child(
+                        div()
+                            .id(("tree-status", id.0 as usize))
+                            .max_w(px(62.0))
+                            .px_1()
+                            .rounded_sm()
+                            .bg(rgb(DARK_THEME.panel))
+                            .text_xs()
+                            .text_color(rgb(if row.status.is_some() {
+                                DARK_THEME.text
+                            } else {
+                                DARK_THEME.muted_text
+                            }))
+                            .overflow_hidden()
+                            .text_ellipsis()
+                            .child(status_display(row.status.as_deref()).to_owned())
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.focus.focus(window, cx);
+                                this.cycle_status(id);
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        div()
+                            .id(("tree-label", id.0 as usize))
+                            .max_w(px(54.0))
+                            .px_1()
+                            .rounded_sm()
+                            .bg(rgb(DARK_THEME.panel))
+                            .text_xs()
+                            .text_color(rgb(if row.label.is_some() {
+                                DARK_THEME.text
+                            } else {
+                                DARK_THEME.muted_text
+                            }))
+                            .overflow_hidden()
+                            .text_ellipsis()
+                            .child(label_display(row.label.as_deref()).to_owned())
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.focus.focus(window, cx);
+                                this.cycle_label(id);
+                                cx.notify();
+                            })),
                     ),
             );
         }
@@ -1047,13 +1209,18 @@ impl ManuscriptSurface {
             );
 
         let mut modes = div().flex().gap_1();
-        for mode in [ManuscriptMode::Board, ManuscriptMode::Table] {
+        for mode in [
+            ManuscriptMode::Board,
+            ManuscriptMode::Table,
+            ManuscriptMode::Settings,
+        ] {
             let active = self.mode == mode;
             modes = modes.child(
                 div()
                     .id(match mode {
                         ManuscriptMode::Board => "manuscript-mode-board",
                         ManuscriptMode::Table => "manuscript-mode-table",
+                        ManuscriptMode::Settings => "manuscript-mode-settings",
                     })
                     .px_2()
                     .py_1()
@@ -1073,7 +1240,11 @@ impl ManuscriptSurface {
                     })),
             );
         }
-        header = header.child(modes).child(
+        header = header.child(modes);
+        if self.mode == ManuscriptMode::Settings {
+            return header.into_any_element();
+        }
+        header = header.child(
             div()
                 .id("manuscript-filter")
                 .h(px(26.0))
@@ -1217,6 +1388,222 @@ impl ManuscriptSurface {
                 cx.notify();
             }))
             .into_any_element()
+    }
+
+    /// What the window status bar should show for the current selection.
+    #[must_use]
+    pub fn selection_context(&self) -> Option<SelectionContext> {
+        let chapter = self.tree.chapter(self.options.selected)?;
+        let statuses = self.tree.statuses_by_id();
+        let labels = self.tree.labels_by_id();
+        Some(SelectionContext {
+            id: chapter.id,
+            title: chapter.title.clone(),
+            status: chapter
+                .status_id
+                .and_then(|id| statuses.get(&id))
+                .map(|status| status.name.clone()),
+            label: chapter
+                .label_id
+                .and_then(|id| labels.get(&id))
+                .map(|label| label.name.clone()),
+            trashed: chapter.parent_id == ChapterId::TRASH,
+        })
+    }
+
+    /// Advance the selected chapter's status, for the window status bar.
+    pub fn cycle_status_selected(&mut self) {
+        let id = self.options.selected;
+        self.cycle_status(id);
+    }
+
+    /// Advance the selected chapter's label, for the window status bar.
+    pub fn cycle_label_selected(&mut self) {
+        let id = self.options.selected;
+        self.cycle_label(id);
+    }
+
+    fn begin_rename(&mut self, kind: DefinitionKind, id: i64) {
+        let name = match kind {
+            DefinitionKind::Status => self
+                .tree
+                .statuses
+                .iter()
+                .find(|status| status.id == id)
+                .map(|status| status.name.clone()),
+            DefinitionKind::Label => self
+                .tree
+                .labels
+                .iter()
+                .find(|label| label.id == id)
+                .map(|label| label.name.clone()),
+        };
+        if let Some(name) = name {
+            self.editing = Some(DefinitionEdit { kind, id });
+            self.buffer = name;
+        }
+    }
+
+    fn commit_rename(&mut self) {
+        let Some(edit) = self.editing else {
+            return;
+        };
+        let result = match edit.kind {
+            DefinitionKind::Status => self.tree.rename_status(edit.id, &self.buffer),
+            DefinitionKind::Label => self.tree.rename_label(edit.id, &self.buffer),
+        };
+        match result {
+            Ok(()) => {
+                self.editing = None;
+                self.buffer.clear();
+                self.persist();
+                self.status = "Renamed".to_owned();
+                self.refresh();
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    fn cancel_rename(&mut self) {
+        if self.editing.take().is_some() {
+            self.buffer.clear();
+            self.status = "Rename cancelled".to_owned();
+        }
+    }
+
+    fn add_definition(&mut self, kind: DefinitionKind) {
+        let added = match kind {
+            DefinitionKind::Status => self.tree.add_status("New status").ok(),
+            DefinitionKind::Label => self.tree.add_label("New label", [0.55, 0.36, 0.96]).ok(),
+        };
+        if let Some(id) = added {
+            self.persist();
+            self.refresh();
+            self.begin_rename(kind, id);
+        }
+    }
+
+    fn settings_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+        div()
+            .id("manuscript-settings")
+            .flex_1()
+            .min_w_0()
+            .flex()
+            .flex_col()
+            .gap_4()
+            .child(self.definition_list("Statuses", DefinitionKind::Status, cx))
+            .child(self.definition_list("Labels", DefinitionKind::Label, cx))
+            .into_any_element()
+    }
+
+    fn definition_list(
+        &self,
+        title: &'static str,
+        kind: DefinitionKind,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let entries: Vec<(i64, String)> = match kind {
+            DefinitionKind::Status => self
+                .tree
+                .statuses
+                .iter()
+                .map(|status| (status.id, status.name.clone()))
+                .collect(),
+            DefinitionKind::Label => self
+                .tree
+                .labels
+                .iter()
+                .map(|label| (label.id, label.name.clone()))
+                .collect(),
+        };
+        let add_id = match kind {
+            DefinitionKind::Status => "settings-add-status",
+            DefinitionKind::Label => "settings-add-label",
+        };
+        let row_prefix = match kind {
+            DefinitionKind::Status => "settings-status",
+            DefinitionKind::Label => "settings-label",
+        };
+        let empty = match kind {
+            DefinitionKind::Status => "No statuses defined",
+            DefinitionKind::Label => "No labels defined",
+        };
+
+        let mut list = div().flex().flex_col().gap_1().child(
+            div()
+                .flex()
+                .items_center()
+                .gap_3()
+                .child(
+                    div()
+                        .text_sm()
+                        .text_color(rgb(DARK_THEME.text))
+                        .child(title),
+                )
+                .child(
+                    div()
+                        .id(add_id)
+                        .px_2()
+                        .py_1()
+                        .rounded_md()
+                        .border_1()
+                        .border_color(rgb(DARK_THEME.border))
+                        .bg(rgb(DARK_THEME.panel))
+                        .cursor_pointer()
+                        .text_xs()
+                        .child("Add")
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.focus.focus(window, cx);
+                            this.add_definition(kind);
+                            cx.notify();
+                        })),
+                ),
+        );
+
+        if entries.is_empty() {
+            list = list.child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(empty),
+            );
+        }
+
+        for (id, name) in entries {
+            let editing = self.editing == Some(DefinitionEdit { kind, id });
+            let shown = if editing {
+                format!("{}▏", self.buffer)
+            } else {
+                name
+            };
+            list = list.child(
+                div()
+                    .id((row_prefix, id as usize))
+                    .h(px(26.0))
+                    .px_2()
+                    .flex()
+                    .items_center()
+                    .rounded_md()
+                    .border_1()
+                    .border_color(rgb(if editing {
+                        DARK_THEME.accent
+                    } else {
+                        DARK_THEME.border
+                    }))
+                    .bg(rgb(DARK_THEME.panel))
+                    .cursor_text()
+                    .text_sm()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(shown)
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.focus.focus(window, cx);
+                        this.begin_rename(kind, id);
+                        cx.notify();
+                    })),
+            );
+        }
+
+        list.into_any_element()
     }
 
     fn board(&self, cx: &mut Context<Self>) -> AnyElement {
@@ -1517,6 +1904,7 @@ impl Render for ManuscriptSurface {
         let dense = match self.mode {
             ManuscriptMode::Board => self.board(cx),
             ManuscriptMode::Table => self.table(cx),
+            ManuscriptMode::Settings => self.settings_panel(cx),
         };
         div()
             .id("manuscript-surface")
@@ -1771,6 +2159,43 @@ mod tests {
         assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Chapter);
         assert!(cycle_kind(&mut tree, leaf));
         assert_eq!(tree.chapter(leaf).expect("leaf").kind, ChapterKind::Scene);
+    }
+
+    #[test]
+    fn an_unset_status_and_label_are_named_not_blank() {
+        assert_eq!(status_display(None), "Unset status");
+        assert_eq!(label_display(None), "Unset label");
+        assert_eq!(status_display(Some("Draft")), "Draft");
+    }
+
+    #[test]
+    fn the_projection_resolves_status_and_label_names() {
+        let (mut tree, part, _scene) = tree();
+        let status = tree.add_status("Revised").expect("status");
+        let label = tree.add_label("POV", [0.5, 0.5, 0.5]).expect("label");
+        tree.set_status(part, Some(status)).expect("set status");
+        tree.set_label(part, Some(label)).expect("set label");
+
+        let projection = ManuscriptProjection::build(&tree, None, &ProjectionOptions::default());
+        let card = projection
+            .cards()
+            .iter()
+            .find(|card| card.id == part)
+            .expect("card");
+        assert_eq!(card.status.as_deref(), Some("Revised"));
+        assert_eq!(card.label.as_deref(), Some("POV"));
+
+        let row = projection
+            .rows()
+            .iter()
+            .find(|row| row.id == part)
+            .expect("row");
+        assert_eq!(row.status.as_deref(), Some("Revised"));
+        assert!(
+            row.accessible_label.contains("Revised"),
+            "the row should announce its status, got {:?}",
+            row.accessible_label
+        );
     }
 
     #[test]

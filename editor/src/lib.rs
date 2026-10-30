@@ -49,12 +49,15 @@ pub use graph_view::GraphSurface;
 pub use health::{CharacterHealthNavigationLink, CharacterHealthSession};
 pub use manuscript::{
     BODY_DIR_NAME, BODY_FORMAT_VERSION, BodyStore, Chapter, ChapterBody, ChapterError, ChapterId,
-    ChapterKind, ChapterTree, LabelDefinition, Manuscript, ManuscriptStore, NamedStyle, Paragraph,
-    StatusDefinition, StyleSheet, TREE_FILE_NAME, TREE_FORMAT_VERSION, TextRun,
+    ChapterKind, ChapterTree, DEFAULT_HISTORY_LIMIT, LabelDefinition, Manuscript,
+    ManuscriptHistory, ManuscriptStore, MoveBlocked, NamedStyle, Paragraph, StatusDefinition,
+    StyleSheet, TREE_FILE_NAME, TREE_FORMAT_VERSION, TextRun,
 };
 pub use manuscript_view::{
-    CARD_GAP, CARD_HEIGHT, CARD_WIDTH, CardRecord, DEFAULT_COLUMNS, ManuscriptAccessibility,
-    ManuscriptProjection, ManuscriptSurface, TreeRow,
+    ALL_COLUMNS, CARD_GAP, CARD_HEIGHT, CARD_WIDTH, CardRecord, Column, DEFAULT_COLUMNS,
+    ManuscriptAccessibility, ManuscriptMode, ManuscriptProjection, ManuscriptSurface, MoveVerb,
+    ProjectionOptions, ROW_HEIGHT, SelectionContext, TREE_WIDTH, TableRow, UNSET_LABEL,
+    UNSET_STATUS, label_display, normalize_columns, status_display,
 };
 pub use node_renderers::{
     EdgeVisualStyle, InspectorData, NodePresentation, NodeShape, NodeVisualState, NodeVisualStyle,

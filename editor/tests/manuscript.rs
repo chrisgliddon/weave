@@ -610,3 +610,57 @@ fn emptying_the_trash_is_the_only_permanent_delete() {
     assert_eq!(removed, vec![first]);
     assert!(tree.chapter(first).is_none());
 }
+
+#[test]
+fn renaming_a_status_keeps_the_chapters_that_reference_it() {
+    let (mut tree, part, _first, _second) = tree_with_children();
+    let status = tree.add_status("Draft").expect("status");
+    tree.set_status(part, Some(status)).expect("set status");
+
+    tree.rename_status(status, "Revised").expect("rename");
+
+    assert_eq!(
+        tree.chapter(part).expect("chapter").status_id,
+        Some(status),
+        "the chapter still points at the same status id"
+    );
+    assert_eq!(
+        tree.statuses_by_id().get(&status).expect("status").name,
+        "Revised"
+    );
+}
+
+#[test]
+fn renaming_a_label_keeps_the_chapters_that_reference_it() {
+    let (mut tree, part, _first, _second) = tree_with_children();
+    let label = tree.add_label("POV", [0.5, 0.5, 0.5]).expect("label");
+    tree.set_label(part, Some(label)).expect("set label");
+
+    tree.rename_label(label, "Point of view").expect("rename");
+
+    assert_eq!(tree.chapter(part).expect("chapter").label_id, Some(label));
+    assert_eq!(
+        tree.labels_by_id().get(&label).expect("label").name,
+        "Point of view"
+    );
+}
+
+#[test]
+fn an_empty_definition_name_is_rejected() {
+    let mut tree = ChapterTree::new();
+    let status = tree.add_status("Draft").expect("status");
+    let label = tree.add_label("POV", [0.5, 0.5, 0.5]).expect("label");
+
+    assert_eq!(
+        tree.rename_status(status, "   "),
+        Err(ChapterError::EmptyName)
+    );
+    assert_eq!(
+        tree.rename_label(label, "   "),
+        Err(ChapterError::EmptyName)
+    );
+    assert_eq!(
+        tree.statuses_by_id().get(&status).expect("status").name,
+        "Draft"
+    );
+}

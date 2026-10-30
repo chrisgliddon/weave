@@ -192,6 +192,25 @@ command, or with the toolbar button. The history keeps the last hundred
 structural changes; because only the tree is snapshotted, undo never copies the
 prose.
 
+### Status and label
+
+Status and label are the attributes an author changes most while working, so they
+are one click away wherever the selection appears:
+
+- the tree row carries a status and a label chip;
+- the table shows them as editable columns; and
+- the window status bar repeats them for the current chapter.
+
+Clicking any of them advances that value through the project list and back to
+unset. An unset value reads as "Unset status" or "Unset label", never as a blank
+cell.
+
+Both are stored as identifiers into project-scoped lists, so renaming a status or
+label edits one definition and every chapter that references it follows. The
+Settings view lists both lists, adds definitions, and renames one in place: click
+a name, type, then press Enter to save or Escape to cancel. Renaming never
+rewrites chapter records, because the records hold ids rather than names.
+
 The example projects in `examples/manuscripts/` are public-domain books in this
 format and can be opened directly; see their
 [README](https://github.com/chrisgliddon/weave/tree/main/examples/manuscripts)
