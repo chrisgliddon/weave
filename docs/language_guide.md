@@ -11,7 +11,7 @@ This is the normative language specification for Weave source files. Examples in
 - Newlines: LF and CRLF are accepted. The formatter writes LF.
 - Identifiers and keywords are case-sensitive.
 - Source order is significant for narrative content and choice presentation. Map serialization is deterministic and sorted by key.
-- Module, grammar, pattern, and global declarations must appear before the first knot. Once a knot begins, only knots may follow.
+- Module, grammar, pattern, scene, stage, and global declarations must appear before the first knot. Once a knot begins, only knots may follow.
 - A file must contain at least one knot. The first knot is the default entry point.
 
 Line comments begin with `//` outside string literals and continue to the end of the line. Comments and blank lines do not execute. The formatter preserves comments and semantic source order.
@@ -62,7 +62,79 @@ Welcome, #names.full#.
 
 Global declarations execute when a story is created. Declarations inside knots execute when reached. All variables are story-scoped; knots do not create lexical variable scopes.
 
-## 4. Grammar declarations
+## 4. Scene and stage declarations
+
+A `scene` declares a background that presentation cues can select. A `stage`
+declares a character image that cues can show, hide, or speak through. Both are
+top-level declarations and must appear before the first knot:
+
+```weave
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+}
+```
+
+A scene has an optional `background`. A stage has an optional `image` and an
+optional author-facing `name`. Repeating a scene name is `W2200` and repeating a
+stage name is `W2201`; both are compile errors. Those are the only collisions
+enforced between these declarations: scenes and stages occupy separate
+namespaces from each other and from grammars, patterns, variables, and knots, so
+a scene and a stage, or a scene and a variable, may share a name. The one
+cross-kind rule is that an active domain module alias must not collide with any
+grammar, pattern, variable, scene, stage, or knot (`D111`).
+
+Both declarations compile into `StoryIr` version 5: scenes and stages lower into
+the sorted `presentation` map, and cue directives lower into ordinary knot
+instructions. A host reads the definitions from `presentation` and drains cue
+events from the runtime; it never parses source.
+
+Asset paths are project-relative strings using `/` separators. They must be
+relative and safe: absolute paths, drive letters, URL schemes, `.` and `..`
+segments, empty segments, trailing `/`, backslashes, percent encoding, control
+characters, Windows reserved device names, and non-ASCII characters are all
+rejected with a diagnostic on the string literal. Declared assets live under the
+project's asset root; a path that could escape it is never accepted.
+
+Inside a knot, an `@` directive issues a presentation cue:
+
+```weave
+=== deck ===
+@scene ferry_dusk
+@show mara
+@speaker mara
+The ferry leaves at dusk.
+@hide mara
+@speaker
+After she leaves.
+-> END
+```
+
+| Directive | Meaning |
+|---|---|
+| `@scene <id>` | Select a declared scene. |
+| `@show <id>` | Show a declared stage. |
+| `@hide <id>` | Hide a declared stage. |
+| `@speaker <id>` | Set the speaker to a declared stage; bare `@speaker` restores narration. |
+
+`@` is a reserved line-initial character inside a knot. A line whose first
+non-blank character is `@` is always presentation syntax and never narrative
+text, so narrative prose cannot begin with `@`. An unrecognised directive is a
+compile error (`W1040`) rather than text, and a directive that requires a target
+but has none is `W1043`. A bare `@speaker` with no target is the narration cue:
+it clears the current speaker.
+
+A cue consumes no story time and does not end the current advance. Cues apply in
+source order and are delivered to the host as they execute, before the line or
+choice set that follows them. Naming an undeclared scene or stage is a compile
+error. Presentation never changes story state, control flow, choice order, or
+text.
+
+## 5. Grammar declarations
 
 A grammar contains named rules. A rule is one string or a non-empty list of strings:
 
@@ -79,7 +151,7 @@ Inside a rule, `#rule#` refers to another rule in the same grammar. `#grammar.ru
 
 Grammar expansion is recursive. Missing references are static errors. A runtime expansion depth greater than 64 is an error, which prevents cycles such as `a: "#a#"` from overflowing the stack.
 
-## 5. Pattern declarations
+## 6. Pattern declarations
 
 Pattern systems produce structured semantic objects. A declaration either selects one built-in data set or authors exactly one collection.
 
@@ -144,7 +216,7 @@ Tarot elements expose `name`, `arcana`, `suit`, `rank`, `meaning`, `element`, an
 
 Pattern results have static type `Any` because authored fields are open-ended. At runtime they are deterministic objects driven by the same seeded entropy stream as grammar expansion. Immutable definitions live in compiled story data; draw counts and last-draw identities live in separately serialized story state.
 
-## 6. Domain module activations
+## 7. Domain module activations
 
 A module declaration gives one explicitly supplied domain artifact a story-local alias:
 
@@ -184,7 +256,7 @@ The sign is {constellation.observation.label}.
 
 Aliases cannot collide with modules, variables, grammars, patterns, or knots. Export, nested object, and stable map paths are checked against the selected manifest. Effective pack exports remain immutable compiled values; `authored_overrides` records which effective paths are fictional source decisions. State exports receive isolated runtime state keyed by the stable module identity and exact module version.
 
-## 7. Values and types
+## 8. Values and types
 
 Weave has these runtime types:
 
@@ -201,7 +273,7 @@ Weave has these runtime types:
 
 A bare one-segment identifier resolves to a declared variable when one exists; otherwise it is a symbol literal. A dotted value path must begin with a declared variable or active module alias. Pattern names are only valid in the recognized draw calls, and their result must be stored before fields are read. This rule preserves concise comparisons such as `quest == active` while still diagnosing misspelled object paths.
 
-## 8. Variables, lists, flags, and state machines
+## 9. Variables, lists, flags, and state machines
 
 Declarations use explicit kinds:
 
@@ -231,7 +303,7 @@ REMOVE inventory, "map"
 
 Redeclaring a name with an incompatible kind or type is a static error. A declaration in one knot is visible to all knots for static analysis and at runtime after it has executed. Reading a declaration before execution is a structured runtime error unless it was global.
 
-## 9. Knots and flow
+## 10. Knots and flow
 
 A knot header is three equals signs, an identifier, and three equals signs:
 
@@ -259,7 +331,7 @@ The caller resumes here.
 
 When a threaded knot reaches the end of its content without diverting, its frame returns to the caller. A divert inside the thread still replaces the entire flow stack. Direct or indirect thread recursion deeper than 256 frames is a runtime error.
 
-## 10. Narrative text and interpolation
+## 11. Narrative text and interpolation
 
 Any non-empty knot line that is not a structural statement is narrative text and produces one line event. Quote characters in narrative lines are ordinary visible characters.
 
@@ -278,7 +350,7 @@ Expansion order is:
 
 To emit literal `{`, `}`, or `#`, escape it with a backslash. Unbalanced or empty interpolation markers are compile errors.
 
-## 11. Choices
+## 12. Choices
 
 `*` introduces a once-only choice. `+` introduces a sticky choice that is offered on every visit:
 
@@ -308,7 +380,7 @@ Nested choices use additional indentation:
     * [Leave] -> leaving
 ```
 
-## 12. Conditions
+## 13. Conditions
 
 Conditional narrative uses braces and ordered branches:
 
@@ -324,7 +396,7 @@ Conditional narrative uses braces and ordered branches:
 
 The first condition that evaluates to `true` executes. The `else` branch is optional and must be last. Branch bodies use the same statements and indentation rules as knot bodies. Conditions must have static type `Bool` or `Any`; a non-Boolean dynamic result is a runtime error.
 
-## 13. Expressions
+## 14. Expressions
 
 Operators, from highest to lowest precedence, are:
 
@@ -346,29 +418,30 @@ Binary operators evaluate left to right within one precedence level. `and` and `
 - Division or remainder by zero is a runtime error.
 - A function call is only valid for a declared `pattern.draw()` or `pattern.spread.name.draw()` path. Pattern draws accept no arguments.
 
-## 14. Static analysis
+## 15. Static analysis
 
 The checker performs at least these validations before IR is produced:
 
-- Duplicate module aliases, grammars, rules, patterns, spreads, knots, or variable names.
+- Duplicate module aliases, grammars, rules, patterns, spreads, scenes, stages, knots, or variable names.
 - Missing or incompatible module and pack releases, invalid activation requirements, and alias collisions.
 - Unknown module exports or nested object fields and invalid uses of typed module values.
-- Missing grammar rules and missing divert/thread targets.
+- Missing grammar rules, unknown scene/stage cue targets, and missing divert/thread targets.
 - Declaration initializer and assignment type compatibility.
 - Boolean conditions.
 - Valid state-machine definitions and statically known transitions.
 - Valid built-in names, method combinations, pattern collection records, weights, reversal configuration, and spread positions/capacity.
-- Unsupported call paths.
+- Unsupported call paths and non-portable presentation asset paths.
 - Unreachable statements after `-> target` or `-> END` in one block.
 
 All diagnostics have a stable code, severity, message, and source span. Errors prevent output. Warnings do not. Tools must not panic on malformed UTF-8 input bytes, malformed syntax, unknown IR versions, or invalid runtime data.
 
-## 15. Serialized IR
+## 16. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 4 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 5 includes:
 
 - Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
 - Sorted active module metadata with exact module and pack versions, validated tagged effective exports, and canonical authored override metadata.
+- Sorted scene and stage definitions, plus source-ordered presentation cue instructions.
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.
@@ -378,7 +451,7 @@ RON is the normative output. JSON uses the same model for interoperability and f
 
 The runtime rejects an unsupported `version` before executing any instruction.
 
-## 16. Complete Phase 2 example
+## 17. Complete Phase 2 example
 
 ```weave
 grammar names {
@@ -431,7 +504,7 @@ Its meaning is {cards_on_table.present.meaning}.
 -> END
 ```
 
-## 17. Invalid examples
+## 18. Invalid examples
 
 Unknown divert target:
 

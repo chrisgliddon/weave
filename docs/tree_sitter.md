@@ -1,6 +1,6 @@
 # Tree-sitter integration
 
-`tree-sitter-weave` is the incremental concrete-syntax parser for `.weave` files. It ships a generated C parser, external indentation scanner, conventional highlight captures, local-variable queries, symbol tags, and C, Rust, Node, Go, Python, and Swift bindings. Domain-module aliases and their `id`, `version`, and `pack` fields are part of the checked grammar and syntax queries.
+`tree-sitter-weave` is the incremental concrete-syntax parser for `.weave` files. It ships a generated C parser, external indentation scanner, conventional highlight captures, local-variable queries, symbol tags, and C, Rust, Node, Go, Python, and Swift bindings. Domain-module aliases and their `id`, `version`, and `pack` fields, scene and stage declarations, and `@scene`/`@show`/`@hide`/`@speaker` directives are part of the checked grammar and syntax queries.
 
 ## Verify the grammar
 
@@ -12,7 +12,7 @@ npm run test:grammar
 npm test
 ```
 
-Corpus fixtures cover declarations, nested narrative flow, incomplete constructs, and erroneous editing states. The highlight fixture asserts the representative README syntax, and the Node test compares incremental and fresh trees through a sequence of unfinished choices.
+Corpus fixtures cover declarations, scene and stage definitions with presentation cues, erroneous presentation forms, nested narrative flow, incomplete constructs, and erroneous editing states. The highlight fixture asserts the representative README syntax plus scene, stage, and `@` directive highlighting, and the Node test compares incremental and fresh trees through a sequence of unfinished choices.
 
 ## Editor installation model
 

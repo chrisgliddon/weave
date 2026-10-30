@@ -1,28 +1,33 @@
 # Weave Play presentation contract
 
-Status: **approved for implementation.** The seven contract decisions were
-reviewed and resolved on 2026-10-30. Six confirmed the proposal; one changed it,
-and the typeface is now bundled rather than inherited from the host. The
-resolved answers are recorded in [Decisions](#decisions).
+Status: **implemented slice landed; full contract deferred.** The first vertical
+slice is compiled into story IR version 5 and drained by the runtime. The
+remaining presentation document — layout, fit and anchor, slots, transitions,
+the asset manifest, conditions, and step keys — is still a later contract. The
+[Decisions](#decisions) log records the change and why.
 
 Weave Play renders a compiled story as a staged scene instead of a diagnostic
 transcript. This document defines the portable presentation contract that the
 editor, Bevy, and browser renderers share. It defines what a scene looks like
 and when, never what a story does.
 
-Contract version `1`. The document is authored as RON or JSON and the two forms
-decode to the same value.
-
 ## Scope
 
-In scope:
+In scope for the implemented slice:
 
-- backgrounds, named stage slots, character images and variants, layering;
+- background scenes and character stages declared in source;
 - speaker selection and nameplate data;
+- ordered presentation cues delivered alongside story events; and
+- project-relative, safe asset path validation.
+
+Deferred to the later presentation document:
+
+- named stage slots, stage geometry, layering, fit, and anchor;
+- transitions and their timing;
 - dialogue framing, text reveal, and choice presentation;
-- a bounded set of transitions;
-- presentation conditions over story variables; and
-- deterministic ordering of every presentation cue.
+- presentation conditions over story variables;
+- an asset manifest with hashes, licences, and provenance; and
+- step keys and a story-hash binding.
 
 Out of scope, and deliberately not modelled:
 
@@ -36,51 +41,44 @@ A host that needs free-roaming movement renders it outside this contract. Weave
 Play is a staged scene: the camera does not move, and the author advances the
 scene by advancing the story.
 
-## Why the contract is a sibling document
+## What compiles today
 
-Presentation compiles to a `weave.play.ron` or `weave.play.json` document
-emitted beside the story, not into `StoryIr`.
+Presentation is not a sibling `weave.play` document yet. Scene and stage
+declarations, and the `@scene`, `@show`, `@hide`, and `@speaker` directives,
+compile into `StoryIr` version 5:
 
-`StoryIr` is a language and runtime contract at version 4, and
-[json_format](json_format.md#compatibility-contract) states that any change to a
-serialized field or enum variant requires a new IR version and schema. Folding
-stage geometry, fit, anchor, and transition timing into the IR would mean a new
-story format version for every visual adjustment, and would force every runtime
-host to accept a rendering vocabulary it may never use.
+- `scene` and `stage` declarations lower into the sorted `presentation` map;
+- each directive lowers into a `Cue` instruction in its knot, in source order;
+- the runtime executes cue instructions without ending the current advance and
+  queues a `PresentationEvent` for each one; and
+- a host drains those events with `Story::take_presentation()` before rendering
+  the line or choice set that follows.
 
-The cost of a sibling document is that two artifacts must agree. The contract
-closes that gap with an explicit story hash and a generated join key, both
-described under [Step identity](#step-identity-and-cue-ordering). A host may
-load a story without presentation, and the editor may load presentation without
-running a story, but a host must never load a presentation document that was
-compiled against a different story.
+Naming an undeclared scene or stage is a compile error. Asset paths are
+validated at compile time and must be relative and safe.
 
-## Model
+This slice changes the IR contract, so IR version moved from 4 to 5. It does not
+yet carry any renderer vocabulary beyond scene and stage identity, a background
+or image path, an optional display name, and the four cue kinds. Layout, fit,
+anchor, slots, transitions, conditions, and hashes remain a separate contract so
+a visual adjustment does not force another story-format bump.
 
-The document has six members: the contract version, the story binding, the
-asset manifest, the base presentation, the scene and stage definitions, and the
-per-step cues.
+## Example
 
-### Example
-
-This is a complete branching scene. The source is on the left and the compiled
-contract is below it.
+This is a complete scene using only implemented syntax:
 
 ```weave
 scene ferry_dusk {
     background: "art/ferry_dusk.png"
-    fit: cover
 }
 
 stage mara {
     image: "art/mara_neutral.png"
-    slot: left
     name: "Mara"
 }
 
 stage keeper {
     image: "art/keeper_neutral.png"
-    slot: right
     name: "The Keeper"
 }
 
@@ -104,237 +102,99 @@ The water remembers every passenger.
 
 === deck ===
 @hide keeper
-@move mara to center
-@speaker mara
+@hide mara
+@speaker
 Then we had better give it something to remember.
 -> END
 ```
 
-Hashes below are abbreviated for readability; a real document carries full
-SHA-256 digests.
+The compiled `StoryIr` excerpt is:
 
 ```ron
-(
-    version: 1,
-    story: (
-        name: "ferry",
-        hash: "sha256:0f3c9a5e",
-    ),
-    assets: {
-        "art/ferry_dusk.png": (
-            kind: Image,
-            sha256: "9a1e4c07",
-            licence: "CC0-1.0",
-            provenance: Original,
-        ),
-        "art/keeper_neutral.png": (
-            kind: Image,
-            sha256: "31b8f2aa",
-            licence: "CC0-1.0",
-            provenance: Original,
-        ),
-        "art/mara_neutral.png": (
-            kind: Image,
-            sha256: "5d0c7e61",
-            licence: "CC0-1.0",
-            provenance: Original,
-        ),
-    },
-    base: (
-        scene: None,
-        stages: [],
-    ),
-    scenes: {
-        "ferry_dusk": (
-            background: Some("art/ferry_dusk.png"),
-            fit: Cover,
-            anchor: (x: 0.5, y: 0.5),
-            fallback: Ink,
-        ),
-    },
-    stages: {
-        "keeper": (
-            image: Some("art/keeper_neutral.png"),
-            slot: Right,
-            name: "The Keeper",
-            fallback: Silhouette,
-        ),
-        "mara": (
-            image: Some("art/mara_neutral.png"),
-            slot: Left,
-            name: "Mara",
-            fallback: Silhouette,
-        ),
-    },
-    steps: {
-        "ask#0": [
-            (order: 0, when: None, cue: (kind: "show", value: (stage: "keeper", transition: (kind: "fade", value: (ms: 180))))),
-            (order: 1, when: None, cue: (kind: "speaker", value: (stage: Some("keeper")))),
-        ],
-        "deck#0": [
-            (order: 0, when: None, cue: (kind: "hide", value: (stage: "keeper", transition: (kind: "fade", value: (ms: 180))))),
-            (order: 1, when: None, cue: (kind: "move", value: (stage: "mara", to: Center, transition: (kind: "slide", value: (ms: 220))))),
-            (order: 2, when: None, cue: (kind: "speaker", value: (stage: Some("mara")))),
-        ],
-        "start#0": [
-            (order: 0, when: None, cue: (kind: "scene", value: (id: "ferry_dusk", transition: (kind: "cut")))),
-            (order: 1, when: None, cue: (kind: "show", value: (stage: "mara", transition: (kind: "cut")))),
-            (order: 2, when: None, cue: (kind: "speaker", value: (stage: Some("mara")))),
-        ],
-    },
-    layout: (
-        states: {
-            compact: (margin: 16, measure: 44, dialogue_scale: 1.0, choice_scale: 1.0),
-            regular: (margin: 32, measure: 62, dialogue_scale: 1.0, choice_scale: 1.0),
-            wide: (margin: 48, measure: 72, dialogue_scale: 1.125, choice_scale: 1.0),
+StoryIr(
+    version: 5,
+    entry: "start",
+    // ...
+    presentation: PresentationIr(
+        scenes: {
+            "ferry_dusk": SceneIr(
+                background: Some("art/ferry_dusk.png"),
+            ),
         },
-        dialogue: (
-            reveal: (kind: "per_character", value: (delay_ms: 18)),
-            skip: Allowed,
-            auto_advance: Disabled,
-        ),
-        choices: (
-            arrangement: Vertical,
-            max_visible: 5,
-        ),
+        stages: {
+            "keeper": StageIr(
+                image: Some("art/keeper_neutral.png"),
+                name: Some("The Keeper"),
+            ),
+            "mara": StageIr(
+                image: Some("art/mara_neutral.png"),
+                name: Some("Mara"),
+            ),
+        },
     ),
+    knots: {
+        "start": KnotIr(
+            content: [
+                Instruction(
+                    span: Span(
+                        start: 217,
+                        end: 234,
+                        line: 16,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: cue,
+                        value: CueIr(
+                            kind: scene,
+                            value: "ferry_dusk",
+                        ),
+                    ),
+                ),
+                // ...
+            ],
+        ),
+        // ...
+    },
 )
 ```
 
-The same document in JSON:
+That excerpt was produced by compiling the example above. Instruction and cue
+values are adjacently tagged: `InstructionKind` names the instruction family and
+`CueIr` carries the cue kind and target. The span values are the compiler's byte
+offsets into that source.
+
+The same presentation definitions in JSON:
 
 ```json
 {
-  "version": 1,
-  "story": { "name": "ferry", "hash": "sha256:0f3c9a5e" },
-  "assets": {
-    "art/ferry_dusk.png": {
-      "kind": "image", "sha256": "9a1e4c07",
-      "licence": "CC0-1.0", "provenance": "original"
+  "version": 5,
+  "presentation": {
+    "scenes": {
+      "ferry_dusk": { "background": "art/ferry_dusk.png" }
     },
-    "art/keeper_neutral.png": {
-      "kind": "image", "sha256": "31b8f2aa",
-      "licence": "CC0-1.0", "provenance": "original"
-    },
-    "art/mara_neutral.png": {
-      "kind": "image", "sha256": "5d0c7e61",
-      "licence": "CC0-1.0", "provenance": "original"
+    "stages": {
+      "keeper": { "image": "art/keeper_neutral.png", "name": "The Keeper" },
+      "mara": { "image": "art/mara_neutral.png", "name": "Mara" }
     }
-  },
-  "base": { "scene": null, "stages": [] },
-  "scenes": {
-    "ferry_dusk": {
-      "background": "art/ferry_dusk.png",
-      "fit": "cover",
-      "anchor": { "x": 0.5, "y": 0.5 },
-      "fallback": "ink"
-    }
-  },
-  "stages": {
-    "keeper": {
-      "image": "art/keeper_neutral.png",
-      "slot": "right",
-      "name": "The Keeper",
-      "fallback": "silhouette"
-    },
-    "mara": {
-      "image": "art/mara_neutral.png",
-      "slot": "left",
-      "name": "Mara",
-      "fallback": "silhouette"
-    }
-  },
-  "steps": {
-    "ask#0": [
-      { "order": 0, "when": null, "cue": { "kind": "show",
-        "value": { "stage": "keeper", "transition": { "kind": "fade", "value": { "ms": 180 } } } } },
-      { "order": 1, "when": null, "cue": { "kind": "speaker",
-        "value": { "stage": "keeper" } } }
-    ],
-    "deck#0": [
-      { "order": 0, "when": null, "cue": { "kind": "hide",
-        "value": { "stage": "keeper", "transition": { "kind": "fade", "value": { "ms": 180 } } } } },
-      { "order": 1, "when": null, "cue": { "kind": "move",
-        "value": { "stage": "mara", "to": "center",
-          "transition": { "kind": "slide", "value": { "ms": 220 } } } } },
-      { "order": 2, "when": null, "cue": { "kind": "speaker",
-        "value": { "stage": "mara" } } }
-    ],
-    "start#0": [
-      { "order": 0, "when": null, "cue": { "kind": "scene",
-        "value": { "id": "ferry_dusk", "transition": { "kind": "cut" } } } },
-      { "order": 1, "when": null, "cue": { "kind": "show",
-        "value": { "stage": "mara", "transition": { "kind": "cut" } } } },
-      { "order": 2, "when": null, "cue": { "kind": "speaker",
-        "value": { "stage": "mara" } } }
-    ]
-  },
-  "layout": {
-    "states": {
-      "compact": { "margin": 16, "measure": 44, "dialogue_scale": 1.0, "choice_scale": 1.0 },
-      "regular": { "margin": 32, "measure": 62, "dialogue_scale": 1.0, "choice_scale": 1.0 },
-      "wide": { "margin": 48, "measure": 72, "dialogue_scale": 1.125, "choice_scale": 1.0 }
-    },
-    "dialogue": {
-      "reveal": { "kind": "per_character", "value": { "delay_ms": 18 } },
-      "skip": "allowed",
-      "auto_advance": "disabled"
-    },
-    "choices": { "arrangement": "vertical", "max_visible": 5 }
   }
 }
 ```
 
-### Members
+## Cues
 
-| Member | Meaning |
-|---|---|
-| `version` | Contract version. A host rejects any other value. |
-| `story` | The compiled story this document belongs to: display name and content hash. |
-| `assets` | Every referenced asset, keyed by its normalized project-relative path. |
-| `base` | Presentation in force before the first cue: no scene, no stages. |
-| `scenes` | Background definitions keyed by scene id. |
-| `stages` | Character definitions keyed by stage id. |
-| `steps` | Cues keyed by step key. |
-| `layout` | Typography, margins, reveal, and choice arrangement per layout state. |
+A cue is one runtime event with a kind and an optional target.
 
-### Cues
-
-A cue is an adjacently tagged object with a `kind` and a `value`.
-
-| Kind | Value | Effect |
+| Kind | Target | Effect |
 |---|---|---|
-| `scene` | `id`, `transition` | Replace the background. |
-| `show` | `stage`, `transition` | Place a stage slot on screen. |
-| `hide` | `stage`, `transition` | Remove a stage slot. |
-| `move` | `stage`, `to`, `transition` | Move a visible slot to another slot. |
-| `swap` | `stage`, `variant`, `transition` | Replace a slot's image without leaving the scene. |
-| `speaker` | `stage` | Select the nameplate source; `None` is narration. |
+| `scene` | scene id | Replace the background. |
+| `show` | stage id | Make a declared stage visible. |
+| `hide` | stage id | Remove a stage. |
+| `speaker` | stage id or none | Select the nameplate source; none is narration. |
 
-A transition is `cut`, or `fade`, `slide`, or `wipe` with a duration in
-milliseconds. The duration is a presentation hint only.
-
-Dialogue text and choice text do not appear in this document. Both come from
-`StoryEvent` at runtime: `Line` and `Choices`. Duplicating them would let
-presentation and story diverge, and would make the contract a partial copy of
-the story rather than a description of how to stage it.
-
-Consequently the presentation layer never reorders, relabels, filters, or
-disables a choice. Choice identifiers and order are story semantics, and
-`StoryEvent::Choices` already carries both.
-
-## Step identity and cue ordering
-
-A step is one point where the runtime presents something: a narrative line, or
-a pending choice set. Each step has a key of the form `<knot>#<index>`, where
-`index` counts presentable instructions within that knot.
-
-Step keys are generated by the compiler. They are not an authoring surface, and
-the compiled document is the only place they appear.
-
-Within a step, cues carry an explicit `order` that is unique inside that step.
-Across steps, cue sequence follows execution order, never document order. A host
-applies cues for a step before presenting that step's line or choices.
+Cues apply in source order. A host applies the cues drained for one advance
+before presenting that advance's line or choices. The runtime never reorders,
+relabels, filters, or disables a choice, and presentation never feeds back into
+story state.
 
 Consequences a host may rely on:
 
@@ -344,58 +204,39 @@ Consequences a host may rely on:
 - Two renderers may interpolate transitions differently and still agree on cue
   sequence and final staging.
 
-Because keys are generated, they are stable only against the same compiled
-story. That is why the document records `story.hash`: a presentation document
-compiled against a different story is rejected rather than silently mis-staged.
+## Deferred syntax
 
-## Presentation conditions
+The following source syntax and document members are part of the later contract
+and are **not accepted by the current compiler**. They are listed so hosts and
+authors do not mistake them for shipped features.
 
-A cue may carry a `when` condition. Conditions are read-only: they select among
-cues for a step and can never assign, mutate, or advance the story.
-
-```ron
-(
-    order: 0,
-    when: Some((kind: "compare", value: (
-        path: "visits",
-        op: Gte,
-        value: (kind: "number", value: 2),
-    ))),
-    cue: (kind: "show", value: (stage: "keeper", transition: (kind: "cut"))),
-)
-```
-
-A condition is one of `all`, `any`, `not`, or `compare`. A comparison names a
-story or module path, an operator (`eq`, `ne`, `lt`, `lte`, `gt`, `gte`), and a
-typed literal. Resolution rules:
-
-- Paths resolve against the same variables the runtime exposes, including
-  namespaced domain-module exports.
-- A path that does not exist at compile time is a compile error, not a silent
-  `false`.
-- A value whose type does not match the operator is a compile error.
-- A condition that evaluates false skips its cue; the previous presentation
-  persists.
-- Conditions are evaluated at the step boundary, before any unconditional cue
-  for that step.
-
-Typed domain values select presentation; they do not enter the story's control
-flow. Driving cues from Weave World and Weave Character data is tracked
-separately in `xpegt223` and reuses this mechanism unchanged.
+| Deferred construct | Why it is deferred |
+|---|---|
+| `@move <stage> to <slot>` | Needs the named-slot geometry contract. |
+| `fit:` on a scene | Needs a fit/anchor contract common to every renderer. |
+| `slot:` on a stage | Needs the same slot contract as `@move`. |
+| `@swap <stage> <variant>` | Needs an image-variant model. |
+| `transition:` on a cue | Needs transition timing and reduced-motion rules. |
+| `when:` conditions | Needs condition evaluation and typed path resolution. |
+| `weave.play.ron` / `weave.play.json` | Needs the full sibling document and story-hash binding. |
+| Asset manifest with hashes and licences | Needs the publication and provenance gate below. |
 
 ## Assets
 
 Every asset reference is a normalized project-relative path using `/`
-separators. Absolute paths, drive letters, URL schemes, `..` segments, and
-symlinks that resolve outside the project root are rejected.
+separators. The checker rejects absolute paths, drive letters, URL schemes,
+percent encoding, backslashes, control characters, `.` and `..` segments, empty
+segments, trailing `/`, Windows reserved device names, and non-ASCII characters.
+Only ASCII letters, digits, `_`, `-`, `.`, and `/` are permitted. A rejected
+path produces a source-spanned diagnostic on the offending string literal.
 
 Resolution happens against an explicit project asset root. A host receives the
 root from the project, never from the document. The document cannot name a
 location outside the project, and a reference that escapes the root is a
 diagnostic, not a fallback.
 
-Assets are declared in `assets` with a kind, a SHA-256 hash, a licence
-expression, and a provenance value:
+The later manifest will declare each asset with a kind, a SHA-256 hash, a
+licence expression, and a provenance value:
 
 - `Original` — authored for this project, with no third-party lineage.
 - `Bundled` — a redistributed third-party artifact; requires an allowlist entry
@@ -407,8 +248,8 @@ skip.
 
 ### Fallbacks
 
-Each scene and stage declares a fallback, used when the asset is missing,
-unreadable, unsupported, or fails its hash check:
+The later contract assigns each scene and stage a fallback, used when the asset
+is missing, unreadable, unsupported, or fails its hash check:
 
 - `Ink` — the scene renders as a flat ink field with a 1px paper rule frame.
 - `Silhouette` — the stage renders as a flat ink figure carrying the stage's
@@ -467,24 +308,24 @@ Regardless of state:
   bottom safe area;
 - every choice is reachable, and a choice set longer than `max_visible` scrolls
   with a visible affordance rather than shrinking type;
-- stage slots occupy the upper two thirds and never overlap the dialogue
+- stage positions occupy the upper two thirds and never overlap the dialogue
   measure; and
 - the scene scales to the viewport without letterboxing the dialogue.
 
-Stage slots are named positions laid out on a normalized grid: `far_left`,
-`left`, `center`, `right`, `far_right`. A slot's geometry is the renderer's
-choice; the name is the contract. The `move` cue changes the slot, not the
-coordinates.
+Stage slots are named positions on a normalized grid: `far_left`, `left`,
+`center`, `right`, `far_right`. A slot's geometry is the renderer's choice; the
+name is the later contract's vocabulary. Until that contract lands, a host may
+place stages with its own policy as long as cue order is preserved.
 
 ## Renderer responsibilities
 
 | Guarantee | Owner |
 |---|---|
-| Cue sequence and final staging for a given story, seed, and choices | Contract |
-| Slot names, layering order, fit and anchor semantics | Contract |
+| Cue sequence and final staging for a given story, seed, and choices | Story runtime plus this contract |
+| Scene and stage identity and declared asset paths | Story IR v5 |
 | Dialogue and choice text, order, and identifiers | Story runtime |
 | Layout state selection thresholds | Contract |
-| Fallback selection when an asset is unavailable | Contract |
+| Fallback selection when an asset is unavailable | Later contract |
 | Font rasterization, hinting, and exact pixel metrics | Renderer |
 | Easing curves and interpolation between transition frames | Renderer |
 | Texture filtering, scaling filters, and colour management | Renderer |
@@ -497,8 +338,26 @@ are not required to produce identical pixels.
 
 ## Diagnostics
 
-Presentation diagnostics use stable `P` codes with a severity, a source span
-when the document was compiled from source, and a remediation sentence.
+Implemented presentation diagnostics use the shared `W` code space with a
+severity, a source span, and a remediation sentence.
+
+| Code | Meaning |
+|---|---|
+| `W1040` | Unknown presentation directive. |
+| `W1041` | Scene repeats its `background` setting. |
+| `W1042` | Stage repeats an `image` or `name` setting. |
+| `W1043` | Presentation directive is missing its cue target name. |
+| `W2200` | Duplicate scene declaration. |
+| `W2201` | Duplicate stage declaration. |
+| `W2202` | Unknown scene reference. |
+| `W2203` | Unknown stage reference. |
+| `W2204` | Invalid or unsafe asset path. |
+
+`W1040` through `W1043` are reported while parsing presentation syntax;
+`W2200` through `W2204` are reported while checking it. All nine are compile
+errors and prevent output.
+
+The later presentation document will use stable `P` codes:
 
 | Code | Meaning |
 |---|---|
@@ -522,25 +381,28 @@ compile-time failures.
 
 | State | Behaviour |
 |---|---|
-| Story with no presentation document | The story runs with `base`: ink field, no stages, default layout. Lines and choices render normally. |
+| Story with no presentation definitions | The story runs with an ink field, no stages, and the default layout. Lines and choices render normally. |
 | Scene with no stages | Background only; dialogue anchored to the bottom safe area. |
-| Step with no cues | The previous presentation persists. |
+| Advance with no cues | The previous presentation persists. |
 | Stage declared but never shown | Nothing renders; the definition is inert. |
-| Missing asset | Fallback for that element, rest of the frame retained. |
+| Missing asset | Fallback for that element once the fallback contract lands; until then the renderer decides. |
+| Runtime failure during an advance | Every cue the runtime produced before the failure is applied in source order, then the failure is surfaced. A host never discards those cues and never defers them to a later frame. |
 | Compile failure while playing | The last valid frame is retained and a non-blocking diagnostic banner appears. Playback resumes on the next successful compile. |
-| Story hash mismatch | The presentation document is refused; the story runs with `base` and `P010` is reported. |
+| Story hash mismatch | Deferred until the sibling document exists. |
 
 ## Compatibility
 
 - Any added, removed, renamed, or redefined serialized field or enum variant
-  requires a new contract version and a new schema.
+  requires a new IR version and a new schema. Adding scenes, stages, and cue
+  instructions therefore moved story IR from 4 to 5.
 - RON and JSON encode one model and must decode to equal values.
 - Map member order carries no meaning; the compiler emits sorted maps so diffs
   and reviews stay stable.
 - Unknown members and unknown enum variants are rejected, not ignored. A host
   must not treat a tolerant decoder as version negotiation.
-- `story.hash` binds the document to one compiled story. Recompiling a story
-  produces a new presentation document; a stale one is refused.
+- When the sibling document lands, `story.hash` will bind it to one compiled
+  story; recompiling a story produces a new presentation document and a stale
+  one is refused.
 - Playtest records are a separate format with a separate compatibility
   guarantee (`bs6g7xs8`). A playtest record refers to a contract version but
   never embeds one.
@@ -549,7 +411,7 @@ compile-time failures.
 
 Before an asset or dependency ships with the repository:
 
-- Every entry in `assets` carries a licence expression and a provenance value.
+- Every manifest entry carries a licence expression and a provenance value.
 - Original assets name their author and record that they are synthetic.
 - Bundled third-party assets require an allowlist entry naming the exact
   upstream artifact, revision, and hash, and their licence text and notices
@@ -571,31 +433,39 @@ Before an asset or dependency ships with the repository:
 ## Decisions
 
 All seven were reviewed and resolved on 2026-10-30. Decisions 1, 2, and 4
-through 7 confirm the proposal; decision 3 changed it.
+through 7 confirm the proposal; decision 3 changed it. Decision 1 was later
+revised when the first slice landed.
 
-1. **Presentation document.** Resolved: a sibling `weave.play` document, so
-   presentation changes never bump the story IR version. Extending `StoryIr` to
-   version 5 was rejected because it couples a renderer vocabulary to the
-   language contract.
+1. **Presentation document.** Originally resolved as a sibling `weave.play`
+   document so presentation changes never bump the story IR version. Revised:
+   the implemented slice compiles scene and stage definitions and the four cue
+   instructions into `StoryIr` version 5, because the runtime must deliver them
+   with story events and because a host cannot stage a line without them. The
+   fuller document — layout, fit and anchor, slots, transitions, conditions, the
+   asset manifest, and the story-hash binding — remains a later contract, so
+   visual adjustments still do not bump the story IR. Adding the slice required
+   IR version 5 and a new schema.
 2. **Stage geometry.** Resolved: named slots on a normalized grid, with the
    renderer owning coordinates. Authored coordinates were rejected because they
-   make every layout change an authoring migration.
+   make every layout change an authoring migration. Not yet implemented.
 3. **Typeface.** Resolved: bundle a font rather than inherit the host stack.
    Weave Play ships IBM Plex Sans and IBM Plex Mono under SIL OFL 1.1, with the
    licence text and notices beside the binaries and an allowlist hash entry.
    Identical rendering on every platform is worth the redistribution obligation.
 4. **Text reveal.** Resolved: 18ms per character, always skippable, with
    auto-advance disabled by default. When enabled, auto-advance is bounded and
-   pauses on choices.
+   pauses on choices. Not yet implemented.
 5. **Condition scope.** Resolved: conditions may read story variables and
    domain-module exports but may never write. Typed World and Character
-   selection is deferred to `xpegt223` and reuses the same mechanism.
+   selection is deferred to `xpegt223` and reuses the same mechanism. Not yet
+   implemented.
 6. **Cue granularity.** Resolved: cues attach to a step, not to a character,
    word, or animation frame. Finer granularity would put presentation timing
-   inside story ordering.
+   inside story ordering. The implemented slice delivers one ordered cue list per
+   advance, which is the same granularity.
 7. **Choice layout.** Resolved: a vertical list, at most five visible before
-   scrolling, never reordered or relabelled by presentation.
+   scrolling, never reordered or relabelled by presentation. Not yet
+   implemented.
 
 Decisions 2, 3, and 4 constrain the visual direction and are binding on the
 editor review.
-

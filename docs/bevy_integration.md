@@ -49,6 +49,8 @@ Queue a selection with `commands.weave_choose(index)`. `WeaveStory::variables` e
 
 `PatternDrawn` is triggered once for each result element. Its payload owns the system and element identities, optional spread position, conventional name and effective meaning, reversal flag, and complete semantic field map. A single draw produces one event. A spread produces events in declared position order. All of those events run before the `DeliverLine`, `DeliverChoices`, or `StoryEnded` boundary reached by the same action, so observers see narrative evaluation order.
 
+`PresentationCued` is triggered once for each presentation cue the runtime executed, in source order, before that same boundary. Its payload owns one `PresentationEvent`. Apply the events before rendering the line or choice set that follows them. When an action fails, the plugin triggers the cues produced before the failure first and `StoryFailed` afterwards, so a failure never discards staging or defers it to a later action.
+
 Hot reload restores story state when pattern IR is unchanged. If a pattern definition or draw configuration changes, the runtime is rebuilt from the configured seed instead; this prevents old element identities or semantic objects from leaking into the reloaded story. `StoryReloaded` is emitted after either valid path.
 
 Launch the complete interactive example game with:
