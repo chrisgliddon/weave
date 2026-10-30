@@ -74,10 +74,11 @@ The editor carries a manuscript model: one ordered child list per container,
 with a stable id per child.
 
 A chapter record holds an id, a parent id, an explicit order, a kind, a title,
-a status id, a label id, a synopsis, and a body reference. The order is a
-stored value rather than an implied array position, so a reorder is a
-single-field write, and sibling order round-trips through save and reload
-without reordering.
+a status id, a label id, and a synopsis. The id is the only reference to the
+body: a body file is named after its chapter id, so the tree and the prose are
+joined in exactly one place. The order is a stored value rather than an implied
+array position, so a reorder is a single-field write, and sibling order
+round-trips through save and reload without reordering.
 
 A kind is a chapter, a scene, or a note. A scene is a leaf; a chapter holds
 scenes, and a note holds notes of its own. A node can be converted between a

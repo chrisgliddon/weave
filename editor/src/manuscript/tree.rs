@@ -7,7 +7,6 @@
 //! can be diffed on its own.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
@@ -127,8 +126,6 @@ pub struct Chapter {
     pub label_id: Option<i64>,
     /// One-line summary of the chapter.
     pub synopsis: String,
-    /// Path of the body, relative to the manuscript directory.
-    pub body_path: Option<PathBuf>,
 }
 
 impl Chapter {
@@ -210,7 +207,6 @@ impl ChapterTree {
                     status_id: None,
                     label_id: None,
                     synopsis: String::new(),
-                    body_path: None,
                 },
                 Chapter {
                     id: ChapterId::TRASH,
@@ -221,7 +217,6 @@ impl ChapterTree {
                     status_id: None,
                     label_id: None,
                     synopsis: String::new(),
-                    body_path: None,
                 },
             ],
             statuses: Vec::new(),
@@ -313,7 +308,6 @@ impl ChapterTree {
             status_id: None,
             label_id: None,
             synopsis: String::new(),
-            body_path: None,
         });
         Ok(id)
     }

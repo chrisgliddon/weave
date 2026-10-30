@@ -468,7 +468,6 @@ def chapter_record(
             "            status_id: Some(1),",
             "            label_id: None,",
             f"            synopsis: {ron_string('')},",
-            "            body_path: None,",
             "        ),",
         ]
     )
@@ -493,8 +492,8 @@ def write_work(work: Work, chapters: list[Chapter], source: Path, target: Path) 
         records.append(chapter_record(identifier, parent, order, kind, chapter.title))
         text = "\n".join(chapter.paragraphs)
         words = len(text.split())
-        body_path = bodies / f"{identifier}.ron"
-        body_path.write_text(body_ron(chapter.paragraphs), encoding="utf-8")
+        body_file = bodies / f"{identifier}.ron"
+        body_file.write_text(body_ron(chapter.paragraphs), encoding="utf-8")
         total_words += words
         total_paragraphs += len(chapter.paragraphs)
         provenance_chapters.append(
@@ -506,7 +505,7 @@ def write_work(work: Work, chapters: list[Chapter], source: Path, target: Path) 
                 "words": words,
                 "text_sha256": digest_text(text),
                 "body_file": f"weave.manuscript/{identifier}.ron",
-                "body_sha256": digest(body_path),
+                "body_sha256": digest(body_file),
             }
         )
         for index, child in enumerate(chapter.children):

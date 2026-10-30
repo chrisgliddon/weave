@@ -10,7 +10,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(1),
@@ -21,7 +20,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(2),
@@ -32,7 +30,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(3),
@@ -43,7 +40,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(4),
@@ -54,7 +50,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(5),
@@ -65,7 +60,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(6),
@@ -76,7 +70,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(7),
@@ -87,7 +80,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(8),
@@ -98,7 +90,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(9),
@@ -109,7 +100,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(10),
@@ -120,7 +110,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(11),
@@ -131,7 +120,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(12),
@@ -142,7 +130,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(13),
@@ -153,7 +140,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(14),
@@ -164,7 +150,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(15),
@@ -175,7 +160,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(16),
@@ -186,7 +170,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(17),
@@ -197,7 +180,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(18),
@@ -208,7 +190,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(19),
@@ -219,7 +200,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(20),
@@ -230,7 +210,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
         (
             id: ChapterId(21),
@@ -241,7 +220,6 @@
             status_id: Some(1),
             label_id: None,
             synopsis: "",
-            body_path: None,
         ),
     ],
     statuses: [
