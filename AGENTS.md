@@ -10,6 +10,54 @@ These instructions apply to the entire repository.
 - GitHub Issues synchronization is an optional public mirror, never a prerequisite for creating, inspecting, starting, completing, or querying tasks. The local task workflow must remain usable without network access or GitHub credentials.
 - Never place a secret in a dex task name, description, result, or commit message because task data may become public when mirrored.
 
+## Subagent orchestration
+
+The main agent acts as orchestrator: it owns task tracking, scope, integration, commits, and branch promotion. Subagents perform bounded slices and adversarial reviews. A subagent starts with fresh context, runs in the same checkout, and can edit files, so treat it as a concurrent writer rather than a sandbox.
+
+### When to delegate
+
+Delegate when work splits into independent, file-scoped slices: a vertical feature slice across several files, researching or authoring fixtures, mechanical fan-out, or an adversarial review. Do not delegate a one-file edit, a design decision, or anything a few tool calls would finish; briefing and reviewing costs more than the work.
+
+### Models
+
+- Implementation, authoring, and mechanical fan-out: `ollama-cloud/deepseek-v4.1-flash:1017`. Keep the pinned tag; the floating `ollama-cloud/deepseek-v4.1-flash` may move under the repository.
+- Adversarial review: `ollama-cloud/glm-5.3`. Use the full model rather than `glm-5.3-flash` when the change touches a contract, a filesystem boundary, serialization, or release artifacts. Reviews cost more per token than implementation, so reserve them for risky changes.
+- Resolve a loosely named model with the models tool before delegating; never guess an identifier. If the user names a model, use exactly that one.
+
+### Briefing
+
+Every prompt states:
+
+- the single outcome, the exact files the subagent may change, and an explicit list of files it must not touch;
+- the design or contract it must follow, pasted in full, because the subagent has none of the conversation;
+- acceptance criteria and the exact verification commands it must run;
+- that it must not commit, push, promote branches, rewrite history, or run `git checkout`, `git stash`, or `git reset`;
+- the report shape: files changed, commands run, results, deviations, and anything incomplete.
+
+### Parallelism
+
+Run independent slices in parallel only when their file sets are disjoint. One writer per file set. Use background mode for work that does not gate the next step, and foreground when the result is needed to continue. The orchestrator integrates and resolves overlaps; subagents never reconcile each other.
+
+### Verification
+
+Never accept a subagent's claim that tests pass. Run the gate yourself, inspect the diff, and check for scope creep and for local absolute paths or secrets introduced in new text. The public-source and secret rules above apply to subagent prompts and output exactly as to the orchestrator's own.
+
+### Adversarial review
+
+For changes touching contracts, validation, serialization, filesystems, or release artifacts, run a second subagent with `ollama-cloud/glm-5.3`. Its prompt must:
+
+- frame it as an attacker, not a collaborator;
+- forbid source edits and require it to delete probe files and leave `git status` as it found it;
+- name the specific risks to attack and invite findings beyond them;
+- require severity-ranked findings, each with `file:line`, an exact reproduction, and the observed result;
+- require a verdict of block, fix-then-ship, or ship, naming the decisive finding.
+
+Fix blocking and high findings before shipping, then re-review the fix delta. Record any review that could not run.
+
+### Ownership and failure
+
+Only the orchestrator commits, pushes, promotes, and updates dex. If a subagent fails, hits a provider limit, or is cancelled, inspect the working tree before rerunning: it may have left partial edits, a scratch test, or a half-finished refactor. Decide explicitly whether to keep or revert. A review that did not run is not a review; say so rather than implying coverage.
+
 ## Local-first development — mandatory
 
 - `dev` is the default integration branch. Promote verified commits from `dev` to `staging`, then from `staging` to `production`; perform and validate each promotion locally before pushing it.
