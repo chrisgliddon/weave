@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "source_name": "examples/web-player/story.weave",
   "entry": "start",
   "globals": [
@@ -88,13 +88,20 @@
   "presentation": {
     "scenes": {
       "observatory_night": {
-        "background": "art/observatory-night.svg"
+        "background": "art/observatory-night.svg",
+        "fit": "cover",
+        "anchor": {
+          "x": 0.5,
+          "y": 0.5
+        }
       }
     },
     "stages": {
       "observer": {
         "image": null,
-        "name": "The Observer"
+        "name": "The Observer",
+        "slot": "center",
+        "layer": 0
       }
     }
   },

@@ -168,14 +168,36 @@ export default grammar({
       "scene",
       field("name", $.identifier),
       "{",
-      repeat(choice($.scene_background_setting, $._newline)),
+      repeat(choice($._scene_entry, $._newline)),
       "}",
+    ),
+
+    _scene_entry: $ => choice(
+      $.scene_background_setting,
+      $.scene_fit_setting,
+      $.scene_anchor_setting,
     ),
 
     scene_background_setting: $ => seq(
       "background",
       ":",
       field("value", $.string),
+    ),
+
+    scene_fit_setting: $ => seq(
+      "fit",
+      ":",
+      field("value", $.fit_mode),
+    ),
+
+    fit_mode: _ => choice("cover", "contain"),
+
+    scene_anchor_setting: $ => seq(
+      "anchor",
+      ":",
+      field("x", $.number),
+      ",",
+      field("y", $.number),
     ),
 
     stage_declaration: $ => seq(
@@ -189,6 +211,9 @@ export default grammar({
     _stage_entry: $ => choice(
       $.stage_image_setting,
       $.stage_name_setting,
+      $.stage_slot_setting,
+      $.stage_layer_setting,
+      $.stage_variant,
     ),
 
     stage_image_setting: $ => seq(
@@ -199,6 +224,40 @@ export default grammar({
 
     stage_name_setting: $ => seq(
       "name",
+      ":",
+      field("value", $.string),
+    ),
+
+    stage_slot_setting: $ => seq(
+      "slot",
+      ":",
+      field("value", $.stage_slot),
+    ),
+
+    stage_slot: _ => choice(
+      "far_left",
+      "left",
+      "center",
+      "right",
+      "far_right",
+    ),
+
+    stage_layer_setting: $ => seq(
+      "layer",
+      ":",
+      field("value", $.number),
+    ),
+
+    stage_variant: $ => seq(
+      "variant",
+      field("name", $.identifier),
+      "{",
+      repeat(choice($.variant_image_setting, $._newline)),
+      "}",
+    ),
+
+    variant_image_setting: $ => seq(
+      "image",
       ":",
       field("value", $.string),
     ),
@@ -232,7 +291,7 @@ export default grammar({
 
     directive_statement: $ => seq(
       field("directive", $.cue_directive),
-      optional(field("target", $.identifier)),
+      repeat(field("argument", choice($.identifier, $.number))),
     ),
 
     cue_directive: _ => token(prec(2, /@[A-Za-z_][A-Za-z0-9_]*/)),
@@ -447,7 +506,7 @@ export default grammar({
 
     escape_sequence: _ => token.immediate(seq("\\", /[^\r\n]/)),
 
-    number: _ => token(/\d+(\.\d+)?([eE][+-]?\d+)?/),
+    number: _ => token(/-?\d+(\.\d+)?([eE][+-]?\d+)?/),
 
     boolean: _ => choice("true", "false"),
 

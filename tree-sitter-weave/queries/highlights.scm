@@ -18,8 +18,13 @@
   "scene"
   "stage"
   "background"
+  "fit"
+  "anchor"
   "image"
   "name"
+  "slot"
+  "layer"
+  "variant"
   "spread"
   "builtin"
   "draw"
@@ -42,9 +47,18 @@
   "uniform"
   "three_coin"
   "yarrow_stalks"
+  "cover"
+  "contain"
+  "far_left"
+  "left"
+  "center"
+  "right"
+  "far_right"
 ] @constant.builtin
 
 (draw_method) @constant.builtin
+(fit_mode) @constant.builtin
+(stage_slot) @constant.builtin
 "END" @constant.builtin
 
 (knot_header name: (identifier) @function)
@@ -54,6 +68,7 @@
 (pattern_declaration name: (identifier) @type)
 (scene_declaration name: (identifier) @type)
 (stage_declaration name: (identifier) @type)
+(stage_variant name: (identifier) @property)
 (cue_directive) @keyword
 (pattern_collection name: (identifier) @variable.member)
 (spread_declaration name: (identifier) @function.method)
@@ -76,7 +91,7 @@
 (divert_statement target: (identifier) @function)
 (thread_statement target: (identifier) @function)
 (inline_divert target: (identifier) @function)
-(directive_statement target: (identifier) @function)
+(directive_statement argument: (identifier) @function)
 
 (choice_marker) @operator
 

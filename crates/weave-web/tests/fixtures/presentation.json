@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "source_name": "crates/weave-web/tests/fixtures/presentation.weave",
   "entry": "start",
   "globals": [],
@@ -9,13 +9,23 @@
   "presentation": {
     "scenes": {
       "ferry_dusk": {
-        "background": "art/ferry_dusk.png"
+        "background": "art/ferry_dusk.png",
+        "fit": "cover",
+        "anchor": {
+          "x": 0.5,
+          "y": 0.5
+        }
       }
     },
     "stages": {
       "mara": {
         "image": "art/mara_neutral.png",
-        "name": "Mara"
+        "name": "Mara",
+        "slot": "left",
+        "layer": 1,
+        "variants": {
+          "surprised": "art/mara_surprised.png"
+        }
       }
     }
   },
@@ -24,9 +34,9 @@
       "content": [
         {
           "span": {
-            "start": 140,
-            "end": 157,
-            "line": 11,
+            "start": 274,
+            "end": 291,
+            "line": 18,
             "column": 1
           },
           "kind": {
@@ -39,9 +49,9 @@
         },
         {
           "span": {
-            "start": 158,
-            "end": 168,
-            "line": 12,
+            "start": 292,
+            "end": 302,
+            "line": 19,
             "column": 1
           },
           "kind": {
@@ -54,9 +64,9 @@
         },
         {
           "span": {
-            "start": 169,
-            "end": 182,
-            "line": 13,
+            "start": 303,
+            "end": 316,
+            "line": 20,
             "column": 1
           },
           "kind": {
@@ -69,9 +79,63 @@
         },
         {
           "span": {
-            "start": 183,
-            "end": 208,
-            "line": 14,
+            "start": 317,
+            "end": 334,
+            "line": 21,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "move",
+              "value": {
+                "stage": "mara",
+                "to": "center"
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 335,
+            "end": 355,
+            "line": 22,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "swap",
+              "value": {
+                "stage": "mara",
+                "variant": "surprised"
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 356,
+            "end": 376,
+            "line": 23,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "transition",
+              "value": {
+                "kind": "wipe",
+                "ms": 320
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 377,
+            "end": 402,
+            "line": 24,
             "column": 1
           },
           "kind": {
@@ -88,9 +152,9 @@
         },
         {
           "span": {
-            "start": 209,
-            "end": 215,
-            "line": 15,
+            "start": 403,
+            "end": 409,
+            "line": 25,
             "column": 1
           },
           "kind": {

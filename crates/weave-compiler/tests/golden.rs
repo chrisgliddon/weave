@@ -4,7 +4,7 @@ use weave_core::ir::{InstructionKind, StoryIr};
 const SOURCE: &str = include_str!("fixtures/golden.weave");
 const EXPECTED: &str = include_str!("fixtures/golden.ron");
 const EXPECTED_JSON: &str = include_str!("fixtures/golden.json");
-const EXPECTED_SCHEMA: &str = include_str!("../../../schemas/weave-story-ir-v5.schema.json");
+const EXPECTED_SCHEMA: &str = include_str!("../../../schemas/weave-story-ir-v6.schema.json");
 const PATTERN_SOURCE: &str = include_str!("../../../examples/stories/patterns.weave");
 
 #[test]
@@ -81,8 +81,8 @@ fn generated_schema_matches_the_published_schema() {
     assert_eq!(actual, EXPECTED_SCHEMA);
 
     let schema: serde_json::Value = serde_json::from_str(&actual).expect("schema is JSON");
-    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:5");
-    assert_eq!(schema["properties"]["version"]["const"], 5);
+    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:6");
+    assert_eq!(schema["properties"]["version"]["const"], 6);
 }
 
 fn first_choice_id(story: &StoryIr) -> &str {

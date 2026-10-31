@@ -1,5 +1,5 @@
 StoryIr(
-    version: 5,
+    version: 6,
     source_name: Some("examples/domain-modules/weave-world/corpus/stories/british-columbia-temperate-forest.weave"),
     entry: "start",
     globals: [],

@@ -722,17 +722,27 @@ Reading: {reading.dawn.name}.
     fn presentation_cues_reach_observers_and_leave_nothing_pending() {
         let source = r#"scene ferry_dusk {
     background: "art/ferry_dusk.png"
+    fit: cover
+    anchor: 0.5, 0.5
 }
 
 stage mara {
     image: "art/mara_neutral.png"
     name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
 }
 
 === start ===
 @scene ferry_dusk
 @show mara
 @speaker mara
+@move mara center
+@swap mara surprised
+@transition slide 180
 The ferry leaves at dusk.
 -> END
 "#;
@@ -754,6 +764,18 @@ The ferry leaves at dusk.
                 PresentationEvent::Scene("ferry_dusk".to_owned()),
                 PresentationEvent::Show("mara".to_owned()),
                 PresentationEvent::Speaker(Some("mara".to_owned())),
+                PresentationEvent::Move {
+                    stage: "mara".to_owned(),
+                    to: weave_core::ir::Slot::Center,
+                },
+                PresentationEvent::Swap {
+                    stage: "mara".to_owned(),
+                    variant: "surprised".to_owned(),
+                },
+                PresentationEvent::Transition {
+                    kind: weave_core::ir::TransitionKind::Slide,
+                    ms: 180,
+                },
             ]
         );
         assert!(

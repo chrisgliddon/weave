@@ -6,7 +6,7 @@ use weave_core::Diagnostic;
 use weave_core::ast::{
     BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
     ModuleEntry, PatternDrawMethod, PatternEntry, SceneEntry, Spanned, StageEntry, Statement,
-    UnaryOperator, VariableKind,
+    UnaryOperator, VariableKind, VariantEntry,
 };
 
 /// Current canonical formatting contract.
@@ -194,6 +194,21 @@ impl Formatter {
                                 seen_content = true;
                                 self.line(1, &format!("background: {}", quote(background)));
                             }
+                            SceneEntry::Fit(fit) => {
+                                seen_content = true;
+                                self.line(1, &format!("fit: {fit}"));
+                            }
+                            SceneEntry::Anchor(anchor) => {
+                                seen_content = true;
+                                self.line(
+                                    1,
+                                    &format!(
+                                        "anchor: {}, {}",
+                                        format_number(anchor.x),
+                                        format_number(anchor.y)
+                                    ),
+                                );
+                            }
                             SceneEntry::Comment(comment) => {
                                 seen_content = true;
                                 self.comment(1, comment);
@@ -216,6 +231,34 @@ impl Formatter {
                             StageEntry::Name(name) => {
                                 seen_content = true;
                                 self.line(1, &format!("name: {}", quote(name)));
+                            }
+                            StageEntry::Slot(slot) => {
+                                seen_content = true;
+                                self.line(1, &format!("slot: {slot}"));
+                            }
+                            StageEntry::Layer(layer) => {
+                                seen_content = true;
+                                self.line(1, &format!("layer: {}", format_number(*layer)));
+                            }
+                            StageEntry::Variant(variant) => {
+                                seen_content = true;
+                                self.line(1, &format!("variant {} {{", variant.node.id));
+                                let mut seen_variant_content = false;
+                                for entry in &variant.node.entries {
+                                    match &entry.node {
+                                        VariantEntry::Image(image) => {
+                                            seen_variant_content = true;
+                                            self.line(2, &format!("image: {}", quote(image)));
+                                        }
+                                        VariantEntry::Comment(comment) => {
+                                            seen_variant_content = true;
+                                            self.comment(2, comment);
+                                        }
+                                        VariantEntry::Blank if seen_variant_content => self.blank(),
+                                        VariantEntry::Blank => {}
+                                    }
+                                }
+                                self.line(1, "}");
                             }
                             StageEntry::Comment(comment) => {
                                 seen_content = true;
@@ -335,6 +378,17 @@ fn format_cue(cue: &Cue) -> String {
         Cue::Hide(name) => format!("@hide {name}"),
         Cue::Speaker(Some(name)) => format!("@speaker {name}"),
         Cue::Speaker(None) => "@speaker".to_owned(),
+        Cue::Move { stage, to, .. } => format!("@move {stage} {to}"),
+        Cue::Swap { stage, variant, .. } => format!("@swap {stage} {variant}"),
+        Cue::Transition { kind, ms, .. } => format!("@transition {kind} {ms}"),
+    }
+}
+
+fn format_number(value: f64) -> String {
+    if value.fract() == 0.0 {
+        format!("{value:.0}")
+    } else {
+        value.to_string()
     }
 }
 
@@ -599,6 +653,8 @@ aside
         let source = r#"scene ferry {
     // backdrop
     background: "art/ferry.png"
+    fit: cover
+    anchor: 0.5, 0.5
 }
 
 stage mara {
@@ -606,15 +662,29 @@ stage mara {
     image: "art/mara.png"
     // display name
     name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        // alternate portrait
+        image: "art/mara_surprised.png"
+    }
 }
 
 === start ===
+@move mara center
+@swap mara surprised
+@transition fade 200
 -> END
 "#;
         let once = format_source(source).expect("source should format");
         assert!(once.contains("    // backdrop"));
         assert!(once.contains("    // portrait"));
         assert!(once.contains("    // display name"));
+        assert!(once.contains("        // alternate portrait"));
+        assert!(once.contains("    variant surprised {"));
+        assert!(once.contains("@move mara center"));
+        assert!(once.contains("@swap mara surprised"));
+        assert!(once.contains("@transition fade 200"));
         assert_eq!(once, source);
 
         let twice = format_source(&once).expect("formatted source should parse");

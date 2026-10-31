@@ -1,5 +1,40 @@
 use weave_compiler::{CompileOptions, compile};
+use weave_core::ir::{Slot, TransitionKind};
 use weave_runtime::{PresentationEvent, Story, StoryEvent};
+
+const STAGING_SOURCE: &str = r#"scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+    fit: cover
+    anchor: 0.5, 0.5
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
+}
+
+stage keeper {
+    image: "art/keeper_neutral.png"
+    name: "The Keeper"
+    slot: right
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@show keeper
+@speaker mara
+@move mara center
+@swap mara surprised
+@transition fade 240
+The ferry leaves at dusk.
+-> END
+"#;
 
 const SOURCE: &str = r#"scene ferry_dusk {
     background: "art/ferry_dusk.png"
@@ -93,6 +128,64 @@ Still running.
             PresentationEvent::Hide("ghostly".to_owned()),
         ]
     );
+}
+
+#[test]
+fn staged_cues_emit_in_source_order_and_never_end_the_story() {
+    let mut story = compile_story(STAGING_SOURCE);
+    assert_eq!(
+        story.advance().expect("line after staged cues"),
+        StoryEvent::Line("The ferry leaves at dusk.".to_owned())
+    );
+    assert_eq!(
+        story.take_presentation(),
+        vec![
+            PresentationEvent::Scene("ferry_dusk".to_owned()),
+            PresentationEvent::Show("mara".to_owned()),
+            PresentationEvent::Show("keeper".to_owned()),
+            PresentationEvent::Speaker(Some("mara".to_owned())),
+            PresentationEvent::Move {
+                stage: "mara".to_owned(),
+                to: Slot::Center,
+            },
+            PresentationEvent::Swap {
+                stage: "mara".to_owned(),
+                variant: "surprised".to_owned(),
+            },
+            PresentationEvent::Transition {
+                kind: TransitionKind::Fade,
+                ms: 240,
+            },
+        ]
+    );
+    assert!(story.take_presentation().is_empty(), "cues drain once");
+    assert_eq!(story.advance().expect("story ends"), StoryEvent::Ended);
+}
+
+#[test]
+fn staged_cue_order_survives_restore_and_repeated_runs() {
+    fn run(story: &mut Story) -> Vec<(StoryEvent, Vec<PresentationEvent>)> {
+        let mut observed = Vec::new();
+        loop {
+            let event = story.advance().expect("advance");
+            let cues = story.take_presentation();
+            let ended = event == StoryEvent::Ended;
+            observed.push((event, cues));
+            if ended {
+                return observed;
+            }
+        }
+    }
+
+    let compiled = compile(STAGING_SOURCE, &CompileOptions::default()).expect("staging compiles");
+    let first = run(&mut Story::with_seed(compiled.story.clone(), 41).expect("start first"));
+    let second = run(&mut Story::with_seed(compiled.story.clone(), 41).expect("start second"));
+    assert_eq!(first, second);
+
+    let pristine = Story::with_seed(compiled.story.clone(), 41).expect("start pristine");
+    let saved = pristine.state().clone();
+    let mut restored = Story::restore(compiled.story, saved).expect("restore saved runtime state");
+    assert_eq!(run(&mut restored), first);
 }
 
 #[test]

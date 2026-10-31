@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 5;
+pub const IR_VERSION: u32 = 6;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -74,6 +74,82 @@ impl PresentationIr {
 pub struct SceneIr {
     /// Optional relative background asset path.
     pub background: Option<String>,
+    /// How the background fills the stage frame.
+    #[serde(default)]
+    pub fit: Fit,
+    /// Normalized focal point within the background image.
+    #[serde(default)]
+    pub anchor: AnchorIr,
+}
+
+impl Slot {
+    /// Parse one source slot token.
+    #[must_use]
+    pub fn from_token(token: &str) -> Option<Self> {
+        match token {
+            "far_left" => Some(Self::FarLeft),
+            "left" => Some(Self::Left),
+            "center" => Some(Self::Center),
+            "right" => Some(Self::Right),
+            "far_right" => Some(Self::FarRight),
+            _ => None,
+        }
+    }
+}
+
+/// How a scene background fills the rendered frame.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Fit {
+    /// Scale to fill the frame, cropping overflow.
+    #[default]
+    Cover,
+    /// Scale to fit inside the frame, preserving the whole image.
+    Contain,
+}
+
+impl Fit {
+    /// Parse one source fit token.
+    #[must_use]
+    pub fn from_token(token: &str) -> Option<Self> {
+        match token {
+            "cover" => Some(Self::Cover),
+            "contain" => Some(Self::Contain),
+            _ => None,
+        }
+    }
+}
+
+/// Normalized background focal point.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct AnchorIr {
+    /// Horizontal position in the closed range 0..=1.
+    pub x: f64,
+    /// Vertical position in the closed range 0..=1.
+    pub y: f64,
+}
+
+impl Default for AnchorIr {
+    fn default() -> Self {
+        Self { x: 0.5, y: 0.5 }
+    }
+}
+
+/// Named horizontal position for a character stage.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Slot {
+    /// Far-left position.
+    FarLeft,
+    /// Left position.
+    Left,
+    /// Centre position.
+    #[default]
+    Center,
+    /// Right position.
+    Right,
+    /// Far-right position.
+    FarRight,
 }
 
 /// Compiled character stage.
@@ -83,6 +159,15 @@ pub struct StageIr {
     pub image: Option<String>,
     /// Optional author-facing display name.
     pub name: Option<String>,
+    /// Named horizontal position.
+    #[serde(default)]
+    pub slot: Slot,
+    /// Paint order in the closed range 0..=9; higher layers paint later.
+    #[serde(default)]
+    pub layer: u8,
+    /// Sorted named variant images keyed by variant identifier.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub variants: BTreeMap<String, String>,
 }
 
 /// One exact, validated domain-module activation embedded for runtime hosts.
@@ -312,6 +397,55 @@ pub enum CueIr {
     Hide(String),
     /// Set the current speaker; `None` is narration.
     Speaker(Option<String>),
+    /// Move a declared character stage to a named slot.
+    Move {
+        /// Stage identifier.
+        stage: String,
+        /// Destination slot.
+        to: Slot,
+    },
+    /// Replace a declared stage image with one of its named variants.
+    Swap {
+        /// Stage identifier.
+        stage: String,
+        /// Variant identifier declared on that stage.
+        variant: String,
+    },
+    /// Request a bounded transition between presentation states.
+    Transition {
+        /// Transition style.
+        kind: TransitionKind,
+        /// Nominal duration in milliseconds.
+        ms: u16,
+    },
+}
+
+/// Compiled transition style.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum TransitionKind {
+    /// Immediate replacement.
+    Cut,
+    /// Cross-fade.
+    Fade,
+    /// Directional slide.
+    Slide,
+    /// Reveal wipe.
+    Wipe,
+}
+
+impl TransitionKind {
+    /// Parse one source transition-kind token.
+    #[must_use]
+    pub fn from_token(token: &str) -> Option<Self> {
+        match token {
+            "cut" => Some(Self::Cut),
+            "fade" => Some(Self::Fade),
+            "slide" => Some(Self::Slide),
+            "wipe" => Some(Self::Wipe),
+            _ => None,
+        }
+    }
 }
 
 /// Compiled declaration.

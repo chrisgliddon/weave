@@ -109,6 +109,18 @@ fn presentation_cues_are_drained_into_the_frame_and_leave_nothing_pending() {
             PresentationEvent::Scene("ferry_dusk".to_owned()),
             PresentationEvent::Show("mara".to_owned()),
             PresentationEvent::Speaker(Some("mara".to_owned())),
+            PresentationEvent::Move {
+                stage: "mara".to_owned(),
+                to: weave_core::ir::Slot::Center,
+            },
+            PresentationEvent::Swap {
+                stage: "mara".to_owned(),
+                variant: "surprised".to_owned(),
+            },
+            PresentationEvent::Transition {
+                kind: weave_core::ir::TransitionKind::Wipe,
+                ms: 320,
+            },
         ]
     );
     assert!(
@@ -126,6 +138,18 @@ fn presentation_cues_are_drained_into_the_frame_and_leave_nothing_pending() {
                 PresentationEvent::Scene("ferry_dusk".to_owned()),
                 PresentationEvent::Show("mara".to_owned()),
                 PresentationEvent::Speaker(Some("mara".to_owned())),
+                PresentationEvent::Move {
+                    stage: "mara".to_owned(),
+                    to: weave_core::ir::Slot::Center,
+                },
+                PresentationEvent::Swap {
+                    stage: "mara".to_owned(),
+                    variant: "surprised".to_owned(),
+                },
+                PresentationEvent::Transition {
+                    kind: weave_core::ir::TransitionKind::Wipe,
+                    ms: 320,
+                },
             ],
         }
     );
@@ -143,6 +167,9 @@ fn serialized_frames_and_failures_expose_cues_in_the_binding_shape() {
             {"kind": "scene", "value": "ferry_dusk"},
             {"kind": "show", "value": "mara"},
             {"kind": "speaker", "value": "mara"},
+            {"kind": "move", "value": {"stage": "mara", "to": "center"}},
+            {"kind": "swap", "value": {"stage": "mara", "variant": "surprised"}},
+            {"kind": "transition", "value": {"kind": "wipe", "ms": 320}},
         ]),
         "the JavaScript binding receives ordered cue objects, not opaque values"
     );
@@ -217,8 +244,15 @@ fn wasm_frames_carry_ordered_cues_and_failures_keep_earlier_cues() {
                     js_sys::Reflect::get(&cue, &JsValue::from_str("value")).expect("cue value");
                 let value = if value.is_null() || value.is_undefined() {
                     None
+                } else if let Some(text) = value.as_string() {
+                    Some(text)
                 } else {
-                    Some(value.as_string().expect("value string"))
+                    Some(
+                        js_sys::JSON::stringify(&value)
+                            .ok()
+                            .and_then(|text| text.as_string())
+                            .expect("cue value JSON"),
+                    )
                 };
                 (kind, value)
             })
@@ -233,6 +267,18 @@ fn wasm_frames_carry_ordered_cues_and_failures_keep_earlier_cues() {
             ("scene".to_owned(), Some("ferry_dusk".to_owned())),
             ("show".to_owned(), Some("mara".to_owned())),
             ("speaker".to_owned(), Some("mara".to_owned())),
+            (
+                "move".to_owned(),
+                Some("{\"stage\":\"mara\",\"to\":\"center\"}".to_owned())
+            ),
+            (
+                "swap".to_owned(),
+                Some("{\"stage\":\"mara\",\"variant\":\"surprised\"}".to_owned())
+            ),
+            (
+                "transition".to_owned(),
+                Some("{\"kind\":\"wipe\",\"ms\":320}".to_owned())
+            ),
         ]
     );
 

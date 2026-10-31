@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "source_name": "examples/domain-modules/weave-world/reference-place.weave",
   "entry": "start",
   "globals": [

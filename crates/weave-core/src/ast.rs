@@ -286,9 +286,32 @@ pub struct SceneDecl {
     /// Location of the `background` string literal when present.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub background_span: Option<Span>,
+    /// Optional background fit token.
+    pub fit: Option<String>,
+    /// Location of the `fit` token when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fit_span: Option<Span>,
+    /// Optional normalized background focal point.
+    pub anchor: Option<AnchorDecl>,
+    /// Location of the `anchor` field when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub anchor_span: Option<Span>,
     /// Fields and trivia in source order.
     #[serde(default)]
     pub entries: Vec<Spanned<SceneEntry>>,
+}
+
+/// Source-authored background focal point with per-component spans.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct AnchorDecl {
+    /// Horizontal position.
+    pub x: f64,
+    /// Vertical position.
+    pub y: f64,
+    /// Location of the horizontal literal.
+    pub x_span: Span,
+    /// Location of the vertical literal.
+    pub y_span: Span,
 }
 
 /// One field or trivia item in a scene declaration.
@@ -296,6 +319,10 @@ pub struct SceneDecl {
 pub enum SceneEntry {
     /// Relative background asset path.
     Background(String),
+    /// Background fit token.
+    Fit(String),
+    /// Background focal point.
+    Anchor(AnchorDecl),
     /// Source comment without its marker.
     Comment(String),
     /// Blank source line.
@@ -317,9 +344,55 @@ pub struct StageDecl {
     /// Location of the `name` string literal when present.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_name_span: Option<Span>,
-    /// Fields and trivia in source order.
+    /// Optional named slot token.
+    pub slot: Option<String>,
+    /// Location of the `slot` token when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slot_span: Option<Span>,
+    /// Optional paint-order layer.
+    pub layer: Option<f64>,
+    /// Location of the `layer` literal when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub layer_span: Option<Span>,
+    /// Fields, variants, and trivia in source order.
     #[serde(default)]
     pub entries: Vec<Spanned<StageEntry>>,
+}
+
+impl StageDecl {
+    /// Iterate over nested variant declarations in source order.
+    pub fn variants(&self) -> impl Iterator<Item = &Spanned<VariantDecl>> {
+        self.entries.iter().filter_map(|entry| match &entry.node {
+            StageEntry::Variant(variant) => Some(variant),
+            _ => None,
+        })
+    }
+}
+
+/// One nested character image variant.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct VariantDecl {
+    /// Variant identifier used by `@swap`.
+    pub id: String,
+    /// Optional relative variant image asset path.
+    pub image: Option<String>,
+    /// Location of the `image` string literal when present.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_span: Option<Span>,
+    /// Fields and trivia in source order.
+    #[serde(default)]
+    pub entries: Vec<Spanned<VariantEntry>>,
+}
+
+/// One field or trivia item in a variant declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum VariantEntry {
+    /// Relative variant image asset path.
+    Image(String),
+    /// Source comment without its marker.
+    Comment(String),
+    /// Blank source line.
+    Blank,
 }
 
 /// One field or trivia item in a stage declaration.
@@ -329,6 +402,12 @@ pub enum StageEntry {
     Image(String),
     /// Author-facing display name.
     Name(String),
+    /// Named horizontal slot token.
+    Slot(String),
+    /// Paint-order layer.
+    Layer(f64),
+    /// Nested named image variant.
+    Variant(Spanned<VariantDecl>),
     /// Source comment without its marker.
     Comment(String),
     /// Blank source line.
@@ -397,6 +476,39 @@ pub enum Cue {
     Hide(String),
     /// Set the current speaker; `None` is narration.
     Speaker(Option<String>),
+    /// Move a declared character stage to a named slot.
+    Move {
+        /// Stage identifier.
+        stage: String,
+        /// Location of the stage identifier.
+        stage_span: Span,
+        /// Destination slot token.
+        to: String,
+        /// Location of the slot token.
+        to_span: Span,
+    },
+    /// Replace a declared stage image with one of its named variants.
+    Swap {
+        /// Stage identifier.
+        stage: String,
+        /// Location of the stage identifier.
+        stage_span: Span,
+        /// Variant identifier token.
+        variant: String,
+        /// Location of the variant identifier.
+        variant_span: Span,
+    },
+    /// Request a bounded transition between presentation states.
+    Transition {
+        /// Transition style token.
+        kind: String,
+        /// Location of the transition style token.
+        kind_span: Span,
+        /// Nominal duration in milliseconds.
+        ms: u16,
+        /// Location of the duration literal.
+        ms_span: Span,
+    },
 }
 
 /// Variable declaration.

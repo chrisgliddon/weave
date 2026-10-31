@@ -1,5 +1,5 @@
 StoryIr(
-    version: 5,
+    version: 6,
     source_name: Some("examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave"),
     entry: "start",
     globals: [

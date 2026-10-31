@@ -1,5 +1,5 @@
 StoryIr(
-    version: 5,
+    version: 6,
     source_name: Some("examples/tabletop-adapters/contract/runtime/lantern-trail.weave"),
     entry: "start",
     globals: [

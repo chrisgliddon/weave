@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use weave_core::ast::{
-    Conditional, Cue, Expr, GrammarEntry, Item, PatternEntry, Span, Spanned, Statement,
+    Conditional, Cue, Expr, GrammarEntry, Item, PatternEntry, Span, Spanned, StageEntry, Statement,
 };
 use weave_core::{Diagnostic, TemplatePart, Type, parse_document, parse_template, type_check};
 
@@ -15,6 +15,8 @@ pub enum SymbolKind {
     Spread,
     Scene,
     Stage,
+    Variant,
+    Slot,
     Variable,
 }
 
@@ -30,6 +32,8 @@ impl SymbolKind {
             Self::Spread => "pattern spread",
             Self::Scene => "scene",
             Self::Stage => "stage",
+            Self::Variant => "stage variant",
+            Self::Slot => "stage slot",
             Self::Variable => "variable",
         }
     }
@@ -293,6 +297,7 @@ pub fn analyze(source: &str) -> Analysis {
             }
             Item::Stage(stage) => {
                 let selection = identifier_span(source, item.span, &stage.node.name);
+                let mut children = Vec::new();
                 analysis.symbols.push(Symbol {
                     key: format!("stage:{}", stage.node.name),
                     name: stage.node.name.clone(),
@@ -302,13 +307,54 @@ pub fn analyze(source: &str) -> Analysis {
                     detail: "character stage".to_owned(),
                     container: None,
                 });
+                for entry in &stage.node.entries {
+                    match &entry.node {
+                        StageEntry::Slot(slot) => {
+                            let slot_selection = identifier_span(source, entry.span, slot);
+                            let key = format!("slot:{slot}");
+                            if !analysis.symbols.iter().any(|symbol| symbol.key == key) {
+                                analysis.symbols.push(Symbol {
+                                    key,
+                                    name: slot.clone(),
+                                    kind: SymbolKind::Slot,
+                                    span: entry.span,
+                                    selection: slot_selection,
+                                    detail: "stage slot".to_owned(),
+                                    container: None,
+                                });
+                            }
+                        }
+                        StageEntry::Variant(variant) => {
+                            let variant_selection =
+                                identifier_span(source, entry.span, &variant.node.id);
+                            analysis.symbols.push(Symbol {
+                                key: format!("variant:{}:{}", stage.node.name, variant.node.id),
+                                name: variant.node.id.clone(),
+                                kind: SymbolKind::Variant,
+                                span: entry.span,
+                                selection: variant_selection,
+                                detail: format!("variant of stage {}", stage.node.name),
+                                container: Some(stage.node.name.clone()),
+                            });
+                            children.push(Outline {
+                                name: variant.node.id.clone(),
+                                kind: SymbolKind::Variant,
+                                span: entry.span,
+                                selection: variant_selection,
+                                detail: "stage variant".to_owned(),
+                                children: Vec::new(),
+                            });
+                        }
+                        _ => {}
+                    }
+                }
                 analysis.outlines.push(Outline {
                     name: stage.node.name.clone(),
                     kind: SymbolKind::Stage,
                     span: item.span,
                     selection,
                     detail: "character stage".to_owned(),
-                    children: Vec::new(),
+                    children,
                 });
             }
             Item::Global(statement) => collect_statement(source, statement, &mut analysis),
@@ -389,20 +435,60 @@ fn collect_statement(source: &str, statement: &Spanned<Statement>, analysis: &mu
             target,
             last_identifier_span(source, statement.span, target),
         ),
-        Statement::Cue(cue) => {
-            let (key_prefix, name) = match cue {
-                Cue::Scene(name) => ("scene", name),
-                Cue::Show(name) | Cue::Hide(name) => ("stage", name),
-                Cue::Speaker(Some(name)) => ("stage", name),
-                Cue::Speaker(None) => return,
-            };
-            push_reference(
+        Statement::Cue(cue) => match cue {
+            Cue::Scene(name) => push_reference(
                 analysis,
-                ReferenceTarget::Exact(format!("{key_prefix}:{name}")),
+                ReferenceTarget::Exact(format!("scene:{name}")),
                 name,
                 identifier_span(source, statement.span, name),
-            );
-        }
+            ),
+            Cue::Show(name) | Cue::Hide(name) | Cue::Speaker(Some(name)) => push_reference(
+                analysis,
+                ReferenceTarget::Exact(format!("stage:{name}")),
+                name,
+                identifier_span(source, statement.span, name),
+            ),
+            Cue::Speaker(None) => {}
+            Cue::Move {
+                stage,
+                stage_span,
+                to,
+                to_span,
+            } => {
+                push_reference(
+                    analysis,
+                    ReferenceTarget::Exact(format!("stage:{stage}")),
+                    stage,
+                    *stage_span,
+                );
+                push_reference(
+                    analysis,
+                    ReferenceTarget::Exact(format!("slot:{to}")),
+                    to,
+                    *to_span,
+                );
+            }
+            Cue::Swap {
+                stage,
+                stage_span,
+                variant,
+                variant_span,
+            } => {
+                push_reference(
+                    analysis,
+                    ReferenceTarget::Exact(format!("stage:{stage}")),
+                    stage,
+                    *stage_span,
+                );
+                push_reference(
+                    analysis,
+                    ReferenceTarget::Exact(format!("variant:{stage}:{variant}")),
+                    variant,
+                    *variant_span,
+                );
+            }
+            Cue::Transition { .. } => {}
+        },
         Statement::End | Statement::Comment(_) | Statement::Blank => {}
     }
 }
@@ -813,5 +899,55 @@ stage mara {
                 "cue {directive} did not resolve to {expected}"
             );
         }
+    }
+
+    #[test]
+    fn resolves_variant_and_slot_symbols_and_staged_cue_targets() {
+        let source = r#"scene ferry {
+    background: "art/ferry.png"
+}
+
+stage mara {
+    image: "art/mara.png"
+    slot: left
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
+}
+
+=== start ===
+@move mara right
+@swap mara surprised
+-> END
+"#;
+        let analysis = analyze(source);
+        assert!(
+            analysis
+                .symbols
+                .iter()
+                .any(|symbol| symbol.key == "slot:left" && symbol.kind == SymbolKind::Slot),
+            "{:?}",
+            analysis.diagnostics
+        );
+        assert!(
+            analysis
+                .symbols
+                .iter()
+                .any(|symbol| symbol.key == "variant:mara:surprised"
+                    && symbol.kind == SymbolKind::Variant),
+            "{:?}",
+            analysis.diagnostics
+        );
+
+        let move_offset = source.find("@move mara ").expect("move") + "@move mara ".len() + 1;
+        assert_eq!(
+            analysis.target_at(move_offset),
+            Some(ReferenceTarget::Exact("slot:right".to_owned()))
+        );
+        let swap_offset = source.find("@swap mara ").expect("swap") + "@swap mara ".len() + 1;
+        assert_eq!(
+            analysis.target_at(swap_offset),
+            Some(ReferenceTarget::Exact("variant:mara:surprised".to_owned()))
+        );
     }
 }

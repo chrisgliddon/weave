@@ -5,6 +5,7 @@
 (pattern_declaration name: (identifier) @name) @definition.type
 (scene_declaration name: (identifier) @name) @definition.type
 (stage_declaration name: (identifier) @name) @definition.type
+(stage_variant name: (identifier) @name) @definition.field
 (pattern_collection name: (identifier) @name) @definition.field
 (spread_declaration name: (identifier) @name) @definition.method
 
@@ -18,4 +19,4 @@
 (divert_statement target: (identifier) @name) @reference.call
 (thread_statement target: (identifier) @name) @reference.call
 (inline_divert target: (identifier) @name) @reference.call
-(directive_statement target: (identifier) @name) @reference.call
+(directive_statement argument: (identifier) @name) @reference.call

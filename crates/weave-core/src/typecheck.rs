@@ -7,9 +7,11 @@ use weave_domain::{ModuleManifest, TypeExpression};
 
 use crate::ast::{
     BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternDrawMethod, PatternEntry, Span, Spanned, Statement, UnaryOperator, VariableKind,
+    PatternDrawMethod, PatternEntry, Span, Spanned, StageEntry, Statement, UnaryOperator,
+    VariableKind,
 };
 use crate::diagnostic::{Diagnostic, Severity};
+use crate::ir::{Fit, Slot, TransitionKind};
 use crate::template::{TemplatePart, parse_template};
 
 /// Static Weave value type.
@@ -138,6 +140,7 @@ struct Checker {
     module_aliases: BTreeMap<String, Span>,
     scenes: BTreeMap<String, Span>,
     stages: BTreeMap<String, Span>,
+    stage_variants: BTreeMap<String, BTreeSet<String>>,
     knots: BTreeSet<String>,
 }
 
@@ -152,6 +155,7 @@ impl Checker {
             module_aliases: BTreeMap::new(),
             scenes: BTreeMap::new(),
             stages: BTreeMap::new(),
+            stage_variants: BTreeMap::new(),
             knots: BTreeSet::new(),
         }
     }
@@ -588,6 +592,31 @@ impl Checker {
                             scene.node.background_span.unwrap_or(scene.span),
                         );
                     }
+                    if let Some(fit) = &scene.node.fit
+                        && Fit::from_token(fit).is_none()
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error("W2206", format!("unknown scene fit `{fit}`"))
+                                .with_span(scene.node.fit_span.unwrap_or(scene.span))
+                                .with_help("use `cover` or `contain`"),
+                        );
+                    }
+                    if let Some(anchor) = &scene.node.anchor {
+                        for (value, span) in [(anchor.x, anchor.x_span), (anchor.y, anchor.y_span)]
+                        {
+                            if !(0.0..=1.0).contains(&value) {
+                                self.diagnostics.push(
+                                    Diagnostic::error(
+                                        "W2207",
+                                        format!(
+                                            "anchor component `{value}` must be between 0 and 1"
+                                        ),
+                                    )
+                                    .with_span(span),
+                                );
+                            }
+                        }
+                    }
                 }
                 Item::Stage(stage) => {
                     let name = &stage.node.name;
@@ -603,6 +632,62 @@ impl Checker {
                             stage.node.image_span.unwrap_or(stage.span),
                         );
                     }
+                    if let Some(slot) = &stage.node.slot
+                        && Slot::from_token(slot).is_none()
+                    {
+                        self.diagnostics.push(
+                            Diagnostic::error("W2205", format!("unknown stage slot `{slot}`"))
+                                .with_span(stage.node.slot_span.unwrap_or(stage.span))
+                                .with_help(
+                                    "use `far_left`, `left`, `center`, `right`, or `far_right`",
+                                ),
+                        );
+                    }
+                    if let Some(layer) = stage.node.layer {
+                        let valid = layer.is_finite()
+                            && layer.fract() == 0.0
+                            && (0.0..=9.0).contains(&layer);
+                        if !valid {
+                            self.diagnostics.push(
+                                Diagnostic::error(
+                                    "W2208",
+                                    format!(
+                                        "stage layer `{layer}` must be a whole number from 0 to 9"
+                                    ),
+                                )
+                                .with_span(stage.node.layer_span.unwrap_or(stage.span)),
+                            );
+                        }
+                    }
+                    let mut variants = BTreeSet::new();
+                    for entry in &stage.node.entries {
+                        let StageEntry::Variant(variant) = &entry.node else {
+                            continue;
+                        };
+                        let variant_id = &variant.node.id;
+                        if !variants.insert(variant_id.clone()) {
+                            self.duplicate("W2212", "stage variant", variant_id, variant.span);
+                        }
+                        match (&variant.node.image, variant.node.image_span) {
+                            (Some(image), span) => self.check_asset_path(
+                                "stage variant",
+                                variant_id,
+                                "image",
+                                image,
+                                span.unwrap_or(variant.span),
+                            ),
+                            (None, _) => self.diagnostics.push(
+                                Diagnostic::error(
+                                    "W2215",
+                                    format!(
+                                        "stage `{name}` variant `{variant_id}` requires an `image`"
+                                    ),
+                                )
+                                .with_span(variant.span),
+                            ),
+                        }
+                    }
+                    self.stage_variants.insert(name.clone(), variants);
                 }
                 Item::Global(_) | Item::Comment(_) | Item::Blank => {}
             }
@@ -855,6 +940,77 @@ impl Checker {
                 }
             }
             Cue::Speaker(None) => {}
+            Cue::Move {
+                stage,
+                stage_span,
+                to,
+                to_span,
+            } => {
+                if !self.stages.contains_key(stage) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2213", format!("unknown move stage `{stage}`"))
+                            .with_span(*stage_span)
+                            .with_help("declare the stage with `stage <id> { ... }`"),
+                    );
+                }
+                if Slot::from_token(to).is_none() {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2205", format!("unknown stage slot `{to}`"))
+                            .with_span(*to_span)
+                            .with_help("use `far_left`, `left`, `center`, `right`, or `far_right`"),
+                    );
+                }
+            }
+            Cue::Swap {
+                stage,
+                stage_span,
+                variant,
+                variant_span,
+            } => {
+                if !self.stages.contains_key(stage) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2203", format!("unknown stage `{stage}`"))
+                            .with_span(*stage_span)
+                            .with_help("declare the stage with `stage <id> { ... }`"),
+                    );
+                } else if !self
+                    .stage_variants
+                    .get(stage)
+                    .is_some_and(|variants| variants.contains(variant))
+                {
+                    self.diagnostics.push(
+                        Diagnostic::error(
+                            "W2211",
+                            format!("stage `{stage}` has no variant `{variant}`"),
+                        )
+                        .with_span(*variant_span)
+                        .with_help("declare the variant with `variant <id> { ... }`"),
+                    );
+                }
+            }
+            Cue::Transition {
+                kind,
+                kind_span,
+                ms,
+                ms_span,
+            } => {
+                if TransitionKind::from_token(kind).is_none() {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2209", format!("unknown transition kind `{kind}`"))
+                            .with_span(*kind_span)
+                            .with_help("use `cut`, `fade`, `slide`, or `wipe`"),
+                    );
+                }
+                if *ms > 2000 {
+                    self.diagnostics.push(
+                        Diagnostic::error(
+                            "W2210",
+                            format!("transition duration `{ms}` must be at most 2000 milliseconds"),
+                        )
+                        .with_span(*ms_span),
+                    );
+                }
+            }
         }
     }
 

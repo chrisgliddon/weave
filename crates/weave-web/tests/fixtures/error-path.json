@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "source_name": "crates/weave-web/tests/fixtures/error-path.weave",
   "entry": "start",
   "globals": [
@@ -33,7 +33,12 @@
   "presentation": {
     "scenes": {
       "ferry_dusk": {
-        "background": "art/ferry_dusk.png"
+        "background": "art/ferry_dusk.png",
+        "fit": "cover",
+        "anchor": {
+          "x": 0.5,
+          "y": 0.5
+        }
       }
     },
     "stages": {}

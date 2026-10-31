@@ -1,5 +1,9 @@
+use std::collections::BTreeMap;
+
 use weave_compiler::{CompileOptions, compile, to_json, to_ron};
-use weave_core::ir::{CueIr, InstructionKind, StoryIr};
+use weave_core::ir::{
+    AnchorIr, CueIr, Fit, InstructionKind, SceneIr, Slot, StageIr, StoryIr, TransitionKind,
+};
 
 const PRESENTATION_SOURCE: &str = r#"scene ferry_dusk {
     background: "art/ferry_dusk.png"
@@ -19,6 +23,41 @@ Mara: The ferry leaves at dusk.
 @hide mara
 @speaker
 After she leaves.
+-> END
+"#;
+
+const STAGING_SOURCE: &str = r#"scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+    fit: contain
+    anchor: 0.25, 0.75
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
+}
+
+stage keeper {
+    image: "art/keeper_neutral.png"
+    name: "The Keeper"
+    slot: right
+    layer: 2
+}
+
+=== start ===
+@scene ferry_dusk
+@show mara
+@show keeper
+@speaker mara
+@move mara center
+@swap mara surprised
+@transition fade 240
+The ferry leaves at dusk.
 -> END
 "#;
 
@@ -65,6 +104,246 @@ fn lowers_scene_stage_declarations_and_ordered_cues() {
             CueIr::Speaker(None),
         ]
     );
+}
+
+#[test]
+fn lowers_scene_fit_anchor_slots_layers_variants_and_staged_cues() {
+    let story = compile_source(STAGING_SOURCE);
+
+    assert_eq!(
+        story.presentation.scenes["ferry_dusk"],
+        SceneIr {
+            background: Some("art/ferry_dusk.png".to_owned()),
+            fit: Fit::Contain,
+            anchor: AnchorIr { x: 0.25, y: 0.75 },
+        }
+    );
+    assert_eq!(
+        story.presentation.stages["mara"],
+        StageIr {
+            image: Some("art/mara_neutral.png".to_owned()),
+            name: Some("Mara".to_owned()),
+            slot: Slot::Left,
+            layer: 1,
+            variants: BTreeMap::from([(
+                "surprised".to_owned(),
+                "art/mara_surprised.png".to_owned()
+            )]),
+        }
+    );
+    assert_eq!(story.presentation.stages["keeper"].slot, Slot::Right);
+    assert_eq!(story.presentation.stages["keeper"].layer, 2);
+
+    let cues = story.knots["start"]
+        .content
+        .iter()
+        .filter_map(|instruction| match &instruction.kind {
+            InstructionKind::Cue(cue) => Some(cue.clone()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        cues,
+        vec![
+            CueIr::Scene("ferry_dusk".to_owned()),
+            CueIr::Show("mara".to_owned()),
+            CueIr::Show("keeper".to_owned()),
+            CueIr::Speaker(Some("mara".to_owned())),
+            CueIr::Move {
+                stage: "mara".to_owned(),
+                to: Slot::Center,
+            },
+            CueIr::Swap {
+                stage: "mara".to_owned(),
+                variant: "surprised".to_owned(),
+            },
+            CueIr::Transition {
+                kind: TransitionKind::Fade,
+                ms: 240,
+            },
+        ]
+    );
+}
+
+#[test]
+fn staged_presentation_rejections_have_stable_codes_and_spans() {
+    for (label, source, code, line, column) in [
+        (
+            "unknown slot",
+            "stage mara {\n    slot: middle\n}\n=== start ===\n-> END\n",
+            "W2205",
+            2,
+            11,
+        ),
+        (
+            "unknown fit",
+            "scene ferry {\n    fit: stretch\n}\n=== start ===\n-> END\n",
+            "W2206",
+            2,
+            10,
+        ),
+        (
+            "bad anchor",
+            "scene ferry {\n    anchor: 1.5, 0.5\n}\n=== start ===\n-> END\n",
+            "W2207",
+            2,
+            13,
+        ),
+        (
+            "negative anchor",
+            "scene ferry {\n    anchor: -0.5, 0.5\n}\n=== start ===\n-> END\n",
+            "W2207",
+            2,
+            13,
+        ),
+        (
+            "layer 10",
+            "stage mara {\n    layer: 10\n}\n=== start ===\n-> END\n",
+            "W2208",
+            2,
+            12,
+        ),
+        (
+            "negative layer",
+            "stage mara {\n    layer: -1\n}\n=== start ===\n-> END\n",
+            "W2208",
+            2,
+            12,
+        ),
+        (
+            "transition too long",
+            "=== start ===\n@transition fade 2001\nText.\n-> END\n",
+            "W2210",
+            2,
+            18,
+        ),
+        (
+            "unknown transition kind",
+            "=== start ===\n@transition blur 200\nText.\n-> END\n",
+            "W2209",
+            2,
+            13,
+        ),
+        (
+            "missing variant",
+            "stage mara {\n    image: \"art/mara.png\"\n}\n=== start ===\n@swap mara surprised\nText.\n-> END\n",
+            "W2211",
+            5,
+            12,
+        ),
+        (
+            "unknown move target",
+            "=== start ===\n@move ghost left\nText.\n-> END\n",
+            "W2213",
+            2,
+            7,
+        ),
+        (
+            "unsafe variant image",
+            "stage mara {\n    variant surprised {\n        image: \"art/con.png\"\n    }\n}\n=== start ===\n-> END\n",
+            "W2204",
+            3,
+            16,
+        ),
+    ] {
+        let error = match compile(source, &CompileOptions::default()) {
+            Ok(_) => panic!("{label} compiled unexpectedly"),
+            Err(error) => error,
+        };
+        let diagnostic = error
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code.0 == code)
+            .unwrap_or_else(|| panic!("{label} did not produce {code}: {error:?}"));
+        let span = diagnostic
+            .span
+            .unwrap_or_else(|| panic!("{label} diagnostic has no span"));
+        assert_eq!(span.line, line, "{label} line");
+        assert_eq!(span.column, column, "{label} column");
+    }
+}
+
+#[test]
+fn transition_durations_separate_out_of_range_from_malformed_tokens() {
+    for (token, code) in [
+        ("-1", "W2210"),
+        ("2001", "W2210"),
+        ("65536", "W2210"),
+        ("999999999999999999999999999999999999999999", "W2210"),
+        ("+240", "W1046"),
+        ("twenty", "W1046"),
+        ("1.5", "W1046"),
+    ] {
+        let source = format!("=== start ===\n@transition fade {token}\nText.\n-> END\n");
+        let error = compile(&source, &CompileOptions::default())
+            .expect_err("an invalid duration must not compile");
+        let diagnostic = error
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code.0 == code)
+            .unwrap_or_else(|| panic!("`{token}` did not produce {code}: {error:?}"));
+        let span = diagnostic
+            .span
+            .unwrap_or_else(|| panic!("`{token}` diagnostic has no span"));
+        assert_eq!(span.line, 2, "`{token}` line");
+        assert_eq!(span.column, 18, "`{token}` column");
+        if code == "W2210" {
+            assert!(
+                !error
+                    .diagnostics
+                    .iter()
+                    .any(|diagnostic| diagnostic.code.0 == "W1046"),
+                "`{token}` must not be reported as malformed: {error:?}"
+            );
+        }
+    }
+
+    for token in ["0", "2000"] {
+        let source = format!("=== start ===\n@transition fade {token}\nText.\n-> END\n");
+        assert!(
+            compile(&source, &CompileOptions::default()).is_ok(),
+            "`{token}` is inside the contract bound"
+        );
+    }
+}
+
+#[test]
+fn negative_zero_anchors_lower_and_serialize_as_positive_zero() {
+    let source = "scene ferry {\n    anchor: -0.0, 0.5\n}\n=== start ===\n-> END\n";
+    let story = compile_source(source);
+    let anchor = story.presentation.scenes["ferry"].anchor;
+    assert_eq!(anchor.x, 0.0);
+    assert!(
+        anchor.x.is_sign_positive(),
+        "negative zero survived lowering"
+    );
+
+    let json = to_json(&story).expect("serialize JSON");
+    let ron = to_ron(&story).expect("serialize RON");
+    assert!(!json.contains("-0.0"), "{json}");
+    assert!(!ron.contains("-0.0"), "{ron}");
+}
+
+#[test]
+fn duplicate_stage_variants_are_rejected_with_a_span() {
+    let source = r#"stage mara {
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
+    variant surprised {
+        image: "art/mara_alt.png"
+    }
+}
+=== start ===
+-> END
+"#;
+    let error = compile(source, &CompileOptions::default()).expect_err("duplicate variant fails");
+    let diagnostic = error
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.code.0 == "W2212")
+        .expect("duplicate variant diagnostic");
+    assert_eq!(diagnostic.span.expect("span").line, 5);
 }
 
 #[test]
@@ -193,4 +472,22 @@ fn presentation_ir_round_trips_through_ron_and_json() {
     let from_json: StoryIr = serde_json::from_str(&json).expect("decode JSON");
     assert_eq!(from_ron, from_json);
     assert_eq!(from_ron, story);
+}
+
+#[test]
+fn staged_scene_round_trips_through_ron_and_json() {
+    let story = compile_source(STAGING_SOURCE);
+    let ron = to_ron(&story).expect("serialize RON");
+    let json = to_json(&story).expect("serialize JSON");
+
+    let from_ron: StoryIr = ron::from_str(&ron).expect("decode RON");
+    let from_json: StoryIr = serde_json::from_str(&json).expect("decode JSON");
+    assert_eq!(from_ron, from_json);
+    assert_eq!(from_ron, story);
+    assert_eq!(from_ron.version, 6);
+    assert_eq!(from_ron.presentation.stages.len(), 2);
+    assert_eq!(
+        from_ron.presentation.stages["mara"].variants["surprised"],
+        "art/mara_surprised.png"
+    );
 }

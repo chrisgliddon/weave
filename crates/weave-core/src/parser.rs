@@ -9,11 +9,11 @@ use pest_derive::Parser;
 
 use crate::Diagnostic;
 use crate::ast::{
-    BinaryOperator, Choice, Conditional, ConditionalBranch, Cue, Declaration, Document, Expr,
-    GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, ModuleDecl,
+    AnchorDecl, BinaryOperator, Choice, Conditional, ConditionalBranch, Cue, Declaration, Document,
+    Expr, GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, ModuleDecl,
     ModuleEntry, PatternCollection, PatternDecl, PatternDrawMethod, PatternElement, PatternEntry,
     SceneDecl, SceneEntry, Span, Spanned, SpreadDecl, StageDecl, StageEntry, Statement,
-    UnaryOperator, VariableKind,
+    UnaryOperator, VariableKind, VariantDecl, VariantEntry,
 };
 
 #[derive(Parser)]
@@ -420,6 +420,10 @@ fn build_scene(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
     let mut name = None;
     let mut background = None;
     let mut background_span = None;
+    let mut fit = None;
+    let mut fit_span = None;
+    let mut anchor = None;
+    let mut anchor_span = None;
     let mut entries = Vec::new();
     let mut diagnostics = Vec::new();
 
@@ -459,6 +463,71 @@ fn build_scene(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
                     Err(error) => diagnostics.push(error),
                 }
             }
+            Rule::scene_fit_decl => {
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::identifier)
+                else {
+                    diagnostics.push(internal_parser_error("scene fit has no token"));
+                    continue;
+                };
+                let value_span = span_for(&value);
+                let value = value.as_str().to_owned();
+                if fit.replace(value.clone()).is_some() {
+                    diagnostics.push(
+                        Diagnostic::error("W1041", "scene repeats its `fit` setting")
+                            .with_span(span),
+                    );
+                } else {
+                    fit_span = Some(value_span);
+                    entries.push(Spanned::new(SceneEntry::Fit(value), span));
+                }
+            }
+            Rule::scene_anchor_decl => {
+                let span = span_for(&inner);
+                let numbers = inner
+                    .into_inner()
+                    .filter(|candidate| candidate.as_rule() == Rule::signed_number)
+                    .collect::<Vec<_>>();
+                if numbers.len() != 2 {
+                    diagnostics.push(internal_parser_error(
+                        "scene anchor must contain exactly two numbers",
+                    ));
+                    continue;
+                }
+                let x_span = span_for(&numbers[0]);
+                let y_span = span_for(&numbers[1]);
+                let x = match parse_number(numbers[0].as_str(), x_span) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        diagnostics.push(error);
+                        continue;
+                    }
+                };
+                let y = match parse_number(numbers[1].as_str(), y_span) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        diagnostics.push(error);
+                        continue;
+                    }
+                };
+                let value = AnchorDecl {
+                    x,
+                    y,
+                    x_span,
+                    y_span,
+                };
+                if anchor.replace(value).is_some() {
+                    diagnostics.push(
+                        Diagnostic::error("W1041", "scene repeats its `anchor` setting")
+                            .with_span(span),
+                    );
+                } else {
+                    anchor_span = Some(x_span.cover(y_span));
+                    entries.push(Spanned::new(SceneEntry::Anchor(value), span));
+                }
+            }
             _ => {}
         }
     }
@@ -473,6 +542,10 @@ fn build_scene(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
                 name,
                 background,
                 background_span,
+                fit,
+                fit_span,
+                anchor,
+                anchor_span,
                 entries,
             },
             outer_span,
@@ -490,6 +563,10 @@ fn build_stage(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
     let mut image_span = None;
     let mut display_name = None;
     let mut display_name_span = None;
+    let mut slot = None;
+    let mut slot_span = None;
+    let mut layer = None;
+    let mut layer_span = None;
     let mut entries = Vec::new();
     let mut diagnostics = Vec::new();
 
@@ -556,6 +633,56 @@ fn build_stage(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
                     Err(error) => diagnostics.push(error),
                 }
             }
+            Rule::stage_slot_decl => {
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::identifier)
+                else {
+                    diagnostics.push(internal_parser_error("stage slot has no token"));
+                    continue;
+                };
+                let value_span = span_for(&value);
+                let value = value.as_str().to_owned();
+                if slot.replace(value.clone()).is_some() {
+                    diagnostics.push(
+                        Diagnostic::error("W1042", "stage repeats its `slot` setting")
+                            .with_span(span),
+                    );
+                } else {
+                    slot_span = Some(value_span);
+                    entries.push(Spanned::new(StageEntry::Slot(value), span));
+                }
+            }
+            Rule::stage_layer_decl => {
+                let span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::signed_number)
+                else {
+                    diagnostics.push(internal_parser_error("stage layer has no number"));
+                    continue;
+                };
+                let value_span = span_for(&value);
+                match parse_number(value.as_str(), value_span) {
+                    Ok(value) => {
+                        if layer.replace(value).is_some() {
+                            diagnostics.push(
+                                Diagnostic::error("W1042", "stage repeats its `layer` setting")
+                                    .with_span(span),
+                            );
+                        } else {
+                            layer_span = Some(value_span);
+                            entries.push(Spanned::new(StageEntry::Layer(value), span));
+                        }
+                    }
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            Rule::stage_variant_decl => match build_variant(inner) {
+                Ok(variant) => entries.push(variant),
+                Err(error) => diagnostics.push(error),
+            },
             _ => {}
         }
     }
@@ -572,6 +699,10 @@ fn build_stage(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
                 image_span,
                 display_name,
                 display_name_span,
+                slot,
+                slot_span,
+                layer,
+                layer_span,
                 entries,
             },
             outer_span,
@@ -580,6 +711,64 @@ fn build_stage(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
     } else {
         Err(diagnostics)
     }
+}
+
+fn build_variant(pair: Pair<'_, Rule>) -> Result<Spanned<StageEntry>, Diagnostic> {
+    let span = span_for(&pair);
+    let mut id = None;
+    let mut image = None;
+    let mut image_span = None;
+    let mut entries = Vec::new();
+
+    for inner in pair.into_inner() {
+        match inner.as_rule() {
+            Rule::identifier if id.is_none() => id = Some(inner.as_str().to_owned()),
+            Rule::blank_line => entries.push(Spanned::new(VariantEntry::Blank, span_for(&inner))),
+            Rule::comment_line => {
+                let inner_span = span_for(&inner);
+                entries.push(Spanned::new(
+                    VariantEntry::Comment(comment_from(inner)),
+                    inner_span,
+                ));
+            }
+            Rule::variant_image_decl => {
+                let field_span = span_for(&inner);
+                let Some(value) = inner
+                    .into_inner()
+                    .find(|candidate| candidate.as_rule() == Rule::string_literal)
+                else {
+                    return Err(internal_parser_error("variant field has no string value"));
+                };
+                let value_span = span_for(&value);
+                let value = decode_string(value.as_str(), value_span)?;
+                if image.replace(value.clone()).is_some() {
+                    return Err(
+                        Diagnostic::error("W1045", "variant repeats its `image` setting")
+                            .with_span(field_span),
+                    );
+                }
+                image_span = Some(value_span);
+                entries.push(Spanned::new(VariantEntry::Image(value), field_span));
+            }
+            _ => {}
+        }
+    }
+
+    let Some(id) = id else {
+        return Err(internal_parser_error("variant has no identifier"));
+    };
+    Ok(Spanned::new(
+        StageEntry::Variant(Spanned::new(
+            VariantDecl {
+                id,
+                image,
+                image_span,
+                entries,
+            },
+            span,
+        )),
+        span,
+    ))
 }
 
 fn build_global(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
@@ -1075,6 +1264,7 @@ fn parse_cue(line: &BodyLine) -> Result<Statement, Diagnostic> {
         Some((directive, argument)) => (directive, argument.trim()),
         None => (rest, ""),
     };
+    let arguments = cue_arguments(line, directive, argument);
     let cue = match directive {
         "scene" => Cue::Scene(cue_target(line, directive, argument, "scene")?),
         "show" => Cue::Show(cue_target(line, directive, argument, "stage")?),
@@ -1084,16 +1274,149 @@ fn parse_cue(line: &BodyLine) -> Result<Statement, Diagnostic> {
             validate_identifier(argument, line.span())?;
             Cue::Speaker(Some(argument.to_owned()))
         }
+        "move" => {
+            let [stage, to] = cue_pair(line, directive, &arguments, "stage", "slot")?;
+            validate_identifier(&stage.0, stage.1)?;
+            validate_identifier(&to.0, to.1)?;
+            Cue::Move {
+                stage: stage.0,
+                stage_span: stage.1,
+                to: to.0,
+                to_span: to.1,
+            }
+        }
+        "swap" => {
+            let [stage, variant] = cue_pair(line, directive, &arguments, "stage", "variant")?;
+            validate_identifier(&stage.0, stage.1)?;
+            validate_identifier(&variant.0, variant.1)?;
+            Cue::Swap {
+                stage: stage.0,
+                stage_span: stage.1,
+                variant: variant.0,
+                variant_span: variant.1,
+            }
+        }
+        "transition" => {
+            let [kind, ms] = cue_pair(line, directive, &arguments, "transition kind", "duration")?;
+            validate_identifier(&kind.0, kind.1)?;
+            let value = transition_duration(&ms.0, ms.1)?;
+            Cue::Transition {
+                kind: kind.0,
+                kind_span: kind.1,
+                ms: value,
+                ms_span: ms.1,
+            }
+        }
         _ => {
             return Err(Diagnostic::error(
                 "W1040",
                 format!("unknown presentation directive `@{directive}`"),
             )
             .with_span(line.span())
-            .with_help("use `@scene`, `@show`, `@hide`, or `@speaker`"));
+            .with_help(
+                "use `@scene`, `@show`, `@hide`, `@speaker`, `@move`, `@swap`, or `@transition`",
+            ));
         }
     };
     Ok(Statement::Cue(cue))
+}
+
+type CueToken = (String, Span);
+
+/// Parse the duration token of a `@transition` cue.
+///
+/// The token must be a plain non-negative whole number; a leading `+` is not
+/// accepted. A whole number outside the contract's `0..=2000` bound is
+/// `W2210`, including one too large for any integer type, while a token that
+/// is not a whole number is `W1046`.
+fn transition_duration(token: &str, span: Span) -> Result<u16, Diagnostic> {
+    let digits = token.strip_prefix('-').unwrap_or(token);
+    let whole_number =
+        !token.starts_with('+') && !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit());
+    if !whole_number {
+        return Err(Diagnostic::error(
+            "W1046",
+            format!("transition duration `{token}` must be a whole number of milliseconds"),
+        )
+        .with_span(span));
+    }
+    let Some(value) = token.parse::<i64>().ok() else {
+        // A whole number wider than `i64` is certainly outside the bound.
+        return Err(transition_out_of_range(token, span));
+    };
+    if !(0..=2000).contains(&value) {
+        return Err(transition_out_of_range(token, span));
+    }
+    Ok(value as u16)
+}
+
+fn transition_out_of_range(token: &str, span: Span) -> Diagnostic {
+    Diagnostic::error(
+        "W2210",
+        format!("transition duration `{token}` must be between 0 and 2000 milliseconds"),
+    )
+    .with_span(span)
+}
+
+fn cue_arguments(line: &BodyLine, directive: &str, argument: &str) -> Vec<CueToken> {
+    // The argument text may also spell the directive name, so search past the
+    // directive: `line.trimmed` starts with `@`, and the arguments begin one
+    // byte after the directive ends.
+    let search_start = 1 + directive.len();
+    let Some(base) = line
+        .trimmed
+        .get(search_start..)
+        .and_then(|rest| rest.find(argument))
+        .map(|offset| search_start + offset)
+    else {
+        return Vec::new();
+    };
+    let mut tokens = Vec::new();
+    let mut cursor = 0;
+    while cursor < argument.len() {
+        let bytes = argument.as_bytes();
+        while cursor < bytes.len() && bytes[cursor].is_ascii_whitespace() {
+            cursor += 1;
+        }
+        let start = cursor;
+        while cursor < bytes.len() && !bytes[cursor].is_ascii_whitespace() {
+            cursor += 1;
+        }
+        if start == cursor {
+            break;
+        }
+        let relative = base + start;
+        let span = Span::new(
+            line.start + line.leading_bytes + relative,
+            line.start + line.leading_bytes + base + cursor,
+            line.line,
+            line.leading_bytes + relative + 1,
+        );
+        tokens.push((argument[start..cursor].to_owned(), span));
+    }
+    tokens
+}
+
+fn cue_pair(
+    line: &BodyLine,
+    directive: &str,
+    arguments: &[CueToken],
+    first_name: &str,
+    second_name: &str,
+) -> Result<[CueToken; 2], Diagnostic> {
+    match arguments {
+        [first, second] => Ok([first.clone(), second.clone()]),
+        [] | [_] => Err(Diagnostic::error(
+            "W1043",
+            format!("`@{directive}` requires a {first_name} and a {second_name}"),
+        )
+        .with_span(line.span())),
+        _ => Err(Diagnostic::error(
+            "W1044",
+            format!("`@{directive}` accepts exactly a {first_name} and a {second_name}"),
+        )
+        .with_span(line.span())),
+    }
 }
 
 fn cue_target(
@@ -1539,5 +1862,62 @@ VAR visits = 0
     fn rejects_malformed_input_without_panicking() {
         let result = parse_document("grammar broken { value: [\"x\"\n");
         assert!(result.is_err());
+    }
+
+    fn first_cue(source: &str) -> Cue {
+        let document = parse_document(source).expect("cues parse");
+        document
+            .knots()
+            .flat_map(|knot| knot.node.body.iter())
+            .find_map(|statement| match &statement.node {
+                Statement::Cue(cue) => Some(cue.clone()),
+                _ => None,
+            })
+            .expect("one cue")
+    }
+
+    fn span_text(source: &str, span: Span) -> &str {
+        &source[span.start..span.end]
+    }
+
+    #[test]
+    fn cue_argument_spans_start_after_the_directive_name() {
+        let swap = "=== start ===\n@swap swap swap\n-> END\n";
+        match first_cue(swap) {
+            Cue::Swap {
+                stage,
+                stage_span,
+                variant,
+                variant_span,
+            } => {
+                assert_eq!(stage, "swap");
+                assert_eq!(variant, "swap");
+                assert_eq!((stage_span.start, stage_span.end), (20, 24));
+                assert_eq!((variant_span.start, variant_span.end), (25, 29));
+                assert_eq!(span_text(swap, stage_span), "swap");
+                assert_eq!(span_text(swap, variant_span), "swap");
+                assert_eq!(stage_span.column, 7);
+                assert_eq!(variant_span.column, 12);
+            }
+            other => panic!("expected a swap cue, got {other:?}"),
+        }
+
+        let moved = "=== start ===\n@move move left\n-> END\n";
+        match first_cue(moved) {
+            Cue::Move {
+                stage,
+                stage_span,
+                to,
+                to_span,
+            } => {
+                assert_eq!(stage, "move");
+                assert_eq!(to, "left");
+                assert_eq!((stage_span.start, stage_span.end), (20, 24));
+                assert_eq!((to_span.start, to_span.end), (25, 29));
+                assert_eq!(span_text(moved, stage_span), "move");
+                assert_eq!(span_text(moved, to_span), "left");
+            }
+            other => panic!("expected a move cue, got {other:?}"),
+        }
     }
 }

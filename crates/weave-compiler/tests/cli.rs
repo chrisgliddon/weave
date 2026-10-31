@@ -28,7 +28,7 @@ fn compiles_default_ron_and_explicit_json() {
         .expect("run compiler");
     assert!(status.success());
     let ron = fs::read_to_string(source.with_extension("ron")).expect("read RON");
-    assert!(ron.contains("version: 5"));
+    assert!(ron.contains("version: 6"));
     assert!(ron.contains("Hello."));
 
     let json_path = directory.path().join("custom.json");
@@ -40,7 +40,7 @@ fn compiles_default_ron_and_explicit_json() {
         .expect("run compiler");
     assert!(status.success());
     let json = fs::read_to_string(json_path).expect("read JSON");
-    assert!(json.contains("\"version\": 5"));
+    assert!(json.contains("\"version\": 6"));
 }
 
 #[test]
@@ -52,8 +52,8 @@ fn emits_the_published_json_schema() {
     assert!(output.status.success());
     let schema: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("schema output is JSON");
-    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:5");
-    assert_eq!(schema["properties"]["version"]["const"], 5);
+    assert_eq!(schema["$id"], "urn:weave:schema:story-ir:6");
+    assert_eq!(schema["properties"]["version"]["const"], 6);
 }
 
 #[test]

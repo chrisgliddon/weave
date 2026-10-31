@@ -1,15 +1,25 @@
 scene ferry_dusk {
     background: "art/ferry_dusk.png"
+    fit: cover
+    anchor: 0.5, 0.5
 }
 
 stage mara {
     image: "art/mara_neutral.png"
     name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
 }
 
 === start ===
 @scene ferry_dusk
 @show mara
 @speaker mara
+@move mara center
+@swap mara surprised
+@transition wipe 320
 The ferry leaves at dusk.
 -> END

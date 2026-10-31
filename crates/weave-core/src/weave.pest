@@ -106,21 +106,41 @@ scene_decl = {
     ws* ~ "scene" ~ ws+ ~ identifier ~ ws* ~ "{" ~
     scene_entry* ~ ws* ~ "}" ~ ws* ~ newline?
 }
-scene_entry = _{ blank_line | comment_line | scene_background_decl }
+scene_entry = _{ blank_line | comment_line | scene_background_decl | scene_fit_decl | scene_anchor_decl }
 scene_background_decl = {
     ws* ~ "background" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+scene_fit_decl = {
+    ws* ~ "fit" ~ ws* ~ ":" ~ ws* ~ identifier ~ ws* ~ (newline | &"}")
+}
+scene_anchor_decl = {
+    ws* ~ "anchor" ~ ws* ~ ":" ~ ws* ~ signed_number ~ ws* ~ "," ~ ws* ~ signed_number ~ ws* ~ (newline | &"}")
 }
 
 stage_decl = {
     ws* ~ "stage" ~ ws+ ~ identifier ~ ws* ~ "{" ~
     stage_entry* ~ ws* ~ "}" ~ ws* ~ newline?
 }
-stage_entry = _{ blank_line | comment_line | stage_image_decl | stage_name_decl }
+stage_entry = _{ blank_line | comment_line | stage_image_decl | stage_name_decl | stage_slot_decl | stage_layer_decl | stage_variant_decl }
 stage_image_decl = {
     ws* ~ "image" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
 }
 stage_name_decl = {
     ws* ~ "name" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
+}
+stage_slot_decl = {
+    ws* ~ "slot" ~ ws* ~ ":" ~ ws* ~ identifier ~ ws* ~ (newline | &"}")
+}
+stage_layer_decl = {
+    ws* ~ "layer" ~ ws* ~ ":" ~ ws* ~ signed_number ~ ws* ~ (newline | &"}")
+}
+stage_variant_decl = {
+    ws* ~ "variant" ~ ws+ ~ identifier ~ ws* ~ "{" ~
+    variant_entry* ~ ws* ~ "}" ~ ws* ~ newline?
+}
+variant_entry = _{ blank_line | comment_line | variant_image_decl }
+variant_image_decl = {
+    ws* ~ "image" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
 }
 
 knot = { knot_header ~ knot_body }
@@ -164,6 +184,7 @@ call_arguments = { ws* ~ "(" ~ ws* ~ (expression ~ (ws* ~ "," ~ expression)* ~ w
 boolean_literal = { ("true" | "false") ~ !identifier_continue }
 null_literal = { "null" ~ !identifier_continue }
 number_literal = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? ~ (("e" | "E") ~ ("+" | "-")? ~ ASCII_DIGIT+)? }
+signed_number = @{ "-"? ~ number_literal }
 string_literal = @{ "\"" ~ string_character* ~ "\"" }
 string_character = _{ string_escape | !("\"" | "\\" | "\r" | "\n") ~ ANY }
 string_escape = { "\\" ~ ("\\" | "\"" | "n" | "r" | "t") }

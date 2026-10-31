@@ -16,11 +16,12 @@ use weave_core::ast::{
     VariableKind,
 };
 use weave_core::ir::{
-    BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr, CueIr,
-    DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainOverrideIr,
-    DomainValueIr, Expression, GrammarIr, Instruction, InstructionKind, KnotIr, ListOperationIr,
-    PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr, SceneIr, SpreadIr,
-    StageIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    AnchorIr, BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
+    CueIr, DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainOverrideIr,
+    DomainValueIr, Expression, Fit, GrammarIr, Instruction, InstructionKind, KnotIr,
+    ListOperationIr, PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr,
+    SceneIr, Slot, SpreadIr, StageIr, StoryIr, Template, TemplatePartIr, TransitionKind,
+    UnaryOperatorIr, ValueLiteral, VariableKindIr,
 };
 use weave_core::{
     Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplatePart, has_errors,
@@ -31,7 +32,7 @@ use weave_core::{
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
 /// Stable identifier published in the machine-readable JSON Schema.
-pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:5";
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:6";
 
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -569,7 +570,7 @@ pub fn json_schema() -> Result<String, SerializeError> {
         );
         root.insert(
             "title".to_owned(),
-            serde_json::Value::String("Weave Story IR v5".to_owned()),
+            serde_json::Value::String("Weave Story IR v6".to_owned()),
         );
         root.insert(
             "x-weave-ir-version".to_owned(),
@@ -769,15 +770,43 @@ impl Lowerer {
                         scene.node.name.clone(),
                         SceneIr {
                             background: scene.node.background.clone(),
+                            fit: scene
+                                .node
+                                .fit
+                                .as_deref()
+                                .and_then(Fit::from_token)
+                                .unwrap_or_default(),
+                            anchor: scene.node.anchor.map_or_else(AnchorIr::default, |anchor| {
+                                AnchorIr {
+                                    // Normalize negative zero so JSON and RON
+                                    // stringify the anchor identically.
+                                    x: if anchor.x == 0.0 { 0.0 } else { anchor.x },
+                                    y: if anchor.y == 0.0 { 0.0 } else { anchor.y },
+                                }
+                            }),
                         },
                     );
                 }
                 Item::Stage(stage) => {
+                    let mut variants = BTreeMap::new();
+                    for variant in stage.node.variants() {
+                        if let Some(image) = &variant.node.image {
+                            variants.insert(variant.node.id.clone(), image.clone());
+                        }
+                    }
                     story.presentation.stages.insert(
                         stage.node.name.clone(),
                         StageIr {
                             image: stage.node.image.clone(),
                             name: stage.node.display_name.clone(),
+                            slot: stage
+                                .node
+                                .slot
+                                .as_deref()
+                                .and_then(Slot::from_token)
+                                .unwrap_or_default(),
+                            layer: stage.node.layer.map_or(0, |layer| layer as u8),
+                            variants,
                         },
                     );
                 }
@@ -909,6 +938,18 @@ fn lower_cue(cue: &Cue) -> CueIr {
         Cue::Show(name) => CueIr::Show(name.clone()),
         Cue::Hide(name) => CueIr::Hide(name.clone()),
         Cue::Speaker(name) => CueIr::Speaker(name.clone()),
+        Cue::Move { stage, to, .. } => CueIr::Move {
+            stage: stage.clone(),
+            to: Slot::from_token(to).unwrap_or_default(),
+        },
+        Cue::Swap { stage, variant, .. } => CueIr::Swap {
+            stage: stage.clone(),
+            variant: variant.clone(),
+        },
+        Cue::Transition { kind, ms, .. } => CueIr::Transition {
+            kind: TransitionKind::from_token(kind).unwrap_or(TransitionKind::Cut),
+            ms: *ms,
+        },
     }
 }
 

@@ -1,5 +1,5 @@
 StoryIr(
-    version: 5,
+    version: 6,
     source_name: Some("examples/tabletop-adapters/freehack/runtime/tavi-quill.weave"),
     entry: "start",
     globals: [

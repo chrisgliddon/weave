@@ -465,22 +465,26 @@
     "type": "directive_statement",
     "named": true,
     "fields": {
+      "argument": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
       "directive": {
         "multiple": false,
         "required": true,
         "types": [
           {
             "type": "cue_directive",
-            "named": true
-          }
-        ]
-      },
-      "target": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "identifier",
             "named": true
           }
         ]
@@ -559,6 +563,11 @@
         ]
       }
     }
+  },
+  {
+    "type": "fit_mode",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "flag_declaration",
@@ -1204,6 +1213,32 @@
     }
   },
   {
+    "type": "scene_anchor_setting",
+    "named": true,
+    "fields": {
+      "x": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "y": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "scene_background_setting",
     "named": true,
     "fields": {
@@ -1239,10 +1274,34 @@
       "required": false,
       "types": [
         {
+          "type": "scene_anchor_setting",
+          "named": true
+        },
+        {
           "type": "scene_background_setting",
+          "named": true
+        },
+        {
+          "type": "scene_fit_setting",
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "scene_fit_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "fit_mode",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1347,7 +1406,19 @@
           "named": true
         },
         {
+          "type": "stage_layer_setting",
+          "named": true
+        },
+        {
           "type": "stage_name_setting",
+          "named": true
+        },
+        {
+          "type": "stage_slot_setting",
+          "named": true
+        },
+        {
+          "type": "stage_variant",
           "named": true
         }
       ]
@@ -1370,6 +1441,22 @@
     }
   },
   {
+    "type": "stage_layer_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "stage_name_setting",
     "named": true,
     "fields": {
@@ -1383,6 +1470,53 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "stage_slot",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "stage_slot_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "stage_slot",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "stage_variant",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "variant_image_setting",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1540,6 +1674,22 @@
     }
   },
   {
+    "type": "variant_image_setting",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "!",
     "named": false
   },
@@ -1680,6 +1830,10 @@
     "named": false
   },
   {
+    "type": "anchor",
+    "named": false
+  },
+  {
     "type": "and",
     "named": false
   },
@@ -1692,6 +1846,10 @@
     "named": false
   },
   {
+    "type": "center",
+    "named": false
+  },
+  {
     "type": "choice_text",
     "named": true
   },
@@ -1699,6 +1857,14 @@
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "contain",
+    "named": false
+  },
+  {
+    "type": "cover",
+    "named": false
   },
   {
     "type": "cue_directive",
@@ -1725,6 +1891,18 @@
     "named": false
   },
   {
+    "type": "far_left",
+    "named": false
+  },
+  {
+    "type": "far_right",
+    "named": false
+  },
+  {
+    "type": "fit",
+    "named": false
+  },
+  {
     "type": "grammar",
     "named": false
   },
@@ -1746,6 +1924,14 @@
   },
   {
     "type": "in",
+    "named": false
+  },
+  {
+    "type": "layer",
+    "named": false
+  },
+  {
+    "type": "left",
     "named": false
   },
   {
@@ -1797,7 +1983,15 @@
     "named": false
   },
   {
+    "type": "right",
+    "named": false
+  },
+  {
     "type": "scene",
+    "named": false
+  },
+  {
+    "type": "slot",
     "named": false
   },
   {
@@ -1822,6 +2016,10 @@
   },
   {
     "type": "uniform",
+    "named": false
+  },
+  {
+    "type": "variant",
     "named": false
   },
   {

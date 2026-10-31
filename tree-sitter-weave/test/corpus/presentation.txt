@@ -4,17 +4,27 @@ Scene and stage declarations with presentation cues
 
 scene ferry_dusk {
     background: "art/ferry_dusk.png"
+    fit: contain
+    anchor: 0.5, 0.35
 }
 
 stage mara {
     image: "art/mara_neutral.png"
     name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
 }
 
 === start ===
 @scene ferry_dusk
 @show mara
 @speaker mara
+@move mara center
+@swap mara surprised
+@transition fade 240
 The ferry leaves at dusk.
 @hide mara
 @speaker
@@ -28,7 +38,12 @@ After she leaves.
     name: (identifier)
     (scene_background_setting
       value: (string
-        (string_content))))
+        (string_content)))
+    (scene_fit_setting
+      value: (fit_mode))
+    (scene_anchor_setting
+      x: (number)
+      y: (number)))
   (stage_declaration
     name: (identifier)
     (stage_image_setting
@@ -36,19 +51,40 @@ After she leaves.
         (string_content)))
     (stage_name_setting
       value: (string
-        (string_content))))
+        (string_content)))
+    (stage_slot_setting
+      value: (stage_slot))
+    (stage_layer_setting
+      value: (number))
+    (stage_variant
+      name: (identifier)
+      (variant_image_setting
+        value: (string
+          (string_content)))))
   (knot
     (knot_header
       name: (identifier))
     (directive_statement
       directive: (cue_directive)
-      target: (identifier))
+      argument: (identifier))
     (directive_statement
       directive: (cue_directive)
-      target: (identifier))
+      argument: (identifier))
     (directive_statement
       directive: (cue_directive)
-      target: (identifier))
+      argument: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      argument: (identifier)
+      argument: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      argument: (identifier)
+      argument: (identifier))
+    (directive_statement
+      directive: (cue_directive)
+      argument: (identifier)
+      argument: (number))
     (narrative_statement
       (narrative_text)
       (narrative_text)
@@ -57,7 +93,7 @@ After she leaves.
       (narrative_text))
     (directive_statement
       directive: (cue_directive)
-      target: (identifier))
+      argument: (identifier))
     (directive_statement
       directive: (cue_directive))
     (narrative_statement

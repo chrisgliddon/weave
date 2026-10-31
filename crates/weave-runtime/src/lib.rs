@@ -13,8 +13,8 @@ use weave_core::Span;
 use weave_core::ir::{
     BinaryOperatorIr, ChoiceIr, ConditionalIr, CueIr, DeclarationIr, DomainExportSourceIr,
     DomainModuleIr, DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind,
-    ListOperationIr, StoryIr, Template, TemplatePartIr, UnaryOperatorIr, ValueLiteral,
-    VariableKindIr,
+    ListOperationIr, Slot, StoryIr, Template, TemplatePartIr, TransitionKind, UnaryOperatorIr,
+    ValueLiteral, VariableKindIr,
 };
 use weave_patterns::{
     DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
@@ -226,6 +226,27 @@ pub enum PresentationEvent {
     Hide(String),
     /// Set the current speaker; `None` is narration.
     Speaker(Option<String>),
+    /// Move a declared character stage to a named slot.
+    Move {
+        /// Stage identifier.
+        stage: String,
+        /// Destination slot.
+        to: Slot,
+    },
+    /// Replace a declared stage image with one of its named variants.
+    Swap {
+        /// Stage identifier.
+        stage: String,
+        /// Variant identifier declared on that stage.
+        variant: String,
+    },
+    /// Request a bounded transition between presentation states.
+    Transition {
+        /// Transition style.
+        kind: TransitionKind,
+        /// Nominal duration in milliseconds.
+        ms: u16,
+    },
 }
 
 /// Structured failure category for malformed IR or invalid runtime behavior.
@@ -1239,6 +1260,9 @@ fn presentation_event(cue: CueIr) -> PresentationEvent {
         CueIr::Show(name) => PresentationEvent::Show(name),
         CueIr::Hide(name) => PresentationEvent::Hide(name),
         CueIr::Speaker(name) => PresentationEvent::Speaker(name),
+        CueIr::Move { stage, to } => PresentationEvent::Move { stage, to },
+        CueIr::Swap { stage, variant } => PresentationEvent::Swap { stage, variant },
+        CueIr::Transition { kind, ms } => PresentationEvent::Transition { kind, ms },
     }
 }
 
