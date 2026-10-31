@@ -171,6 +171,19 @@ impl PresentationAssets {
         self.load("stage", stage_id, path)
     }
 
+    /// Stage the variant image declared for one character stage.
+    ///
+    /// The fallback note names both the stage and the variant, so a swap that
+    /// cannot be staged is distinguishable from a missing base image.
+    pub fn variant(
+        &mut self,
+        stage_id: &str,
+        variant_id: &str,
+        path: &str,
+    ) -> Option<Arc<RenderImage>> {
+        self.load("stage variant", &format!("{stage_id}:{variant_id}"), path)
+    }
+
     /// Fallback note for a declaration that could not be staged.
     ///
     /// The note names the declaration and the reason, and remains available
@@ -261,6 +274,11 @@ fn file_stamp(path: &Path) -> Option<FileStamp> {
 /// dimensions are checked before any pixel buffer is created.
 const MAX_ASSET_SIDE: u32 = 8192;
 const MAX_ASSET_PIXELS: u64 = 33_554_432;
+/// Largest file the loader reads into memory before decoding.
+///
+/// The compressed bytes are checked before `fs::read`, so an oversized or
+/// hostile file is refused without allocating a buffer for it.
+const MAX_ASSET_BYTES: u64 = 32 * 1024 * 1024;
 
 /// Whether declared dimensions are too large to stage.
 fn asset_size_problem(width: u32, height: u32) -> Option<String> {
@@ -279,6 +297,14 @@ fn asset_size_problem(width: u32, height: u32) -> Option<String> {
 }
 
 fn decode(path: &Path) -> Result<Arc<RenderImage>, AssetError> {
+    let length = fs::metadata(path)
+        .map_err(|error| AssetError::Unreadable(error.to_string()))?
+        .len();
+    if length > MAX_ASSET_BYTES {
+        return Err(AssetError::Undecodable(format!(
+            "the file is too large: {length} bytes exceeds the {MAX_ASSET_BYTES}-byte limit"
+        )));
+    }
     let bytes = fs::read(path).map_err(|error| AssetError::Unreadable(error.to_string()))?;
     let format = image::guess_format(&bytes).map_err(|error| {
         AssetError::Undecodable(format!("the header is not a recognised image ({error})"))
@@ -340,6 +366,23 @@ mod tests {
             bytes[start + 2],
             bytes[start + 3],
         ]
+    }
+
+    #[test]
+    fn an_oversized_file_is_refused_before_it_is_read() {
+        let directory = tempfile::tempdir().expect("tempdir");
+        let root = directory.path().to_path_buf();
+        fs::create_dir_all(root.join("art")).expect("asset directory");
+        let path = root.join("art/huge.png");
+        // Sparse file: the length is over the bound without writing the bytes.
+        let file = fs::File::create(&path).expect("oversized fixture");
+        file.set_len(MAX_ASSET_BYTES + 1).expect("sparse length");
+        drop(file);
+        let mut assets = PresentationAssets::new(root);
+
+        assert!(assets.background("huge", "art/huge.png").is_none());
+        let failure = assets.failure("art/huge.png").expect("oversized note");
+        assert!(failure.contains("too large"), "{failure}");
     }
 
     #[test]
@@ -444,6 +487,34 @@ mod tests {
         assert!(assets.refresh(), "a created file invalidates the failure");
         assert!(assets.stage("mara", "art/mara.png").is_some());
         assert!(assets.failure("art/mara.png").is_none());
+    }
+
+    #[test]
+    fn a_missing_variant_names_the_stage_and_variant_and_clears_on_rebind() {
+        let directory = tempfile::tempdir().expect("tempdir");
+        let first = directory.path().join("first");
+        let second = directory.path().join("second");
+        fs::create_dir_all(&first).expect("first project");
+        fs::create_dir_all(&second).expect("second project");
+        let mut assets = PresentationAssets::new(first);
+
+        assert!(
+            assets
+                .variant("mara", "surprised", "art/mara_surprised.png")
+                .is_none()
+        );
+        let note = assets
+            .failure("art/mara_surprised.png")
+            .expect("variant note");
+        assert!(note.contains("mara"), "{note}");
+        assert!(note.contains("surprised"), "{note}");
+        assert!(note.contains("not found"), "{note}");
+
+        assert!(assets.rebind(Some(second)));
+        assert!(
+            assets.failure("art/mara_surprised.png").is_none(),
+            "a project switch clears fallback notes"
+        );
     }
 
     fn cued_story() -> weave_core::ir::StoryIr {

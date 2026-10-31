@@ -74,7 +74,12 @@ pub use pattern_browser::{
     PatternBrowserEvent, PatternBrowserModel, PatternBrowserSurface, PatternFilter, PatternOrigin,
     PatternPreview, PatternRecord,
 };
-pub use play_view::{NARRATOR, PlayMode, PlayScene, scene_from_session, split_speaker};
+pub use play_view::{
+    MAX_TRANSITION_MS, NARRATOR, PlayMode, PlayScene, PlayTransition, PresentationLookup,
+    PresentationState, SLOT_CENTRES, SLOT_ORDER, StagedCharacter, fold_cues, ordered_stages,
+    scene_from_session, slot_fraction, slot_index, split_speaker, stages_in_slot,
+};
+
 pub use presentation_assets::{AssetError, PresentationAssets};
 pub use preview::{
     PreviewCompileDebouncer, PreviewEvent, PreviewIssue, PreviewSession, PreviewStatus,

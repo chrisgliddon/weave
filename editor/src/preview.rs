@@ -1,24 +1,32 @@
 //! Debounced compiler integration and isolated live story playback panel.
 
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use gpui::{
-    AnyElement, Context, EventEmitter, FocusHandle, ImageSource, KeyDownEvent, ObjectFit, Window,
-    div, img, prelude::*, px, rgb,
+    AnyElement, Context, EventEmitter, FocusHandle, ImageSource, KeyDownEvent, ObjectFit,
+    RenderImage, Window, div, img, prelude::*, px, relative, rgb,
 };
 use weave_compiler::{CompileOptions, compile_with_modules};
-use weave_core::ir::StoryIr;
+use weave_core::ir::{AnchorIr, Fit, Slot, StoryIr};
 use weave_core::{Diagnostic, Span};
 use weave_domain::DomainCatalog;
 use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
-use crate::play_view::{NARRATOR, PlayMode, scene_from_session, scene_tone};
+use crate::play_view::{
+    NARRATOR, PlayMode, PlayScene, SLOT_ORDER, StagedCharacter, scene_from_session, scene_tone,
+};
 use crate::presentation_assets::PresentationAssets;
 use crate::theme::DARK_THEME;
 
 const MAX_CONTINUE_BOUNDARIES: usize = 10_000;
+
+/// Extra fraction of the frame an anchored cover background extends past each
+/// edge, so the declared anchor can bias the crop in any direction.
+const SCENE_OVERSCAN: f32 = 0.16;
 
 /// Transcript item retained for the current preview run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -219,6 +227,32 @@ impl PreviewSession {
             .as_deref()
     }
 
+    /// Fit declared by a scene, when the story declares that scene.
+    #[must_use]
+    pub fn scene_fit(&self, id: &str) -> Option<Fit> {
+        Some(
+            self.last_valid_story
+                .as_ref()?
+                .presentation
+                .scenes
+                .get(id)?
+                .fit,
+        )
+    }
+
+    /// Normalized anchor declared by a scene, when the story declares it.
+    #[must_use]
+    pub fn scene_anchor(&self, id: &str) -> Option<AnchorIr> {
+        Some(
+            self.last_valid_story
+                .as_ref()?
+                .presentation
+                .scenes
+                .get(id)?
+                .anchor,
+        )
+    }
+
     /// Project-relative character image declared by a stage, if it names one.
     #[must_use]
     pub fn stage_image(&self, id: &str) -> Option<&str> {
@@ -229,6 +263,45 @@ impl PreviewSession {
             .get(id)?
             .image
             .as_deref()
+    }
+
+    /// Slot declared by a stage, when the story declares that stage.
+    #[must_use]
+    pub fn stage_slot(&self, id: &str) -> Option<Slot> {
+        Some(
+            self.last_valid_story
+                .as_ref()?
+                .presentation
+                .stages
+                .get(id)?
+                .slot,
+        )
+    }
+
+    /// Paint layer declared by a stage, when the story declares that stage.
+    #[must_use]
+    pub fn stage_layer(&self, id: &str) -> Option<u8> {
+        Some(
+            self.last_valid_story
+                .as_ref()?
+                .presentation
+                .stages
+                .get(id)?
+                .layer,
+        )
+    }
+
+    /// Project-relative image declared for one named stage variant.
+    #[must_use]
+    pub fn stage_variant_image(&self, stage: &str, variant: &str) -> Option<&str> {
+        self.last_valid_story
+            .as_ref()?
+            .presentation
+            .stages
+            .get(stage)?
+            .variants
+            .get(variant)
+            .map(String::as_str)
     }
 
     #[must_use]
@@ -470,6 +543,11 @@ pub struct PreviewSurface {
     debouncer: PreviewCompileDebouncer,
     pending: Option<PendingCompile>,
     assets: PresentationAssets,
+    /// Last background frame that decoded, kept so a file that disappears
+    /// mid-play does not blank the stage.
+    last_background: Option<(String, Arc<RenderImage>)>,
+    /// Last decoded figure for each stage, kept for the same reason.
+    last_stages: HashMap<String, Arc<RenderImage>>,
     mode: PlayMode,
     focus: FocusHandle,
 }
@@ -484,6 +562,8 @@ impl PreviewSurface {
             debouncer: PreviewCompileDebouncer::new(Duration::from_millis(250)),
             pending: None,
             assets: PresentationAssets::unbound(),
+            last_background: None,
+            last_stages: HashMap::new(),
             mode: PlayMode::Debug,
             focus: cx.focus_handle(),
         }
@@ -491,10 +571,13 @@ impl PreviewSurface {
 
     /// Bind presentation images to the open project directory.
     ///
-    /// Rebinding clears the image cache, so opening or saving a different
-    /// project cannot stage a frame decoded from the previous one.
+    /// Rebinding clears the image cache and the last decoded frame of every
+    /// element, so opening or saving a different project cannot stage a frame,
+    /// or its fallback, decoded from the previous one.
     pub fn set_project_directory(&mut self, directory: Option<PathBuf>, cx: &mut Context<Self>) {
         if self.assets.rebind(directory) {
+            self.last_background = None;
+            self.last_stages.clear();
             cx.notify();
         }
     }
@@ -681,65 +764,58 @@ impl PreviewSurface {
 
     fn play_panel(&mut self, cx: &mut Context<Self>) -> AnyElement {
         let scene = scene_from_session(&self.session);
+
+        // Resolve every declared path before touching the image cache, so the
+        // session reads and the loader writes stay independent borrows.
         let background_asset = scene.background.as_deref().and_then(|id| {
             self.session
                 .scene_background(id)
                 .map(|path| (id.to_owned(), path.to_owned()))
         });
-        let stage_asset = scene.stage.as_deref().and_then(|id| {
-            self.session
-                .stage_image(id)
-                .map(|path| (id.to_owned(), path.to_owned()))
+        let stage_assets = scene
+            .stages
+            .iter()
+            .map(|stage| (stage.id.clone(), stage.variant.clone(), stage.image.clone()))
+            .collect::<Vec<_>>();
+
+        let background_image = background_asset.as_ref().and_then(|(id, path)| {
+            let decoded = self.assets.background(id, path);
+            if let Some(image) = &decoded {
+                self.last_background = Some((id.clone(), Arc::clone(image)));
+            }
+            decoded.or_else(|| {
+                self.last_background
+                    .as_ref()
+                    .filter(|(last, _)| last == id)
+                    .map(|(_, image)| Arc::clone(image))
+            })
         });
-        let background_image = background_asset
-            .as_ref()
-            .and_then(|(id, path)| self.assets.background(id, path));
-        let stage_image = stage_asset
-            .as_ref()
-            .and_then(|(id, path)| self.assets.stage(id, path));
-        let mut notes = Vec::new();
-        for (_, path) in background_asset.iter().chain(stage_asset.iter()) {
-            if let Some(note) = self.assets.failure(path) {
-                notes.push(note.to_owned());
+
+        let mut stage_images: HashMap<String, Option<Arc<RenderImage>>> = HashMap::new();
+        for (id, variant, path) in &stage_assets {
+            let decoded = path.as_deref().and_then(|path| match variant.as_deref() {
+                Some(variant) => self.assets.variant(id, variant, path),
+                None => self.assets.stage(id, path),
+            });
+            if let Some(image) = &decoded {
+                self.last_stages.insert(id.clone(), Arc::clone(image));
+            }
+            stage_images.insert(
+                id.clone(),
+                decoded.or_else(|| self.last_stages.get(id).cloned()),
+            );
+        }
+
+        let mut notes = scene.notes.clone();
+        if let Some((_, path)) = background_asset.as_ref() {
+            push_note(&mut notes, self.assets.failure(path));
+        }
+        for (_, _, path) in &stage_assets {
+            if let Some(path) = path {
+                push_note(&mut notes, self.assets.failure(path));
             }
         }
-        let stage_label = scene
-            .stage
-            .as_deref()
-            .map(|id| self.session.stage_name(id).unwrap_or_else(|| id.to_owned()));
-        let character = match (&scene.stage, stage_label) {
-            (Some(_), Some(label)) => {
-                let mut character = div().flex().flex_col().items_center().gap_1();
-                character = match stage_image {
-                    Some(image) => character.child(
-                        img(ImageSource::Render(image))
-                            .w(px(120.0))
-                            .h(px(150.0))
-                            .object_fit(ObjectFit::Contain),
-                    ),
-                    None => character.child(
-                        div()
-                            .w(px(120.0))
-                            .h(px(150.0))
-                            .rounded_t_full()
-                            .bg(rgb(0x1a2030))
-                            .border_1()
-                            .border_color(rgb(DARK_THEME.border)),
-                    ),
-                };
-                Some(
-                    character
-                        .child(
-                            div()
-                                .text_xs()
-                                .text_color(rgb(DARK_THEME.muted_text))
-                                .child(label),
-                        )
-                        .into_any_element(),
-                )
-            }
-            _ => None,
-        };
+
         let mut frame = div()
             .id("play-scene")
             .flex_1()
@@ -760,52 +836,111 @@ impl PreviewSurface {
             );
         }
 
-        let mut stage = div()
+        let mut stage_area = div()
             .id("play-stage")
             .flex_1()
             .min_h_0()
             .relative()
             .overflow_hidden()
-            .bg(rgb(scene_tone(scene.background.as_deref())))
+            .bg(rgb(scene_tone(scene.background.as_deref())));
+
+        // Background: cover fills and crops, contain letterboxes, and the
+        // declared anchor biases the crop. The frame is overscanned, so an
+        // anchor anywhere in `0..=1` stays inside the image instead of
+        // revealing the tone behind it.
+        let mut backdrop = div()
+            .absolute()
+            .left_0()
+            .top_0()
+            .right_0()
+            .bottom_0()
+            .overflow_hidden();
+        if let Some(image) = background_image {
+            let opacity = scene.background_opacity();
+            backdrop = match scene.fit {
+                Fit::Cover => {
+                    let (left, right) = anchor_inset(scene.anchor.x);
+                    let (top, bottom) = anchor_inset(scene.anchor.y);
+                    backdrop.child(
+                        div()
+                            .absolute()
+                            .left(relative(left))
+                            .right(relative(right))
+                            .top(relative(top))
+                            .bottom(relative(bottom))
+                            .child(
+                                img(ImageSource::Render(image))
+                                    .size_full()
+                                    .object_fit(ObjectFit::Cover)
+                                    .opacity(opacity),
+                            ),
+                    )
+                }
+                Fit::Contain => backdrop.child(
+                    img(ImageSource::Render(image))
+                        .size_full()
+                        .object_fit(ObjectFit::Contain)
+                        .opacity(opacity),
+                ),
+            };
+        }
+        stage_area = stage_area.child(backdrop);
+
+        // Character grid: five equal columns for far_left through far_right,
+        // each holding its stages ordered by layer then insertion order.
+        let mut grid = div()
+            .id("play-stage-grid")
+            .absolute()
+            .left_0()
+            .right_0()
+            .top_0()
+            .bottom(px(38.0))
             .flex()
             .items_end()
-            .justify_center();
-        if let Some(image) = background_image {
-            stage = stage.child(
-                img(ImageSource::Render(image))
+            .justify_center()
+            .gap_2();
+        for slot in SLOT_ORDER {
+            let mut column = div()
+                .flex_1()
+                .h_full()
+                .flex()
+                .items_end()
+                .justify_center()
+                .gap_1();
+            for character in scene.stages_in_slot(slot) {
+                column = column.child(stage_figure(
+                    character,
+                    stage_images.get(&character.id).cloned().flatten(),
+                ));
+            }
+            grid = grid.child(column);
+        }
+        stage_area = stage_area.child(grid);
+
+        stage_area = stage_area.child(
+            div()
+                .absolute()
+                .left_0()
+                .right_0()
+                .bottom(px(38.0))
+                .h(px(1.0))
+                .bg(rgb(DARK_THEME.border)),
+        );
+        if let Some(background) = &scene.background {
+            stage_area = stage_area.child(
+                div()
                     .absolute()
-                    .top_0()
-                    .left_0()
-                    .right_0()
-                    .bottom_0()
-                    .object_fit(ObjectFit::Cover),
+                    .top_3()
+                    .right_3()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.muted_text))
+                    .child(background.clone()),
             );
         }
-        stage = stage
-            .child(
-                div()
-                    .absolute()
-                    .left_0()
-                    .right_0()
-                    .bottom(px(38.0))
-                    .h(px(1.0))
-                    .bg(rgb(DARK_THEME.border)),
-            )
-            .when(scene.background.is_some(), |element| {
-                element.child(
-                    div()
-                        .absolute()
-                        .top_3()
-                        .right_3()
-                        .text_xs()
-                        .text_color(rgb(DARK_THEME.muted_text))
-                        .child(scene.background.clone().unwrap_or_default()),
-                )
-            })
-            .when_some(character, |element, character| element.child(character));
         if scene.speaker != NARRATOR {
-            stage = stage.child(
+            stage_area = stage_area.child(
                 div()
+                    .id("play-nameplate")
                     .absolute()
                     .top_3()
                     .left_3()
@@ -819,8 +954,9 @@ impl PreviewSurface {
             );
         }
         if !notes.is_empty() {
-            stage = stage.child(
+            stage_area = stage_area.child(
                 div()
+                    .id("play-notes")
                     .absolute()
                     .bottom_3()
                     .left_3()
@@ -895,7 +1031,7 @@ impl PreviewSurface {
             }
         }
 
-        frame.child(stage).child(dialogue).into_any_element()
+        frame.child(stage_area).child(dialogue).into_any_element()
     }
 
     fn preview_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
@@ -1192,6 +1328,72 @@ fn preview_button(
         .into_any_element()
 }
 
+/// Negative leading and trailing inset for one axis of an anchored cover frame.
+///
+/// A cover background is drawn slightly larger than the frame, then shifted so
+/// the declared anchor lands near the centre. Both values are bounded by
+/// [`SCENE_OVERSCAN`], so the backdrop always covers the frame.
+fn anchor_inset(anchor: f64) -> (f32, f32) {
+    let anchor = if anchor.is_finite() { anchor } else { 0.5 };
+    let anchor = (anchor as f32).clamp(0.0, 1.0);
+    (
+        -2.0 * SCENE_OVERSCAN * (1.0 - anchor),
+        -2.0 * SCENE_OVERSCAN * anchor,
+    )
+}
+
+/// One character figure, sized as a fraction of its slot column.
+///
+/// The figure keeps its aspect ratio inside the column, so the scene stays
+/// readable when the panel is narrow and does not balloon when it is wide.
+fn stage_figure(stage: &StagedCharacter, image: Option<Arc<RenderImage>>) -> AnyElement {
+    let figure = match image {
+        Some(image) => img(ImageSource::Render(image))
+            .w_full()
+            .h_full()
+            .object_fit(ObjectFit::Contain)
+            .into_any_element(),
+        None => div()
+            .w_full()
+            .h_full()
+            .rounded_t_full()
+            .bg(rgb(0x1a2030))
+            .border_1()
+            .border_color(rgb(DARK_THEME.border))
+            .into_any_element(),
+    };
+    div()
+        .flex()
+        .flex_col()
+        .items_center()
+        .justify_end()
+        .gap_1()
+        .h_full()
+        .max_h(px(300.0))
+        .w(relative(0.9))
+        .min_w(px(24.0))
+        .max_w(px(170.0))
+        .opacity(PlayScene::stage_opacity(stage))
+        .child(div().flex_1().w_full().child(figure))
+        .child(
+            div()
+                .text_xs()
+                .text_color(rgb(DARK_THEME.muted_text))
+                .child(stage.name.clone()),
+        )
+        .into_any_element()
+}
+
+/// Add one fallback note, ignoring a repeat of a note already shown.
+fn push_note(notes: &mut Vec<String>, note: Option<&str>) {
+    let Some(note) = note else {
+        return;
+    };
+    if !notes.iter().any(|existing| existing == note) {
+        notes.push(note.to_owned());
+    }
+}
+
 fn pattern_draw_summary(draw: &DrawResult) -> AnyElement {
     let entries = draw
         .entries
@@ -1360,5 +1562,31 @@ Done.
             debounce.take_ready(start + Duration::from_millis(350)),
             Some(2)
         );
+    }
+
+    #[test]
+    fn anchored_cover_insets_are_centred_and_bounded() {
+        assert_eq!(anchor_inset(0.5), (-SCENE_OVERSCAN, -SCENE_OVERSCAN));
+
+        let (left, right) = anchor_inset(0.0);
+        assert_eq!(left, -2.0 * SCENE_OVERSCAN);
+        assert_eq!(right, 0.0);
+
+        let (left, right) = anchor_inset(1.0);
+        assert_eq!(left, 0.0);
+        assert_eq!(right, -2.0 * SCENE_OVERSCAN);
+
+        assert_eq!(anchor_inset(f64::NAN), anchor_inset(0.5));
+        assert_eq!(anchor_inset(-5.0), anchor_inset(0.0));
+        assert_eq!(anchor_inset(5.0), anchor_inset(1.0));
+    }
+
+    #[test]
+    fn a_fallback_note_is_shown_once() {
+        let mut notes = Vec::new();
+        push_note(&mut notes, Some("stage \"mara\" — the file was not found"));
+        push_note(&mut notes, Some("stage \"mara\" — the file was not found"));
+        push_note(&mut notes, None);
+        assert_eq!(notes.len(), 1);
     }
 }
