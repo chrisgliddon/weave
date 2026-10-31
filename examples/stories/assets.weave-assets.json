@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "path": "art/half_moon_street_morning_room.png",
+      "licence": "MIT",
+      "provenance": "original",
+      "author": "Weave contributors",
+      "note": "Declared placeholder for the morning-room background; no image file is committed."
+    },
+    {
+      "path": "art/algernon_morning.png",
+      "licence": "MIT",
+      "provenance": "original",
+      "author": "Weave contributors",
+      "note": "Declared placeholder for Algernon's stage portrait; no image file is committed."
+    },
+    {
+      "path": "art/lane_serving.png",
+      "licence": "MIT",
+      "provenance": "original",
+      "author": "Weave contributors",
+      "note": "Declared placeholder for Lane's stage portrait; no image file is committed."
+    }
+  ]
+}

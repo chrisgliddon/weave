@@ -3,9 +3,10 @@
 Status: **staged presentation slice implemented; sibling document deferred.**
 Scenes, stages, fit, anchor, slots, layers, variants, and bounded transitions
 compile into story IR version 6 and drain through the runtime. The remaining
-presentation document — dialogue framing, conditions, the asset manifest, and
-step keys — is still a later contract. The [Decisions](#decisions) log records
-the change and why.
+presentation document — dialogue framing, conditions, runtime asset loading, and
+step keys — is still a later contract. The repository asset declaration and
+licence gate is implemented alongside the examples. The [Decisions](#decisions)
+log records the change and why.
 
 Weave Play renders a compiled story as a staged scene instead of a diagnostic
 transcript. This document defines the portable presentation contract that the
@@ -28,8 +29,8 @@ Deferred to the later presentation document:
 
 - dialogue framing, text reveal, and choice presentation;
 - presentation conditions over story variables;
-- an asset manifest with hashes, licences, and provenance;
-- step keys and a story-hash binding; and
+- runtime asset loading and load-time hash checks;
+- step keys and the story-hash binding; and
 - asset-level fallbacks for a missing background or base stage image.
 
 Out of scope, and deliberately not modelled:
@@ -71,8 +72,10 @@ This slice changes the IR contract, so IR version moved from 5 to 6. The staging
 vocabulary is now data: slots are names, not coordinates; layer is a paint
 order; fit and anchor describe how a background fills a frame; and transitions
 carry only a kind and a nominal duration. Renderers choose geometry, easing, and
-pixels. Conditions, the asset manifest, and the story-hash binding remain a
+pixels. Conditions, runtime asset loading, and the story-hash binding remain a
 separate contract, so those adjustments do not force another story-format bump.
+The repository declaration manifest described under [Assets](#assets) is a
+publication gate, not a runtime loader.
 
 ## Example
 
@@ -331,7 +334,7 @@ authors do not mistake them for shipped features.
 |---|---|
 | `when:` conditions | Needs condition evaluation and typed path resolution. |
 | `weave.play.ron` / `weave.play.json` | Needs the full sibling document and story-hash binding. |
-| Asset manifest with hashes and licences | Needs the publication and provenance gate below. |
+| Runtime asset manifest (load-time hashes and story binding) | Needs load-time asset state and a reproducible story hash. The repository declaration manifest under [Assets](#assets) is implemented. |
 | Asset-level fallbacks and declared fallback choice | Needs load-time asset state that is not part of static story IR. |
 | Step keys and `story.hash` | Needs the sibling document and a reproducible story hash. |
 
@@ -349,16 +352,48 @@ root from the project, never from the document. The document cannot name a
 location outside the project, and a reference that escapes the root is a
 diagnostic, not a fallback.
 
-The later manifest will declare each asset with a kind, a SHA-256 hash, a
-licence expression, and a provenance value:
+The repository records every referenced presentation asset in
+`examples/stories/assets.weave-assets.json`. The manifest is a publication
+declaration, not the runtime loader: it proves that a path is known, that its
+licence is recorded, and, when the file is actually redistributed, that its
+bytes are pinned.
 
-- `Original` — authored for this project, with no third-party lineage.
-- `Bundled` — a redistributed third-party artifact; requires an allowlist entry
-  in the repository that also names the exact upstream artifact and revision.
+The file is a JSON object with `version: 1` and an `assets` array. Each entry
+declares:
 
-A hash mismatch, a missing entry, or an undeclared reference is a diagnostic. A
-referenced file that is absent at load time is an error state, never a silent
-skip.
+| Field | Required | Meaning |
+|---|---|---|
+| `path` | yes | Normalized project-relative path. The manifest directory is the project root. |
+| `licence` | yes | SPDX expression such as `MIT`, `CC0-1.0`, or `Apache-2.0 OR MIT`. Empty, placeholder, and malformed expressions fail. |
+| `provenance` | yes | `original` or `bundled`. |
+| `author` | for `original` | Who authored the synthetic asset. |
+| `source` | for `bundled` | Absolute `http` or `https` URL of the exact upstream artifact. |
+| `sha256` | for `bundled` | Lowercase SHA-256 of the redistributed file. |
+| `note` | no | Free-form context, such as why a path is a placeholder. |
+
+- `Original` — authored for this project, with no third-party lineage. An
+  original path may name a placeholder that is not committed yet; the
+  declaration is still required.
+- `Bundled` — a redistributed third-party artifact. Its manifest entry is the
+  allowlist entry: it names the exact source, licence, and hash.
+
+Run the offline checker with `python3 scripts/check-assets.py`. It reads every
+`.weave` under `examples/stories`, extracts each scene `background`, stage
+`image`, and variant `image`, and fails the build when:
+
+- a referenced path has no manifest entry, or an entry is unused;
+- a path escapes the project root;
+- a licence is empty, a placeholder, or not a syntactically valid SPDX
+  expression;
+- a `bundled` entry has no source URL or SHA-256;
+- a `bundled` file is missing or its SHA-256 does not match; or
+- the manifest is malformed or declares duplicate paths.
+
+A bundled asset without a hash and a licence therefore fails the build before
+anything can be redistributed. A missing original placeholder does not fail;
+the renderer's documented fallback handles it. `scripts/build-docs.py` runs the
+same checker next to the corpus check, so the documentation gate enforces the
+same rule.
 
 ### Fallbacks
 
@@ -549,10 +584,17 @@ compile-time failures.
 Before an asset or dependency ships with the repository:
 
 - Every manifest entry carries a licence expression and a provenance value.
-- Original assets name their author and record that they are synthetic.
+- Original assets name their author and record that they are synthetic. A
+  referenced path that is an undeclared placeholder still needs an `original`
+  entry, so the path cannot appear from nowhere later.
 - Bundled third-party assets require an allowlist entry naming the exact
-  upstream artifact, revision, and hash, and their licence text and notices
-  ship beside the project.
+  upstream artifact and hash, and their licence text and notices ship beside
+  the project. In `examples/stories/assets.weave-assets.json` that entry is the
+  manifest record itself: `source` names the upstream artifact and `sha256`
+  pins the redistributed bytes.
+- A bundled asset without a hash, a source URL, or a licence expression fails
+  `scripts/check-assets.py`, and therefore fails `scripts/build-docs.py`. There
+  is no unverified bundled path.
 - A typeface is a bundled dependency carrying its own licence. Weave Play ships
   IBM Plex Sans with IBM Plex Mono for numerals and identifiers, both under SIL
   OFL 1.1. The licence text ships beside the binaries, the family is recorded in

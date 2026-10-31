@@ -37,6 +37,7 @@ REQUIRED_CHAPTERS = {
     "world_module.md",
     "character_module.md",
     "tabletop_adapters.md",
+    "weave_play.md",
     "editor_guide.md",
     "json_format.md",
     "api_reference.md",
@@ -70,6 +71,11 @@ RUSTDOC_PACKAGES = (
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 INCLUDE_DIRECTIVE = re.compile(r"\{\{#include\s+([^}:]+)(?::[^}]*)?\}\}")
 WEAVE_FENCE = re.compile(r"```weave\s*\n(.*?)```", re.DOTALL)
+
+PRESENTATION_ASSET_MANIFEST = (
+    ROOT / "examples" / "stories" / "assets.weave-assets.json"
+)
+REQUIRED_PUBLIC_FILES = (PRESENTATION_ASSET_MANIFEST,)
 
 
 class DocsError(RuntimeError):
@@ -212,6 +218,14 @@ def check_source_links() -> None:
     if absent:
         raise DocsError(f"data/nav.toml names missing pages: {absent}")
 
+    missing_public = sorted(
+        str(path.relative_to(ROOT))
+        for path in REQUIRED_PUBLIC_FILES
+        if not path.is_file()
+    )
+    if missing_public:
+        raise DocsError(f"required public files are missing: {missing_public}")
+
     failures: list[str] = []
     for source in sorted(DOCS.rglob("*.md")):
         text = source.read_text(encoding="utf-8")
@@ -253,6 +267,18 @@ def check_corpus() -> None:
         [
             sys.executable,
             str(ROOT / "scripts" / "build-corpus.py"),
+            "--check",
+        ]
+    )
+
+
+def check_presentation_assets() -> None:
+    """Verify presentation assets are declared, licensed, and provenance-checked."""
+
+    run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "check-assets.py"),
             "--check",
         ]
     )
@@ -4535,6 +4561,7 @@ def main() -> None:
     check_source_links()
     check_quickstart_source()
     check_corpus()
+    check_presentation_assets()
     compile_examples()
     verify_community_package()
     verify_domain_contract()
