@@ -79,26 +79,63 @@ stage mara {
 }
 ```
 
-A scene has an optional `background`. A stage has an optional `image` and an
-optional author-facing `name`. Repeating a scene name is `W2200` and repeating a
-stage name is `W2201`; both are compile errors. Those are the only collisions
-enforced between these declarations: scenes and stages occupy separate
+A scene has an optional `background`, an optional `fit`, and an optional
+`anchor`. A stage has an optional `image`, an optional author-facing `name`, an
+optional `slot`, an optional `layer`, and zero or more nested `variant` blocks:
+
+```weave
+scene ferry_dusk {
+    background: "art/ferry_dusk.png"
+    // `cover` (the default) or `contain`
+    fit: cover
+    // x, y in 0..=1; default 0.5, 0.5
+    anchor: 0.5, 0.5
+}
+
+stage mara {
+    image: "art/mara_neutral.png"
+    name: "Mara"
+    // far_left | left | center | right | far_right
+    slot: left
+    // 0..=9; default 0
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
+}
+```
+
+`fit` selects `cover` (fill the frame, cropping overflow) or `contain` (show
+the whole image, letterboxing if needed). `anchor` names the normalized focal
+point used when a `cover` fit crops. Both components are inclusive in `0..=1`.
+A stage `slot` is a named position on the renderer's normalized horizontal
+grid; its exact pixel geometry belongs to the renderer. `layer` orders stages
+within a slot: higher layers paint later. A `variant` binds a stable identifier
+to an alternate image on that stage.
+
+Defaults apply when a field is absent: `fit: cover`, `anchor: 0.5, 0.5`,
+`slot: center`, and `layer: 0`. Repeating a scene name is `W2200` and repeating a
+stage name is `W2201`; both are compile errors. Repeating a field within one
+declaration is `W1041` for scenes and `W1042` for stages. Duplicate variant
+identifiers on one stage are `W2212`. Scenes and stages occupy separate
 namespaces from each other and from grammars, patterns, variables, and knots, so
 a scene and a stage, or a scene and a variable, may share a name. The one
 cross-kind rule is that an active domain module alias must not collide with any
 grammar, pattern, variable, scene, stage, or knot (`D111`).
 
-Both declarations compile into `StoryIr` version 5: scenes and stages lower into
-the sorted `presentation` map, and cue directives lower into ordinary knot
-instructions. A host reads the definitions from `presentation` and drains cue
-events from the runtime; it never parses source.
+Both declarations compile into `StoryIr` version 6: scenes and stages lower into
+the sorted `presentation` map with their fit, anchor, slot, layer, and variant
+data, and cue directives lower into ordinary knot instructions. A host reads the
+definitions from `presentation` and drains cue events from the runtime; it never
+parses source.
 
 Asset paths are project-relative strings using `/` separators. They must be
 relative and safe: absolute paths, drive letters, URL schemes, `.` and `..`
 segments, empty segments, trailing `/`, backslashes, percent encoding, control
 characters, Windows reserved device names, and non-ASCII characters are all
-rejected with a diagnostic on the string literal. Declared assets live under the
-project's asset root; a path that could escape it is never accepted.
+rejected with a diagnostic on the string literal. Every background, stage
+image, and variant image passes the same validator. Declared assets live under
+the project's asset root; a path that could escape it is never accepted.
 
 Inside a knot, an `@` directive issues a presentation cue:
 
@@ -108,9 +145,12 @@ Inside a knot, an `@` directive issues a presentation cue:
 @show mara
 @speaker mara
 The ferry leaves at dusk.
+@move mara center
+@swap mara surprised
+@transition fade 240
+After she turns away.
 @hide mara
 @speaker
-After she leaves.
 -> END
 ```
 
@@ -120,19 +160,33 @@ After she leaves.
 | `@show <id>` | Show a declared stage. |
 | `@hide <id>` | Hide a declared stage. |
 | `@speaker <id>` | Set the speaker to a declared stage; bare `@speaker` restores narration. |
+| `@move <stage> <slot>` | Move a declared stage to a named slot. |
+| `@swap <stage> <variant>` | Replace a stage image with a declared variant. |
+| `@transition <kind> <ms>` | Request a `cut`, `fade`, `slide`, or `wipe` transition of 0 to 2000 milliseconds. |
 
 `@` is a reserved line-initial character inside a knot. A line whose first
 non-blank character is `@` is always presentation syntax and never narrative
 text, so narrative prose cannot begin with `@`. An unrecognised directive is a
-compile error (`W1040`) rather than text, and a directive that requires a target
-but has none is `W1043`. A bare `@speaker` with no target is the narration cue:
-it clears the current speaker.
+compile error (`W1040`) rather than text, and a directive that requires more
+arguments than it has is `W1043`. Extra arguments are `W1044`. A bare
+`@speaker` with no target is the narration cue: it clears the current speaker.
 
 A cue consumes no story time and does not end the current advance. Cues apply in
 source order and are delivered to the host as they execute, before the line or
-choice set that follows them. Naming an undeclared scene or stage is a compile
-error. Presentation never changes story state, control flow, choice order, or
-text.
+choice set that follows them. Cue order is deterministic: it follows source
+order, is unaffected by comments or blank lines, and survives save and restore
+with the same compiled story and seed. Transition timing is presentation data
+only; it never changes story state, control flow, choice order, text, or random
+draws. A host whose renderer cannot honour a transition still applies the
+surrounding cues in order. If a requested variant is missing, the stage keeps
+its current image and the renderer surfaces a diagnostic instead of inventing a
+fallback image.
+
+Naming an undeclared scene or stage is a compile error, as is moving an
+undeclared stage, swapping a variant a stage does not declare, or naming an
+unknown slot, fit, or transition kind. Out-of-range anchors, layers, and
+transition durations are compile errors. Presentation never changes story
+state, control flow, choice order, or text.
 
 ## 5. Grammar declarations
 
@@ -425,23 +479,24 @@ The checker performs at least these validations before IR is produced:
 - Duplicate module aliases, grammars, rules, patterns, spreads, scenes, stages, knots, or variable names.
 - Missing or incompatible module and pack releases, invalid activation requirements, and alias collisions.
 - Unknown module exports or nested object fields and invalid uses of typed module values.
-- Missing grammar rules, unknown scene/stage cue targets, and missing divert/thread targets.
+- Missing grammar rules, unknown scene/stage cue targets, unknown move stages, missing variants, and missing divert/thread targets.
 - Declaration initializer and assignment type compatibility.
 - Boolean conditions.
 - Valid state-machine definitions and statically known transitions.
 - Valid built-in names, method combinations, pattern collection records, weights, reversal configuration, and spread positions/capacity.
-- Unsupported call paths and non-portable presentation asset paths.
+- Unsupported call paths and non-portable presentation asset paths, including variant images.
+- Unknown or out-of-range presentation tokens: slots, fit modes, anchors, layers, transition kinds, and transition durations.
 - Unreachable statements after `-> target` or `-> END` in one block.
 
 All diagnostics have a stable code, severity, message, and source span. Errors prevent output. Warnings do not. Tools must not panic on malformed UTF-8 input bytes, malformed syntax, unknown IR versions, or invalid runtime data.
 
 ## 16. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 5 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 6 includes:
 
 - Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
 - Sorted active module metadata with exact module and pack versions, validated tagged effective exports, and canonical authored override metadata.
-- Sorted scene and stage definitions, plus source-ordered presentation cue instructions.
+- Sorted scene and stage definitions with fit, anchor, slot, layer, and variant data, plus source-ordered presentation cue instructions.
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.

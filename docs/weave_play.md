@@ -1,10 +1,11 @@
 # Weave Play presentation contract
 
-Status: **implemented slice landed; full contract deferred.** The first vertical
-slice is compiled into story IR version 5 and drained by the runtime. The
-remaining presentation document — layout, fit and anchor, slots, transitions,
-the asset manifest, conditions, and step keys — is still a later contract. The
-[Decisions](#decisions) log records the change and why.
+Status: **staged presentation slice implemented; sibling document deferred.**
+Scenes, stages, fit, anchor, slots, layers, variants, and bounded transitions
+compile into story IR version 6 and drain through the runtime. The remaining
+presentation document — dialogue framing, conditions, the asset manifest, and
+step keys — is still a later contract. The [Decisions](#decisions) log records
+the change and why.
 
 Weave Play renders a compiled story as a staged scene instead of a diagnostic
 transcript. This document defines the portable presentation contract that the
@@ -15,19 +16,21 @@ and when, never what a story does.
 
 In scope for the implemented slice:
 
-- background scenes and character stages declared in source;
+- background scenes with fit and anchor;
+- character stages with named slots, layers, display names, and image variants;
 - speaker selection and nameplate data;
+- move, swap, and bounded transition cues alongside the original scene, show,
+  hide, and speaker cues;
 - ordered presentation cues delivered alongside story events; and
-- project-relative, safe asset path validation.
+- project-relative, safe asset path validation for every image reference.
 
 Deferred to the later presentation document:
 
-- named stage slots, stage geometry, layering, fit, and anchor;
-- transitions and their timing;
 - dialogue framing, text reveal, and choice presentation;
 - presentation conditions over story variables;
-- an asset manifest with hashes, licences, and provenance; and
-- step keys and a story-hash binding.
+- an asset manifest with hashes, licences, and provenance;
+- step keys and a story-hash binding; and
+- asset-level fallbacks for a missing background or base stage image.
 
 Out of scope, and deliberately not modelled:
 
@@ -44,24 +47,32 @@ scene by advancing the story.
 ## What compiles today
 
 Presentation is not a sibling `weave.play` document yet. Scene and stage
-declarations, and the `@scene`, `@show`, `@hide`, and `@speaker` directives,
-compile into `StoryIr` version 5:
+declarations and the `@scene`, `@show`, `@hide`, `@speaker`, `@move`, `@swap`,
+and `@transition` directives compile into `StoryIr` version 6:
 
-- `scene` and `stage` declarations lower into the sorted `presentation` map;
+- `scene` declarations lower into the sorted `presentation` map with
+  `background`, `fit` (`cover` or `contain`), and `anchor` (normalized `x`, `y`);
+- `stage` declarations lower with `image`, `name`, `slot`, `layer` (`0..=9`),
+  and a sorted `variants` map from variant id to image path;
 - each directive lowers into a `Cue` instruction in its knot, in source order;
 - the runtime executes cue instructions without ending the current advance and
   queues a `PresentationEvent` for each one; and
 - a host drains those events with `Story::take_presentation()` before rendering
   the line or choice set that follows.
 
-Naming an undeclared scene or stage is a compile error. Asset paths are
-validated at compile time and must be relative and safe.
+Defaults are `fit: cover`, `anchor: 0.5, 0.5`, `slot: center`, and `layer: 0`.
+Naming an undeclared scene or stage is a compile error, as is moving an
+undeclared stage, swapping a variant the stage does not declare, or naming an
+unknown slot, fit, or transition kind. Anchors outside `0..=1`, layers outside
+`0..=9`, and transition durations outside `0..=2000` are compile errors. Asset
+paths are validated at compile time and must be relative and safe.
 
-This slice changes the IR contract, so IR version moved from 4 to 5. It does not
-yet carry any renderer vocabulary beyond scene and stage identity, a background
-or image path, an optional display name, and the four cue kinds. Layout, fit,
-anchor, slots, transitions, conditions, and hashes remain a separate contract so
-a visual adjustment does not force another story-format bump.
+This slice changes the IR contract, so IR version moved from 5 to 6. The staging
+vocabulary is now data: slots are names, not coordinates; layer is a paint
+order; fit and anchor describe how a background fills a frame; and transitions
+carry only a kind and a nominal duration. Renderers choose geometry, easing, and
+pixels. Conditions, the asset manifest, and the story-hash binding remain a
+separate contract, so those adjustments do not force another story-format bump.
 
 ## Example
 
@@ -70,16 +81,25 @@ This is a complete scene using only implemented syntax:
 ```weave
 scene ferry_dusk {
     background: "art/ferry_dusk.png"
+    fit: cover
+    anchor: 0.5, 0.35
 }
 
 stage mara {
     image: "art/mara_neutral.png"
     name: "Mara"
+    slot: left
+    layer: 1
+    variant surprised {
+        image: "art/mara_surprised.png"
+    }
 }
 
 stage keeper {
     image: "art/keeper_neutral.png"
     name: "The Keeper"
+    slot: right
+    layer: 2
 }
 
 === start ===
@@ -97,10 +117,14 @@ The ferry leaves at dusk.
 === ask ===
 @show keeper
 @speaker keeper
+@move keeper center
+@transition slide 180
 The water remembers every passenger.
 -> deck
 
 === deck ===
+@swap mara surprised
+@transition fade 240
 @hide keeper
 @hide mara
 @speaker
@@ -112,69 +136,148 @@ The compiled `StoryIr` excerpt is:
 
 ```ron
 StoryIr(
-    version: 5,
+    version: 6,
     entry: "start",
     // ...
     presentation: PresentationIr(
         scenes: {
             "ferry_dusk": SceneIr(
                 background: Some("art/ferry_dusk.png"),
+                fit: cover,
+                anchor: AnchorIr(
+                    x: 0.5,
+                    y: 0.35,
+                ),
             ),
         },
         stages: {
             "keeper": StageIr(
                 image: Some("art/keeper_neutral.png"),
                 name: Some("The Keeper"),
+                slot: right,
+                layer: 2,
             ),
             "mara": StageIr(
                 image: Some("art/mara_neutral.png"),
                 name: Some("Mara"),
+                slot: left,
+                layer: 1,
+                variants: {
+                    "surprised": "art/mara_surprised.png",
+                },
             ),
         },
     ),
     knots: {
-        "start": KnotIr(
+        "ask": KnotIr(
             content: [
                 Instruction(
                     span: Span(
-                        start: 217,
-                        end: 234,
-                        line: 16,
+                        start: 535,
+                        end: 547,
+                        line: 37,
                         column: 1,
                     ),
                     kind: InstructionKind(
                         kind: cue,
                         value: CueIr(
-                            kind: scene,
-                            value: "ferry_dusk",
+                            kind: show,
+                            value: "keeper",
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 548,
+                        end: 563,
+                        line: 38,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: cue,
+                        value: CueIr(
+                            kind: speaker,
+                            value: Some("keeper"),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 564,
+                        end: 583,
+                        line: 39,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: cue,
+                        value: CueIr(
+                            kind: move,
+                            value: move(
+                                stage: "keeper",
+                                to: center,
+                            ),
+                        ),
+                    ),
+                ),
+                Instruction(
+                    span: Span(
+                        start: 584,
+                        end: 605,
+                        line: 40,
+                        column: 1,
+                    ),
+                    kind: InstructionKind(
+                        kind: cue,
+                        value: CueIr(
+                            kind: transition,
+                            value: transition(
+                                kind: slide,
+                                ms: 180,
+                            ),
                         ),
                     ),
                 ),
                 // ...
             ],
         ),
-        // ...
     },
 )
 ```
 
 That excerpt was produced by compiling the example above. Instruction and cue
 values are adjacently tagged: `InstructionKind` names the instruction family and
-`CueIr` carries the cue kind and target. The span values are the compiler's byte
-offsets into that source.
+`CueIr` carries the cue kind and payload. Scalar cues carry a string or `null`;
+`move`, `swap`, and `transition` carry a struct payload. The span values are the
+compiler's byte offsets into that source. Map keys are sorted, so `keeper`
+precedes `mara` even though `mara` is declared first.
 
 The same presentation definitions in JSON:
 
 ```json
 {
-  "version": 5,
+  "version": 6,
   "presentation": {
     "scenes": {
-      "ferry_dusk": { "background": "art/ferry_dusk.png" }
+      "ferry_dusk": {
+        "background": "art/ferry_dusk.png",
+        "fit": "cover",
+        "anchor": { "x": 0.5, "y": 0.35 }
+      }
     },
     "stages": {
-      "keeper": { "image": "art/keeper_neutral.png", "name": "The Keeper" },
-      "mara": { "image": "art/mara_neutral.png", "name": "Mara" }
+      "keeper": {
+        "image": "art/keeper_neutral.png",
+        "name": "The Keeper",
+        "slot": "right",
+        "layer": 2
+      },
+      "mara": {
+        "image": "art/mara_neutral.png",
+        "name": "Mara",
+        "slot": "left",
+        "layer": 1,
+        "variants": { "surprised": "art/mara_surprised.png" }
+      }
     }
   }
 }
@@ -182,27 +285,41 @@ The same presentation definitions in JSON:
 
 ## Cues
 
-A cue is one runtime event with a kind and an optional target.
+A cue is one runtime event with a kind and a payload.
 
-| Kind | Target | Effect |
+| Kind | Payload | Effect |
 |---|---|---|
-| `scene` | scene id | Replace the background. |
-| `show` | stage id | Make a declared stage visible. |
+| `scene` | scene id | Replace the background and apply its fit and anchor. |
+| `show` | stage id | Make a declared stage visible at its slot and layer. |
 | `hide` | stage id | Remove a stage. |
 | `speaker` | stage id or none | Select the nameplate source; none is narration. |
+| `move` | stage id and slot | Move a stage to `far_left`, `left`, `center`, `right`, or `far_right`. |
+| `swap` | stage id and variant id | Replace the stage image with the declared variant image. |
+| `transition` | kind and milliseconds | Request `cut`, `fade`, `slide`, or `wipe` for 0 to 2000ms. |
 
 Cues apply in source order. A host applies the cues drained for one advance
 before presenting that advance's line or choices. The runtime never reorders,
 relabels, filters, or disables a choice, and presentation never feeds back into
-story state.
+story state. Cue order derives from source order alone: comments, blank lines,
+save and restore, JSON versus RON, and repeated runs with the same seed cannot
+change it.
 
 Consequences a host may rely on:
 
 - Replaying the same compiled story with the same seed and choices emits the
   same ordered cue sequence.
-- Presentation timing never feeds back into story state.
+- A transition's duration is presentation data. It never changes story state,
+  control flow, choice order, text, or random draws, and saving and restoring
+  does not replay or delay a transition.
 - Two renderers may interpolate transitions differently and still agree on cue
   sequence and final staging.
+- A renderer that cannot honour a transition applies every surrounding cue in
+  order and may fall back to `cut`.
+- If `@swap` names a variant that is declared on the stage, the host uses its
+  image. If the variant is absent at load time, the stage keeps its current
+  image and the host surfaces a diagnostic; it never invents a replacement
+  image. A missing base image or background follows the later asset-fallback
+  contract.
 
 ## Deferred syntax
 
@@ -212,14 +329,11 @@ authors do not mistake them for shipped features.
 
 | Deferred construct | Why it is deferred |
 |---|---|
-| `@move <stage> to <slot>` | Needs the named-slot geometry contract. |
-| `fit:` on a scene | Needs a fit/anchor contract common to every renderer. |
-| `slot:` on a stage | Needs the same slot contract as `@move`. |
-| `@swap <stage> <variant>` | Needs an image-variant model. |
-| `transition:` on a cue | Needs transition timing and reduced-motion rules. |
 | `when:` conditions | Needs condition evaluation and typed path resolution. |
 | `weave.play.ron` / `weave.play.json` | Needs the full sibling document and story-hash binding. |
 | Asset manifest with hashes and licences | Needs the publication and provenance gate below. |
+| Asset-level fallbacks and declared fallback choice | Needs load-time asset state that is not part of static story IR. |
+| Step keys and `story.hash` | Needs the sibling document and a reproducible story hash. |
 
 ## Assets
 
@@ -312,20 +426,23 @@ Regardless of state:
   measure; and
 - the scene scales to the viewport without letterboxing the dialogue.
 
-Stage slots are named positions on a normalized grid: `far_left`, `left`,
-`center`, `right`, `far_right`. A slot's geometry is the renderer's choice; the
-name is the later contract's vocabulary. Until that contract lands, a host may
-place stages with its own policy as long as cue order is preserved.
+Stage slots are named positions on a normalized horizontal grid: `far_left`,
+`left`, `center`, `right`, `far_right`. The compiled story carries the slot name
+and paint-order layer; the renderer owns the exact coordinates. A slot contains
+its stages ordered by `layer`, then by stable declaration and cue order. The
+camera does not follow a stage: moving a stage is a cue, not continuous
+animation.
 
 ## Renderer responsibilities
 
 | Guarantee | Owner |
 |---|---|
 | Cue sequence and final staging for a given story, seed, and choices | Story runtime plus this contract |
-| Scene and stage identity and declared asset paths | Story IR v5 |
+| Scene and stage identity, fit, anchor, slot, layer, variants, and declared asset paths | Story IR v6 |
 | Dialogue and choice text, order, and identifiers | Story runtime |
 | Layout state selection thresholds | Contract |
-| Fallback selection when an asset is unavailable | Later contract |
+| Missing-variant behaviour (keep the current image and report) | This contract |
+| Asset-level fallback for a missing background or base stage image | Later contract |
 | Font rasterization, hinting, and exact pixel metrics | Renderer |
 | Easing curves and interpolation between transition frames | Renderer |
 | Texture filtering, scaling filters, and colour management | Renderer |
@@ -344,18 +461,33 @@ severity, a source span, and a remediation sentence.
 | Code | Meaning |
 |---|---|
 | `W1040` | Unknown presentation directive. |
-| `W1041` | Scene repeats its `background` setting. |
-| `W1042` | Stage repeats an `image` or `name` setting. |
-| `W1043` | Presentation directive is missing its cue target name. |
+| `W1041` | Scene repeats a `background`, `fit`, or `anchor` setting. |
+| `W1042` | Stage repeats an `image`, `name`, `slot`, or `layer` setting. |
+| `W1043` | Presentation directive is missing a required argument. |
+| `W1044` | Presentation directive has extra arguments. |
+| `W1045` | Variant repeats its `image` setting. |
+| `W1046` | Transition duration is not a whole number of milliseconds. |
 | `W2200` | Duplicate scene declaration. |
 | `W2201` | Duplicate stage declaration. |
 | `W2202` | Unknown scene reference. |
 | `W2203` | Unknown stage reference. |
 | `W2204` | Invalid or unsafe asset path. |
+| `W2205` | Unknown stage slot. |
+| `W2206` | Unknown scene fit. |
+| `W2207` | Anchor component outside `0..=1`. |
+| `W2208` | Stage layer outside `0..=9`. |
+| `W2209` | Unknown transition kind. |
+| `W2210` | Transition duration outside `0..=2000`. |
+| `W2211` | Stage does not declare the swapped variant. |
+| `W2212` | Duplicate variant identifier on one stage. |
+| `W2213` | Unknown stage in a `@move`. |
+| `W2215` | Variant has no `image`. |
 
-`W1040` through `W1043` are reported while parsing presentation syntax;
-`W2200` through `W2204` are reported while checking it. All nine are compile
-errors and prevent output.
+`W1040` through `W1046` are reported while parsing presentation syntax, and
+`W2210` is reported there when the duration lexeme is a whole number outside
+`0..=2000`. The remaining `W2200` through `W2215` codes are reported while
+checking it. All are compile errors and prevent output. Every diagnostic
+carries a span on the offending token or literal.
 
 The later presentation document will use stable `P` codes:
 
@@ -385,7 +517,8 @@ compile-time failures.
 | Scene with no stages | Background only; dialogue anchored to the bottom safe area. |
 | Advance with no cues | The previous presentation persists. |
 | Stage declared but never shown | Nothing renders; the definition is inert. |
-| Missing asset | Fallback for that element once the fallback contract lands; until then the renderer decides. |
+| Missing variant image | The stage keeps its current image and the host reports `P001`; no substitute image is invented. |
+| Missing base asset | Fallback for that element once the fallback contract lands; until then the renderer decides. |
 | Runtime failure during an advance | Every cue the runtime produced before the failure is applied in source order, then the failure is surfaced. A host never discards those cues and never defers them to a later frame. |
 | Compile failure while playing | The last valid frame is retained and a non-blocking diagnostic banner appears. Playback resumes on the next successful compile. |
 | Story hash mismatch | Deferred until the sibling document exists. |
@@ -393,9 +526,13 @@ compile-time failures.
 ## Compatibility
 
 - Any added, removed, renamed, or redefined serialized field or enum variant
-  requires a new IR version and a new schema. Adding scenes, stages, and cue
-  instructions therefore moved story IR from 4 to 5.
+  requires a new IR version and a new schema. Adding fit, anchor, slots, layers,
+  variants, and the move, swap, and transition cues therefore moved story IR
+  from 5 to 6.
 - RON and JSON encode one model and must decode to equal values.
+- The schema validates structure and types, not authoring bounds: the `0..=1`
+  anchor, `0..=9` layer, and `0..=2000` millisecond duration limits are compiler
+  checks, so a decoded story may carry wider values from another producer.
 - Map member order carries no meaning; the compiler emits sorted maps so diffs
   and reviews stay stable.
 - Unknown members and unknown enum variants are rejected, not ignored. A host
@@ -438,16 +575,17 @@ revised when the first slice landed.
 
 1. **Presentation document.** Originally resolved as a sibling `weave.play`
    document so presentation changes never bump the story IR version. Revised:
-   the implemented slice compiles scene and stage definitions and the four cue
-   instructions into `StoryIr` version 5, because the runtime must deliver them
-   with story events and because a host cannot stage a line without them. The
-   fuller document — layout, fit and anchor, slots, transitions, conditions, the
-   asset manifest, and the story-hash binding — remains a later contract, so
-   visual adjustments still do not bump the story IR. Adding the slice required
-   IR version 5 and a new schema.
-2. **Stage geometry.** Resolved: named slots on a normalized grid, with the
-   renderer owning coordinates. Authored coordinates were rejected because they
-   make every layout change an authoring migration. Not yet implemented.
+   the implemented slices compile scene and stage definitions plus every cue
+   instruction into `StoryIr`, because the runtime must deliver them with story
+   events and because a host cannot stage a line without them. Fit, anchor,
+   slots, layers, variants, and bounded transitions landed in version 6. The
+   remaining document — dialogue framing, conditions, the asset manifest, and
+   the story-hash binding — remains a later contract, so visual adjustments
+   still do not bump the story IR. The staging slice required IR version 6 and a
+   new schema.
+2. **Stage geometry.** Resolved and implemented: named slots on a normalized
+   grid, with the renderer owning coordinates. Authored coordinates were
+   rejected because they make every layout change an authoring migration.
 3. **Typeface.** Resolved: bundle a font rather than inherit the host stack.
    Weave Play ships IBM Plex Sans and IBM Plex Mono under SIL OFL 1.1, with the
    licence text and notices beside the binaries and an allowlist hash entry.

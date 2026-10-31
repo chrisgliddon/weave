@@ -106,8 +106,16 @@ always sorts last among the root's children.
 
 The preview panel has two presentations of one session. Debug shows the
 transcript, pattern draws, variables, and playback controls. Play stages the
-current line as a scene: a synthetic background, one character placeholder, a
-speaker nameplate, the dialogue, and the pending choices as buttons.
+current line as a scene: a background laid out with the declared `fit` and
+`anchor`, character images in five slot columns from `far_left` to `far_right`,
+a speaker nameplate, the dialogue, and the pending choices as buttons. Stages
+within a slot paint in `layer` order, then in insertion order, and a `@swap`
+resolves the stage's declared variant image.
+
+Staging is presentation only. A `@transition` fades, slides, or wipes the next
+staged visual without changing story state or timing. When a variant or asset is
+unavailable, the last staged frame stays and a muted note under the stage names
+the declaration and the reason; the surface never invents a substitute image.
 
 Both presentations read the session the panel already owns, so they cannot
 disagree: the same choices, the same variable values, the same pattern draws,
