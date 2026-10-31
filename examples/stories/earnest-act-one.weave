@@ -1,0 +1,127 @@
+// Adaptation of the opening of Act I of The Importance of Being Earnest by
+// Oscar Wilde, which premiered in 1895 and was published in book form in 1899.
+// The play is in the United States public domain. This branching scene is an
+// original adaptation: connective prose, choices, and story logic are newly
+// written, and only short phrases are echoed from the source.
+
+scene morning_room {
+    background: "art/half_moon_street_morning_room.png"
+}
+
+stage algernon {
+    image: "art/algernon_morning.png"
+    name: "Algernon"
+}
+
+stage lane {
+    image: "art/lane_serving.png"
+    name: "Lane"
+}
+
+VAR sandwiches = 0
+VAR questions = 0
+FLAG heard_marriage = false
+
+=== morning_room ===
+@scene morning_room
+A piano falls silent behind the folding doors of a bachelor's house in
+Half-Moon Street, and the room keeps the hush that follows a performance.
+@show algernon
+@speaker algernon
+"Did you hear what I was playing, Lane?"
+@show lane
+@speaker lane
+"I didn't think it polite to listen, sir."
+@speaker algernon
+"Anyone can play accurately. I play with wonderful expression."
+The remark is offered to the ceiling, which receives it without comment.
+* [Ask after the cucumber sandwiches]
+    SET sandwiches = sandwiches + 2
+    "Have you got the cucumber sandwiches cut for Lady Bracknell?"
+    The salver arrives, and two sandwiches leave it before it is set down.
+    -> ledger
+* [Ask about the champagne in the book]
+    SET questions = questions + 1
+    The account book is opened at the page for Thursday night.
+    -> ledger
++ [Wave the subject away]
+    Algernon turns to the window and lets the question go unanswered.
+    -> ledger
+
+=== ledger ===
+The morning light lies across a small table set for tea, and the household
+accounts wait beside it like a pupil called to recite.
+{sandwiches > 0:
+    The salver is lighter than it was. Algernon observes this without
+    surprise, and helps himself to nothing further.
+- else:
+    The salver is still full. Algernon observes that too.
+}
+@speaker lane
+"Eight bottles and a pint, sir."
+@speaker algernon
+"Why is it that at a bachelor's establishment the servants invariably drink
+the champagne?"
+@speaker lane
+"I attribute it to the superior quality of the wine, sir."
+@speaker algernon
+The answer delights him more than the wine ever could.
+* [Ask Lane whether marriage is demoralising]
+    SET questions = questions + 1
+    SET heard_marriage = true
+    "Is marriage so demoralising as that?"
+    Lane considers the question as if it were a rather good vintage.
+    -> marriage
+* [Let the subject rest]
+    Algernon decides that the accounts have told him enough.
+    -> marriage
++ [Return to the piano]
+    The conversation is left standing where it was.
+    -> marriage
+
+=== marriage ===
+{heard_marriage:
+    Lane says he has only been married once, in consequence of a
+    misunderstanding between himself and a young person.
+- else:
+    Lane offers no family history, and none is demanded of him.
+}
+@speaker lane
+"It is not a very interesting subject. I never think of it myself."
+@speaker algernon
+"That will do, Lane, thank you."
+@hide lane
+@speaker
+Lane withdraws, and the folding doors close behind him with a soft click.
+* [Let him go]
+    The bell for the next caller sounds somewhere below stairs.
+    -> empty_house
+* [Call him back for one last question]
+    SET questions = questions + 1
+    The doors part again, and Lane returns without any sign of impatience.
+    -> last_word
+
+=== empty_house ===
+The morning-room is left to its owner, who plays a few bars with great
+feeling and no accuracy at all. The sandwiches are gone, the accounts are
+closed, and the household resumes its ordinary and entirely satisfactory
+performance.
+-> END
+
+=== last_word ===
+@show lane
+@speaker lane
+"Yes, sir?"
+@speaker algernon
+Algernon asks whether the lower orders might be persuaded to set a better
+example, and Lane replies that he has never thought about it.
+{questions > 2:
+    The answer is so complete that Algernon cannot improve on it.
+- else:
+    The answer is brief, and Algernon lets it stand.
+}
+@hide lane
+@speaker
+The folding doors close. In the kitchen the champagne is put away, and
+upstairs a piano begins again, a little less accurately than before.
+-> END
