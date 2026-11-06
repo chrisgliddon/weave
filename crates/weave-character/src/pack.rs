@@ -68,6 +68,8 @@ pub const CHARACTER_PACK_ADAPTER_MANIFEST_FORMAT_VERSION: u32 = 1;
 pub const CHARACTER_PACK_TABLETOP_STATE_FORMAT_VERSION: u32 = 1;
 /// Entropy algorithm supported by packed tabletop state.
 pub const CHARACTER_PACK_TABLETOP_ENTROPY_ALGORITHM: &str = "sha256_counter_v1";
+/// Maximum number of adapter type-graph nodes visited while validating one manifest.
+pub const CHARACTER_PACK_MAX_TYPE_NODES: usize = 262_144;
 
 const AUTHORING_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-authoring-pack:1";
 const RUNTIME_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-runtime-pack:1";
@@ -642,6 +644,8 @@ pub struct CharacterPackTabletopState {
 pub struct CharacterPackInactiveTabletop {
     /// Exact archived adapter manifest; its coordinate types are validated for this entry.
     pub manifest: CharacterPackAdapterManifest,
+    /// Archived adapter provenance retained only in authoring exports.
+    pub provenance: Provenance,
     pub definition: DomainValue,
     pub definition_sha256: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -1384,6 +1388,11 @@ fn sort_json_keys(value: &mut serde_json::Value) {
 }
 
 /// Validate a complete authoring pack.
+///
+/// This is a self-consistency check. It proves that a pack's manifests, hashes, definitions, and
+/// licences agree with each other, but it does not prove that the adapter manifests came from a
+/// trusted source. Hosts that install adapters should call
+/// [`validate_authoring_pack_with_installed`] as well.
 pub fn validate_authoring_pack(pack: &CharacterAuthoringPack) -> Result<(), CharacterPackError> {
     validate_pack_format_version(pack.pack_format_version)?;
     CharacterPackMetadata {
@@ -1506,6 +1515,52 @@ pub fn validate_authoring_pack(pack: &CharacterAuthoringPack) -> Result<(), Char
         validate_authoring_tabletop(&path, &entry.profile, entry.tabletop.as_ref())?;
     }
 
+    Ok(())
+}
+
+/// Validate an authoring pack and bind every active and archived adapter manifest to a trusted
+/// host manifest by exact coordinate: id, version, schema version, and content hash.
+///
+/// An inactive archive's embedded manifest is a trust anchor only when the host supplies the same
+/// exact coordinate in `installed`. An archive whose manifest is absent from that set is rejected.
+pub fn validate_authoring_pack_with_installed(
+    pack: &CharacterAuthoringPack,
+    installed: &[CharacterPackAdapterManifest],
+) -> Result<(), CharacterPackError> {
+    validate_authoring_pack(pack)?;
+    let mut trusted = BTreeSet::new();
+    for (index, manifest) in installed.iter().enumerate() {
+        validate_tabletop_manifest(&format!("installed[{index}]"), manifest, None)?;
+        if !trusted.insert(manifest.coordinate.clone()) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                "installed",
+                "trusted adapter coordinates must be unique",
+            ));
+        }
+    }
+    for entry in &pack.characters {
+        let Some(projection) = &entry.tabletop else {
+            continue;
+        };
+        let path = format!("characters.{}.tabletop", entry.profile.id);
+        if !trusted.contains(&projection.manifest.coordinate) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.manifest.coordinate"),
+                "active adapter manifest is not installed in the trusted host set",
+            ));
+        }
+        for (key, inactive) in &projection.inactive {
+            if !trusted.contains(&inactive.manifest.coordinate) {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    format!("{path}.inactive.{key}.manifest.coordinate"),
+                    "archived adapter manifest is not installed in the trusted host set",
+                ));
+            }
+        }
+    }
     Ok(())
 }
 
@@ -3150,7 +3205,7 @@ fn validate_tabletop_manifest(
             "an adapter manifest declares too many named types",
         ));
     }
-    validate_adapter_type_contract(path, manifest)?;
+    validate_adapter_type_contract(path, manifest, CHARACTER_PACK_MAX_TYPE_NODES)?;
     let empty = empty_provenance();
     validate_pack_license(
         &format!("{path}.license"),
@@ -3175,26 +3230,43 @@ fn validate_tabletop_manifest(
     Ok(())
 }
 
+/// Validate one packed adapter manifest type contract with an explicit node budget.
+///
+/// Named types are memoized after their first successful validation, so shared subtrees are
+/// traversed once. The budget bounds every non-memoized visit.
+pub fn validate_character_pack_adapter_types(
+    manifest: &CharacterPackAdapterManifest,
+    max_nodes: usize,
+) -> Result<(), CharacterPackError> {
+    validate_adapter_type_contract("adapter", manifest, max_nodes)
+}
+
 fn validate_adapter_type_contract(
     path: &str,
     manifest: &CharacterPackAdapterManifest,
+    max_nodes: usize,
 ) -> Result<(), CharacterPackError> {
     for name in manifest.types.keys() {
         validate_local_id(&format!("{path}.types"), name)?;
     }
-    let mut stack = BTreeSet::new();
+    let mut budget = max_nodes;
+    let mut validated = BTreeSet::new();
     validate_adapter_type_expression(
         &format!("{path}.definition_type"),
         &manifest.definition_type,
         &manifest.types,
-        &mut stack,
+        &mut BTreeSet::new(),
+        &mut validated,
+        &mut budget,
         0,
     )?;
     validate_adapter_type_expression(
         &format!("{path}.state_type"),
         &manifest.state_type,
         &manifest.types,
-        &mut stack,
+        &mut BTreeSet::new(),
+        &mut validated,
+        &mut budget,
         0,
     )?;
     for (name, value_type) in &manifest.types {
@@ -3202,10 +3274,24 @@ fn validate_adapter_type_contract(
             &format!("{path}.types.{name}"),
             value_type,
             &manifest.types,
-            &mut stack,
+            &mut BTreeSet::new(),
+            &mut validated,
+            &mut budget,
             0,
         )?;
     }
+    Ok(())
+}
+
+fn spend_type_node(path: &str, budget: &mut usize) -> Result<(), CharacterPackError> {
+    if *budget == 0 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            path,
+            "adapter type graph exceeds the node budget",
+        ));
+    }
+    *budget -= 1;
     Ok(())
 }
 
@@ -3214,6 +3300,8 @@ fn validate_adapter_type_expression(
     value_type: &TypeExpression,
     types: &BTreeMap<String, TypeExpression>,
     stack: &mut BTreeSet<String>,
+    validated: &mut BTreeSet<String>,
+    budget: &mut usize,
     depth: usize,
 ) -> Result<(), CharacterPackError> {
     if depth > 32 {
@@ -3223,6 +3311,12 @@ fn validate_adapter_type_expression(
             "adapter type exceeds the nesting limit",
         ));
     }
+    if let TypeExpression::Named { name } = value_type
+        && validated.contains(name)
+    {
+        return Ok(());
+    }
+    spend_type_node(path, budget)?;
     match value_type {
         TypeExpression::String {
             min_length,
@@ -3257,9 +3351,15 @@ fn validate_adapter_type_expression(
                 "adapter list bounds are invalid",
             ))
         }
-        TypeExpression::List { items, .. } => {
-            validate_adapter_type_expression(path, items, types, stack, depth + 1)
-        }
+        TypeExpression::List { items, .. } => validate_adapter_type_expression(
+            path,
+            items,
+            types,
+            stack,
+            validated,
+            budget,
+            depth + 1,
+        ),
         TypeExpression::Map {
             values,
             min_entries,
@@ -3272,9 +3372,15 @@ fn validate_adapter_type_expression(
                 "adapter map bounds are invalid",
             ))
         }
-        TypeExpression::Map { values, .. } => {
-            validate_adapter_type_expression(path, values, types, stack, depth + 1)
-        }
+        TypeExpression::Map { values, .. } => validate_adapter_type_expression(
+            path,
+            values,
+            types,
+            stack,
+            validated,
+            budget,
+            depth + 1,
+        ),
         TypeExpression::Object { fields } => {
             if fields.len() > 4_096 {
                 return Err(pack_error(
@@ -3285,7 +3391,15 @@ fn validate_adapter_type_expression(
             }
             for (name, field) in fields {
                 validate_local_id(path, name)?;
-                validate_adapter_type_expression(path, &field.value_type, types, stack, depth + 1)?;
+                validate_adapter_type_expression(
+                    path,
+                    &field.value_type,
+                    types,
+                    stack,
+                    validated,
+                    budget,
+                    depth + 1,
+                )?;
             }
             Ok(())
         }
@@ -3304,9 +3418,19 @@ fn validate_adapter_type_expression(
                     "recursive adapter named types are forbidden",
                 ));
             }
-            let result =
-                validate_adapter_type_expression(path, value_type, types, stack, depth + 1);
+            let result = validate_adapter_type_expression(
+                path,
+                value_type,
+                types,
+                stack,
+                validated,
+                budget,
+                depth + 1,
+            );
             stack.remove(name);
+            if result.is_ok() {
+                validated.insert(name.clone());
+            }
             result
         }
         TypeExpression::Number {
@@ -3471,7 +3595,18 @@ fn validate_inactive_tabletop(
     projection: &CharacterPackTabletopProjection,
 ) -> Result<(), CharacterPackError> {
     validate_local_id(path, key)?;
-    validate_tabletop_manifest(&format!("{path}.manifest"), &inactive.manifest, None)?;
+    validate_provenance(&inactive.provenance).map_err(|_| {
+        pack_error(
+            CharacterDiagnosticCode::InvalidLineage,
+            format!("{path}.provenance"),
+            "archived adapter provenance is malformed or incomplete",
+        )
+    })?;
+    validate_tabletop_manifest(
+        &format!("{path}.manifest"),
+        &inactive.manifest,
+        Some(&inactive.provenance),
+    )?;
     if key != character_pack_adapter_namespace_key(&inactive.manifest.coordinate) {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidReference,

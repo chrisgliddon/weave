@@ -17,9 +17,12 @@ use weave_character::{
     character_pack_adapter_manifest_fingerprint, character_pack_adapter_namespace_key,
     character_pack_profile_fingerprint, character_pack_value_fingerprint,
     character_runtime_pack_schema, expression_pack_ref, synthesize_character, template_fingerprint,
+    validate_authoring_pack_with_installed, validate_character_pack_adapter_types,
     validate_runtime_pack_with_canonical_profile,
 };
-use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, TypeExpression};
+use weave_domain::{
+    DomainValue, FieldDeclaration, Provenance, ProvenanceKind, ProvenanceSource, TypeExpression,
+};
 
 const COLLECTION_JSON: &str = include_str!(
     "../../../examples/domain-modules/weave-character/operations/collection.character-collection.json"
@@ -1200,6 +1203,7 @@ fn inactive_tabletop(
         key,
         CharacterPackInactiveTabletop {
             manifest,
+            provenance: adapter_provenance(),
             definition,
             definition_sha256,
             completed_creation_steps: vec!["origin".to_owned()],
@@ -1472,5 +1476,135 @@ fn inactive_archives_use_their_own_manifest_contract() {
     assert_eq!(
         error.diagnostic().code,
         CharacterDiagnosticCode::InvalidValue
+    );
+}
+
+fn shared_type_manifest() -> CharacterPackAdapterManifest {
+    let mut manifest = adapter_manifest();
+    let field = |value_type: TypeExpression| FieldDeclaration {
+        value_type,
+        required: true,
+        description: "Synthetic shared field.".to_owned(),
+    };
+    let mut types = BTreeMap::from([(
+        "t0".to_owned(),
+        TypeExpression::String {
+            min_length: 0,
+            max_length: 64,
+        },
+    )]);
+    for index in 1..=12 {
+        let previous = TypeExpression::Named {
+            name: format!("t{}", index - 1),
+        };
+        types.insert(
+            format!("t{index}"),
+            TypeExpression::Object {
+                fields: BTreeMap::from([
+                    ("left".to_owned(), field(previous.clone())),
+                    ("right".to_owned(), field(previous)),
+                ]),
+            },
+        );
+    }
+    manifest.definition_type = TypeExpression::Named {
+        name: "t12".to_owned(),
+    };
+    manifest.state_type = TypeExpression::String {
+        min_length: 0,
+        max_length: 64,
+    };
+    manifest.types = types;
+    manifest
+}
+
+#[test]
+fn adapter_type_graph_memoizes_shared_types_and_bounds_nodes() {
+    let manifest = shared_type_manifest();
+    validate_character_pack_adapter_types(&manifest, 100)
+        .expect("shared type graph fits a small budget");
+    let error = validate_character_pack_adapter_types(&manifest, 10)
+        .expect_err("shared type graph exceeds the small budget");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("budget"));
+}
+
+#[test]
+fn installed_adapter_manifests_bind_active_and_archived_entries() {
+    let (key, inactive) = inactive_tabletop(
+        TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        DomainValue::String("Prior Wayfinder".to_owned()),
+    );
+    let mut pack = authoring_pack_with_tabletop();
+    let active_manifest = ari_tabletop_mut(&mut pack).manifest.clone();
+    ari_tabletop_mut(&mut pack)
+        .inactive
+        .insert(key, inactive.clone());
+    pack.normalize();
+    pack.validate().expect("self-consistent pack");
+
+    validate_authoring_pack_with_installed(
+        &pack,
+        &[active_manifest.clone(), inactive.manifest.clone()],
+    )
+    .expect("trusted active and archived manifests");
+
+    let error =
+        validate_authoring_pack_with_installed(&pack, std::slice::from_ref(&active_manifest))
+            .expect_err("archived manifest is not supplied by the host");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+    assert!(error.to_string().contains("not installed"));
+
+    let mut untrusted = inactive.manifest.clone();
+    untrusted.title = "Different Archived Adapter".to_owned();
+    untrusted.coordinate.content_sha256 =
+        character_pack_adapter_manifest_fingerprint(&untrusted).expect("fingerprint");
+    let error = validate_authoring_pack_with_installed(&pack, &[active_manifest, untrusted])
+        .expect_err("archived manifest content hash differs from the trusted entry");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+}
+
+#[test]
+fn archived_adapters_require_their_own_licence_notice() {
+    let (key, mut inactive) = inactive_tabletop(
+        TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        DomainValue::String("Prior Wayfinder".to_owned()),
+    );
+    inactive.manifest.license = CharacterPackLicense {
+        license: "CC-BY-4.0".to_owned(),
+        license_url: "https://creativecommons.org/licenses/by/4.0/".to_owned(),
+        license_text: "Creative Commons Attribution 4.0 archived adapter text.".to_owned(),
+        notices: Vec::new(),
+    };
+    inactive.provenance.sources[0].license = "CC-BY-4.0".to_owned();
+    inactive.provenance.sources[0].license_url =
+        "https://creativecommons.org/licenses/by/4.0/".to_owned();
+    inactive.manifest.coordinate.content_sha256 =
+        character_pack_adapter_manifest_fingerprint(&inactive.manifest).expect("fingerprint");
+
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).inactive.insert(key, inactive);
+    pack.normalize();
+    let error = pack
+        .validate()
+        .expect_err("archived non-MIT adapter requires a notice");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidLineage
     );
 }
