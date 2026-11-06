@@ -54,23 +54,23 @@ pub const FORBIDDEN_REDISTRIBUTED_EXTENSIONS: &[&str] = &[
     ".woff2",
 ];
 
-const PLUG_AND_PLAY_NOTICES: &[&str] = &[
+pub(crate) const PLUG_AND_PLAY_NOTICES: &[&str] = &[
     "The official PDFs are hash-pinned inputs and are not redistributed with Weave.",
     "Factual compatibility naming does not imply sponsorship or endorsement.",
 ];
 
-const DUNGEONPUNK_NOTICES: &[&str] = &[
+pub(crate) const DUNGEONPUNK_NOTICES: &[&str] = &[
     "The official release page is https://acegiak.itch.io/dungeonpunk.",
     "The official PDF and text exports are audit inputs and are not redistributed with Weave.",
     "The community wiki and every third-party supplement remain outside this adapter's reviewed source boundary.",
 ];
 
-const FREEHACK_NOTICES: &[&str] = &[
+pub(crate) const FREEHACK_NOTICES: &[&str] = &[
     "Only hashes and independently authored behavior are bundled; the upstream PDF, icon, stylesheet, and page layout are excluded.",
     "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport.",
 ];
 
-const SPARK_NOTICES: &[&str] = &[
+pub(crate) const SPARK_NOTICES: &[&str] = &[
     "Only independently authored core-mechanics behavior and the in-module source record are bundled; no downloaded upstream file is redistributed.",
     "Spark example settings, logos, artwork, fonts, and presentation layout are excluded.",
     "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download.",

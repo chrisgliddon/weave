@@ -7,9 +7,12 @@ use std::collections::BTreeMap;
 
 use weave_domain::DomainValue;
 
+use crate::conformance::policy::{
+    DUNGEONPUNK_NOTICES, FREEHACK_NOTICES, PLUG_AND_PLAY_NOTICES, SPARK_NOTICES,
+};
 use crate::conformance::{
-    ConformanceAdapter, ConformanceCreation, ConformanceOperation, ConformanceSuite,
-    standard_source_policy,
+    ConformanceAdapter, ConformanceArtifact, ConformanceCreation, ConformanceNotice,
+    ConformanceOperation, ConformanceSourceBundle, ConformanceSuite, standard_source_policy,
 };
 use crate::{
     DUNGEONPUNK_CREATION_FORMAT_VERSION, DungeonpunkAttributes, DungeonpunkClock,
@@ -81,6 +84,22 @@ impl ConformanceAdapter for PlugAndPlayConformance {
             ]),
         }])
     }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::digest(
+                "Plug-And-Play Rules.pdf",
+                crate::PLUG_AND_PLAY_RULES_SHA256,
+            ),
+            vec![ConformanceArtifact::digest(
+                "Plug-And-Play Character Sheet.pdf",
+                crate::PLUG_AND_PLAY_SHEET_SHA256,
+            )],
+            ConformanceArtifact::digest("LICENSE-CC0-1.0.txt", crate::CC0_1_0_LEGAL_CODE_SHA256)
+                .bundled(),
+            reviewed_notices(PLUG_AND_PLAY_NOTICES),
+        )
+    }
 }
 
 /// Dungeonpunk registration.
@@ -125,6 +144,22 @@ impl ConformanceAdapter for DungeonpunkConformance {
                 ("push", DomainValue::Bool(false)),
             ]),
         }])
+    }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::digest(
+                "dungeonpunk-google-doc.pdf",
+                crate::DUNGEONPUNK_PDF_SHA256,
+            ),
+            vec![ConformanceArtifact::digest(
+                "dungeonpunk-google-doc.txt",
+                crate::DUNGEONPUNK_TEXT_SHA256,
+            )],
+            ConformanceArtifact::digest("LICENSE-CC0-1.0.txt", crate::CC0_1_0_LEGAL_CODE_SHA256)
+                .bundled(),
+            reviewed_notices(DUNGEONPUNK_NOTICES),
+        )
     }
 }
 
@@ -189,6 +224,23 @@ impl ConformanceAdapter for FreehackConformance {
             ]),
         }])
     }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::digest("freehack.pdf", crate::FREEHACK_PDF_SHA256),
+            vec![
+                ConformanceArtifact::digest("src/freehack.md", crate::FREEHACK_MARKDOWN_SHA256),
+                ConformanceArtifact::digest("src/freehack.yml", crate::FREEHACK_METADATA_SHA256),
+                ConformanceArtifact::digest("tools/roll.py", crate::FREEHACK_ROLL_TOOL_SHA256),
+            ],
+            ConformanceArtifact::digest(
+                "LICENSE-CC0-1.0.txt",
+                crate::FREEHACK_CC0_1_0_LEGAL_CODE_SHA256,
+            )
+            .bundled(),
+            reviewed_notices(FREEHACK_NOTICES),
+        )
+    }
 }
 
 /// Wicked Ones registration.
@@ -241,6 +293,24 @@ impl ConformanceAdapter for WickedOnesConformance {
                 ("teamwork", DomainValue::List(Vec::new())),
             ]),
         }])
+    }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::checked_bytes(
+                "SOURCE_RECORD.txt",
+                crate::wicked_ones::WICKED_ONES_SOURCE_RECORD_SHA256,
+                crate::wicked_ones::SOURCE_RECORD.as_bytes(),
+            )
+            .bundled(),
+            Vec::new(),
+            ConformanceArtifact::digest(
+                "LICENSE-CC0-1.0.txt",
+                crate::WICKED_ONES_CC0_LEGAL_CODE_SHA256,
+            )
+            .bundled(),
+            reviewed_notices(crate::WICKED_ONES_NOTICES),
+        )
     }
 }
 
@@ -388,6 +458,24 @@ impl ConformanceAdapter for SparkConformance {
             },
         ])
     }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::checked_bytes(
+                "spark-source-record.txt",
+                crate::spark::SPARK_SOURCE_RECORD_SHA256,
+                crate::spark::SPARK_SOURCE_RECORD.as_bytes(),
+            )
+            .bundled(),
+            Vec::new(),
+            ConformanceArtifact::digest(
+                "LICENSE-CC0-1.0.txt",
+                crate::SPARK_CC0_1_0_LEGAL_CODE_SHA256,
+            )
+            .bundled(),
+            reviewed_notices(SPARK_NOTICES),
+        )
+    }
 }
 
 /// Suite covering every adapter shipped in this build.
@@ -403,6 +491,13 @@ pub fn standard_suite() -> ConformanceSuite {
         ],
         standard_source_policy(),
     )
+}
+
+fn reviewed_notices(notices: &[&str]) -> Vec<ConformanceNotice> {
+    notices
+        .iter()
+        .map(|text| ConformanceNotice::new(*text))
+        .collect()
 }
 
 fn object<const N: usize>(fields: [(&str, DomainValue); N]) -> DomainValue {

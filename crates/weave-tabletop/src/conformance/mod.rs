@@ -86,6 +86,8 @@ pub enum ConformanceCheck {
     MalformedState,
     /// The exact primary source digest matches the reviewed policy.
     SourceHash,
+    /// Every declared artifact, licence, and notice digest matches the bundled content.
+    SourceBundle,
     /// The declared licence and source class are on the public allowlist.
     LicensePolicy,
     /// Required licence text is present with the exact digest.
@@ -115,6 +117,7 @@ impl ConformanceCheck {
         Self::UnsupportedVersion,
         Self::MalformedState,
         Self::SourceHash,
+        Self::SourceBundle,
         Self::LicensePolicy,
         Self::LicenseText,
         Self::LicenseNotice,
@@ -139,6 +142,7 @@ impl ConformanceCheck {
             Self::UnsupportedVersion => "unsupported_version",
             Self::MalformedState => "malformed_state",
             Self::SourceHash => "source_hash",
+            Self::SourceBundle => "source_bundle",
             Self::LicensePolicy => "license_policy",
             Self::LicenseText => "license_text",
             Self::LicenseNotice => "license_notice",
@@ -164,6 +168,7 @@ impl ConformanceCheck {
             Self::UnsupportedVersion => "unsupported versions fail closed",
             Self::MalformedState => "malformed state fails closed",
             Self::SourceHash => "primary source digest matches the reviewed policy",
+            Self::SourceBundle => "declared artifacts match their bundled bytes or digests",
             Self::LicensePolicy => "licence and source class are allowlisted",
             Self::LicenseText => "required licence text is retained exactly",
             Self::LicenseNotice => "required notices and notice files are retained",
@@ -185,6 +190,111 @@ pub struct ConformanceCreation {
     pub initial_state: TabletopState,
     /// Canonical serialization of the complete creation preview.
     pub canonical: String,
+}
+
+/// One declared source artifact with its exact content digest and, when embedded, its bytes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConformanceArtifact {
+    /// Exact declared artifact name, matching the manifest provenance record.
+    pub path: String,
+    /// Exact SHA-256 the adapter release declares for this artifact.
+    pub sha256: String,
+    /// Exact embedded bytes when the adapter ships the content in source.
+    pub bytes: Option<Vec<u8>>,
+    /// Whether the release actually bundles this artifact.
+    ///
+    /// This is the bundle truth and is deliberately independent of the manifest's
+    /// `redistributed` flag.
+    pub bundled: bool,
+}
+
+impl ConformanceArtifact {
+    /// Declare one reviewed artifact by its exact content digest.
+    #[must_use]
+    pub fn digest(path: impl Into<String>, sha256: impl Into<String>) -> Self {
+        Self {
+            path: path.into(),
+            sha256: sha256.into(),
+            bytes: None,
+            bundled: false,
+        }
+    }
+
+    /// Declare one reviewed artifact with both its declared digest and its exact bytes.
+    #[must_use]
+    pub fn checked_bytes(
+        path: impl Into<String>,
+        sha256: impl Into<String>,
+        bytes: impl Into<Vec<u8>>,
+    ) -> Self {
+        Self {
+            path: path.into(),
+            sha256: sha256.into(),
+            bytes: Some(bytes.into()),
+            bundled: false,
+        }
+    }
+
+    /// Mark the artifact as actually bundled by the release.
+    #[must_use]
+    pub fn bundled(mut self) -> Self {
+        self.bundled = true;
+        self
+    }
+}
+
+/// One reviewed notice sentence with the SHA-256 of its exact UTF-8 bytes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConformanceNotice {
+    /// Exact notice text the manifest must retain.
+    pub text: String,
+    /// Exact SHA-256 of [`ConformanceNotice::text`].
+    pub sha256: String,
+}
+
+impl ConformanceNotice {
+    /// Hash one reviewed notice sentence.
+    #[must_use]
+    pub fn new(text: impl Into<String>) -> Self {
+        let text = text.into();
+        let sha256 = crate::sha256_bytes(text.as_bytes());
+        Self { text, sha256 }
+    }
+}
+
+/// Complete declared source bundle for one adapter release.
+///
+/// Every primary source record, companion artifact, licence text, and notice is declared with
+/// either its exact bytes or its exact content digest. The suite verifies this bundle against the
+/// manifest instead of trusting manifest flags alone.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConformanceSourceBundle {
+    /// Primary reviewed source artifact.
+    pub primary: ConformanceArtifact,
+    /// Every additional reviewed companion artifact.
+    pub companions: Vec<ConformanceArtifact>,
+    /// Retained licence text artifact.
+    pub license_text: ConformanceArtifact,
+    /// Exact reviewed notices.
+    pub notices: Vec<ConformanceNotice>,
+}
+
+impl ConformanceSourceBundle {
+    /// Build a complete source bundle.
+    #[must_use]
+    pub fn new(
+        primary: ConformanceArtifact,
+        companions: Vec<ConformanceArtifact>,
+        license_text: ConformanceArtifact,
+        notices: Vec<ConformanceNotice>,
+    ) -> Self {
+        Self {
+            primary,
+            companions,
+            license_text,
+            notices,
+        }
+    }
 }
 
 /// One host-neutral resolution operation exercised by the suite.
@@ -219,6 +329,8 @@ pub trait ConformanceAdapter: Send + Sync {
         &self,
         creation: &ConformanceCreation,
     ) -> Result<Vec<ConformanceOperation>, TabletopError>;
+    /// Exact bytes or content digests for every declared source artifact, licence, and notice.
+    fn source_bundle(&self) -> ConformanceSourceBundle;
 }
 
 /// One redaction-safe conformance failure.
@@ -470,6 +582,10 @@ impl ConformanceSuite {
             source_hash(manifest, entry)
         });
 
+        let bundle = adapter.source_bundle();
+
+        check!(SourceBundle, { verify_source_bundle(manifest, &bundle) });
+
         check!(LicensePolicy, {
             let entry = self
                 .policy
@@ -491,7 +607,7 @@ impl ConformanceSuite {
                 .policy
                 .entry(&manifest.id)
                 .ok_or_else(|| format!("no source policy entry for adapter `{}`", manifest.id))?;
-            license_notice(manifest, entry)
+            license_notice(manifest, entry, &bundle)
         });
 
         check!(ForbiddenFile, {
@@ -499,7 +615,7 @@ impl ConformanceSuite {
                 .policy
                 .entry(&manifest.id)
                 .ok_or_else(|| format!("no source policy entry for adapter `{}`", manifest.id))?;
-            forbidden_file(manifest, entry)
+            forbidden_file(entry, &bundle)
         });
 
         check!(NamespaceCollision, {
@@ -895,7 +1011,105 @@ fn license_text(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Resu
     Ok(())
 }
 
-fn license_notice(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Result<(), String> {
+fn verify_source_bundle(
+    manifest: &AdapterManifest,
+    bundle: &ConformanceSourceBundle,
+) -> Result<(), String> {
+    verify_artifact(
+        "primary source",
+        &manifest.provenance.exact_artifact,
+        &manifest.provenance.sha256,
+        &bundle.primary,
+    )?;
+
+    let declared = manifest
+        .provenance
+        .additional_artifacts
+        .iter()
+        .map(|artifact| (artifact.exact_artifact.as_str(), artifact.sha256.as_str()))
+        .collect::<BTreeMap<_, _>>();
+    let mut observed = BTreeMap::new();
+    for artifact in &bundle.companions {
+        if observed.insert(artifact.path.as_str(), artifact).is_some() {
+            return Err(format!(
+                "companion artifact `{}` is declared more than once in the conformance bundle",
+                artifact.path
+            ));
+        }
+    }
+    if declared.len() != observed.len() {
+        let missing = declared
+            .keys()
+            .filter(|path| !observed.contains_key(*path))
+            .copied()
+            .collect::<Vec<_>>();
+        let undeclared = observed
+            .keys()
+            .filter(|path| !declared.contains_key(*path))
+            .copied()
+            .collect::<Vec<_>>();
+        return Err(format!(
+            "companion artifact set differs from the manifest: missing={missing:?} undeclared={undeclared:?}"
+        ));
+    }
+    for (path, sha256) in declared {
+        let Some(artifact) = observed.get(path) else {
+            return Err(format!(
+                "companion artifact `{path}` is declared by the manifest but absent from the conformance bundle"
+            ));
+        };
+        verify_artifact("companion artifact", path, sha256, artifact)?;
+    }
+
+    verify_artifact(
+        "licence text",
+        &manifest.provenance.required_license_text.artifact,
+        &manifest.provenance.required_license_text.sha256,
+        &bundle.license_text,
+    )
+}
+
+fn verify_artifact(
+    kind: &str,
+    declared_path: &str,
+    declared_sha256: &str,
+    artifact: &ConformanceArtifact,
+) -> Result<(), String> {
+    if artifact.path != declared_path {
+        return Err(format!(
+            "{kind} `{}` does not match declared artifact `{declared_path}`",
+            artifact.path
+        ));
+    }
+    if !is_lowercase_sha256(&artifact.sha256) {
+        return Err(format!(
+            "{kind} `{}` digest `{}` is not a lowercase SHA-256 digest",
+            artifact.path, artifact.sha256
+        ));
+    }
+    if artifact.sha256 != declared_sha256 {
+        return Err(format!(
+            "{kind} digest mismatch for `{}`: bundle=`{}` manifest=`{declared_sha256}`",
+            artifact.path, artifact.sha256
+        ));
+    }
+    if let Some(bytes) = &artifact.bytes {
+        let actual = crate::sha256_bytes(bytes);
+        if actual != artifact.sha256 {
+            return Err(format!(
+                "{kind} bytes for `{}` hash to `{actual}` but the bundle declares `{}`",
+                artifact.path, artifact.sha256
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn license_notice(
+    manifest: &AdapterManifest,
+    entry: &AdapterSourcePolicy,
+    bundle: &ConformanceSourceBundle,
+) -> Result<(), String> {
     for notice in entry.required_notices {
         if !manifest
             .provenance
@@ -906,6 +1120,22 @@ fn license_notice(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Re
             return Err(format!(
                 "missing required notice `{notice}`; manifest declares {} notice(s)",
                 manifest.provenance.notices.len()
+            ));
+        }
+        let Some(bundled) = bundle
+            .notices
+            .iter()
+            .find(|bundled| bundled.text == *notice)
+        else {
+            return Err(format!(
+                "required notice `{notice}` has no declared bundle digest"
+            ));
+        };
+        let actual = crate::sha256_bytes(bundled.text.as_bytes());
+        if bundled.sha256 != actual {
+            return Err(format!(
+                "notice hash mismatch for `{notice}`: bundle=`{}` observed=`{actual}`",
+                bundled.sha256
             ));
         }
     }
@@ -931,31 +1161,33 @@ fn license_notice(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Re
     Ok(())
 }
 
-fn forbidden_file(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Result<(), String> {
-    for artifact in manifest
-        .provenance
-        .additional_artifacts
-        .iter()
-        .filter(|artifact| artifact.redistributed)
-    {
+fn forbidden_file(
+    entry: &AdapterSourcePolicy,
+    bundle: &ConformanceSourceBundle,
+) -> Result<(), String> {
+    let bundled_files = std::iter::once(&bundle.primary)
+        .chain(bundle.companions.iter())
+        .chain(std::iter::once(&bundle.license_text))
+        .filter(|artifact| artifact.bundled);
+    for artifact in bundled_files {
         if entry
             .forbidden_files
             .iter()
-            .any(|forbidden| forbidden.eq_ignore_ascii_case(&artifact.exact_artifact))
+            .any(|forbidden| forbidden.eq_ignore_ascii_case(&artifact.path))
         {
             return Err(format!(
-                "forbidden file `{}` is marked as redistributed",
-                artifact.exact_artifact
+                "forbidden file `{}` is present in the bundled file list",
+                artifact.path
             ));
         }
-        let lower = artifact.exact_artifact.to_ascii_lowercase();
+        let lower = artifact.path.to_ascii_lowercase();
         if let Some(extension) = FORBIDDEN_REDISTRIBUTED_EXTENSIONS
             .iter()
             .find(|extension| lower.ends_with(*extension))
         {
             return Err(format!(
-                "redistributed file `{}` uses forbidden extension `{extension}`",
-                artifact.exact_artifact
+                "bundled file `{}` uses forbidden extension `{extension}`",
+                artifact.path
             ));
         }
     }

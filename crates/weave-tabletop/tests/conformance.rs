@@ -10,8 +10,8 @@ use weave_domain::DomainValue;
 use weave_tabletop::conformance::policy::PLUG_AND_PLAY_SOURCE_POLICY;
 use weave_tabletop::conformance::{
     AdapterSourcePolicy, CONFORMANCE_SEED, ConformanceAdapter, ConformanceCheck,
-    ConformanceCreation, ConformanceOperation, ConformanceReport, ConformanceSuite, SourcePolicy,
-    standard_source_policy, standard_suite,
+    ConformanceCreation, ConformanceOperation, ConformanceReport, ConformanceSourceBundle,
+    ConformanceSuite, SourcePolicy, standard_source_policy, standard_suite,
 };
 use weave_tabletop::{
     AdapterManifest, EntropyStream, PlugAndPlayConformance, PlugAndPlayResolver, ResolverOutput,
@@ -236,11 +236,11 @@ fn a_policy_licence_mismatch_fails_only_the_licence_check() {
 }
 
 #[test]
-fn a_redistributed_forbidden_file_fails_only_the_forbidden_file_check() {
+fn a_forged_redistributed_flag_fails_only_the_forbidden_file_check() {
     let fixture = Fixture::broken(
         "org.weave.tabletop.conformance_forbidden",
         "conformance_forbidden",
-        Break::RedistributedForbidden,
+        Break::ForgedRedistributedFlag,
     );
     let failure = single_failure(&fixture, ConformanceCheck::ForbiddenFile);
     assert!(failure.detail.contains("forbidden file"), "{failure}");
@@ -248,6 +248,31 @@ fn a_redistributed_forbidden_file_fails_only_the_forbidden_file_check() {
         failure.detail.contains("Plug-And-Play Character Sheet.pdf"),
         "{failure}"
     );
+    assert!(
+        !fixture.manifest().provenance.additional_artifacts[0].redistributed,
+        "the forged manifest flag must stay false for this fixture"
+    );
+}
+
+#[test]
+fn a_changed_bundle_digest_fails_only_the_source_bundle_check() {
+    let fixture = Fixture::broken(
+        "org.weave.tabletop.conformance_bundle_digest",
+        "conformance_bundle_digest",
+        Break::ChangedBundleDigest,
+    );
+    let failure = single_failure(&fixture, ConformanceCheck::SourceBundle);
+    assert!(
+        failure
+            .detail
+            .contains("companion artifact digest mismatch"),
+        "{failure}"
+    );
+    assert!(
+        failure.detail.contains("Plug-And-Play Character Sheet.pdf"),
+        "{failure}"
+    );
+    assert!(failure.detail.contains(ZERO_SHA256), "{failure}");
 }
 
 #[test]
@@ -345,7 +370,8 @@ enum Break {
     MissingNotice,
     PermissiveResolver,
     WrongPolicyLicence,
-    RedistributedForbidden,
+    ChangedBundleDigest,
+    ForgedRedistributedFlag,
 }
 
 /// Test-only adapter derived from the Plug-And-Play fixture.
@@ -385,12 +411,8 @@ impl ConformanceAdapter for Fixture {
         let mut manifest = PlugAndPlayConformance.manifest();
         manifest.id = self.id.to_owned();
         manifest.namespace = self.namespace.to_owned();
-        match self.behavior {
-            Break::MissingNotice => manifest.provenance.notices.clear(),
-            Break::RedistributedForbidden => {
-                manifest.provenance.additional_artifacts[0].redistributed = true;
-            }
-            _ => {}
+        if self.behavior == Break::MissingNotice {
+            manifest.provenance.notices.clear();
         }
         manifest
     }
@@ -424,6 +446,24 @@ impl ConformanceAdapter for Fixture {
         creation: &ConformanceCreation,
     ) -> Result<Vec<ConformanceOperation>, TabletopError> {
         PlugAndPlayConformance.scenario(creation)
+    }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        let mut bundle = PlugAndPlayConformance.source_bundle();
+        match self.behavior {
+            Break::ChangedBundleDigest => {
+                if let Some(sheet) = bundle.companions.first_mut() {
+                    sheet.sha256 = ZERO_SHA256.to_owned();
+                }
+            }
+            Break::ForgedRedistributedFlag => {
+                if let Some(sheet) = bundle.companions.first_mut() {
+                    sheet.bundled = true;
+                }
+            }
+            _ => {}
+        }
+        bundle
     }
 }
 
