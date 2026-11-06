@@ -76,6 +76,11 @@ pub(crate) const SPARK_NOTICES: &[&str] = &[
     "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download.",
 ];
 
+pub(crate) const OPEN_ADVENTURE_NOTICES: &[&str] = &[
+    "The provenance digest is the SHA-256 of the in-repository OPEN_ADVENTURE_SOURCE_RECORD string, not of a downloaded upstream file.",
+    "Masterwork Edition layout, third-party products, unmarked content, community additions, logos, artwork, and trade dress are excluded from the reviewed boundary.",
+];
+
 /// Reviewed Plug-And-Play source policy.
 pub const PLUG_AND_PLAY_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     adapter_id: crate::PLUG_AND_PLAY_ADAPTER_ID,
@@ -168,6 +173,26 @@ pub const SPARK_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     ],
 };
 
+/// Reviewed Open Adventure source policy.
+pub const OPEN_ADVENTURE_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
+    adapter_id: crate::OPEN_ADVENTURE_ADAPTER_ID,
+    namespace: "open_adventure",
+    license: "CC0-1.0",
+    source_class: AdapterSourceClass::VerifiedCc0,
+    source_sha256: crate::OPEN_ADVENTURE_SOURCE_RECORD_SHA256,
+    required_license_text: PolicyFile {
+        path: "LICENSE-CC0-1.0.txt",
+        sha256: crate::OPEN_ADVENTURE_CC0_LEGAL_CODE_SHA256,
+    },
+    required_notice_files: &[],
+    required_notices: OPEN_ADVENTURE_NOTICES,
+    forbidden_files: &[
+        "open-adventure-masterwork-layout",
+        "open-adventure-artwork",
+        "open-adventure-display-font",
+    ],
+};
+
 /// Reviewed Open Tale source policy.
 pub const OPEN_TALE_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     adapter_id: crate::OPEN_TALE_ADAPTER_ID,
@@ -224,6 +249,7 @@ pub fn standard_source_policy() -> SourcePolicy {
         FREEHACK_SOURCE_POLICY,
         WICKED_ONES_SOURCE_POLICY,
         SPARK_SOURCE_POLICY,
+        OPEN_ADVENTURE_SOURCE_POLICY,
         OPEN_TALE_SOURCE_POLICY,
     ])
 }

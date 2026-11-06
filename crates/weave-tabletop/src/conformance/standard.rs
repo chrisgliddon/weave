@@ -8,7 +8,8 @@ use std::collections::BTreeMap;
 use weave_domain::DomainValue;
 
 use crate::conformance::policy::{
-    DUNGEONPUNK_NOTICES, FREEHACK_NOTICES, PLUG_AND_PLAY_NOTICES, SPARK_NOTICES,
+    DUNGEONPUNK_NOTICES, FREEHACK_NOTICES, OPEN_ADVENTURE_NOTICES, PLUG_AND_PLAY_NOTICES,
+    SPARK_NOTICES,
 };
 use crate::conformance::{
     ConformanceAdapter, ConformanceArtifact, ConformanceCreation, ConformanceNotice,
@@ -36,6 +37,15 @@ use crate::{
     create_open_tale_character, create_plug_and_play_character, create_wicked_ones_character,
     dungeonpunk_manifest, freehack_manifest, open_tale_manifest, plug_and_play_manifest,
     wicked_ones_manifest,
+};
+use crate::{
+    OPEN_ADVENTURE_CC0_LEGAL_CODE_SHA256, OPEN_ADVENTURE_CREATION_FORMAT_VERSION,
+    OPEN_ADVENTURE_SOURCE_RECORD, OPEN_ADVENTURE_SOURCE_RECORD_SHA256, OpenAdventureAttribute,
+    OpenAdventureAttributes, OpenAdventureCreationRequest, OpenAdventureEquipment,
+    OpenAdventureEquipmentKind, OpenAdventureFavoredAction, OpenAdventureModifierTarget,
+    OpenAdventureModusOperandi, OpenAdventureOrigin, OpenAdventureResolver,
+    OpenAdventureSpecialization, OpenAdventureTraitModifier, create_open_adventure_character,
+    open_adventure_manifest,
 };
 use crate::{
     SPARK_ADAPTER_ID, SPARK_CREATION_FORMAT_VERSION, SparkAttribute, SparkAttributeSeed,
@@ -557,6 +567,95 @@ impl ConformanceAdapter for OpenTaleConformance {
     }
 }
 
+/// Open Adventure registration.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct OpenAdventureConformance;
+
+impl ConformanceAdapter for OpenAdventureConformance {
+    fn adapter_id(&self) -> &str {
+        crate::OPEN_ADVENTURE_ADAPTER_ID
+    }
+
+    fn manifest(&self) -> crate::AdapterManifest {
+        open_adventure_manifest()
+    }
+
+    fn resolver(&self) -> Box<dyn TabletopResolver> {
+        Box::new(OpenAdventureResolver)
+    }
+
+    fn create(&self, seed: u64) -> Result<ConformanceCreation, TabletopError> {
+        let preview = create_open_adventure_character(&open_adventure_creation_request(seed))?;
+        let canonical = preview.to_json()?;
+        Ok(ConformanceCreation {
+            adapter: preview.adapter,
+            definition: preview.definition,
+            initial_state: preview.initial_state,
+            canonical,
+        })
+    }
+
+    fn scenario(
+        &self,
+        _creation: &ConformanceCreation,
+    ) -> Result<Vec<ConformanceOperation>, TabletopError> {
+        Ok(vec![
+            ConformanceOperation {
+                request_id: "conformance_begin_challenge".to_owned(),
+                operation: "begin_challenge".to_owned(),
+                capability: TabletopCapability::Encounters,
+                input: object([
+                    (
+                        "challenge_id",
+                        DomainValue::String("conformance_channel".to_owned()),
+                    ),
+                    ("challenge_points", DomainValue::Number(2.0)),
+                    ("difficulty_score", DomainValue::Number(9.0)),
+                    ("disclosure", DomainValue::Symbol("public".to_owned())),
+                    ("effect", DomainValue::Number(1.0)),
+                    ("kind", DomainValue::Symbol("environmental".to_owned())),
+                    (
+                        "label",
+                        DomainValue::String("Cross the conformance channel".to_owned()),
+                    ),
+                ]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_resolve_challenge".to_owned(),
+                operation: "resolve_challenge_action".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([
+                    ("attribute", DomainValue::Symbol("reasoning".to_owned())),
+                    (
+                        "challenge_id",
+                        DomainValue::String("conformance_channel".to_owned()),
+                    ),
+                    ("disclosure", DomainValue::Symbol("public".to_owned())),
+                    ("situation_modifier", DomainValue::Number(0.0)),
+                ]),
+            },
+        ])
+    }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::checked_bytes(
+                "open-adventure-fantasy-community-owned-content-source-record",
+                OPEN_ADVENTURE_SOURCE_RECORD_SHA256,
+                OPEN_ADVENTURE_SOURCE_RECORD.as_bytes(),
+            )
+            .bundled(),
+            Vec::new(),
+            ConformanceArtifact::digest(
+                "LICENSE-CC0-1.0.txt",
+                OPEN_ADVENTURE_CC0_LEGAL_CODE_SHA256,
+            )
+            .bundled(),
+            reviewed_notices(OPEN_ADVENTURE_NOTICES),
+        )
+    }
+}
+
 /// Suite covering every adapter shipped in this build.
 #[must_use]
 pub fn standard_suite() -> ConformanceSuite {
@@ -568,6 +667,7 @@ pub fn standard_suite() -> ConformanceSuite {
             Box::new(WickedOnesConformance),
             Box::new(SparkConformance),
             Box::new(OpenTaleConformance),
+            Box::new(OpenAdventureConformance),
         ],
         standard_source_policy(),
     )
@@ -952,6 +1052,74 @@ fn freehack_campaign() -> FreehackCampaignSchema {
 }
 
 const SPARK_CONFORMANCE_CHARACTER_ID: &str = "org.weave.character.conformance_lumen";
+
+fn open_adventure_creation_request(seed: u64) -> OpenAdventureCreationRequest {
+    OpenAdventureCreationRequest {
+        creation_format_version: OPEN_ADVENTURE_CREATION_FORMAT_VERSION,
+        character_id: "org.weave.character.conformance_ivy".to_owned(),
+        name: "Conformance Ivy".to_owned(),
+        seed,
+        lineage: OpenAdventureOrigin {
+            id: "glassborn".to_owned(),
+            label: "Glassborn".to_owned(),
+            note: "Raised among tide-cut observatories.".to_owned(),
+        },
+        culture: OpenAdventureOrigin {
+            id: "lantern_ward".to_owned(),
+            label: "Lantern Ward".to_owned(),
+            note: "Learned to read weather by lamplight.".to_owned(),
+        },
+        background: OpenAdventureOrigin {
+            id: "survey_runner".to_owned(),
+            label: "Survey Runner".to_owned(),
+            note: "Mapped shifting shorelines for a living.".to_owned(),
+        },
+        modus_operandi: OpenAdventureModusOperandi {
+            id: "careful_craft".to_owned(),
+            label: "Careful Craft".to_owned(),
+            score: 3,
+        },
+        attributes: OpenAdventureAttributes {
+            agility: 3,
+            empathy: 2,
+            endurance: 3,
+            focus: 3,
+            insight: 4,
+            might: 3,
+            presence: 2,
+            reasoning: 3,
+            will: 4,
+        },
+        specializations: vec![OpenAdventureSpecialization {
+            id: "shoreline_lore".to_owned(),
+            label: "Shoreline Lore".to_owned(),
+            attribute: OpenAdventureAttribute::Reasoning,
+            bonus: 2,
+        }],
+        favored_actions: vec![OpenAdventureFavoredAction {
+            id: "chart_the_channel".to_owned(),
+            label: "Chart the Channel".to_owned(),
+            attribute: OpenAdventureAttribute::Reasoning,
+        }],
+        equipment: vec![OpenAdventureEquipment {
+            id: "sounding_line".to_owned(),
+            label: "Sounding Line".to_owned(),
+            kind: OpenAdventureEquipmentKind::Tool,
+        }],
+        benefits: vec![OpenAdventureTraitModifier {
+            id: "long_practice".to_owned(),
+            label: "Long Practice".to_owned(),
+            target: OpenAdventureModifierTarget::ActionScore,
+            modifier: 3,
+        }],
+        drawbacks: vec![OpenAdventureTraitModifier {
+            id: "loud_boots".to_owned(),
+            label: "Loud Boots".to_owned(),
+            target: OpenAdventureModifierTarget::Reaction,
+            modifier: -2,
+        }],
+    }
+}
 
 fn open_tale_creation_request(seed: u64) -> OpenTaleCreationRequest {
     OpenTaleCreationRequest {

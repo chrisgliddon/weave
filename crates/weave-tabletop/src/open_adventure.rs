@@ -16,6 +16,14 @@
 //! a version. The repository's fail-closed licence gate admits only the SPDX allowlist token
 //! `CC0-1.0` for verified public inputs, so the manifest records that token while the source
 //! record and attribution state the unversioned `CC0` licence exactly as published.
+//!
+//! Encounter documents are host-authored and validated structurally. The caller must supply the
+//! SHA-256 of the canonical validated document, which is checked before state is written.
+//! Character-kind participants derive defense, attack score, and starting point pools from the
+//! immutable character definition and current character state; their document combat fields are
+//! not trusted. Adversary statistics, challenge definitions, ranges, turn order, rewards, labels,
+//! and narrative text remain host-supplied and are validated for structure and references, not
+//! for narrative truth. The host also chooses actions and explicit host-decision endings.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -1221,6 +1229,12 @@ pub fn validate_open_adventure_runtime_encounter(
             participant.attack_bonus,
             participant.effect,
         )?;
+        if !(1..=1_000).contains(&participant.defense) {
+            return Err(invalid(
+                format!("participants[{index}].defense"),
+                "expected a defense from 1 through 1000",
+            ));
+        }
         validate_identifier_list(
             &format!("participants[{index}].spell_ids"),
             &participant.spell_ids,
@@ -1267,7 +1281,15 @@ pub fn validate_open_adventure_runtime_encounter(
                 "challenge values are outside the reviewed bounds",
             ));
         }
+        let mut previous_participant = None;
         for (position, participant_id) in challenge.participant_ids.iter().enumerate() {
+            if previous_participant.is_some_and(|previous| previous >= participant_id.as_str()) {
+                return Err(invalid(
+                    format!("challenges[{index}].participant_ids"),
+                    "expected unique participant references ordered by id",
+                ));
+            }
+            previous_participant = Some(participant_id.as_str());
             if !participant_ids.contains(participant_id.as_str()) {
                 return Err(invalid(
                     format!("challenges[{index}].participant_ids[{position}]"),
@@ -1292,6 +1314,23 @@ pub fn validate_open_adventure_runtime_encounter(
         }
         if !seen_turns.insert(participant_id.as_str()) {
             return Err(invalid("turn_order", "duplicate participant reference"));
+        }
+    }
+    if encounter.rewards.len() > MAX_ENCOUNTER_REWARDS {
+        return Err(invalid("rewards", "too many encounter rewards"));
+    }
+    let mut previous = None;
+    for (index, reward) in encounter.rewards.iter().enumerate() {
+        validate_local_identifier(format!("rewards[{index}].id"), &reward.id)?;
+        if previous.is_some_and(|previous| previous >= reward.id.as_str()) {
+            return Err(invalid("rewards", "expected unique rewards ordered by id"));
+        }
+        previous = Some(reward.id.as_str());
+        if reward.story_points > 1_000_000 || reward.experience > 1_000_000 {
+            return Err(invalid(
+                format!("rewards[{index}]"),
+                "reward values exceed the reviewed bounds",
+            ));
         }
     }
     Ok(())
@@ -1390,14 +1429,69 @@ pub struct OpenAdventureEffectiveModules {
     pub replaced_capabilities: Vec<OpenAdventureCapabilityReplacement>,
 }
 
+/// Exact bytes of one optional module's reviewed source record.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct OpenAdventureModuleArtifact {
+    pub module_id: String,
+    pub bytes: Vec<u8>,
+}
+
+/// One optional module explicitly reviewed and allowlisted by this adapter release.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OpenAdventureVerifiedModule {
+    pub id: &'static str,
+    pub version: &'static str,
+    pub sha256: &'static str,
+    pub provides_capabilities: &'static [TabletopCapability],
+    pub replaces_capabilities: &'static [TabletopCapability],
+}
+
+/// Exact synthetic module artifact bytes used by the golden fixture and tests.
+pub const OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES: &[u8] =
+    b"open-adventure synthetic tide-clocks module source record\n";
+/// SHA-256 of [`OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES`].
+pub const OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256: &str =
+    "9bf7b964fadf02b9091a0d4d6079abf3a67fcfbeefaca1dc7720a782f7dabe85";
+/// Exact synthetic replacement-module artifact bytes.
+pub const OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_BYTES: &[u8] =
+    b"open-adventure synthetic tide-replacement module source record\n";
+/// SHA-256 of [`OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_BYTES`].
+pub const OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_SHA256: &str =
+    "1b53de57a9cff0e8e1cc0a7e58e404e4f4bc10e2c5e42ac7e7552ccc151a3c75";
+
+/// Checked-in allowlist of optional modules this release may activate.
+///
+/// A descriptor must match an entry exactly: identity, version, artifact digest, provided
+/// capabilities, and explicit replacements. Descriptors outside this table never grant
+/// capabilities, even when they self-assert official CC0 content.
+pub const OPEN_ADVENTURE_VERIFIED_MODULES: &[OpenAdventureVerifiedModule] = &[
+    OpenAdventureVerifiedModule {
+        id: "org.weave.tabletop.open_adventure.tide_clocks",
+        version: "1.0.0",
+        sha256: OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256,
+        provides_capabilities: &[TabletopCapability::Clocks],
+        replaces_capabilities: &[],
+    },
+    OpenAdventureVerifiedModule {
+        id: "org.weave.tabletop.open_adventure.tide_replacement",
+        version: "1.0.0",
+        sha256: OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_SHA256,
+        provides_capabilities: &[TabletopCapability::ChecksAndConflicts],
+        replaces_capabilities: &[TabletopCapability::ChecksAndConflicts],
+    },
+];
+
 /// Apply one persisted module selection to the core manifest.
 ///
 /// Every module is versioned, namespaced, ordered, and provenance-checked. A module may add a
 /// capability that the core does not declare, or replace a core capability only by naming it in
 /// `replaces_capabilities`. Unknown, unverified, incompatible, or silently shadowing modules are
-/// refused with actionable diagnostics.
+/// refused with actionable diagnostics. The descriptor digest must match the supplied artifact
+/// bytes, and only descriptors matching [`OPEN_ADVENTURE_VERIFIED_MODULES`] may grant capabilities.
 pub fn apply_open_adventure_modules(
     available: &[OpenAdventureModuleDescriptor],
+    artifacts: &[OpenAdventureModuleArtifact],
     selection: &OpenAdventureModuleSelection,
     core_manifest: &AdapterManifest,
 ) -> Result<OpenAdventureEffectiveModules, Vec<OpenAdventureModuleDiagnostic>> {
@@ -1489,6 +1583,59 @@ pub fn apply_open_adventure_modules(
             }
         }
     }
+    let mut verified_modules = BTreeSet::new();
+    for id in &enabled {
+        let Some(module) = modules.get(id) else {
+            continue;
+        };
+        let matching: Vec<&OpenAdventureModuleArtifact> = artifacts
+            .iter()
+            .filter(|artifact| &artifact.module_id == id)
+            .collect();
+        if matching.len() != 1 {
+            diagnostics.push(module_diagnostic(
+                "OA211",
+                format!("artifacts.{id}"),
+                format!("expected exactly one artifact for module `{id}`"),
+            ));
+        } else {
+            let actual = sha256_bytes(&matching[0].bytes);
+            if actual != module.sha256 {
+                diagnostics.push(module_diagnostic(
+                    "OA211",
+                    format!("artifacts.{id}"),
+                    format!(
+                        "module artifact digest `{actual}` does not match descriptor `{}`",
+                        module.sha256
+                    ),
+                ));
+            }
+        }
+        let Some(verified) = OPEN_ADVENTURE_VERIFIED_MODULES
+            .iter()
+            .find(|entry| entry.id == id.as_str())
+        else {
+            diagnostics.push(module_diagnostic(
+                "OA210",
+                format!("modules.{id}"),
+                format!("module `{id}` is not on the verified allowlist"),
+            ));
+            continue;
+        };
+        if verified.version != module.version.as_str()
+            || verified.sha256 != module.sha256.as_str()
+            || verified.provides_capabilities != module.provides_capabilities.as_slice()
+            || verified.replaces_capabilities != module.replaces_capabilities.as_slice()
+        {
+            diagnostics.push(module_diagnostic(
+                "OA210",
+                format!("modules.{id}"),
+                format!("module `{id}` does not match its verified allowlist entry"),
+            ));
+            continue;
+        }
+        verified_modules.insert(id.clone());
+    }
     let core_capabilities: BTreeSet<TabletopCapability> = core_manifest
         .capabilities
         .iter()
@@ -1502,6 +1649,7 @@ pub fn apply_open_adventure_modules(
         let Some(module) = modules.get(id) else {
             continue;
         };
+        let verified = verified_modules.contains(id);
         for capability in &module.provides_capabilities {
             if core_capabilities.contains(capability)
                 && !module.replaces_capabilities.contains(capability)
@@ -1515,32 +1663,36 @@ pub fn apply_open_adventure_modules(
                 ));
                 continue;
             }
-            if let Some(existing) = providers.insert(*capability, id.clone()) {
-                diagnostics.push(module_diagnostic(
-                    "OA207",
-                    format!("modules.{id}.provides_capabilities"),
-                    format!(
-                        "modules `{existing}` and `{id}` both provide capability `{capability:?}`"
-                    ),
-                ));
+            if verified {
+                if let Some(existing) = providers.insert(*capability, id.clone()) {
+                    diagnostics.push(module_diagnostic(
+                        "OA207",
+                        format!("modules.{id}.provides_capabilities"),
+                        format!(
+                            "modules `{existing}` and `{id}` both provide capability `{capability:?}`"
+                        ),
+                    ));
+                }
+                effective.insert(*capability);
             }
-            effective.insert(*capability);
         }
-        for capability in &module.replaces_capabilities {
-            if let Some(existing) = replaced
-                .iter()
-                .find(|(existing, _)| existing == capability)
-                .map(|(_, module_id)| module_id.clone())
-            {
-                diagnostics.push(module_diagnostic(
-                    "OA207",
-                    format!("modules.{id}.replaces_capabilities"),
-                    format!(
-                        "modules `{existing}` and `{id}` both replace capability `{capability:?}`"
-                    ),
-                ));
-            } else {
-                replaced.push((*capability, id.clone()));
+        if verified {
+            for capability in &module.replaces_capabilities {
+                if let Some(existing) = replaced
+                    .iter()
+                    .find(|(existing, _)| existing == capability)
+                    .map(|(_, module_id)| module_id.clone())
+                {
+                    diagnostics.push(module_diagnostic(
+                        "OA207",
+                        format!("modules.{id}.replaces_capabilities"),
+                        format!(
+                            "modules `{existing}` and `{id}` both replace capability `{capability:?}`"
+                        ),
+                    ));
+                } else {
+                    replaced.push((*capability, id.clone()));
+                }
             }
         }
     }
@@ -1664,14 +1816,18 @@ fn validate_module_descriptor(
         module_diagnostic(
             "OA201",
             format!("{path}.source_url"),
-            "expected a public HTTPS source URL",
+            "expected a public HTTPS source URL on the allowlisted publisher origin",
         )
     })?;
-    if url.scheme() != "https" || url.host_str().is_none() {
+    if url.scheme() != "https"
+        || url.host_str() != Some("openadventurerpg.com")
+        || !url.username().is_empty()
+        || url.password().is_some()
+    {
         return Err(module_diagnostic(
             "OA201",
             format!("{path}.source_url"),
-            "expected a public HTTPS source URL",
+            "expected a public HTTPS source URL on the allowlisted publisher origin",
         ));
     }
     if !strictly_sorted_capabilities(&module.provides_capabilities) {
@@ -1783,6 +1939,7 @@ pub struct OpenAdventureGoldenAdventure {
     pub creation: OpenAdventureCreationRequest,
     pub document: OpenAdventureEncounterDocument,
     pub modules: Vec<OpenAdventureModuleDescriptor>,
+    pub module_artifacts: Vec<OpenAdventureModuleArtifact>,
     pub module_selection: OpenAdventureModuleSelection,
     pub steps: Vec<OpenAdventureGoldenStep>,
     pub expected_ending: String,
@@ -1894,19 +2051,25 @@ pub fn replay_open_adventure_golden(
         });
     }
     let manifest = open_adventure_manifest();
-    let effective_modules =
-        apply_open_adventure_modules(&adventure.modules, &adventure.module_selection, &manifest)
-            .map_err(|_| {
-                invalid(
-                    "golden.module_selection",
-                    "golden adventure module selection is invalid",
-                )
-            })?;
+    let effective_modules = apply_open_adventure_modules(
+        &adventure.modules,
+        &adventure.module_artifacts,
+        &adventure.module_selection,
+        &manifest,
+    )
+    .map_err(|_| {
+        invalid(
+            "golden.module_selection",
+            "golden adventure module selection is invalid",
+        )
+    })?;
     let preview = create_open_adventure_character(&adventure.creation)?;
     let document_json = adventure.document.to_json()?;
+    let document_sha256 = sha256_bytes(document_json.as_bytes());
     let start_input = object([
         ("disclosure", DomainValue::Symbol("public".to_owned())),
         ("document_json", DomainValue::String(document_json)),
+        ("document_sha256", DomainValue::String(document_sha256)),
         (
             "encounter_id",
             DomainValue::String(adventure.document.id.clone()),
@@ -1979,29 +2142,16 @@ pub fn open_adventure_golden_adventures() -> Vec<OpenAdventureGoldenAdventure> {
         creation: golden_creation_request(),
         document: golden_encounter_document(),
         modules: vec![golden_module()],
+        module_artifacts: vec![OpenAdventureModuleArtifact {
+            module_id: format!("{OPEN_ADVENTURE_NAMESPACE}.tide_clocks"),
+            bytes: OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES.to_vec(),
+        }],
         module_selection: OpenAdventureModuleSelection {
             selection_format_version: OPEN_ADVENTURE_MODULE_SELECTION_FORMAT_VERSION,
             experience: OpenAdventureModuleExperience::Extended,
             enabled_modules: vec![format!("{OPEN_ADVENTURE_NAMESPACE}.tide_clocks")],
         },
         steps: vec![
-            golden_step(
-                "resolve_encounter_action",
-                TabletopCapability::Encounters,
-                golden_action_input(
-                    "sable",
-                    "social_terms",
-                    "challenge",
-                    "attack",
-                    None,
-                    Some("tide_staff"),
-                ),
-            ),
-            golden_step(
-                "resolve_encounter_action",
-                TabletopCapability::Encounters,
-                golden_action_input("warden", "sable", "participant", "attack", None, None),
-            ),
             golden_step(
                 "resolve_encounter_action",
                 TabletopCapability::Encounters,
@@ -2024,7 +2174,7 @@ pub fn open_adventure_golden_adventures() -> Vec<OpenAdventureGoldenAdventure> {
                 TabletopCapability::Encounters,
                 golden_action_input(
                     "sable",
-                    "explore_ledger",
+                    "social_terms",
                     "challenge",
                     "attack",
                     None,
@@ -2037,14 +2187,21 @@ pub fn open_adventure_golden_adventures() -> Vec<OpenAdventureGoldenAdventure> {
                 golden_action_input("warden", "sable", "participant", "attack", None, None),
             ),
             golden_step(
+                "resolve_encounter_action",
+                TabletopCapability::Encounters,
+                golden_action_input(
+                    "sable",
+                    "explore_ledger",
+                    "challenge",
+                    "attack",
+                    None,
+                    Some("tide_staff"),
+                ),
+            ),
+            golden_step(
                 "heal_encounter_participant",
                 TabletopCapability::ResourcesAndConditions,
                 golden_heal_input("sable", "body", 3),
-            ),
-            golden_step(
-                "end_encounter",
-                TabletopCapability::Encounters,
-                golden_end_input("success"),
             ),
             golden_step(
                 "advance_encounter_participant",
@@ -2275,8 +2432,8 @@ fn golden_encounter_document() -> OpenAdventureEncounterDocument {
                 id: "explore_ledger".to_owned(),
                 label: "Trace the Ledger".to_owned(),
                 kind: OpenAdventureChallengeKind::Environmental,
-                difficulty_score: 10,
-                challenge_points: 10,
+                difficulty_score: 1,
+                challenge_points: 1,
                 effect: 1,
                 participant_ids: vec!["sable".to_owned()],
             },
@@ -2284,8 +2441,8 @@ fn golden_encounter_document() -> OpenAdventureEncounterDocument {
                 id: "social_terms".to_owned(),
                 label: "Negotiate Terms".to_owned(),
                 kind: OpenAdventureChallengeKind::Environmental,
-                difficulty_score: 10,
-                challenge_points: 10,
+                difficulty_score: 1,
+                challenge_points: 1,
                 effect: 1,
                 participant_ids: vec!["sable".to_owned()],
             },
@@ -2316,7 +2473,7 @@ fn golden_module() -> OpenAdventureModuleDescriptor {
         source_url: "https://openadventurerpg.com/".to_owned(),
         license: "CC0".to_owned(),
         content_class: OpenAdventureModuleContentClass::OfficialCommunityOwned,
-        sha256: "b".repeat(64),
+        sha256: OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256.to_owned(),
     }
 }
 
@@ -2378,17 +2535,6 @@ fn golden_heal_input(participant_id: &str, pool: &str, amount: u32) -> DomainVal
             DomainValue::String(participant_id.to_owned()),
         ),
         ("pool", DomainValue::Symbol(pool.to_owned())),
-    ])
-}
-
-fn golden_end_input(ending: &str) -> DomainValue {
-    object([
-        ("disclosure", DomainValue::Symbol("public".to_owned())),
-        (
-            "encounter_id",
-            DomainValue::String("sable_quay_trial".to_owned()),
-        ),
-        ("ending", DomainValue::Symbol(ending.to_owned())),
     ])
 }
 
@@ -3338,10 +3484,14 @@ impl TabletopResolver for OpenAdventureResolver {
             "resolve_challenge_action" => {
                 resolve_challenge_action(definition, request, state, entropy)?
             }
-            "start_encounter" => resolve_start_encounter(request, state)?,
-            "resolve_encounter_action" => resolve_encounter_action(request, state, entropy)?,
+            "start_encounter" => resolve_start_encounter(definition, request, state)?,
+            "resolve_encounter_action" => {
+                resolve_encounter_action(definition, request, state, entropy)?
+            }
             "end_encounter" => resolve_end_encounter(request, state)?,
-            "heal_encounter_participant" => resolve_heal_encounter_participant(request, state)?,
+            "heal_encounter_participant" => {
+                resolve_heal_encounter_participant(definition, request, state)?
+            }
             "advance_encounter_participant" => {
                 resolve_advance_encounter_participant(request, state)?
             }
@@ -4002,27 +4152,50 @@ fn store_challenge_state(
 fn new_encounter_state_value(
     document: &OpenAdventureEncounterDocument,
     canonical_document: String,
-) -> DomainValue {
+    character_body_points: u32,
+    character_mind_points: u32,
+    character_spirit_points: u32,
+) -> Result<DomainValue, TabletopError> {
     let participants = document
         .participants
         .iter()
         .map(|participant| {
+            let (body_points, mind_points, spirit_points) = match participant.kind {
+                OpenAdventureParticipantKind::Character => (
+                    character_body_points,
+                    character_mind_points,
+                    character_spirit_points,
+                ),
+                OpenAdventureParticipantKind::Adversary => (
+                    participant.body_points,
+                    participant.mind_points,
+                    participant.spirit_points,
+                ),
+            };
+            let exhausted_pool = if body_points == 0 {
+                "body"
+            } else if mind_points == 0 {
+                "mind"
+            } else if spirit_points == 0 {
+                "spirit"
+            } else {
+                ""
+            };
+            let incapacitated = !exhausted_pool.is_empty();
             (
                 participant.id.clone(),
                 object([
+                    ("body_points", DomainValue::Number(f64::from(body_points))),
+                    ("defeated", DomainValue::Bool(incapacitated)),
                     (
-                        "body_points",
-                        DomainValue::Number(f64::from(participant.body_points)),
+                        "exhausted_pool",
+                        DomainValue::String(exhausted_pool.to_owned()),
                     ),
-                    ("defeated", DomainValue::Bool(false)),
-                    ("incapacitated", DomainValue::Bool(false)),
-                    (
-                        "mind_points",
-                        DomainValue::Number(f64::from(participant.mind_points)),
-                    ),
+                    ("incapacitated", DomainValue::Bool(incapacitated)),
+                    ("mind_points", DomainValue::Number(f64::from(mind_points))),
                     (
                         "spirit_points",
-                        DomainValue::Number(f64::from(participant.spirit_points)),
+                        DomainValue::Number(f64::from(spirit_points)),
                     ),
                     (
                         "story_points",
@@ -4049,14 +4222,14 @@ fn new_encounter_state_value(
             )
         })
         .collect();
-    object([
+    Ok(object([
         ("challenges", DomainValue::Object(challenges)),
         ("document", DomainValue::String(canonical_document)),
         ("ended", DomainValue::Bool(false)),
         ("ending", DomainValue::String(String::new())),
         ("participants", DomainValue::Object(participants)),
         ("turn_index", DomainValue::Number(0.0)),
-    ])
+    ]))
 }
 
 fn advancement_bonus(
@@ -4068,6 +4241,18 @@ fn advancement_bonus(
     let value = optional_u32(bonuses, attribute)?.unwrap_or(0);
     i32::try_from(value)
         .map_err(|_| invalid("state.advancement.attribute_bonuses", "bonus overflow"))
+}
+
+fn derived_action_score(
+    derived: &OpenAdventureDerived,
+    attribute: OpenAdventureAttribute,
+) -> Result<i32, TabletopError> {
+    derived
+        .action_scores
+        .iter()
+        .find(|score| score.attribute == attribute)
+        .map(|score| score.total)
+        .ok_or_else(|| invalid("definition", "derived action score is unavailable"))
 }
 
 fn grant_encounter_rewards(
@@ -4199,14 +4384,17 @@ fn dice_payload(rolled: &[RolledDie]) -> DomainValue {
 }
 
 fn resolve_start_encounter(
+    definition: &DomainValue,
     request: &DomainValue,
     state: &DomainValue,
 ) -> Result<(DomainValue, Vec<ResolverEvent>), TabletopError> {
     let input = value_object("input", request)?;
     let encounter_id = object_string(input, "encounter_id")?.to_owned();
     let document_json = object_string(input, "document_json")?.to_owned();
+    let document_sha256 = object_string(input, "document_sha256")?.to_owned();
     let disclosure = parse_disclosure(object_symbol(input, "disclosure")?)?;
     validate_local_identifier("input.encounter_id", &encounter_id)?;
+    validate_sha256("input.document_sha256", &document_sha256)?;
     if document_json.chars().count() > 65_536 {
         return Err(invalid(
             "input.document_json",
@@ -4222,6 +4410,13 @@ fn resolve_start_encounter(
         ));
     }
     let canonical_document = document.to_json()?;
+    if sha256_bytes(canonical_document.as_bytes()) != document_sha256 {
+        return Err(invalid(
+            "input.document_sha256",
+            "document digest does not match the canonical validated document",
+        ));
+    }
+    let derived = open_adventure_derived(definition)?;
     let mut next = state.clone();
     let state_fields = value_object_mut("state", &mut next)?;
     if object_bool(state_fields, "defeated")? {
@@ -4230,6 +4425,9 @@ fn resolve_start_encounter(
             "a defeated character cannot start an encounter",
         ));
     }
+    let body_points = object_u32(state_fields, "body_points")?.min(derived.body_points);
+    let mind_points = object_u32(state_fields, "mind_points")?.min(derived.mind_points);
+    let spirit_points = object_u32(state_fields, "spirit_points")?.min(derived.spirit_points);
     let encounters = object_map_mut(state_fields, "encounters")?;
     if encounters.contains_key(&encounter_id) {
         return Err(invalid(
@@ -4242,7 +4440,13 @@ fn resolve_start_encounter(
     }
     encounters.insert(
         encounter_id.clone(),
-        new_encounter_state_value(&document, canonical_document),
+        new_encounter_state_value(
+            &document,
+            canonical_document,
+            body_points,
+            mind_points,
+            spirit_points,
+        )?,
     );
     let mut public_fields = object_fields([
         (
@@ -4298,10 +4502,12 @@ fn resolve_start_encounter(
 }
 
 fn resolve_encounter_action(
+    definition: &DomainValue,
     request: &DomainValue,
     state: &DomainValue,
     entropy: &mut EntropyStream,
 ) -> Result<(DomainValue, Vec<ResolverEvent>), TabletopError> {
+    let derived = open_adventure_derived(definition)?;
     let input = value_object("input", request)?;
     let encounter_id = object_string(input, "encounter_id")?.to_owned();
     let actor_id = object_string(input, "actor_id")?.to_owned();
@@ -4445,13 +4651,24 @@ fn resolve_encounter_action(
     } else {
         0
     };
+    let actor_base = if actor.kind == OpenAdventureParticipantKind::Character {
+        derived_action_score(&derived, actor.attribute)?
+    } else {
+        actor.attack_bonus
+    };
     let action_score = checked_sum(&[
-        actor.attack_bonus,
+        actor_base,
         equipment_bonus,
         if story_point_spent { 2 } else { 0 },
         advancement,
         situation_modifier,
     ])?;
+    if !(-1_000..=1_000).contains(&action_score) {
+        return Err(invalid(
+            "action_score",
+            "final action score is outside the reviewed bounds",
+        ));
+    }
     let dice = open_adventure_action_dice(action_score);
 
     let mut challenge_effect = 0;
@@ -4474,7 +4691,21 @@ fn resolve_encounter_action(
                     "target participant is already incapacitated",
                 ));
             }
-            (target.defense, Some(target), Some(target_state))
+            let target_defense = if target.kind == OpenAdventureParticipantKind::Character {
+                let defense = u32::try_from(derived.defense).map_err(|_| {
+                    invalid("definition.defense", "derived defense must be positive")
+                })?;
+                if !(1..=1_000).contains(&defense) {
+                    return Err(invalid(
+                        "definition.defense",
+                        "derived defense is outside the reviewed bounds",
+                    ));
+                }
+                defense
+            } else {
+                target.defense
+            };
+            (target_defense, Some(target), Some(target_state))
         }
         EncounterTargetKind::Challenge => {
             let challenge = document
@@ -4528,6 +4759,10 @@ fn resolve_encounter_action(
                     incapacitated = true;
                     updated_target.insert("incapacitated".to_owned(), DomainValue::Bool(true));
                     updated_target.insert("defeated".to_owned(), DomainValue::Bool(true));
+                    updated_target.insert(
+                        "exhausted_pool".to_owned(),
+                        DomainValue::String(effect_pool.as_str().to_owned()),
+                    );
                     let applied = object_list(&updated_target, "wounds")?;
                     if let Some(wound) = target.wounds.iter().find(|wound| {
                         wound.target == effect_pool
@@ -4646,7 +4881,7 @@ fn resolve_encounter_action(
     );
     public_fields.insert(
         "attack_bonus".to_owned(),
-        DomainValue::Number(f64::from(actor.attack_bonus)),
+        DomainValue::Number(f64::from(actor_base)),
     );
     public_fields.insert(
         "disclosure".to_owned(),
@@ -4812,6 +5047,15 @@ fn resolve_end_encounter(
         ));
     }
     let document = encounter_document_from_state(&encounter)?;
+    if ending == OpenAdventureEncounterEnding::Success
+        && encounter_ending_check(&encounter, &document)?
+            != Some(OpenAdventureEncounterEnding::Success)
+    {
+        return Err(invalid(
+            "input.ending",
+            "claimed success does not satisfy an encounter success condition",
+        ));
+    }
     encounter.insert("ended".to_owned(), DomainValue::Bool(true));
     encounter.insert(
         "ending".to_owned(),
@@ -4892,9 +5136,11 @@ fn resolve_end_encounter(
 }
 
 fn resolve_heal_encounter_participant(
+    definition: &DomainValue,
     request: &DomainValue,
     state: &DomainValue,
 ) -> Result<(DomainValue, Vec<ResolverEvent>), TabletopError> {
+    let derived = open_adventure_derived(definition)?;
     let input = value_object("input", request)?;
     let encounter_id = object_string(input, "encounter_id")?.to_owned();
     let participant_id = object_string(input, "participant_id")?.to_owned();
@@ -4926,10 +5172,17 @@ fn resolve_heal_encounter_participant(
     let mut participant_state = participant_state(&encounter, &participant_id)?;
     let pool_field = pool.field_name();
     let current = object_u32(&participant_state, pool_field)?;
-    let initial = match pool {
-        OpenAdventurePool::Body => participant.body_points,
-        OpenAdventurePool::Mind => participant.mind_points,
-        OpenAdventurePool::Spirit => participant.spirit_points,
+    let initial = match participant.kind {
+        OpenAdventureParticipantKind::Character => match pool {
+            OpenAdventurePool::Body => derived.body_points,
+            OpenAdventurePool::Mind => derived.mind_points,
+            OpenAdventurePool::Spirit => derived.spirit_points,
+        },
+        OpenAdventureParticipantKind::Adversary => match pool {
+            OpenAdventurePool::Body => participant.body_points,
+            OpenAdventurePool::Mind => participant.mind_points,
+            OpenAdventurePool::Spirit => participant.spirit_points,
+        },
     };
     let healed = current.saturating_add(amount).min(initial);
     set_u32(&mut participant_state, pool_field, healed);
@@ -4948,10 +5201,24 @@ fn resolve_heal_encounter_participant(
         wounds.remove(index);
     }
     let was_incapacitated = object_bool(&participant_state, "incapacitated")?;
-    let recovered = was_incapacitated && healed > 0;
+    let exhausted_pool = object_string(&participant_state, "exhausted_pool")?.to_owned();
+    let all_pools_positive = object_u32(&participant_state, "body_points")? > 0
+        && object_u32(&participant_state, "mind_points")? > 0
+        && object_u32(&participant_state, "spirit_points")? > 0;
+    let recovered = was_incapacitated
+        && healed > 0
+        && (if exhausted_pool.is_empty() {
+            all_pools_positive
+        } else {
+            exhausted_pool == pool.as_str()
+        });
     if recovered {
         participant_state.insert("incapacitated".to_owned(), DomainValue::Bool(false));
         participant_state.insert("defeated".to_owned(), DomainValue::Bool(false));
+        participant_state.insert(
+            "exhausted_pool".to_owned(),
+            DomainValue::String(String::new()),
+        );
     }
     store_participant_state(&mut encounter, &participant_id, participant_state)?;
     store_encounter_state(state_fields, &encounter_id, encounter)?;
@@ -5453,6 +5720,13 @@ fn operations() -> BTreeMap<String, ResolverOperationDeclaration> {
                         required(string(1, 65_536), "Canonical encounter document JSON."),
                     ),
                     (
+                        "document_sha256",
+                        required(
+                            string(64, 64),
+                            "SHA-256 of the canonical validated document.",
+                        ),
+                    ),
+                    (
                         "encounter_id",
                         required(string(1, 128), "Stable encounter identity."),
                     ),
@@ -5740,7 +6014,7 @@ fn event_types() -> BTreeMap<String, TypeExpression> {
                     ),
                     (
                         "attack_bonus",
-                        required(integer(-100.0, 100.0), "Actor attack bonus."),
+                        required(integer(-1_000.0, 1_000.0), "Actor action base."),
                     ),
                     (
                         "disclosure",
@@ -6308,6 +6582,10 @@ fn encounter_participant_state_type() -> TypeExpression {
                 TypeExpression::Bool,
                 "Whether this participant is defeated.",
             ),
+        ),
+        (
+            "exhausted_pool",
+            required(string(0, 16), "Exhausted pool name, or empty."),
         ),
         (
             "incapacitated",

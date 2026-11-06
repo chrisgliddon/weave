@@ -5,8 +5,10 @@ use weave_tabletop::{
     EventVisibility, OPEN_ADVENTURE_ADAPTER_ID, OPEN_ADVENTURE_ADAPTER_VERSION,
     OPEN_ADVENTURE_CREATION_FORMAT_VERSION, OPEN_ADVENTURE_EDITION,
     OPEN_ADVENTURE_ENCOUNTER_FORMAT_VERSION, OPEN_ADVENTURE_LICENSE_ALLOWLIST_TOKEN,
-    OPEN_ADVENTURE_LICENSE_STATEMENT, OPEN_ADVENTURE_MODULE_FORMAT_VERSION,
+    OPEN_ADVENTURE_LICENSE_STATEMENT, OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES,
+    OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256, OPEN_ADVENTURE_MODULE_FORMAT_VERSION,
     OPEN_ADVENTURE_MODULE_SELECTION_FORMAT_VERSION, OPEN_ADVENTURE_NAMESPACE,
+    OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_BYTES, OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_SHA256,
     OPEN_ADVENTURE_SOURCE_RECORD, OPEN_ADVENTURE_SOURCE_RECORD_SHA256, OPEN_ADVENTURE_SOURCE_URL,
     OpenAdventureAdversary, OpenAdventureAttribute, OpenAdventureAttributes,
     OpenAdventureCapabilityReplacement, OpenAdventureChallengeEntity, OpenAdventureChallengeKind,
@@ -14,20 +16,20 @@ use weave_tabletop::{
     OpenAdventureEffectiveModules, OpenAdventureEncounterDocument, OpenAdventureEncounterEquipment,
     OpenAdventureEncounterOutcomes, OpenAdventureEncounterParticipant, OpenAdventureEquipment,
     OpenAdventureEquipmentKind, OpenAdventureFavoredAction, OpenAdventureGoldenAdventure,
-    OpenAdventureModifierTarget, OpenAdventureModuleContentClass, OpenAdventureModuleDescriptor,
-    OpenAdventureModuleExperience, OpenAdventureModuleSelection, OpenAdventureModusOperandi,
-    OpenAdventureOrigin, OpenAdventureParticipantKind, OpenAdventurePool, OpenAdventureRange,
-    OpenAdventureResolver, OpenAdventureReward, OpenAdventureRuntimeEncounter,
-    OpenAdventureSpecialization, OpenAdventureSpell, OpenAdventureTraitModifier,
-    OpenAdventureWound, RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest,
-    ResolverRegistry, TabletopCapability, TabletopState, apply_open_adventure_modules,
-    canonical_fingerprint, create_open_adventure_character, open_adventure_action_dice,
-    open_adventure_derived, open_adventure_documentation, open_adventure_golden_adventures,
-    open_adventure_manifest, open_adventure_module_options, open_adventure_source_record_sha256,
-    project_open_adventure_runtime_encounter, replay_open_adventure_golden,
-    validate_adapter_manifest, validate_open_adventure_creation_preview,
-    validate_open_adventure_encounter_document, validate_open_adventure_runtime_encounter,
-    validate_resolution_receipt,
+    OpenAdventureModifierTarget, OpenAdventureModuleArtifact, OpenAdventureModuleContentClass,
+    OpenAdventureModuleDescriptor, OpenAdventureModuleExperience, OpenAdventureModuleSelection,
+    OpenAdventureModusOperandi, OpenAdventureOrigin, OpenAdventureParticipantKind,
+    OpenAdventurePool, OpenAdventureRange, OpenAdventureResolver, OpenAdventureReward,
+    OpenAdventureRuntimeEncounter, OpenAdventureSpecialization, OpenAdventureSpell,
+    OpenAdventureTraitModifier, OpenAdventureWound, RESOLVER_FORMAT_VERSION, ResolutionReceipt,
+    ResolutionRequest, ResolverRegistry, TabletopCapability, TabletopState,
+    apply_open_adventure_modules, canonical_fingerprint, create_open_adventure_character,
+    open_adventure_action_dice, open_adventure_derived, open_adventure_documentation,
+    open_adventure_golden_adventures, open_adventure_manifest, open_adventure_module_options,
+    open_adventure_source_record_sha256, project_open_adventure_runtime_encounter,
+    replay_open_adventure_golden, sha256_bytes, validate_adapter_manifest,
+    validate_open_adventure_creation_preview, validate_open_adventure_encounter_document,
+    validate_open_adventure_runtime_encounter, validate_resolution_receipt,
 };
 
 fn origin(id: &str, label: &str, note: &str) -> OpenAdventureOrigin {
@@ -1215,6 +1217,10 @@ fn start_input(encounter_id: &str, document_json: &str, disclosure: &str) -> Dom
             "document_json",
             DomainValue::String(document_json.to_owned()),
         ),
+        (
+            "document_sha256",
+            DomainValue::String(sha256_bytes(document_json.as_bytes())),
+        ),
         ("encounter_id", DomainValue::String(encounter_id.to_owned())),
     ])
 }
@@ -1526,8 +1532,8 @@ fn encounter_runs_through_combat_magic_injury_healing_rewards_and_advancement() 
 }
 
 #[test]
-fn encounter_concludes_by_every_supported_ending() {
-    for ending in ["withdrawal", "host_decision", "success", "defeat"] {
+fn encounter_concludes_by_withdrawal_host_decision_and_defeat() {
+    for ending in ["withdrawal", "host_decision", "defeat"] {
         let preview = create_open_adventure_character(&creation_request()).unwrap();
         let registry = registry();
         let (_, begun) = execute(
@@ -1551,14 +1557,12 @@ fn encounter_concludes_by_every_supported_ending() {
         let state = ended.after_state;
         assert!(encounter_ended(&state, "harbor_negotiation"));
         assert_eq!(encounter_ending(&state, "harbor_negotiation"), ending);
-        let rewarded = ended
-            .events
-            .iter()
-            .any(|event| event.kind == "encounter_reward_granted");
-        assert_eq!(
-            rewarded,
-            ending == "success",
-            "reward presence disagreed for {ending}"
+        assert!(
+            !ended
+                .events
+                .iter()
+                .any(|event| event.kind == "encounter_reward_granted"),
+            "reward was granted for an unsupported ending {ending}"
         );
         assert_eq!(
             TabletopState::from_json(&state.to_json().unwrap()).unwrap(),
@@ -1572,12 +1576,92 @@ fn encounter_concludes_by_every_supported_ending() {
 }
 
 #[test]
+fn encounter_rejects_unearned_success_and_grants_earned_success() {
+    let preview = create_open_adventure_character(&creation_request()).unwrap();
+    let registry = registry();
+    let (_, begun) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "start_success_check",
+        "start_encounter",
+        TabletopCapability::Encounters,
+        start_input("harbor_negotiation", &document_json(), "public"),
+    );
+    let unearned = registry.execute(
+        &open_adventure_manifest(),
+        &ResolutionRequest {
+            resolver_format_version: RESOLVER_FORMAT_VERSION,
+            request_id: "end_unearned_success".to_owned(),
+            adapter: preview.adapter.clone(),
+            operation: "end_encounter".to_owned(),
+            capability: TabletopCapability::Encounters,
+            definition_sha256: preview.definition.definition_sha256.clone(),
+            definition: preview.definition.definition.clone(),
+            expected_state_sha256: canonical_fingerprint(&begun.after_state).unwrap(),
+            input: end_input("harbor_negotiation", "success", "public"),
+        },
+        &begun.after_state,
+    );
+    let error = unearned.unwrap_err().to_string();
+    assert!(error.contains("does not satisfy"), "{error}");
+
+    let mut state = begun.after_state.clone();
+    let fields = match &mut state.value {
+        DomainValue::Object(fields) => fields,
+        _ => panic!("state must be an object"),
+    };
+    let encounters = match fields.get_mut("encounters") {
+        Some(DomainValue::Object(encounters)) => encounters,
+        _ => panic!("encounters must be an object"),
+    };
+    let encounter = match encounters.get_mut("harbor_negotiation") {
+        Some(DomainValue::Object(encounter)) => encounter,
+        _ => panic!("encounter must be an object"),
+    };
+    let challenges = match encounter.get_mut("challenges") {
+        Some(DomainValue::Object(challenges)) => challenges,
+        _ => panic!("challenges must be an object"),
+    };
+    let challenge = match challenges.get_mut("open_quay") {
+        Some(DomainValue::Object(challenge)) => challenge,
+        _ => panic!("challenge must be an object"),
+    };
+    challenge.insert("completed".to_owned(), DomainValue::Bool(true));
+    challenge.insert(
+        "remaining_challenge_points".to_owned(),
+        DomainValue::Number(0.0),
+    );
+    let (_, earned) = execute(
+        &registry,
+        &preview,
+        &state,
+        "end_earned_success",
+        "end_encounter",
+        TabletopCapability::Encounters,
+        end_input("harbor_negotiation", "success", "public"),
+    );
+    let state = earned.after_state;
+    assert!(encounter_ended(&state, "harbor_negotiation"));
+    assert_eq!(encounter_ending(&state, "harbor_negotiation"), "success");
+    assert!(
+        earned
+            .events
+            .iter()
+            .any(|event| event.kind == "encounter_reward_granted")
+    );
+    let advancement = value_fields(state_fields(&state).get("advancement").unwrap());
+    assert!(value_number(advancement, "experience") >= 3.0);
+    assert!(value_number(advancement, "story_points") >= 2.0);
+    assert_eq!(
+        TabletopState::from_json(&state.to_json().unwrap()).unwrap(),
+        state
+    );
+}
+
+#[test]
 fn encounter_condition_changes_and_defeat_are_structured() {
     let mut document = encounter_document();
-    document.participants[0].body_points = 1;
-    document.participants[0].mind_points = 1;
-    document.participants[0].spirit_points = 1;
-    document.participants[0].defense = 1;
     document.participants[0].wounds.push(OpenAdventureWound {
         id: "salted".to_owned(),
         label: "Salted".to_owned(),
@@ -1589,12 +1673,25 @@ fn encounter_condition_changes_and_defeat_are_structured() {
     document.adversaries[0].attack_bonus = 20;
     document.participants[1].attack_bonus = 20;
     let document_json = document.to_json().unwrap();
-    let preview = create_open_adventure_character(&creation_request()).unwrap();
+    let mut request = creation_request();
+    request.drawbacks = vec![OpenAdventureTraitModifier {
+        id: "exposed".to_owned(),
+        label: "Exposed".to_owned(),
+        target: OpenAdventureModifierTarget::Defense,
+        modifier: -10,
+    }];
+    let preview = create_open_adventure_character(&request).unwrap();
+    let mut initial_state = preview.initial_state.clone();
+    let fields = match &mut initial_state.value {
+        DomainValue::Object(fields) => fields,
+        _ => panic!("state must be an object"),
+    };
+    fields.insert("body_points".to_owned(), DomainValue::Number(1.0));
     let registry = registry();
     let (_, begun) = execute(
         &registry,
         &preview,
-        &preview.initial_state,
+        &initial_state,
         "start_fragile",
         "start_encounter",
         TabletopCapability::Encounters,
@@ -1701,6 +1798,128 @@ fn encounter_condition_changes_and_defeat_are_structured() {
     assert!(value_list(&envoy_state, "wounds").is_empty());
 }
 
+#[test]
+fn healing_a_different_pool_does_not_clear_mind_exhaustion() {
+    let mut document = encounter_document();
+    document.adversaries[0].attack_bonus = 20;
+    document.adversaries[0].effect_pool = OpenAdventurePool::Mind;
+    document.participants[1].attack_bonus = 20;
+    document.participants[1].effect_pool = OpenAdventurePool::Mind;
+    document.challenges[0].challenge_points = 100;
+    let document_json = document.to_json().unwrap();
+
+    let mut request = creation_request();
+    request.drawbacks = vec![OpenAdventureTraitModifier {
+        id: "exposed".to_owned(),
+        label: "Exposed".to_owned(),
+        target: OpenAdventureModifierTarget::Defense,
+        modifier: -10,
+    }];
+    let preview = create_open_adventure_character(&request).unwrap();
+    let mut initial_state = preview.initial_state.clone();
+    let fields = match &mut initial_state.value {
+        DomainValue::Object(fields) => fields,
+        _ => panic!("state must be an object"),
+    };
+    fields.insert("mind_points".to_owned(), DomainValue::Number(1.0));
+    let registry = registry();
+    let (_, begun) = execute(
+        &registry,
+        &preview,
+        &initial_state,
+        "start_mind_exhaustion",
+        "start_encounter",
+        TabletopCapability::Encounters,
+        start_input("harbor_negotiation", &document_json, "public"),
+    );
+    let (_, first) = execute(
+        &registry,
+        &preview,
+        &begun.after_state,
+        "mind_exhaustion_envoy",
+        "resolve_encounter_action",
+        TabletopCapability::Encounters,
+        encounter_action_input(
+            "harbor_negotiation",
+            "envoy",
+            "open_quay",
+            "challenge",
+            "attack",
+            None,
+            Some("speaker_staff"),
+            0,
+            false,
+            "public",
+        ),
+    );
+    let (_, second) = execute(
+        &registry,
+        &preview,
+        &first.after_state,
+        "mind_exhaustion_warden",
+        "resolve_encounter_action",
+        TabletopCapability::Encounters,
+        encounter_action_input(
+            "harbor_negotiation",
+            "warden",
+            "envoy",
+            "participant",
+            "attack",
+            None,
+            None,
+            0,
+            false,
+            "public",
+        ),
+    );
+    let envoy_state = {
+        let encounter = encounter_state(&second.after_state, "harbor_negotiation");
+        let participants = value_fields(encounter.get("participants").unwrap());
+        value_fields(participants.get("envoy").unwrap()).clone()
+    };
+    assert!(value_bool(&envoy_state, "incapacitated"));
+    assert!(value_bool(&envoy_state, "defeated"));
+    assert_eq!(value_string(&envoy_state, "exhausted_pool"), "mind");
+    assert_eq!(value_number(&envoy_state, "mind_points"), 0.0);
+
+    let (_, healed_body) = execute(
+        &registry,
+        &preview,
+        &second.after_state,
+        "heal_body_not_mind",
+        "heal_encounter_participant",
+        TabletopCapability::ResourcesAndConditions,
+        heal_input("harbor_negotiation", "envoy", "body", 1, "public"),
+    );
+    let envoy_state = {
+        let encounter = encounter_state(&healed_body.after_state, "harbor_negotiation");
+        let participants = value_fields(encounter.get("participants").unwrap());
+        value_fields(participants.get("envoy").unwrap()).clone()
+    };
+    assert!(value_bool(&envoy_state, "incapacitated"));
+    assert!(value_bool(&envoy_state, "defeated"));
+    assert_eq!(value_string(&envoy_state, "exhausted_pool"), "mind");
+
+    let (_, healed_mind) = execute(
+        &registry,
+        &preview,
+        &healed_body.after_state,
+        "heal_mind",
+        "heal_encounter_participant",
+        TabletopCapability::ResourcesAndConditions,
+        heal_input("harbor_negotiation", "envoy", "mind", 1, "public"),
+    );
+    let envoy_state = {
+        let encounter = encounter_state(&healed_mind.after_state, "harbor_negotiation");
+        let participants = value_fields(encounter.get("participants").unwrap());
+        value_fields(participants.get("envoy").unwrap()).clone()
+    };
+    assert!(!value_bool(&envoy_state, "incapacitated"));
+    assert!(!value_bool(&envoy_state, "defeated"));
+    assert_eq!(value_string(&envoy_state, "exhausted_pool"), "");
+    assert!(value_list(&envoy_state, "wounds").is_empty());
+}
+
 fn module_id(id: &str) -> String {
     format!("{OPEN_ADVENTURE_NAMESPACE}.{id}")
 }
@@ -1741,6 +1960,36 @@ fn module_selection(
     }
 }
 
+fn tide_clocks_module() -> OpenAdventureModuleDescriptor {
+    let mut module = module_descriptor("tide_clocks", OpenAdventureModuleExperience::Extended);
+    module.title = "Tide Clocks".to_owned();
+    module.sha256 = OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256.to_owned();
+    module
+}
+
+fn tide_clocks_artifact() -> OpenAdventureModuleArtifact {
+    OpenAdventureModuleArtifact {
+        module_id: module_id("tide_clocks"),
+        bytes: OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES.to_vec(),
+    }
+}
+
+fn tide_replacement_module() -> OpenAdventureModuleDescriptor {
+    let mut module = module_descriptor("tide_replacement", OpenAdventureModuleExperience::Extended);
+    module.title = "Tide Replacement".to_owned();
+    module.provides_capabilities = vec![TabletopCapability::ChecksAndConflicts];
+    module.replaces_capabilities = vec![TabletopCapability::ChecksAndConflicts];
+    module.sha256 = OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_SHA256.to_owned();
+    module
+}
+
+fn tide_replacement_artifact() -> OpenAdventureModuleArtifact {
+    OpenAdventureModuleArtifact {
+        module_id: module_id("tide_replacement"),
+        bytes: OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_BYTES.to_vec(),
+    }
+}
+
 #[test]
 fn module_activation_round_trips_and_leaves_core_behavior_unchanged() {
     let manifest = open_adventure_manifest();
@@ -1750,17 +1999,17 @@ fn module_activation_round_trips_and_leaves_core_behavior_unchanged() {
         .filter(|declaration| declaration.version == 1)
         .map(|declaration| declaration.capability)
         .collect();
-    let available = vec![module_descriptor(
-        "clocks",
-        OpenAdventureModuleExperience::Extended,
-    )];
+    let available = vec![tide_clocks_module()];
+    let artifacts = vec![tide_clocks_artifact()];
     let inactive = module_selection(OpenAdventureModuleExperience::Extended, &[]);
-    let effective = apply_open_adventure_modules(&available, &inactive, &manifest).unwrap();
+    let effective =
+        apply_open_adventure_modules(&available, &artifacts, &inactive, &manifest).unwrap();
     assert_eq!(effective.capabilities, core);
     assert!(effective.replaced_capabilities.is_empty());
 
-    let active = module_selection(OpenAdventureModuleExperience::Extended, &["clocks"]);
-    let effective = apply_open_adventure_modules(&available, &active, &manifest).unwrap();
+    let active = module_selection(OpenAdventureModuleExperience::Extended, &["tide_clocks"]);
+    let effective =
+        apply_open_adventure_modules(&available, &artifacts, &active, &manifest).unwrap();
     assert!(effective.capabilities.contains(&TabletopCapability::Clocks));
     assert_eq!(effective.enabled_modules, active.enabled_modules);
     assert_eq!(
@@ -1776,23 +2025,24 @@ fn module_activation_round_trips_and_leaves_core_behavior_unchanged() {
         effective
     );
 
-    let inactive_again = apply_open_adventure_modules(&available, &inactive, &manifest).unwrap();
+    let inactive_again =
+        apply_open_adventure_modules(&available, &artifacts, &inactive, &manifest).unwrap();
     assert_eq!(inactive_again.capabilities, core);
 }
 
 #[test]
 fn module_can_add_and_explicitly_replace_capabilities() {
     let manifest = open_adventure_manifest();
-    let add = module_descriptor("clocks", OpenAdventureModuleExperience::Extended);
-    let mut replace = module_descriptor("replacement", OpenAdventureModuleExperience::Extended);
-    replace.provides_capabilities = vec![TabletopCapability::ChecksAndConflicts];
-    replace.replaces_capabilities = vec![TabletopCapability::ChecksAndConflicts];
+    let add = tide_clocks_module();
+    let replace = tide_replacement_module();
     let available = vec![add, replace];
+    let artifacts = vec![tide_clocks_artifact(), tide_replacement_artifact()];
     let selection = module_selection(
         OpenAdventureModuleExperience::Extended,
-        &["clocks", "replacement"],
+        &["tide_clocks", "tide_replacement"],
     );
-    let effective = apply_open_adventure_modules(&available, &selection, &manifest).unwrap();
+    let effective =
+        apply_open_adventure_modules(&available, &artifacts, &selection, &manifest).unwrap();
     assert!(effective.capabilities.contains(&TabletopCapability::Clocks));
     assert!(
         effective
@@ -1803,7 +2053,7 @@ fn module_can_add_and_explicitly_replace_capabilities() {
         effective.replaced_capabilities,
         vec![OpenAdventureCapabilityReplacement {
             capability: TabletopCapability::ChecksAndConflicts,
-            module_id: module_id("replacement"),
+            module_id: module_id("tide_replacement"),
         }]
     );
 }
@@ -1816,6 +2066,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     excluded.content_class = OpenAdventureModuleContentClass::Excluded;
     let errors = apply_open_adventure_modules(
         &[excluded],
+        &[],
         &module_selection(OpenAdventureModuleExperience::Extended, &["excluded"]),
         &manifest,
     )
@@ -1829,6 +2080,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     unlicensed.license = "MIT".to_owned();
     let errors = apply_open_adventure_modules(
         &[unlicensed],
+        &[],
         &module_selection(OpenAdventureModuleExperience::Extended, &["unlicensed"]),
         &manifest,
     )
@@ -1840,6 +2092,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     );
 
     let errors = apply_open_adventure_modules(
+        &[],
         &[],
         &module_selection(OpenAdventureModuleExperience::Extended, &["missing"]),
         &manifest,
@@ -1855,6 +2108,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     requires.requires_modules = vec![module_id("missing")];
     let errors = apply_open_adventure_modules(
         &[requires],
+        &[],
         &module_selection(OpenAdventureModuleExperience::Extended, &["requires"]),
         &manifest,
     )
@@ -1870,6 +2124,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     let second = module_descriptor("second", OpenAdventureModuleExperience::Extended);
     let errors = apply_open_adventure_modules(
         &[first, second],
+        &[],
         &module_selection(
             OpenAdventureModuleExperience::Extended,
             &["first", "second"],
@@ -1887,6 +2142,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     shadow.provides_capabilities = vec![TabletopCapability::ChecksAndConflicts];
     let errors = apply_open_adventure_modules(
         &[shadow],
+        &[],
         &module_selection(OpenAdventureModuleExperience::Extended, &["shadow"]),
         &manifest,
     )
@@ -1896,6 +2152,7 @@ fn unverified_and_incompatible_module_sets_are_refused_with_actionable_diagnosti
     let extended = module_descriptor("extended", OpenAdventureModuleExperience::Extended);
     let errors = apply_open_adventure_modules(
         &[extended],
+        &[],
         &module_selection(OpenAdventureModuleExperience::Core, &["extended"]),
         &manifest,
     )
@@ -1920,7 +2177,8 @@ fn module_options_follow_the_selected_experience() {
 
 #[test]
 fn contributor_can_build_a_minimal_verified_module_without_core_changes() {
-    let module = module_descriptor("minimal", OpenAdventureModuleExperience::Core);
+    let module = tide_clocks_module();
+    let artifact = tide_clocks_artifact();
     assert_eq!(
         OpenAdventureModuleDescriptor::from_json(&module.to_json().unwrap()).unwrap(),
         module
@@ -1932,7 +2190,8 @@ fn contributor_can_build_a_minimal_verified_module_without_core_changes() {
     let manifest = open_adventure_manifest();
     let effective = apply_open_adventure_modules(
         &[module],
-        &module_selection(OpenAdventureModuleExperience::Core, &["minimal"]),
+        &[artifact],
+        &module_selection(OpenAdventureModuleExperience::Extended, &["tide_clocks"]),
         &manifest,
     )
     .unwrap();
@@ -2151,4 +2410,106 @@ fn golden_adventure_covers_social_exploration_combat_magic_injury_recovery_and_a
     assert!(!adventure.module_selection.enabled_modules.is_empty());
     assert!(!adventure.expected_event_kinds.is_empty());
     assert!(!adventure.expected_ending.is_empty());
+}
+
+#[test]
+fn encounter_start_rejects_a_document_digest_mismatch() {
+    let preview = create_open_adventure_character(&creation_request()).unwrap();
+    let registry = registry();
+    let mut input = start_input("harbor_negotiation", &document_json(), "public");
+    if let DomainValue::Object(fields) = &mut input {
+        fields.insert(
+            "document_sha256".to_owned(),
+            DomainValue::String("0".repeat(64)),
+        );
+    }
+    let result = registry.execute(
+        &open_adventure_manifest(),
+        &ResolutionRequest {
+            resolver_format_version: RESOLVER_FORMAT_VERSION,
+            request_id: "bad_document_digest".to_owned(),
+            adapter: preview.adapter.clone(),
+            operation: "start_encounter".to_owned(),
+            capability: TabletopCapability::Encounters,
+            definition_sha256: preview.definition.definition_sha256.clone(),
+            definition: preview.definition.definition.clone(),
+            expected_state_sha256: canonical_fingerprint(&preview.initial_state).unwrap(),
+            input,
+        },
+        &preview.initial_state,
+    );
+    let error = result.unwrap_err().to_string();
+    assert!(error.contains("document digest"), "{error}");
+}
+
+#[test]
+fn runtime_encounter_validation_rejects_malformed_stats_and_rewards() {
+    let document = encounter_document();
+    let runtime = project_open_adventure_runtime_encounter(&document).unwrap();
+    validate_open_adventure_runtime_encounter(&runtime).unwrap();
+
+    let mut malformed = runtime.clone();
+    malformed.participants[0].defense = 0;
+    assert!(validate_open_adventure_runtime_encounter(&malformed).is_err());
+
+    let mut malformed = runtime.clone();
+    malformed.rewards[0].experience = u32::MAX;
+    assert!(validate_open_adventure_runtime_encounter(&malformed).is_err());
+
+    let mut malformed = runtime;
+    malformed.challenges[0].participant_ids = vec!["warden".to_owned(), "envoy".to_owned()];
+    assert!(validate_open_adventure_runtime_encounter(&malformed).is_err());
+}
+
+#[test]
+fn module_artifacts_allowlist_and_publisher_origin_fail_closed() {
+    let manifest = open_adventure_manifest();
+
+    let module = tide_clocks_module();
+    let wrong_artifact = OpenAdventureModuleArtifact {
+        module_id: module_id("tide_clocks"),
+        bytes: b"wrong artifact bytes".to_vec(),
+    };
+    let errors = apply_open_adventure_modules(
+        &[module],
+        &[wrong_artifact],
+        &module_selection(OpenAdventureModuleExperience::Extended, &["tide_clocks"]),
+        &manifest,
+    )
+    .unwrap_err();
+    assert!(errors.iter().any(|diagnostic| diagnostic.code == "OA211"));
+
+    let mut unverified = module_descriptor(
+        "unverified_but_valid",
+        OpenAdventureModuleExperience::Extended,
+    );
+    unverified.sha256 = OPEN_ADVENTURE_MODULE_ARTIFACT_SHA256.to_owned();
+    let artifact = OpenAdventureModuleArtifact {
+        module_id: module_id("unverified_but_valid"),
+        bytes: OPEN_ADVENTURE_MODULE_ARTIFACT_BYTES.to_vec(),
+    };
+    let errors = apply_open_adventure_modules(
+        &[unverified],
+        &[artifact],
+        &module_selection(
+            OpenAdventureModuleExperience::Extended,
+            &["unverified_but_valid"],
+        ),
+        &manifest,
+    )
+    .unwrap_err();
+    assert!(errors.iter().any(|diagnostic| diagnostic.code == "OA210"));
+
+    let mut off_origin = tide_clocks_module();
+    off_origin.source_url = "https://example.com/module".to_owned();
+    let errors = apply_open_adventure_modules(
+        &[off_origin],
+        &[tide_clocks_artifact()],
+        &module_selection(OpenAdventureModuleExperience::Extended, &["tide_clocks"]),
+        &manifest,
+    )
+    .unwrap_err();
+    assert!(errors.iter().any(|diagnostic| {
+        diagnostic.code == "OA201" && diagnostic.path.contains("source_url")
+    }));
 }

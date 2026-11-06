@@ -4,6 +4,7 @@
 //! the harness itself fails closed: deliberately broken fixtures must trip one check each with a
 //! distinct, value-bearing diagnostic.
 
+use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use weave_domain::DomainValue;
@@ -14,8 +15,11 @@ use weave_tabletop::conformance::{
     ConformanceSuite, SourcePolicy, standard_source_policy, standard_suite,
 };
 use weave_tabletop::{
-    AdapterManifest, AdapterSourceClass, EntropyStream, PlugAndPlayConformance,
-    PlugAndPlayResolver, ResolverOutput, TabletopError, TabletopResolver, resolved_adapter,
+    AdapterManifest, AdapterSourceClass, EntropyStream, OPEN_ADVENTURE_CC0_LEGAL_CODE_SHA256,
+    OPEN_ADVENTURE_SOURCE_RECORD_SHA256, PlugAndPlayConformance, PlugAndPlayResolver,
+    ResolverOutput, TabletopError, TabletopResolver, dungeonpunk_manifest, freehack_manifest,
+    open_adventure_manifest, open_tale_manifest, plug_and_play_manifest, resolved_adapter,
+    spark_manifest, wicked_ones_manifest,
 };
 
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -36,10 +40,11 @@ fn every_registered_adapter_passes_every_check() {
             "org.weave.tabletop.wicked_ones",
             "org.weave.tabletop.spark",
             "org.weave.tabletop.open_tale",
+            "org.weave.tabletop.open_adventure",
         ]
     );
     assert!(report.passed(), "{}", report.render());
-    assert_eq!(report.adapters.len(), 6);
+    assert_eq!(report.adapters.len(), 7);
     for adapter in &report.adapters {
         assert!(adapter.failures.is_empty(), "{}", adapter.summary());
         assert_eq!(adapter.executed, ConformanceCheck::ALL.len());
@@ -112,12 +117,52 @@ fn every_registered_adapter_has_a_source_policy_row() {
         open_tale.required_license_text.sha256,
         weave_tabletop::OPEN_TALE_LICENSE_TEXT_SHA256
     );
+    let open_adventure = policy
+        .entry("org.weave.tabletop.open_adventure")
+        .expect("missing Open Adventure source policy row");
+    assert_eq!(open_adventure.license, "CC0-1.0");
+    assert_eq!(open_adventure.source_class, AdapterSourceClass::VerifiedCc0);
+    assert_eq!(
+        open_adventure.source_sha256,
+        OPEN_ADVENTURE_SOURCE_RECORD_SHA256
+    );
+    assert_eq!(
+        open_adventure.required_license_text.path,
+        "LICENSE-CC0-1.0.txt"
+    );
+    assert_eq!(
+        open_adventure.required_license_text.sha256,
+        OPEN_ADVENTURE_CC0_LEGAL_CODE_SHA256
+    );
+}
+
+#[test]
+fn every_exported_adapter_manifest_id_is_registered() {
+    let suite = standard_suite();
+    let registered: BTreeSet<String> = suite.adapter_ids().into_iter().map(str::to_owned).collect();
+    let manifests = [
+        plug_and_play_manifest(),
+        dungeonpunk_manifest(),
+        freehack_manifest(),
+        wicked_ones_manifest(),
+        spark_manifest(),
+        open_tale_manifest(),
+        open_adventure_manifest(),
+    ];
+    assert_eq!(registered.len(), manifests.len());
+    for manifest in manifests {
+        assert!(
+            registered.contains(manifest.id.as_str()),
+            "manifest id `{}` is not registered in standard_suite",
+            manifest.id
+        );
+    }
 }
 
 #[test]
 fn source_policy_is_complete_and_data_driven() {
     let policy = standard_source_policy();
-    assert_eq!(policy.entries().count(), 6);
+    assert_eq!(policy.entries().count(), 7);
     for adapter_id in standard_suite().adapter_ids() {
         let entry = policy
             .entry(adapter_id)
