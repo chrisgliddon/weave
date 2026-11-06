@@ -468,3 +468,51 @@ The integration test `tests/conformance.rs` additionally runs deliberately broke
 must fail exactly one check each — changed source hash, missing source hash, namespace collision,
 non-deterministic creation, missing notice, permissive resolver, policy licence mismatch, and
 redistributed forbidden file — so the harness itself cannot silently stop detecting regressions.
+
+## Applied switches, archives, and audit
+
+`preview_adapter_switch` remains the manifest-only, non-mutating check. Hosts that hold installed
+manifests and optional play state call `TabletopCharacterProjection::preview_switch` and
+`TabletopCharacterProjection::apply_switch` for an explicit, reviewed transition. Both accept an
+`AdapterSwitchRequest`, so the same serialized request can be previewed, archived, reloaded, and
+applied without reinterpreting host state.
+
+A character or play context has zero or one active primary projection. Inactive projections are
+stored only under the exact `id_version` namespace key and never resolve for expressions, events,
+panels, or capability discovery. `active_definition`, `projection_for_namespace`, and
+`active_capabilities` expose the active projection only. Reactivation is the only path back.
+
+The preview reports:
+
+- the exact source and target coordinates and whether the target is installed;
+- capabilities gained and lost, derived from the active and target manifests;
+- inactive namespaces that will be archived, restored, explicitly discarded, or retained;
+- definition fields and mutable resource paths that cannot transfer;
+- active state validity conflicts and the SHA-256 of the supplied state, never its contents;
+- each author decision required before applying; and
+- dry-run diagnostics, including same-adapter migration checks.
+
+Applying requires every required decision id in `accepted_decisions`; an unknown or missing
+decision fails with `TT101`. The projection is cloned, validated in full, and committed only after
+every check passes, so a failed migration or conflict leaves the original projection
+byte-identical.
+
+Cross-system definitions, attributes, abilities, items, resources, conditions, progression, and
+campaign state are never converted. A cross-system switch archives the outgoing projection under
+its own namespace and either restores an exact target archive or activates an independently
+created target definition. An explicit discard policy removes the outgoing projection only after
+the matching decision is accepted.
+
+A same-adapter release change is an in-place, migrated upgrade. It requires a declared migration
+that is `reviewed`, `preserves_canonical_character`, and matches the source id, version
+requirement, and schema version. The supplied migrated definition is dry-run validated against
+the target schema before any write; a missing declaration, a schema downgrade, or a failed dry run
+blocks the switch and rolls back.
+
+Every applied switch returns an `AdapterSwitchAudit`. It records the initiating actor class and
+stable actor id, the old and new coordinates, accepted decisions, diagnostics, archived, restored,
+discarded, and retained namespaces, preserved or discarded state fingerprints, the migration id,
+the replaced definition fingerprint, and the committed projection fingerprint. Canonical
+`canonical_profile_sha256` and suggestion lineage are unchanged, and
+`canonical_character_write_back` remains false. The audit contains fingerprints, identifiers, and
+fixed diagnostic text only, so it never stores a credential or a raw state payload.

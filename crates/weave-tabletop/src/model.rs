@@ -4,6 +4,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use weave_domain::{DomainValue, TypeExpression};
 
+use crate::TabletopError;
+
 /// Current tabletop adapter manifest format.
 pub const ADAPTER_MANIFEST_FORMAT_VERSION: u32 = 1;
 /// Current selection artifact format.
@@ -16,6 +18,8 @@ pub const ADAPTER_STATE_FORMAT_VERSION: u32 = 1;
 pub const RESOLVER_FORMAT_VERSION: u32 = 1;
 /// Current host resolver trait contract.
 pub const RESOLVER_CONTRACT_VERSION: u32 = 1;
+/// Current explicit switch request and audit format.
+pub const ADAPTER_SWITCH_FORMAT_VERSION: u32 = 1;
 
 /// Closed capability vocabulary shared by syntax, editor, resolver, and host integrations.
 #[derive(
@@ -413,6 +417,81 @@ pub struct ResolutionReceipt {
     pub events: Vec<TabletopEvent>,
 }
 
+/// Who or what initiated an explicit switch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SwitchInitiator {
+    /// The character author made the decision directly.
+    Author,
+    /// The authoring or editing host performed a reviewed action.
+    Editor,
+    /// A runtime host applied an explicit, pre-approved action.
+    Host,
+    /// An import or restore workflow applied the change.
+    Import,
+}
+
+/// Disposition of the outgoing active projection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SwitchOutgoingPolicy {
+    /// Preserve the outgoing definition under its exact adapter namespace.
+    Archive,
+    /// Remove the outgoing definition after an explicit decision.
+    Discard,
+}
+
+/// Kinds of author decisions a switch can require before it applies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SwitchDecisionKind {
+    DiscardCurrentProjection,
+    AcceptCapabilityLoss,
+    AcceptNonTransferableFields,
+    ResolveIncompatibleResources,
+    ResolvePendingConflicts,
+    ProvideTargetProjection,
+    ApplyReviewedMigration,
+}
+
+/// One explicit decision that must be acknowledged before applying a switch.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SwitchDecision {
+    pub id: String,
+    pub kind: SwitchDecisionKind,
+    pub required: bool,
+    pub description: String,
+}
+
+/// Severity of one non-mutating switch diagnostic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SwitchDiagnosticSeverity {
+    Info,
+    Warning,
+    Error,
+}
+
+/// One redaction-safe switch diagnostic.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SwitchDiagnostic {
+    /// Stable contract code, for example `TT101`.
+    pub code: String,
+    pub severity: SwitchDiagnosticSeverity,
+    pub message: String,
+}
+
+/// One archived or restored projection cited by a preview or audit.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SwitchArchiveReport {
+    pub adapter: ResolvedAdapter,
+    pub namespace: String,
+    pub definition_sha256: String,
+}
+
 /// Non-mutating switch analysis. Applying a switch is a later explicit reviewed operation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -425,4 +504,133 @@ pub struct AdapterSwitchPreview {
     pub automatic_conversion: bool,
     pub reviewed_migration_id: Option<String>,
     pub warnings: Vec<String>,
+    /// True when the target coordinate was resolved from an installed manifest.
+    pub target_installed: bool,
+    /// Capabilities declared only by the target adapter.
+    pub capabilities_gained: Vec<TabletopCapability>,
+    /// Capabilities declared by the active adapter but absent from the target.
+    pub capabilities_lost: Vec<TabletopCapability>,
+    /// Definition paths that cannot transfer across systems.
+    pub non_transferable_fields: Vec<String>,
+    /// Active mutable resource paths that cannot transfer across systems.
+    pub incompatible_active_resources: Vec<String>,
+    /// Conditions the author must resolve or acknowledge before applying.
+    pub pending_conflicts: Vec<String>,
+    /// Outgoing projection that will be preserved in the archive.
+    pub archive: Option<SwitchArchiveReport>,
+    /// Exact archived projection that will be restored.
+    pub restore: Option<SwitchArchiveReport>,
+    /// Inactive namespaces explicitly discarded by the request.
+    pub discard_inactive: Vec<String>,
+    /// Inactive namespaces preserved unchanged by the request.
+    pub retained_inactive: Vec<String>,
+    /// Fingerprint of the supplied outgoing mutable state, never its contents.
+    pub active_state_sha256: Option<String>,
+    /// True when the host must archive the outgoing mutable state.
+    pub state_archive_required: bool,
+    /// Every author decision required before the switch can apply.
+    pub required_decisions: Vec<SwitchDecision>,
+    /// Dry-run and incompatibility diagnostics, including migration checks.
+    pub diagnostics: Vec<SwitchDiagnostic>,
+}
+
+/// One explicit, serializable switch request. Accepted decisions must match a preview.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AdapterSwitchRequest {
+    pub switch_format_version: u32,
+    /// Target release, or `None` to deactivate tabletop rules.
+    pub target: Option<ResolvedAdapter>,
+    pub initiator: SwitchInitiator,
+    /// Stable namespaced actor reference, never a credential.
+    pub initiator_id: String,
+    pub outgoing_policy: SwitchOutgoingPolicy,
+    /// Inactive namespaces to discard explicitly. Sorted and unique.
+    pub discard_inactive: Vec<String>,
+    /// Accepted decision ids from the matching preview. Sorted and unique.
+    pub accepted_decisions: Vec<String>,
+    /// Independently created or migrated target projection. Never converted automatically.
+    pub target_definition: Option<AdapterCharacterDefinition>,
+}
+
+/// Immutable audit record for one applied switch.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AdapterSwitchAudit {
+    pub switch_format_version: u32,
+    pub character_id: String,
+    pub canonical_profile_sha256: String,
+    pub canonical_character_write_back: bool,
+    pub initiator: SwitchInitiator,
+    pub initiator_id: String,
+    pub from: Option<ResolvedAdapter>,
+    pub to: Option<ResolvedAdapter>,
+    pub accepted_decisions: Vec<String>,
+    pub diagnostics: Vec<SwitchDiagnostic>,
+    pub archived_projection: Option<SwitchArchiveReport>,
+    pub restored_projection: Option<SwitchArchiveReport>,
+    pub discarded_current: bool,
+    pub discarded_inactive: Vec<String>,
+    pub retained_inactive: Vec<String>,
+    pub preserved_state_sha256: Option<String>,
+    pub discarded_state_sha256: Option<String>,
+    pub migration_id: Option<String>,
+    /// Definition fingerprint replaced by a reviewed same-adapter migration.
+    pub migrated_from_definition_sha256: Option<String>,
+    /// Fingerprint of the committed projection.
+    pub result_projection_sha256: String,
+}
+
+macro_rules! impl_switch_io {
+    ($type:ty) => {
+        impl $type {
+            /// Parse strict JSON and reject duplicate object keys.
+            pub fn from_json(source: &str) -> Result<Self, TabletopError> {
+                weave_domain::parse_strict_json(source).map_err(|_| TabletopError::Artifact)
+            }
+
+            /// Parse one RON artifact.
+            pub fn from_ron(source: &str) -> Result<Self, TabletopError> {
+                ron::from_str(source).map_err(|_| TabletopError::Artifact)
+            }
+
+            /// Serialize stable human-readable JSON with a trailing newline.
+            pub fn to_json(&self) -> Result<String, TabletopError> {
+                weave_domain::to_pretty_json(self).map_err(|_| TabletopError::Artifact)
+            }
+
+            /// Serialize stable human-readable RON with a trailing newline.
+            pub fn to_ron(&self) -> Result<String, TabletopError> {
+                weave_domain::to_pretty_ron(self).map_err(|_| TabletopError::Artifact)
+            }
+        }
+    };
+}
+
+impl_switch_io!(AdapterSwitchRequest);
+impl_switch_io!(AdapterSwitchAudit);
+
+impl TabletopCharacterProjection {
+    /// The only definition that may affect expressions, events, or panels.
+    #[must_use]
+    pub fn active_definition(&self) -> Option<&AdapterCharacterDefinition> {
+        self.active.as_ref()
+    }
+
+    /// Resolve one adapter namespace for evaluation. Inactive archives never match.
+    #[must_use]
+    pub fn projection_for_namespace(&self, namespace: &str) -> Option<&AdapterCharacterDefinition> {
+        self.active
+            .as_ref()
+            .filter(|active| active.adapter.namespace_key() == namespace)
+    }
+
+    /// Exact inactive archive for one installed release, if retained.
+    #[must_use]
+    pub fn archived_projection(
+        &self,
+        adapter: &ResolvedAdapter,
+    ) -> Option<&ArchivedAdapterProjection> {
+        self.inactive.get(&adapter.namespace_key())
+    }
 }

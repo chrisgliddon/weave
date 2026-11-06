@@ -1,15 +1,18 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use sha2::{Digest, Sha256};
 use weave_domain::validate_typed_value;
 
 use crate::{
-    AdapterManifest, AdapterSwitchPreview, EntropyState, HostAudience, RESOLVER_FORMAT_VERSION,
-    ResolutionReceipt, ResolutionRequest, ResolvedAdapter, ResolverEvent, ResolverOutput,
+    ADAPTER_SWITCH_FORMAT_VERSION, AdapterCharacterDefinition, AdapterManifest, AdapterSwitchAudit,
+    AdapterSwitchPreview, AdapterSwitchRequest, ArchivedAdapterProjection, EntropyState,
+    HostAudience, RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest, ResolvedAdapter,
+    ResolverEvent, ResolverOutput, SwitchArchiveReport, SwitchDecision, SwitchDecisionKind,
+    SwitchDiagnostic, SwitchDiagnosticSeverity, SwitchOutgoingPolicy, TabletopCapability,
     TabletopCharacterProjection, TabletopError, TabletopEvent, TabletopState,
     canonical_fingerprint, resolved_adapter, validate_adapter_manifest,
-    validate_resolution_receipt, validate_resolution_receipt_for_request,
-    validate_resolution_request, validate_tabletop_state,
+    validate_character_projection, validate_resolution_receipt,
+    validate_resolution_receipt_for_request, validate_resolution_request, validate_tabletop_state,
 };
 
 /// Deterministic, serializable SHA-256 counter stream.
@@ -271,54 +274,857 @@ pub fn preview_adapter_switch(
         .map(|active| active.adapter.clone());
     let to = target.map(resolved_adapter).transpose()?;
     let same = from == to;
-    let restore_existing_archive = to.as_ref().is_some_and(|coordinate| {
-        projection
-            .inactive
-            .contains_key(&coordinate.namespace_key())
-    });
+    let coordinate_changed = !same;
+    let restore_existing_archive = coordinate_changed
+        && to.as_ref().is_some_and(|coordinate| {
+            projection
+                .inactive
+                .contains_key(&coordinate.namespace_key())
+        });
     let reviewed_migration_id = match (&from, target) {
-        (Some(from), Some(target)) if from.id != target.id || from.version != target.version => {
-            target
-                .migrations
-                .iter()
-                .find(|migration| {
-                    migration.reviewed
-                        && migration.preserves_canonical_character
-                        && migration.from_adapter_id == from.id
-                        && migration.from_schema_version == from.schema_version
-                        && semver::VersionReq::parse(&migration.from_version).is_ok_and(
-                            |requirement| {
-                                semver::Version::parse(&from.version)
-                                    .is_ok_and(|version| requirement.matches(&version))
-                            },
-                        )
-                })
-                .map(|migration| migration.id.clone())
-        }
+        (Some(from), Some(target)) if from.id == target.id && coordinate_changed => target
+            .migrations
+            .iter()
+            .find(|migration| {
+                migration.reviewed
+                    && migration.preserves_canonical_character
+                    && migration.from_adapter_id == from.id
+                    && migration.from_schema_version == from.schema_version
+                    && migration.to_schema_version == target.schema_version
+                    && semver::VersionReq::parse(&migration.from_version).is_ok_and(|requirement| {
+                        semver::Version::parse(&from.version)
+                            .is_ok_and(|version| requirement.matches(&version))
+                    })
+            })
+            .map(|migration| migration.id.clone()),
         _ => None,
     };
     let mut warnings = Vec::new();
-    if !same && from.is_some() {
+    if coordinate_changed && from.is_some() {
         warnings.push(
             "Current adapter definition and state must be archived without conversion.".to_owned(),
         );
     }
-    if from.is_some() && to.is_some() && reviewed_migration_id.is_none() && !same {
-        warnings.push(
-            "No explicit reviewed migration exists; cross-system conversion is forbidden."
-                .to_owned(),
-        );
+    if let (Some(from), Some(to)) = (&from, &to) {
+        if from.id != to.id {
+            warnings.push(
+                "No explicit reviewed migration exists; cross-system conversion is forbidden."
+                    .to_owned(),
+            );
+        } else if coordinate_changed && reviewed_migration_id.is_none() {
+            warnings
+                .push("No reviewed same-adapter migration matches this schema upgrade.".to_owned());
+        }
+    }
+    let archive = if coordinate_changed {
+        projection
+            .active
+            .as_ref()
+            .map(|active| SwitchArchiveReport {
+                adapter: active.adapter.clone(),
+                namespace: active.adapter.namespace_key(),
+                definition_sha256: active.definition_sha256.clone(),
+            })
+    } else {
+        None
+    };
+    let restore = if restore_existing_archive {
+        to.as_ref()
+            .and_then(|coordinate| projection.inactive.get(&coordinate.namespace_key()))
+            .map(|archived| SwitchArchiveReport {
+                adapter: archived.adapter.clone(),
+                namespace: archived.adapter.namespace_key(),
+                definition_sha256: archived.definition_sha256.clone(),
+            })
+    } else {
+        None
+    };
+    let mut diagnostics = Vec::new();
+    if let (Some(from), Some(to)) = (&from, &to)
+        && from.id != to.id
+    {
+        diagnostics.push(SwitchDiagnostic {
+            code: "TT101".to_owned(),
+            severity: SwitchDiagnosticSeverity::Warning,
+            message:
+                "Cross-system definitions, attributes, resources, and progression are never converted."
+                    .to_owned(),
+        });
     }
     Ok(AdapterSwitchPreview {
         canonical_profile_sha256: projection.canonical_profile_sha256.clone(),
         from,
         to,
-        archive_current: !same && projection.active.is_some(),
+        archive_current: coordinate_changed && projection.active.is_some(),
         restore_existing_archive,
         automatic_conversion: false,
         reviewed_migration_id,
         warnings,
+        target_installed: target.is_some(),
+        capabilities_gained: Vec::new(),
+        capabilities_lost: Vec::new(),
+        non_transferable_fields: Vec::new(),
+        incompatible_active_resources: Vec::new(),
+        pending_conflicts: Vec::new(),
+        archive,
+        restore,
+        discard_inactive: Vec::new(),
+        retained_inactive: projection.inactive.keys().cloned().collect(),
+        active_state_sha256: None,
+        state_archive_required: false,
+        required_decisions: Vec::new(),
+        diagnostics,
     })
+}
+
+/// Exact installed-manifest lookup used by explicit switches.
+struct IndexedManifests<'a> {
+    entries: Vec<(ResolvedAdapter, &'a AdapterManifest)>,
+}
+
+impl<'a> IndexedManifests<'a> {
+    fn new(manifests: &'a [AdapterManifest]) -> Result<Self, TabletopError> {
+        let mut entries = Vec::new();
+        for manifest in manifests {
+            validate_adapter_manifest(manifest)?;
+            let coordinate = resolved_adapter(manifest)?;
+            if entries
+                .iter()
+                .any(|(existing, _): &(ResolvedAdapter, &AdapterManifest)| existing == &coordinate)
+            {
+                return Err(TabletopError::InvalidField {
+                    path: "installed".to_owned(),
+                    reason: "duplicate installed adapter release",
+                });
+            }
+            entries.push((coordinate, manifest));
+        }
+        Ok(Self { entries })
+    }
+
+    fn exact(&self, coordinate: &ResolvedAdapter) -> Result<&'a AdapterManifest, TabletopError> {
+        self.exact_optional(coordinate)
+            .ok_or(TabletopError::AdapterNotInstalled)
+    }
+
+    fn exact_optional(&self, coordinate: &ResolvedAdapter) -> Option<&'a AdapterManifest> {
+        self.entries
+            .iter()
+            .find(|(existing, _)| existing == coordinate)
+            .map(|(_, manifest)| *manifest)
+    }
+}
+
+impl TabletopCharacterProjection {
+    /// Capabilities declared by the active adapter only. Inactive archives never contribute.
+    pub fn active_capabilities(
+        &self,
+        installed: &[AdapterManifest],
+    ) -> Result<Vec<TabletopCapability>, TabletopError> {
+        let Some(active) = &self.active else {
+            return Ok(Vec::new());
+        };
+        let indexed = IndexedManifests::new(installed)?;
+        let manifest = indexed.exact(&active.adapter)?;
+        Ok(capability_set(manifest).into_iter().collect())
+    }
+}
+
+impl TabletopCharacterProjection {
+    /// Preview an explicit switch against installed releases, a request, and optional play state.
+    ///
+    /// The preview never mutates the projection or the state. It reports capability deltas,
+    /// incompatible resources, archive and restore plans, dry-run diagnostics, and every author
+    /// decision that [`apply_switch`](Self::apply_switch) will require.
+    pub fn preview_switch(
+        &self,
+        installed: &[AdapterManifest],
+        request: &AdapterSwitchRequest,
+        active_state: Option<&TabletopState>,
+    ) -> Result<AdapterSwitchPreview, TabletopError> {
+        validate_switch_request(request)?;
+        if self.canonical_character_write_back {
+            return Err(TabletopError::CanonicalWriteBack);
+        }
+        let indexed = IndexedManifests::new(installed)?;
+        let target_manifest = match &request.target {
+            Some(coordinate) => Some(indexed.exact(coordinate)?),
+            None => None,
+        };
+        let mut preview = preview_adapter_switch(self, target_manifest)?;
+        let from = preview.from.clone();
+        let to = preview.to.clone();
+        let same = from == to;
+        let coordinate_changed = !same;
+        let cross_system = matches!((&from, &to), (Some(from), Some(to)) if from.id != to.id);
+        let upgrading =
+            matches!((&from, &to), (Some(from), Some(to)) if from.id == to.id && from != to);
+        let from_manifest = from
+            .as_ref()
+            .and_then(|coordinate| indexed.exact_optional(coordinate));
+
+        // A same-adapter upgrade migrates in place. Archiving the outgoing release can be
+        // impossible because only one release per adapter id may be installed.
+        if upgrading {
+            preview.archive_current = false;
+            preview.archive = None;
+        }
+
+        let from_caps = from_manifest.map(capability_set).unwrap_or_default();
+        let target_caps = target_manifest.map(capability_set).unwrap_or_default();
+        if coordinate_changed && !(upgrading && from_manifest.is_none()) {
+            preview.capabilities_gained = target_caps
+                .difference(&from_caps)
+                .copied()
+                .collect::<Vec<_>>();
+            preview.capabilities_lost = from_caps
+                .difference(&target_caps)
+                .copied()
+                .collect::<Vec<_>>();
+        }
+        if upgrading && from_manifest.is_none() {
+            preview.diagnostics.push(SwitchDiagnostic {
+                code: "TT103".to_owned(),
+                severity: SwitchDiagnosticSeverity::Warning,
+                message:
+                    "The outgoing release is not installed, so the capability delta cannot be computed."
+                        .to_owned(),
+            });
+        }
+
+        let mut non_transferable = BTreeSet::new();
+        if cross_system && let Some(active) = &self.active {
+            let fields = top_level_fields(&active.definition);
+            if fields.is_empty() {
+                non_transferable.insert("definition".to_owned());
+            } else {
+                for field in fields {
+                    non_transferable.insert(format!("definition.{field}"));
+                }
+            }
+        }
+        if upgrading
+            && let (Some(active), Some(target_definition)) =
+                (&self.active, &request.target_definition)
+        {
+            let after = top_level_fields(&target_definition.definition)
+                .into_iter()
+                .collect::<BTreeSet<_>>();
+            for field in top_level_fields(&active.definition) {
+                if !after.contains(&field) {
+                    non_transferable.insert(format!("definition.{field}"));
+                }
+            }
+        }
+        preview.non_transferable_fields = non_transferable.into_iter().collect();
+
+        let mut incompatible = BTreeSet::new();
+        if coordinate_changed
+            && let Some(state) = active_state
+            && (cross_system || upgrading)
+        {
+            for field in top_level_fields(&state.value) {
+                incompatible.insert(format!("state.{field}"));
+            }
+        }
+        preview.incompatible_active_resources = incompatible.into_iter().collect();
+        preview.active_state_sha256 = active_state.map(canonical_fingerprint).transpose()?;
+        preview.state_archive_required = active_state.is_some()
+            && self.active.is_some()
+            && coordinate_changed
+            && !upgrading
+            && request.outgoing_policy == SwitchOutgoingPolicy::Archive;
+
+        let mut pending = Vec::new();
+        if let Some(state) = active_state {
+            match &from {
+                Some(from_coordinate) => {
+                    if &state.adapter != from_coordinate {
+                        pending.push(format!(
+                            "Active state belongs to adapter `{}` release `{}`, not the active projection.",
+                            state.adapter.id, state.adapter.version
+                        ));
+                    } else if let Some(manifest) = from_manifest {
+                        if validate_tabletop_state(state, manifest).is_err() {
+                            pending.push(
+                                "Active play state fails validation for the outgoing adapter."
+                                    .to_owned(),
+                            );
+                        }
+                    } else {
+                        pending.push(
+                            "The outgoing release is not installed; active state cannot be validated."
+                                .to_owned(),
+                        );
+                    }
+                }
+                None => pending.push(
+                    "Active play state exists while no adapter projection is active.".to_owned(),
+                ),
+            }
+        }
+        if upgrading && !preview.restore_existing_archive {
+            if preview.reviewed_migration_id.is_none() {
+                pending.push(
+                    "No reviewed migration matches this same-adapter schema upgrade.".to_owned(),
+                );
+                preview.diagnostics.push(SwitchDiagnostic {
+                    code: "TT101".to_owned(),
+                    severity: SwitchDiagnosticSeverity::Error,
+                    message:
+                        "Same-adapter schema upgrades require a reviewed migration declaration."
+                            .to_owned(),
+                });
+            }
+            if to.as_ref().is_some_and(|target| {
+                from.as_ref()
+                    .is_some_and(|from| from.schema_version > target.schema_version)
+            }) {
+                pending.push("Adapter schema downgrades are not permitted.".to_owned());
+                preview.diagnostics.push(SwitchDiagnostic {
+                    code: "TT101".to_owned(),
+                    severity: SwitchDiagnosticSeverity::Error,
+                    message: "Adapter schema downgrades are not permitted.".to_owned(),
+                });
+            }
+            if request.target_definition.is_none() {
+                pending
+                    .push("A migrated target definition is required for this upgrade.".to_owned());
+            }
+        }
+        if coordinate_changed
+            && to.is_some()
+            && request.target_definition.is_none()
+            && !preview.restore_existing_archive
+        {
+            pending.push(if cross_system {
+                "A target projection is required; cross-system conversion is forbidden.".to_owned()
+            } else {
+                "An installed target projection is required for this activation.".to_owned()
+            });
+        }
+
+        preview.discard_inactive = request.discard_inactive.clone();
+        let discarded = request
+            .discard_inactive
+            .iter()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        for key in &request.discard_inactive {
+            if !self.inactive.contains_key(key) {
+                return Err(TabletopError::InvalidField {
+                    path: format!("discard_inactive.{key}"),
+                    reason: "inactive projection does not exist",
+                });
+            }
+            if preview.restore_existing_archive
+                && to
+                    .as_ref()
+                    .is_some_and(|coordinate| coordinate.namespace_key() == *key)
+            {
+                return Err(TabletopError::InvalidField {
+                    path: format!("discard_inactive.{key}"),
+                    reason: "cannot discard the archive selected for restoration",
+                });
+            }
+        }
+        preview.retained_inactive = self
+            .inactive
+            .keys()
+            .filter(|key| !discarded.contains(key.as_str()))
+            .cloned()
+            .collect();
+
+        if let (Some(target_definition), Some(target)) = (&request.target_definition, &to) {
+            match validate_target_definition(self, target_definition, target, installed) {
+                Ok(()) => preview.diagnostics.push(SwitchDiagnostic {
+                    code: "TT107".to_owned(),
+                    severity: SwitchDiagnosticSeverity::Info,
+                    message: if upgrading {
+                        "Migration dry run: the target definition satisfies the target adapter schema."
+                            .to_owned()
+                    } else {
+                        "Target definition dry run: the supplied projection satisfies the target adapter schema."
+                            .to_owned()
+                    },
+                }),
+                Err(error) => {
+                    preview.diagnostics.push(SwitchDiagnostic {
+                        code: "TT107".to_owned(),
+                        severity: SwitchDiagnosticSeverity::Error,
+                        message: format!("Target definition dry run failed: {error}"),
+                    });
+                    pending.push(
+                        "The target definition fails validation for the target adapter.".to_owned(),
+                    );
+                }
+            }
+            if let Some(archived) = self.inactive.get(&target.namespace_key())
+                && !archived_matches_definition(archived, target_definition)
+            {
+                preview.diagnostics.push(SwitchDiagnostic {
+                    code: "TT104".to_owned(),
+                    severity: SwitchDiagnosticSeverity::Error,
+                    message: "The supplied target definition conflicts with the retained archive."
+                        .to_owned(),
+                });
+                pending.push(
+                    "The supplied target definition conflicts with the retained archive."
+                        .to_owned(),
+                );
+            }
+        }
+        if same
+            && let (Some(active), Some(target_definition)) =
+                (&self.active, &request.target_definition)
+            && !same_definition(active, target_definition)
+        {
+            preview.diagnostics.push(SwitchDiagnostic {
+                code: "TT104".to_owned(),
+                severity: SwitchDiagnosticSeverity::Error,
+                message: "The supplied definition differs from the active coordinate.".to_owned(),
+            });
+            pending.push("The supplied definition differs from the active projection.".to_owned());
+        }
+
+        preview.pending_conflicts = pending;
+        preview.required_decisions =
+            required_decisions(&preview, upgrading, request, self.active.is_some());
+        Ok(preview)
+    }
+
+    /// Apply a fully acknowledged switch atomically.
+    ///
+    /// Every check runs against a clone. Any failure leaves the projection byte-identical, so a
+    /// failed same-adapter migration rolls back without a partial write.
+    pub fn apply_switch(
+        &mut self,
+        installed: &[AdapterManifest],
+        request: &AdapterSwitchRequest,
+        active_state: Option<&TabletopState>,
+    ) -> Result<AdapterSwitchAudit, TabletopError> {
+        let preview = self.preview_switch(installed, request, active_state)?;
+        if preview
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.severity == SwitchDiagnosticSeverity::Error)
+        {
+            return Err(TabletopError::InvalidField {
+                path: "switch".to_owned(),
+                reason: "preview reported a blocking switch diagnostic",
+            });
+        }
+        let accepted = request
+            .accepted_decisions
+            .iter()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        for decision in &preview.required_decisions {
+            if decision.required && !accepted.contains(decision.id.as_str()) {
+                return Err(TabletopError::InvalidField {
+                    path: format!("accepted_decisions.{}", decision.id),
+                    reason: "required author decision is missing",
+                });
+            }
+        }
+        for id in &accepted {
+            if !preview
+                .required_decisions
+                .iter()
+                .any(|decision| decision.id == *id)
+            {
+                return Err(TabletopError::InvalidField {
+                    path: format!("accepted_decisions.{id}"),
+                    reason: "decision is not required by this switch",
+                });
+            }
+        }
+        let indexed = IndexedManifests::new(installed)?;
+        let from = self.active.as_ref().map(|active| active.adapter.clone());
+        let to = request.target.clone();
+        let same = from == to;
+        let upgrading =
+            matches!((&from, &to), (Some(from), Some(to)) if from.id == to.id && from != to);
+        if !same
+            && !upgrading
+            && request.outgoing_policy == SwitchOutgoingPolicy::Archive
+            && let Some(from_coordinate) = &from
+        {
+            indexed.exact(from_coordinate)?;
+        }
+        if to.is_some()
+            && !same
+            && !preview.restore_existing_archive
+            && request.target_definition.is_none()
+        {
+            return Err(TabletopError::InvalidField {
+                path: "target_definition".to_owned(),
+                reason: "a target projection is required",
+            });
+        }
+
+        let mut next = self.clone();
+        if !same && let Some(active) = self.active.as_ref() {
+            let superseded = upgrading;
+            if request.outgoing_policy == SwitchOutgoingPolicy::Archive && !superseded {
+                let key = active.adapter.namespace_key();
+                if next.inactive.contains_key(&key) {
+                    return Err(TabletopError::InvalidField {
+                        path: "inactive".to_owned(),
+                        reason: "outgoing archive key already exists",
+                    });
+                }
+                next.inactive.insert(
+                    key,
+                    ArchivedAdapterProjection {
+                        adapter: active.adapter.clone(),
+                        definition: active.definition.clone(),
+                        definition_sha256: active.definition_sha256.clone(),
+                        reason: match &to {
+                            Some(target) => {
+                                format!("Archived when switching to adapter `{}`.", target.id)
+                            }
+                            None => "Archived when tabletop rules were deactivated.".to_owned(),
+                        },
+                    },
+                );
+            }
+        }
+        next.active = None;
+        for key in &request.discard_inactive {
+            if next.inactive.remove(key).is_none() {
+                return Err(TabletopError::InvalidField {
+                    path: format!("discard_inactive.{key}"),
+                    reason: "inactive projection does not exist",
+                });
+            }
+        }
+
+        if let Some(target) = &request.target {
+            indexed.exact(target)?;
+            let target_key = target.namespace_key();
+            let archived = next.inactive.get(&target_key).cloned();
+            if same && request.target_definition.is_none() {
+                next.active = self.active.clone();
+            } else {
+                let definition = match (&request.target_definition, archived) {
+                    (Some(supplied), Some(stored)) => {
+                        if !archived_matches_definition(&stored, supplied) {
+                            return Err(TabletopError::InvalidField {
+                                path: "target_definition".to_owned(),
+                                reason: "target definition conflicts with the retained archive",
+                            });
+                        }
+                        next.inactive.remove(&target_key);
+                        supplied.clone()
+                    }
+                    (Some(supplied), None) => {
+                        validate_target_definition(self, supplied, target, installed)?;
+                        supplied.clone()
+                    }
+                    (None, Some(stored)) => {
+                        next.inactive.remove(&target_key);
+                        AdapterCharacterDefinition {
+                            adapter: stored.adapter,
+                            definition: stored.definition,
+                            definition_sha256: stored.definition_sha256,
+                            completed_creation_steps: Vec::new(),
+                        }
+                    }
+                    (None, None) => {
+                        return Err(TabletopError::InvalidField {
+                            path: "target_definition".to_owned(),
+                            reason: "a target projection is required",
+                        });
+                    }
+                };
+                next.active = Some(definition);
+            }
+        }
+
+        if next.canonical_profile_sha256 != self.canonical_profile_sha256 {
+            return Err(TabletopError::CanonicalWriteBack);
+        }
+        next.canonical_character_write_back = self.canonical_character_write_back;
+        if next.canonical_character_write_back {
+            return Err(TabletopError::CanonicalWriteBack);
+        }
+        validate_character_projection(&next, installed)?;
+        let result_projection_sha256 = canonical_fingerprint(&next)?;
+        let (preserved_state_sha256, discarded_state_sha256) =
+            match (active_state, request.outgoing_policy) {
+                (Some(state), SwitchOutgoingPolicy::Discard) if !same => {
+                    (None, Some(canonical_fingerprint(state)?))
+                }
+                (Some(state), _) => (Some(canonical_fingerprint(state)?), None),
+                (None, _) => (None, None),
+            };
+        let archived_projection = preview.archive.clone();
+        let restored_projection = preview.restore.clone();
+        let retained_inactive = next.inactive.keys().cloned().collect();
+        let migrated_from_definition_sha256 = if upgrading {
+            self.active
+                .as_ref()
+                .map(|active| active.definition_sha256.clone())
+        } else {
+            None
+        };
+        *self = next;
+        Ok(AdapterSwitchAudit {
+            switch_format_version: ADAPTER_SWITCH_FORMAT_VERSION,
+            character_id: self.character_id.clone(),
+            canonical_profile_sha256: self.canonical_profile_sha256.clone(),
+            canonical_character_write_back: self.canonical_character_write_back,
+            initiator: request.initiator,
+            initiator_id: request.initiator_id.clone(),
+            from,
+            to,
+            accepted_decisions: request.accepted_decisions.clone(),
+            diagnostics: preview.diagnostics,
+            archived_projection,
+            restored_projection,
+            discarded_current: !same
+                && (upgrading || request.outgoing_policy == SwitchOutgoingPolicy::Discard),
+            discarded_inactive: request.discard_inactive.clone(),
+            retained_inactive,
+            preserved_state_sha256,
+            discarded_state_sha256,
+            migration_id: preview.reviewed_migration_id,
+            migrated_from_definition_sha256,
+            result_projection_sha256,
+        })
+    }
+}
+
+fn capability_set(manifest: &AdapterManifest) -> BTreeSet<TabletopCapability> {
+    manifest
+        .capabilities
+        .iter()
+        .filter(|declaration| declaration.version == 1)
+        .map(|declaration| declaration.capability)
+        .collect()
+}
+
+fn capability_key(capability: TabletopCapability) -> &'static str {
+    match capability {
+        TabletopCapability::CharacterCreation => "character_creation",
+        TabletopCapability::DerivedValues => "derived_values",
+        TabletopCapability::ChecksAndConflicts => "checks_and_conflicts",
+        TabletopCapability::ResourcesAndConditions => "resources_and_conditions",
+        TabletopCapability::EquipmentAndAbilities => "equipment_and_abilities",
+        TabletopCapability::Advancement => "advancement",
+        TabletopCapability::Encounters => "encounters",
+        TabletopCapability::Clocks => "clocks",
+        TabletopCapability::Scenes => "scenes",
+        TabletopCapability::Factions => "factions",
+        TabletopCapability::WorldState => "world_state",
+        TabletopCapability::CampaignState => "campaign_state",
+    }
+}
+
+fn top_level_fields(value: &weave_domain::DomainValue) -> Vec<String> {
+    match value {
+        weave_domain::DomainValue::Object(fields) => fields.keys().cloned().collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn same_definition(left: &AdapterCharacterDefinition, right: &AdapterCharacterDefinition) -> bool {
+    left.adapter == right.adapter
+        && left.definition == right.definition
+        && left.definition_sha256 == right.definition_sha256
+}
+
+fn archived_matches_definition(
+    archived: &ArchivedAdapterProjection,
+    supplied: &AdapterCharacterDefinition,
+) -> bool {
+    archived.adapter == supplied.adapter
+        && archived.definition == supplied.definition
+        && archived.definition_sha256 == supplied.definition_sha256
+}
+
+fn validate_target_definition(
+    projection: &TabletopCharacterProjection,
+    definition: &AdapterCharacterDefinition,
+    target: &ResolvedAdapter,
+    installed: &[AdapterManifest],
+) -> Result<(), TabletopError> {
+    if &definition.adapter != target {
+        return Err(TabletopError::ContentHashMismatch {
+            path: "target_definition.adapter",
+        });
+    }
+    let probe = TabletopCharacterProjection {
+        projection_format_version: projection.projection_format_version,
+        character_id: projection.character_id.clone(),
+        canonical_profile_sha256: projection.canonical_profile_sha256.clone(),
+        canonical_character_write_back: false,
+        active: Some(definition.clone()),
+        inactive: BTreeMap::new(),
+        suggestions: Vec::new(),
+    };
+    validate_character_projection(&probe, installed)
+}
+
+fn required_decisions(
+    preview: &AdapterSwitchPreview,
+    upgrading: bool,
+    request: &AdapterSwitchRequest,
+    has_active: bool,
+) -> Vec<SwitchDecision> {
+    let mut decisions = Vec::new();
+    let coordinate_changed = preview.from != preview.to;
+    if coordinate_changed
+        && has_active
+        && (upgrading || request.outgoing_policy == SwitchOutgoingPolicy::Discard)
+    {
+        decisions.push(SwitchDecision {
+            id: "discard_current_projection".to_owned(),
+            kind: SwitchDecisionKind::DiscardCurrentProjection,
+            required: true,
+            description: "Replace the outgoing projection without retaining an archive of it."
+                .to_owned(),
+        });
+    }
+    for capability in &preview.capabilities_lost {
+        let key = capability_key(*capability);
+        decisions.push(SwitchDecision {
+            id: format!("accept_capability_loss_{key}"),
+            kind: SwitchDecisionKind::AcceptCapabilityLoss,
+            required: true,
+            description: format!("Accept that the target adapter does not declare `{key}`."),
+        });
+    }
+    if !preview.non_transferable_fields.is_empty() {
+        decisions.push(SwitchDecision {
+            id: "accept_non_transferable_fields".to_owned(),
+            kind: SwitchDecisionKind::AcceptNonTransferableFields,
+            required: true,
+            description: "Accept that the listed definition fields do not transfer.".to_owned(),
+        });
+    }
+    if !preview.incompatible_active_resources.is_empty() {
+        decisions.push(SwitchDecision {
+            id: "resolve_incompatible_resources".to_owned(),
+            kind: SwitchDecisionKind::ResolveIncompatibleResources,
+            required: true,
+            description: "Choose how the listed active resources are preserved or discarded."
+                .to_owned(),
+        });
+    }
+    if !preview.pending_conflicts.is_empty() {
+        decisions.push(SwitchDecision {
+            id: "resolve_pending_conflicts".to_owned(),
+            kind: SwitchDecisionKind::ResolvePendingConflicts,
+            required: true,
+            description: "Acknowledge every listed conflict before the switch applies.".to_owned(),
+        });
+    }
+    if coordinate_changed
+        && preview.to.is_some()
+        && !preview.restore_existing_archive
+        && request.target_definition.is_none()
+    {
+        decisions.push(SwitchDecision {
+            id: "provide_target_projection".to_owned(),
+            kind: SwitchDecisionKind::ProvideTargetProjection,
+            required: true,
+            description: "Supply an independently created target projection for this switch."
+                .to_owned(),
+        });
+    }
+    if upgrading
+        && !preview.restore_existing_archive
+        && let Some(migration_id) = &preview.reviewed_migration_id
+    {
+        decisions.push(SwitchDecision {
+            id: "apply_reviewed_migration".to_owned(),
+            kind: SwitchDecisionKind::ApplyReviewedMigration,
+            required: true,
+            description: format!("Apply reviewed migration `{migration_id}` to the definition."),
+        });
+    }
+    decisions.sort_by(|left, right| left.id.cmp(&right.id));
+    decisions.dedup_by(|left, right| left.id == right.id);
+    decisions
+}
+
+fn validate_switch_request(request: &AdapterSwitchRequest) -> Result<(), TabletopError> {
+    if request.switch_format_version != ADAPTER_SWITCH_FORMAT_VERSION {
+        return Err(TabletopError::UnsupportedVersion {
+            path: "switch_format_version",
+        });
+    }
+    validate_actor_identifier("initiator_id", &request.initiator_id)?;
+    if !strictly_sorted(&request.discard_inactive) {
+        return Err(TabletopError::InvalidField {
+            path: "discard_inactive".to_owned(),
+            reason: "expected unique ordered namespaces",
+        });
+    }
+    for key in &request.discard_inactive {
+        validate_contract_identifier("discard_inactive", key)?;
+    }
+    if !strictly_sorted(&request.accepted_decisions) {
+        return Err(TabletopError::InvalidField {
+            path: "accepted_decisions".to_owned(),
+            reason: "expected unique ordered decision ids",
+        });
+    }
+    for id in &request.accepted_decisions {
+        validate_contract_identifier("accepted_decisions", id)?;
+    }
+    if request.target.is_none() && request.target_definition.is_some() {
+        return Err(TabletopError::InvalidField {
+            path: "target_definition".to_owned(),
+            reason: "deactivation cannot supply a target definition",
+        });
+    }
+    Ok(())
+}
+
+fn strictly_sorted(values: &[String]) -> bool {
+    values.windows(2).all(|pair| pair[0] < pair[1])
+}
+
+fn validate_contract_identifier(path: &str, value: &str) -> Result<(), TabletopError> {
+    let valid = is_local_identifier(value);
+    if valid {
+        Ok(())
+    } else {
+        Err(TabletopError::InvalidField {
+            path: path.to_owned(),
+            reason: "expected a lowercase identifier",
+        })
+    }
+}
+
+fn validate_actor_identifier(path: &str, value: &str) -> Result<(), TabletopError> {
+    let valid_global = value.len() <= 255
+        && value.split('.').count() >= 3
+        && value.split('.').all(is_local_identifier);
+    if is_local_identifier(value) || valid_global {
+        Ok(())
+    } else {
+        Err(TabletopError::InvalidField {
+            path: path.to_owned(),
+            reason: "expected a lowercase actor identifier",
+        })
+    }
+}
+
+fn is_local_identifier(value: &str) -> bool {
+    let mut chars = value.chars();
+    chars
+        .next()
+        .is_some_and(|character| character.is_ascii_lowercase())
+        && value.len() <= 128
+        && chars.all(|character| {
+            character.is_ascii_lowercase() || character.is_ascii_digit() || character == '_'
+        })
+        && !value.ends_with('_')
+        && !value.contains("__")
 }
 
 fn validate_events(
