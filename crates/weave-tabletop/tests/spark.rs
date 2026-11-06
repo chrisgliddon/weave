@@ -1140,3 +1140,93 @@ fn invalid_artifacts_and_ill_ordered_operations_fail_closed() {
     assert_eq!(SparkInfluenceMode::Refresh.symbol(), "refresh");
     assert_eq!(preview.adapter.id, SPARK_ADAPTER_ID);
 }
+
+#[test]
+fn preview_owner_must_match_the_definition_character() {
+    let mut preview = create_spark_character(&creation_request()).expect("creation succeeds");
+    preview.initial_state.owner_id = "org.weave.character.other_actor".to_owned();
+    assert!(validate_spark_creation_preview(&preview).is_err());
+    preview.initial_state.owner_id = "org.weave.character.mara_vey".to_owned();
+    validate_spark_creation_preview(&preview).expect("matching owner is accepted");
+}
+
+#[test]
+fn supporters_are_restricted_to_the_owning_character() {
+    let preview = create_spark_character(&creation_request()).expect("creation succeeds");
+    let registry = registry();
+    let mut state = preview.initial_state.clone();
+    let (_, receipt) = execute(
+        &registry,
+        &preview,
+        &state,
+        "request_open",
+        "open_conflict",
+        TabletopCapability::ChecksAndConflicts,
+        open_input("owner_gate", 0, "influence", 0, ""),
+    );
+    state = receipt.after_state;
+    let (_, receipt) = execute(
+        &registry,
+        &preview,
+        &state,
+        "request_declare_mara",
+        "declare_action",
+        TabletopCapability::ChecksAndConflicts,
+        declare_input(
+            "owner_gate",
+            "mara_declaration",
+            "org.weave.character.mara_vey",
+            "mind",
+            "Mara holds the owner's gate.",
+            Some("archive_sense"),
+        ),
+    );
+    state = receipt.after_state;
+    let (_, receipt) = execute(
+        &registry,
+        &preview,
+        &state,
+        "request_declare_juno",
+        "declare_action",
+        TabletopCapability::ChecksAndConflicts,
+        declare_input(
+            "owner_gate",
+            "juno_declaration",
+            "juno_vale",
+            "body",
+            "Juno contests the owner's gate.",
+            None,
+        ),
+    );
+    state = receipt.after_state;
+    let (_, receipt) = execute(
+        &registry,
+        &preview,
+        &state,
+        "request_support_owner",
+        "add_supporter",
+        TabletopCapability::ChecksAndConflicts,
+        support_input("owner_gate", "mara_declaration", "sable"),
+    );
+    let payload = receipt
+        .events
+        .iter()
+        .find(|event| event.kind == "supporter_added")
+        .and_then(|event| event.payload.as_ref())
+        .expect("supporter event payload");
+    assert_eq!(
+        string(field(payload, "actor_id")),
+        "org.weave.character.mara_vey"
+    );
+    state = receipt.after_state;
+    let rejected = try_execute(
+        &registry,
+        &preview,
+        &state,
+        "request_support_foreign",
+        "add_supporter",
+        TabletopCapability::ChecksAndConflicts,
+        support_input("owner_gate", "juno_declaration", "old_rook"),
+    );
+    assert!(rejected.is_err());
+}

@@ -657,6 +657,14 @@ pub fn validate_spark_creation_preview(
     }
     validate_tabletop_state(&preview.initial_state, &manifest)?;
     let definition_fields = value_object("definition", &preview.definition.definition)?;
+    let character_id = object_string(definition_fields, "character_id")?;
+    validate_global_identifier("definition.character_id", character_id)?;
+    if preview.initial_state.owner_id != character_id {
+        return Err(invalid(
+            "initial_state.owner_id",
+            "owner must equal the definition character_id",
+        ));
+    }
     let definition_beliefs = object_map(definition_fields, "beliefs")?;
     let definition_attributes = object_map(definition_fields, "attributes")?;
     if definition_beliefs.len() != MAX_BELIEFS || definition_attributes.len() != 4 {
@@ -1932,6 +1940,10 @@ fn event_types() -> BTreeMap<String, TypeExpression> {
             "supporter_added".to_owned(),
             object_type([
                 (
+                    "actor_id",
+                    required(string(1, 128), "Supported declaration's actor."),
+                ),
+                (
                     "conflict_id",
                     required(string(1, 128), "Conflict identity."),
                 ),
@@ -2397,6 +2409,7 @@ fn resolve_add_supporter(
     validate_local_identifier("input.declaration_id", &declaration_id)?;
     validate_local_identifier("input.relationship_id", &relationship_id)?;
     let definition_fields = value_object("definition", definition)?;
+    let character_id = object_string(definition_fields, "character_id")?;
     let relationships = object_map(definition_fields, "relationships")?;
     if !relationships.contains_key(&relationship_id) {
         return Err(invalid(
@@ -2416,6 +2429,13 @@ fn resolve_add_supporter(
         "state.conflicts.declarations",
         object_field(declarations, &declaration_id)?,
     )?;
+    let actor_id = object_string(declaration, "actor_id")?;
+    if actor_id != character_id {
+        return Err(invalid(
+            "input.declaration_id",
+            "only the owning character's declarations may receive supporters",
+        ));
+    }
     let supporters = object_list(declaration, "supporters")?;
     if supporters.len() >= MAX_SUPPORTERS {
         return Err(invalid(
@@ -2452,6 +2472,7 @@ fn resolve_add_supporter(
         vec![public_event(
             "supporter_added",
             object([
+                ("actor_id", DomainValue::String(actor_id.to_owned())),
                 ("conflict_id", DomainValue::String(conflict_id)),
                 ("declaration_id", DomainValue::String(declaration_id)),
                 ("relationship_id", DomainValue::String(relationship_id)),
