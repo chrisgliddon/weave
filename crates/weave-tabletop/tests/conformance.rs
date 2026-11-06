@@ -33,10 +33,11 @@ fn every_registered_adapter_passes_every_check() {
             "org.weave.tabletop.plug_and_play",
             "org.weave.tabletop.dungeonpunk",
             "org.weave.tabletop.freehack",
+            "org.weave.tabletop.wicked_ones",
         ]
     );
     assert!(report.passed(), "{}", report.render());
-    assert_eq!(report.adapters.len(), 3);
+    assert_eq!(report.adapters.len(), 4);
     for adapter in &report.adapters {
         assert!(adapter.failures.is_empty(), "{}", adapter.summary());
         assert_eq!(adapter.executed, ConformanceCheck::ALL.len());
@@ -73,9 +74,20 @@ fn a_new_adapter_joins_the_registry_without_touching_the_suite() {
 }
 
 #[test]
+fn every_registered_adapter_has_a_source_policy_row() {
+    let policy = standard_source_policy();
+    for adapter_id in standard_suite().adapter_ids() {
+        assert!(
+            policy.entry(adapter_id).is_some(),
+            "missing source policy row for `{adapter_id}`"
+        );
+    }
+}
+
+#[test]
 fn source_policy_is_complete_and_data_driven() {
     let policy = standard_source_policy();
-    assert_eq!(policy.entries().count(), 3);
+    assert_eq!(policy.entries().count(), 4);
     for adapter_id in standard_suite().adapter_ids() {
         let entry = policy
             .entry(adapter_id)

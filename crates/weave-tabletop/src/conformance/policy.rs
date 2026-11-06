@@ -126,6 +126,22 @@ pub const FREEHACK_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     ],
 };
 
+/// Reviewed Wicked Ones source policy.
+pub const WICKED_ONES_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
+    adapter_id: crate::WICKED_ONES_ADAPTER_ID,
+    namespace: "wicked_ones",
+    license: "CC0-1.0",
+    source_class: AdapterSourceClass::VerifiedCc0,
+    source_sha256: crate::WICKED_ONES_SOURCE_RECORD_SHA256,
+    required_license_text: PolicyFile {
+        path: "LICENSE-CC0-1.0.txt",
+        sha256: crate::WICKED_ONES_CC0_LEGAL_CODE_SHA256,
+    },
+    required_notice_files: &[],
+    required_notices: crate::WICKED_ONES_NOTICES,
+    forbidden_files: &["War for the Overworld", "Undead Awakening"],
+};
+
 /// Registry of reviewed source policies.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SourcePolicy {
@@ -160,5 +176,6 @@ pub fn standard_source_policy() -> SourcePolicy {
         PLUG_AND_PLAY_SOURCE_POLICY,
         DUNGEONPUNK_SOURCE_POLICY,
         FREEHACK_SOURCE_POLICY,
+        WICKED_ONES_SOURCE_POLICY,
     ])
 }

@@ -2,13 +2,15 @@ use std::collections::BTreeMap;
 
 use weave_domain::DomainValue;
 use weave_tabletop::{
-    RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest, ResolverRegistry, SOURCE_RECORD,
-    TabletopCapability, TabletopError, TabletopState, WICKED_ONES_CREATION_FORMAT_VERSION,
-    WICKED_ONES_LICENSE, WICKED_ONES_SOURCE_EDITION, WICKED_ONES_SOURCE_RECORD_SHA256,
-    WICKED_ONES_SOURCE_URL, WickedOnesActionRatings, WickedOnesCalling, WickedOnesCreationPreview,
+    EntropyStream, RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest, ResolverRegistry,
+    SOURCE_RECORD, TabletopCapability, TabletopError, TabletopResolver, TabletopState,
+    WICKED_ONES_CREATION_FORMAT_VERSION, WICKED_ONES_LICENSE, WICKED_ONES_SOURCE_EDITION,
+    WICKED_ONES_SOURCE_RECORD_SHA256, WICKED_ONES_SOURCE_URL, WickedOnesActionGroupTotals,
+    WickedOnesActionRatings, WickedOnesCalling, WickedOnesCreationPreview,
     WickedOnesCreationRequest, WickedOnesGearItem, WickedOnesResolver, WickedOnesVileFriend,
     canonical_fingerprint, create_wicked_ones_character, sha256_bytes, validate_adapter_manifest,
-    validate_wicked_ones_creation_preview, wicked_ones_manifest,
+    validate_wicked_ones_creation_preview, validate_wicked_ones_creation_preview_with_request,
+    wicked_ones_manifest,
 };
 
 fn creation_request() -> WickedOnesCreationRequest {
@@ -243,6 +245,12 @@ fn creation_round_trips_every_choice_and_is_reproducible() {
     let second = create_wicked_ones_character(&request).unwrap();
     assert_eq!(first, second);
     validate_wicked_ones_creation_preview(&first).unwrap();
+    validate_wicked_ones_creation_preview_with_request(&first, &request).unwrap();
+    let mut mismatched_request = request.clone();
+    mismatched_request.seed = mismatched_request.seed.saturating_add(1);
+    assert!(
+        validate_wicked_ones_creation_preview_with_request(&first, &mismatched_request).is_err()
+    );
     assert_eq!(
         WickedOnesCreationPreview::from_json(&first.to_json().unwrap()).unwrap(),
         first
@@ -304,6 +312,66 @@ fn creation_round_trips_every_choice_and_is_reproducible() {
     assert_eq!(state["dark_hearts"], DomainValue::Number(0.0));
     assert_eq!(state["resources"], DomainValue::Number(3.0));
     assert_eq!(state["condition"], DomainValue::Symbol("steady".to_owned()));
+}
+
+#[test]
+fn preview_validation_enforces_action_allocation_invariants() {
+    let mut preview = create_wicked_ones_character(&creation_request()).unwrap();
+    let DomainValue::Object(definition) = &mut preview.definition.definition else {
+        panic!("definition is not an object");
+    };
+    let Some(DomainValue::Object(actions)) = definition.get_mut("actions") else {
+        panic!("actions are not an object");
+    };
+    for value in actions.values_mut() {
+        *value = DomainValue::Number(0.0);
+    }
+    preview.action_group_totals = WickedOnesActionGroupTotals {
+        brains: 0,
+        muscles: 0,
+        guts: 0,
+    };
+    let definition_sha256 = canonical_fingerprint(&preview.definition.definition).unwrap();
+    preview.definition.definition_sha256 = definition_sha256.clone();
+    preview.initial_state.definition_sha256 = definition_sha256;
+    let error = validate_wicked_ones_creation_preview(&preview)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("exactly six points"), "{error}");
+}
+
+#[test]
+fn resolver_rejects_stored_resistance_rating_above_maximum() {
+    let preview = preview_with_seed(1);
+    let mut definition = preview.definition.definition.clone();
+    let DomainValue::Object(fields) = &mut definition else {
+        panic!("definition is not an object");
+    };
+    let Some(DomainValue::Object(actions)) = fields.get_mut("actions") else {
+        panic!("actions are not an object");
+    };
+    actions.insert("endure".to_owned(), DomainValue::Number(4.0));
+    let input = action_input(
+        "force",
+        "brawl",
+        "risky",
+        "standard",
+        &[],
+        false,
+        Some(("endure", 0)),
+    );
+    let mut entropy = EntropyStream::from_state(preview.initial_state.entropy.clone()).unwrap();
+    let error = WickedOnesResolver
+        .resolve(
+            "resolve_action",
+            &definition,
+            &input,
+            &preview.initial_state.value,
+            &mut entropy,
+        )
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("resistance action rating"), "{error}");
 }
 
 #[test]

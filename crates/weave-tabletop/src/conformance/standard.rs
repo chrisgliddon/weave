@@ -24,8 +24,11 @@ use crate::{
     PlugAndPlayCreationRequest, PlugAndPlayMentalAttribute, PlugAndPlayModifier,
     PlugAndPlayPhysicalAttribute, PlugAndPlayResolver, PlugAndPlayRollAssignment,
     PlugAndPlayStatSource, TabletopCapability, TabletopError, TabletopResolver,
+    WICKED_ONES_CREATION_FORMAT_VERSION, WickedOnesActionRatings, WickedOnesCalling,
+    WickedOnesCreationRequest, WickedOnesGearItem, WickedOnesResolver, WickedOnesVileFriend,
     create_dungeonpunk_character, create_freehack_character, create_plug_and_play_character,
-    dungeonpunk_manifest, freehack_manifest, plug_and_play_manifest,
+    create_wicked_ones_character, dungeonpunk_manifest, freehack_manifest, plug_and_play_manifest,
+    wicked_ones_manifest,
 };
 
 /// Plug-And-Play registration.
@@ -183,6 +186,59 @@ impl ConformanceAdapter for FreehackConformance {
     }
 }
 
+/// Wicked Ones registration.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct WickedOnesConformance;
+
+impl ConformanceAdapter for WickedOnesConformance {
+    fn adapter_id(&self) -> &str {
+        crate::WICKED_ONES_ADAPTER_ID
+    }
+
+    fn manifest(&self) -> crate::AdapterManifest {
+        wicked_ones_manifest()
+    }
+
+    fn resolver(&self) -> Box<dyn TabletopResolver> {
+        Box::new(WickedOnesResolver)
+    }
+
+    fn create(&self, seed: u64) -> Result<ConformanceCreation, TabletopError> {
+        let preview = create_wicked_ones_character(&wicked_ones_creation_request(seed))?;
+        let canonical = preview.to_json()?;
+        Ok(ConformanceCreation {
+            adapter: preview.adapter,
+            definition: preview.definition,
+            initial_state: preview.initial_state,
+            canonical,
+        })
+    }
+
+    fn scenario(
+        &self,
+        _creation: &ConformanceCreation,
+    ) -> Result<Vec<ConformanceOperation>, TabletopError> {
+        Ok(vec![ConformanceOperation {
+            request_id: "conformance_resolve_action".to_owned(),
+            operation: "resolve_action".to_owned(),
+            capability: TabletopCapability::ChecksAndConflicts,
+            input: object([
+                ("action", DomainValue::Symbol("sneak".to_owned())),
+                ("approach", DomainValue::Symbol("guile".to_owned())),
+                ("bonus", DomainValue::Number(0.0)),
+                ("effect", DomainValue::Symbol("standard".to_owned())),
+                ("going_hard", DomainValue::Bool(false)),
+                (
+                    "intention",
+                    DomainValue::String("Slip past the conformance ledger".to_owned()),
+                ),
+                ("position", DomainValue::Symbol("risky".to_owned())),
+                ("teamwork", DomainValue::List(Vec::new())),
+            ]),
+        }])
+    }
+}
+
 /// Suite covering every adapter shipped in this build.
 #[must_use]
 pub fn standard_suite() -> ConformanceSuite {
@@ -191,6 +247,7 @@ pub fn standard_suite() -> ConformanceSuite {
             Box::new(PlugAndPlayConformance),
             Box::new(DungeonpunkConformance),
             Box::new(FreehackConformance),
+            Box::new(WickedOnesConformance),
         ],
         standard_source_policy(),
     )
@@ -354,6 +411,49 @@ fn gear(
         weight,
         uses: None,
         equipped,
+    }
+}
+
+fn wicked_ones_creation_request(seed: u64) -> WickedOnesCreationRequest {
+    WickedOnesCreationRequest {
+        creation_format_version: WICKED_ONES_CREATION_FORMAT_VERSION,
+        character_id: "org.weave.character.conformance_marrow".to_owned(),
+        name: "Conformance Marrow".to_owned(),
+        race: "Emberkin".to_owned(),
+        look: "Ash-grey horns and a patched coat".to_owned(),
+        calling: WickedOnesCalling::Whisperer,
+        actions: WickedOnesActionRatings {
+            analyze: 1,
+            invent: 0,
+            perceive: 1,
+            brawl: 1,
+            demolish: 0,
+            sneak: 2,
+            command: 0,
+            persuade: 1,
+            endure: 0,
+        },
+        dark_impulse: "Collect every hidden name".to_owned(),
+        revelry: "Counting stolen coins by candlelight".to_owned(),
+        gear: vec![
+            WickedOnesGearItem {
+                id: "chalk_knife".to_owned(),
+                label: "Chalk Knife".to_owned(),
+                quantity: 1,
+            },
+            WickedOnesGearItem {
+                id: "coil_of_rope".to_owned(),
+                label: "Coil of Rope".to_owned(),
+                quantity: 2,
+            },
+        ],
+        abilities: vec!["silent_step".to_owned(), "silver_tongue".to_owned()],
+        vile_friend: WickedOnesVileFriend {
+            name: "Grist".to_owned(),
+            detail: "A patient tunnel rat that remembers grudges".to_owned(),
+        },
+        starting_resources: 3,
+        seed,
     }
 }
 

@@ -56,6 +56,12 @@ pub const SOURCE_RECORD: &str = concat!(
 pub const WICKED_ONES_SOURCE_RECORD_SHA256: &str =
     "c3d2ca581eacb12afca452d75eae83e925d5be46662f08a04f383584fde276b0";
 
+/// Exact notices shared by the manifest and its conformance source-policy row.
+pub const WICKED_ONES_NOTICES: &[&str] = &[
+    "War for the Overworld and Undead Awakening content remains owned by its author and is denied by this adapter; no such material appears in this module or its fixtures.",
+    "The primary digest covers the checked-in SOURCE_RECORD.txt text record, not a downloaded rulebook. The record states the canonical URL, CC0-1.0 licence, and v1.4 edition.",
+];
+
 const MAX_ACTION_RATING: u8 = 3;
 const STARTING_ACTION_POINTS: u8 = 6;
 const MAX_ACTION_POOL: u32 = 8;
@@ -283,6 +289,13 @@ pub struct WickedOnesActionGroupTotals {
 #[serde(deny_unknown_fields)]
 pub struct WickedOnesCreationPreview {
     pub creation_format_version: u32,
+    /// SHA-256 of the creation request that produced this preview.
+    ///
+    /// The preview does not retain the originating request, so
+    /// [`validate_wicked_ones_creation_preview`] can only check the digest format and binds the
+    /// preview to the definition hash and typed definition instead. Callers that still hold the
+    /// request should use [`validate_wicked_ones_creation_preview_with_request`], which recomputes
+    /// this digest exactly.
     pub request_sha256: String,
     pub adapter: ResolvedAdapter,
     pub calling: WickedOnesCalling,
@@ -506,6 +519,8 @@ pub fn validate_wicked_ones_creation_preview(
         });
     }
     validate_sha256("request_sha256", &preview.request_sha256)?;
+    // The preview does not store the originating request, so this digest is format-checked only.
+    // The definition hash below and the typed-definition revalidation bind the preview content.
     let manifest = wicked_ones_manifest();
     let adapter = resolved_adapter(&manifest)?;
     if preview.adapter != adapter || preview.definition.adapter != adapter {
@@ -544,10 +559,33 @@ pub fn validate_wicked_ones_creation_preview(
     }
     let actions = object_map(definition_fields, "actions")?;
     let ratings = ratings_from_map(actions)?;
-    if group_totals(&ratings) != preview.action_group_totals {
+    for action in WickedOnesAction::ALL {
+        if ratings.value(action) > MAX_ACTION_RATING {
+            return Err(invalid(
+                format!("definition.actions.{}", action.symbol()),
+                "stored action rating exceeds the reviewed maximum",
+            ));
+        }
+    }
+    if ratings.total() != STARTING_ACTION_POINTS {
+        return Err(invalid(
+            "definition.actions",
+            "action ratings must allocate exactly six points",
+        ));
+    }
+    let totals = group_totals(&ratings);
+    if totals != preview.action_group_totals {
         return Err(invalid(
             "action_group_totals",
             "preview group totals disagree with the definition",
+        ));
+    }
+    if u16::from(totals.brains) + u16::from(totals.muscles) + u16::from(totals.guts)
+        != u16::from(STARTING_ACTION_POINTS)
+    {
+        return Err(invalid(
+            "action_group_totals",
+            "group totals do not sum to the starting action points",
         ));
     }
     let ability_ids = string_values(
@@ -577,6 +615,23 @@ pub fn validate_wicked_ones_creation_preview(
             "resources",
             "initial resources disagree with the definition",
         ));
+    }
+    Ok(())
+}
+
+/// Revalidate a preview against the exact creation request that produced it.
+///
+/// This is the strong form: it recomputes `request_sha256` from the request and then applies the
+/// complete preview validation. Use it whenever the caller retained the request.
+pub fn validate_wicked_ones_creation_preview_with_request(
+    preview: &WickedOnesCreationPreview,
+    request: &WickedOnesCreationRequest,
+) -> Result<(), TabletopError> {
+    validate_wicked_ones_creation_preview(preview)?;
+    if preview.request_sha256 != canonical_fingerprint(request)? {
+        return Err(TabletopError::ContentHashMismatch {
+            path: "request_sha256",
+        });
     }
     Ok(())
 }
@@ -917,6 +972,12 @@ fn resolve_action(
         && severity != "none"
     {
         let resistance_rating = object_u32(actions, resistance_action.symbol())?;
+        if resistance_rating > u32::from(MAX_ACTION_RATING) {
+            return Err(invalid(
+                "definition.actions",
+                "stored resistance action rating is outside the reviewed range",
+            ));
+        }
         let resistance_pool = resistance_rating
             .saturating_add(resistance_bonus)
             .clamp(1, MAX_ACTION_POOL);
@@ -1409,7 +1470,7 @@ pub fn wicked_ones_manifest() -> AdapterManifest {
         (
             "actions",
             required(
-                map(integer(0.0, 4.0), 9, 9),
+                map(integer(0.0, 3.0), 9, 9),
                 "Ratings for all nine actions.",
             ),
         ),
@@ -1542,12 +1603,10 @@ pub fn wicked_ones_manifest() -> AdapterManifest {
                 sha256: WICKED_ONES_CC0_LEGAL_CODE_SHA256.to_owned(),
             },
             additional_artifacts: Vec::new(),
-            notices: vec![
-                "War for the Overworld and Undead Awakening content remains owned by its author and is denied by this adapter; no such material appears in this module or its fixtures."
-                    .to_owned(),
-                "The primary digest covers the checked-in SOURCE_RECORD.txt text record, not a downloaded rulebook. The record states the canonical URL, CC0-1.0 licence, and v1.4 edition."
-                    .to_owned(),
-            ],
+            notices: WICKED_ONES_NOTICES
+                .iter()
+                .map(|notice| (*notice).to_owned())
+                .collect(),
             compatibility_statement: "Wicked Ones is named only to describe rules compatibility. This project is independent and does not imply endorsement by the original creator or publisher."
                 .to_owned(),
         },
@@ -1579,7 +1638,7 @@ fn creation_steps() -> Vec<CreationStep> {
                 creation_field(
                     "actions",
                     "Action ratings",
-                    map(integer(0.0, 4.0), 9, 9),
+                    map(integer(0.0, 3.0), 9, 9),
                     true,
                 ),
                 creation_field(
