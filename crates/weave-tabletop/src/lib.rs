@@ -13,6 +13,7 @@ mod plug_and_play;
 mod resolver;
 mod spark;
 mod validation;
+mod wicked_ones;
 
 pub mod conformance;
 
@@ -31,6 +32,7 @@ pub use dungeonpunk::*;
 pub use freehack::*;
 pub use model::*;
 pub use plug_and_play::*;
+pub use wicked_ones::*;
 pub use resolver::{
     EntropyStream, ResolverRegistry, TabletopResolver, preview_adapter_switch,
     project_receipt_for_audience,
