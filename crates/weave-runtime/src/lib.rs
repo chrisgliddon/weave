@@ -288,7 +288,9 @@ pub enum RuntimeErrorKind {
     #[error("thread execution exceeded {MAX_THREAD_DEPTH} frames")]
     ThreadDepth,
     /// One step executed more instructions than the limit, which indicates a control-flow cycle.
-    #[error("execution exceeded {MAX_ADVANCE_INSTRUCTIONS} instructions in one step; check for a divert cycle")]
+    #[error(
+        "execution exceeded {MAX_ADVANCE_INSTRUCTIONS} instructions in one step; check for a divert cycle"
+    )]
     InstructionLimit,
     /// The host selected an unavailable choice.
     #[error("choice index {index} is unavailable; {available} choices are pending")]
