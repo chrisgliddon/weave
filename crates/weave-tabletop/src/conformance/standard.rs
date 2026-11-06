@@ -30,6 +30,11 @@ use crate::{
     create_wicked_ones_character, dungeonpunk_manifest, freehack_manifest, plug_and_play_manifest,
     wicked_ones_manifest,
 };
+use crate::{
+    SPARK_ADAPTER_ID, SPARK_CREATION_FORMAT_VERSION, SparkAttribute, SparkAttributeSeed,
+    SparkBeliefSeed, SparkCreationRequest, SparkRelationshipSeed, SparkResolver, SparkStep,
+    create_spark_character, spark_manifest,
+};
 
 /// Plug-And-Play registration.
 #[derive(Debug, Clone, Copy, Default)]
@@ -239,6 +244,152 @@ impl ConformanceAdapter for WickedOnesConformance {
     }
 }
 
+/// Spark registration.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SparkConformance;
+
+impl ConformanceAdapter for SparkConformance {
+    fn adapter_id(&self) -> &str {
+        SPARK_ADAPTER_ID
+    }
+
+    fn manifest(&self) -> crate::AdapterManifest {
+        spark_manifest()
+    }
+
+    fn resolver(&self) -> Box<dyn TabletopResolver> {
+        Box::new(SparkResolver)
+    }
+
+    fn create(&self, seed: u64) -> Result<ConformanceCreation, TabletopError> {
+        let preview = create_spark_character(&spark_creation_request(seed))?;
+        let canonical = preview.to_json()?;
+        Ok(ConformanceCreation {
+            adapter: preview.adapter,
+            definition: preview.definition,
+            initial_state: preview.initial_state,
+            canonical,
+        })
+    }
+
+    fn scenario(
+        &self,
+        _creation: &ConformanceCreation,
+    ) -> Result<Vec<ConformanceOperation>, TabletopError> {
+        Ok(vec![
+            ConformanceOperation {
+                request_id: "conformance_open".to_owned(),
+                operation: "open_conflict".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([
+                    (
+                        "conflict_id",
+                        DomainValue::String("conformance_gate".to_owned()),
+                    ),
+                    ("max_escalation", DomainValue::Number(0.0)),
+                    (
+                        "stakes",
+                        DomainValue::String("Control of the conformance gate.".to_owned()),
+                    ),
+                    ("victory_cost_amount", DomainValue::Number(0.0)),
+                    ("victory_cost_attribute", DomainValue::String(String::new())),
+                    (
+                        "victory_cost_kind",
+                        DomainValue::Symbol("influence".to_owned()),
+                    ),
+                ]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_declare_owner".to_owned(),
+                operation: "declare_action".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([
+                    (
+                        "actor_id",
+                        DomainValue::String(SPARK_CONFORMANCE_CHARACTER_ID.to_owned()),
+                    ),
+                    ("attribute", DomainValue::Symbol("mind".to_owned())),
+                    (
+                        "conflict_id",
+                        DomainValue::String("conformance_gate".to_owned()),
+                    ),
+                    (
+                        "declaration_id",
+                        DomainValue::String("conformance_owner".to_owned()),
+                    ),
+                    (
+                        "description",
+                        DomainValue::String("The owner reads the tide table aloud.".to_owned()),
+                    ),
+                ]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_declare_opponent".to_owned(),
+                operation: "declare_action".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([
+                    (
+                        "actor_id",
+                        DomainValue::String("conformance_opponent".to_owned()),
+                    ),
+                    ("attribute", DomainValue::Symbol("body".to_owned())),
+                    (
+                        "conflict_id",
+                        DomainValue::String("conformance_gate".to_owned()),
+                    ),
+                    (
+                        "declaration_id",
+                        DomainValue::String("conformance_opponent".to_owned()),
+                    ),
+                    (
+                        "description",
+                        DomainValue::String(
+                            "The opponent contests the conformance gate.".to_owned(),
+                        ),
+                    ),
+                ]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_support".to_owned(),
+                operation: "add_supporter".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([
+                    (
+                        "conflict_id",
+                        DomainValue::String("conformance_gate".to_owned()),
+                    ),
+                    (
+                        "declaration_id",
+                        DomainValue::String("conformance_owner".to_owned()),
+                    ),
+                    (
+                        "relationship_id",
+                        DomainValue::String("conformance_sable".to_owned()),
+                    ),
+                ]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_roll".to_owned(),
+                operation: "roll_conflict".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([(
+                    "conflict_id",
+                    DomainValue::String("conformance_gate".to_owned()),
+                )]),
+            },
+            ConformanceOperation {
+                request_id: "conformance_resolve".to_owned(),
+                operation: "resolve_conflict".to_owned(),
+                capability: TabletopCapability::ChecksAndConflicts,
+                input: object([(
+                    "conflict_id",
+                    DomainValue::String("conformance_gate".to_owned()),
+                )]),
+            },
+        ])
+    }
+}
+
 /// Suite covering every adapter shipped in this build.
 #[must_use]
 pub fn standard_suite() -> ConformanceSuite {
@@ -248,6 +399,7 @@ pub fn standard_suite() -> ConformanceSuite {
             Box::new(DungeonpunkConformance),
             Box::new(FreehackConformance),
             Box::new(WickedOnesConformance),
+            Box::new(SparkConformance),
         ],
         standard_source_policy(),
     )
@@ -621,5 +773,55 @@ fn freehack_campaign() -> FreehackCampaignSchema {
                 consequence: "An unseen observer changes position.".to_owned(),
             },
         ],
+    }
+}
+
+const SPARK_CONFORMANCE_CHARACTER_ID: &str = "org.weave.character.conformance_lumen";
+
+fn spark_creation_request(seed: u64) -> SparkCreationRequest {
+    SparkCreationRequest {
+        creation_format_version: SPARK_CREATION_FORMAT_VERSION,
+        character_id: SPARK_CONFORMANCE_CHARACTER_ID.to_owned(),
+        name: "Conformance Lumen".to_owned(),
+        concept: "A lantern-keeper who reads the conformance tide.".to_owned(),
+        beliefs: vec![
+            SparkBeliefSeed {
+                id: "steady_light".to_owned(),
+                statement: "A steady light protects the people behind it.".to_owned(),
+            },
+            SparkBeliefSeed {
+                id: "honest_warning".to_owned(),
+                statement: "A warning is only useful when it is honest.".to_owned(),
+            },
+            SparkBeliefSeed {
+                id: "shared_route".to_owned(),
+                statement: "Every safe route belongs to the people who use it.".to_owned(),
+            },
+        ],
+        relationships: vec![SparkRelationshipSeed {
+            id: "conformance_sable".to_owned(),
+            name: "Conformance Sable".to_owned(),
+            description: "A signal runner who knows the conformance gate.".to_owned(),
+        }],
+        attributes: vec![
+            SparkAttributeSeed {
+                attribute: SparkAttribute::Body,
+                step: SparkStep::D4,
+            },
+            SparkAttributeSeed {
+                attribute: SparkAttribute::Heart,
+                step: SparkStep::D6,
+            },
+            SparkAttributeSeed {
+                attribute: SparkAttribute::Mind,
+                step: SparkStep::D12,
+            },
+            SparkAttributeSeed {
+                attribute: SparkAttribute::Spark,
+                step: SparkStep::D8,
+            },
+        ],
+        talents: Vec::new(),
+        starting_influence: 10 + u32::try_from(seed % 7).unwrap_or(0),
     }
 }

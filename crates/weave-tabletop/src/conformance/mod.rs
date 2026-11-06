@@ -32,8 +32,8 @@ pub use policy::{
     SourcePolicy, standard_source_policy,
 };
 pub use standard::{
-    DungeonpunkConformance, FreehackConformance, PlugAndPlayConformance, WickedOnesConformance,
-    standard_suite,
+    DungeonpunkConformance, FreehackConformance, PlugAndPlayConformance, SparkConformance,
+    WickedOnesConformance, standard_suite,
 };
 
 /// Deterministic creation seed shared by every adapter fixture.

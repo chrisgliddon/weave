@@ -34,10 +34,11 @@ fn every_registered_adapter_passes_every_check() {
             "org.weave.tabletop.dungeonpunk",
             "org.weave.tabletop.freehack",
             "org.weave.tabletop.wicked_ones",
+            "org.weave.tabletop.spark",
         ]
     );
     assert!(report.passed(), "{}", report.render());
-    assert_eq!(report.adapters.len(), 4);
+    assert_eq!(report.adapters.len(), 5);
     for adapter in &report.adapters {
         assert!(adapter.failures.is_empty(), "{}", adapter.summary());
         assert_eq!(adapter.executed, ConformanceCheck::ALL.len());
@@ -82,12 +83,20 @@ fn every_registered_adapter_has_a_source_policy_row() {
             "missing source policy row for `{adapter_id}`"
         );
     }
+    let spark = policy
+        .entry("org.weave.tabletop.spark")
+        .expect("missing Spark source policy row");
+    assert_eq!(spark.license, "CC0-1.0");
+    assert_eq!(
+        spark.source_sha256,
+        weave_tabletop::SPARK_SOURCE_RECORD_SHA256
+    );
 }
 
 #[test]
 fn source_policy_is_complete_and_data_driven() {
     let policy = standard_source_policy();
-    assert_eq!(policy.entries().count(), 4);
+    assert_eq!(policy.entries().count(), 5);
     for adapter_id in standard_suite().adapter_ids() {
         let entry = policy
             .entry(adapter_id)

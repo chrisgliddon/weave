@@ -70,6 +70,12 @@ const FREEHACK_NOTICES: &[&str] = &[
     "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport.",
 ];
 
+const SPARK_NOTICES: &[&str] = &[
+    "Only independently authored core-mechanics behavior and the in-module source record are bundled; no downloaded upstream file is redistributed.",
+    "Spark example settings, logos, artwork, fonts, and presentation layout are excluded.",
+    "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download.",
+];
+
 /// Reviewed Plug-And-Play source policy.
 pub const PLUG_AND_PLAY_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     adapter_id: crate::PLUG_AND_PLAY_ADAPTER_ID,
@@ -142,6 +148,26 @@ pub const WICKED_ONES_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     forbidden_files: &["War for the Overworld", "Undead Awakening"],
 };
 
+/// Reviewed Spark source policy.
+pub const SPARK_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
+    adapter_id: crate::SPARK_ADAPTER_ID,
+    namespace: "spark",
+    license: "CC0-1.0",
+    source_class: AdapterSourceClass::VerifiedCc0,
+    source_sha256: crate::SPARK_SOURCE_RECORD_SHA256,
+    required_license_text: PolicyFile {
+        path: "LICENSE-CC0-1.0.txt",
+        sha256: crate::SPARK_CC0_1_0_LEGAL_CODE_SHA256,
+    },
+    required_notice_files: &[],
+    required_notices: SPARK_NOTICES,
+    forbidden_files: &[
+        "Spark RPG core rules.pdf",
+        "spark-artwork.png",
+        "spark-display-font.otf",
+    ],
+};
+
 /// Registry of reviewed source policies.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SourcePolicy {
@@ -177,5 +203,6 @@ pub fn standard_source_policy() -> SourcePolicy {
         DUNGEONPUNK_SOURCE_POLICY,
         FREEHACK_SOURCE_POLICY,
         WICKED_ONES_SOURCE_POLICY,
+        SPARK_SOURCE_POLICY,
     ])
 }
