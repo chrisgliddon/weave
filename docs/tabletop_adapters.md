@@ -500,8 +500,11 @@ byte-identical.
 Cross-system definitions, attributes, abilities, items, resources, conditions, progression, and
 campaign state are never converted. A cross-system switch archives the outgoing projection under
 its own namespace and either restores an exact target archive or activates an independently
-created target definition. An explicit discard policy removes the outgoing projection only after
-the matching decision is accepted.
+created target definition. The archive stores the immutable definition, its hash, and the exact
+completed creation-step list, so restoration returns all three without reconstruction. An archive
+is consumed only for its exact adapter coordinate, never for a matching namespace alone. An
+explicit discard policy removes the outgoing projection without planning an archive, and only
+after the matching decision is accepted.
 
 A same-adapter release change is an in-place, migrated upgrade. It requires a declared migration
 that is `reviewed`, `preserves_canonical_character`, and matches the source id, version
@@ -516,3 +519,38 @@ the replaced definition fingerprint, and the committed projection fingerprint. C
 `canonical_profile_sha256` and suggestion lineage are unchanged, and
 `canonical_character_write_back` remains false. The audit contains fingerprints, identifiers, and
 fixed diagnostic text only, so it never stores a credential or a raw state payload.
+
+## Open Tale adapter
+
+`crates/weave-tabletop/src/open_tale.rs` is an independently authored adapter for the public
+Open Tale rules reference at <https://open-tale.github.io/>. Open Tale is released under the
+Apache License 2.0. The adapter is not a copy and is not endorsed by the Open Tale project.
+
+The manifest records the Apache-2.0 boundary. `OPEN_TALE_SOURCE_RECORD` states the canonical URL,
+the implemented edition, and the licence, and the manifest pins its SHA-256
+`17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270`. That digest covers the
+authored record, not a downloaded page. The complete Apache-2.0 text is retained in
+`OPEN_TALE_LICENSE_TEXT`, pinned by
+`8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb`. Artwork, fonts, and layout
+are unlicensed and never bundled.
+
+Creation allocates exactly 18 points across nine attributes, selects at most four skills with at
+most six total ranks, and spends a declared wealth budget on catalog equipment. Overspending,
+invalid levels, duplicate skills, and unknown items fail closed with the exact field path.
+
+Checks roll two d6 through `sha256_counter_v1`. Advantage keeps the highest two of three dice;
+disadvantage keeps the lowest two of three. A Heroic Badge adds one die, keeps the highest two,
+and cancels disadvantage. Outcome bands are critical at difficulty plus five, success at
+difficulty, partial within two below difficulty, and failure below that. Each mark and each ten
+units of distance subtract one. The five derived qualities use inspectable integer formulas.
+
+The registered resolver declares attribute and quality inspection, challenges, initiative,
+combat turns, movement, recovery, purchasing, and advancement. Damage, marks, health, resolve,
+wealth, level, and experience live in serializable adapter state. Every operation declares its
+event kinds and whether it consumes entropy. Fixtures use original synthetic names and prose.
+
+Run the adapter suite from a local checkout:
+
+```bash
+cargo test -p weave-tabletop --test open_tale
+```

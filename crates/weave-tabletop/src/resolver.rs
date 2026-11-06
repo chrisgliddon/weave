@@ -279,7 +279,8 @@ pub fn preview_adapter_switch(
         && to.as_ref().is_some_and(|coordinate| {
             projection
                 .inactive
-                .contains_key(&coordinate.namespace_key())
+                .get(&coordinate.namespace_key())
+                .is_some_and(|archived| &archived.adapter == coordinate)
         });
     let reviewed_migration_id = match (&from, target) {
         (Some(from), Some(target)) if from.id == target.id && coordinate_changed => target
@@ -330,7 +331,12 @@ pub fn preview_adapter_switch(
     };
     let restore = if restore_existing_archive {
         to.as_ref()
-            .and_then(|coordinate| projection.inactive.get(&coordinate.namespace_key()))
+            .and_then(|coordinate| {
+                projection
+                    .inactive
+                    .get(&coordinate.namespace_key())
+                    .filter(|archived| &archived.adapter == coordinate)
+            })
             .map(|archived| SwitchArchiveReport {
                 adapter: archived.adapter.clone(),
                 namespace: archived.adapter.namespace_key(),
@@ -385,6 +391,7 @@ struct IndexedManifests<'a> {
 impl<'a> IndexedManifests<'a> {
     fn new(manifests: &'a [AdapterManifest]) -> Result<Self, TabletopError> {
         let mut entries = Vec::new();
+        let mut namespaces = BTreeSet::new();
         for manifest in manifests {
             validate_adapter_manifest(manifest)?;
             let coordinate = resolved_adapter(manifest)?;
@@ -395,6 +402,12 @@ impl<'a> IndexedManifests<'a> {
                 return Err(TabletopError::InvalidField {
                     path: "installed".to_owned(),
                     reason: "duplicate installed adapter release",
+                });
+            }
+            if !namespaces.insert(coordinate.namespace_key()) {
+                return Err(TabletopError::InvalidField {
+                    path: "installed".to_owned(),
+                    reason: "duplicate installed adapter namespace",
                 });
             }
             entries.push((coordinate, manifest));
@@ -447,6 +460,7 @@ impl TabletopCharacterProjection {
             return Err(TabletopError::CanonicalWriteBack);
         }
         let indexed = IndexedManifests::new(installed)?;
+        validate_archived_namespaces(self)?;
         let target_manifest = match &request.target {
             Some(coordinate) => Some(indexed.exact(coordinate)?),
             None => None,
@@ -464,11 +478,22 @@ impl TabletopCharacterProjection {
             .and_then(|coordinate| indexed.exact_optional(coordinate));
 
         // A same-adapter upgrade migrates in place. Archiving the outgoing release can be
-        // impossible because only one release per adapter id may be installed.
-        if upgrading {
-            preview.archive_current = false;
-            preview.archive = None;
-        }
+        // impossible because only one release per adapter id may be installed. A discard policy
+        // never plans an archive either.
+        let archiving_outgoing = coordinate_changed
+            && self.active.is_some()
+            && !upgrading
+            && request.outgoing_policy == SwitchOutgoingPolicy::Archive;
+        preview.archive_current = archiving_outgoing;
+        preview.archive = if archiving_outgoing {
+            self.active.as_ref().map(|active| SwitchArchiveReport {
+                adapter: active.adapter.clone(),
+                namespace: active.adapter.namespace_key(),
+                definition_sha256: active.definition_sha256.clone(),
+            })
+        } else {
+            None
+        };
 
         let from_caps = from_manifest.map(capability_set).unwrap_or_default();
         let target_caps = target_manifest.map(capability_set).unwrap_or_default();
@@ -764,6 +789,7 @@ impl TabletopCharacterProjection {
         }
 
         let mut next = self.clone();
+        let mut archived_projection = None;
         if !same && let Some(active) = self.active.as_ref() {
             let superseded = upgrading;
             if request.outgoing_policy == SwitchOutgoingPolicy::Archive && !superseded {
@@ -774,12 +800,18 @@ impl TabletopCharacterProjection {
                         reason: "outgoing archive key already exists",
                     });
                 }
+                let report = SwitchArchiveReport {
+                    adapter: active.adapter.clone(),
+                    namespace: key.clone(),
+                    definition_sha256: active.definition_sha256.clone(),
+                };
                 next.inactive.insert(
                     key,
                     ArchivedAdapterProjection {
                         adapter: active.adapter.clone(),
                         definition: active.definition.clone(),
                         definition_sha256: active.definition_sha256.clone(),
+                        completed_creation_steps: active.completed_creation_steps.clone(),
                         reason: match &to {
                             Some(target) => {
                                 format!("Archived when switching to adapter `{}`.", target.id)
@@ -788,6 +820,7 @@ impl TabletopCharacterProjection {
                         },
                     },
                 );
+                archived_projection = Some(report);
             }
         }
         next.active = None;
@@ -800,9 +833,17 @@ impl TabletopCharacterProjection {
             }
         }
 
+        let mut restored_projection = None;
         if let Some(target) = &request.target {
             indexed.exact(target)?;
             let target_key = target.namespace_key();
+            if let Some(stored) = next.inactive.get(&target_key)
+                && &stored.adapter != target
+            {
+                return Err(TabletopError::ContentHashMismatch {
+                    path: "inactive.adapter",
+                });
+            }
             let archived = next.inactive.get(&target_key).cloned();
             if same && request.target_definition.is_none() {
                 next.active = self.active.clone();
@@ -815,6 +856,11 @@ impl TabletopCharacterProjection {
                                 reason: "target definition conflicts with the retained archive",
                             });
                         }
+                        restored_projection = Some(SwitchArchiveReport {
+                            adapter: stored.adapter.clone(),
+                            namespace: target_key.clone(),
+                            definition_sha256: stored.definition_sha256.clone(),
+                        });
                         next.inactive.remove(&target_key);
                         supplied.clone()
                     }
@@ -823,12 +869,17 @@ impl TabletopCharacterProjection {
                         supplied.clone()
                     }
                     (None, Some(stored)) => {
+                        restored_projection = Some(SwitchArchiveReport {
+                            adapter: stored.adapter.clone(),
+                            namespace: target_key.clone(),
+                            definition_sha256: stored.definition_sha256.clone(),
+                        });
                         next.inactive.remove(&target_key);
                         AdapterCharacterDefinition {
                             adapter: stored.adapter,
                             definition: stored.definition,
                             definition_sha256: stored.definition_sha256,
-                            completed_creation_steps: Vec::new(),
+                            completed_creation_steps: stored.completed_creation_steps,
                         }
                     }
                     (None, None) => {
@@ -859,8 +910,6 @@ impl TabletopCharacterProjection {
                 (Some(state), _) => (Some(canonical_fingerprint(state)?), None),
                 (None, _) => (None, None),
             };
-        let archived_projection = preview.archive.clone();
-        let restored_projection = preview.restore.clone();
         let retained_inactive = next.inactive.keys().cloned().collect();
         let migrated_from_definition_sha256 = if upgrading {
             self.active
@@ -929,10 +978,40 @@ fn top_level_fields(value: &weave_domain::DomainValue) -> Vec<String> {
     }
 }
 
+fn validate_archived_namespaces(
+    projection: &TabletopCharacterProjection,
+) -> Result<(), TabletopError> {
+    let mut namespaces = BTreeSet::new();
+    for (key, archived) in &projection.inactive {
+        if key != &archived.adapter.namespace_key() {
+            return Err(TabletopError::InvalidField {
+                path: format!("inactive.{key}"),
+                reason: "archive key must match the exact adapter coordinate",
+            });
+        }
+        if !namespaces.insert(archived.adapter.namespace_key()) {
+            return Err(TabletopError::InvalidField {
+                path: "inactive".to_owned(),
+                reason: "duplicate archived adapter namespace",
+            });
+        }
+    }
+    if let Some(active) = &projection.active
+        && namespaces.contains(&active.adapter.namespace_key())
+    {
+        return Err(TabletopError::InvalidField {
+            path: "inactive".to_owned(),
+            reason: "active adapter namespace collides with an archive",
+        });
+    }
+    Ok(())
+}
+
 fn same_definition(left: &AdapterCharacterDefinition, right: &AdapterCharacterDefinition) -> bool {
     left.adapter == right.adapter
         && left.definition == right.definition
         && left.definition_sha256 == right.definition_sha256
+        && left.completed_creation_steps == right.completed_creation_steps
 }
 
 fn archived_matches_definition(
@@ -942,6 +1021,7 @@ fn archived_matches_definition(
     archived.adapter == supplied.adapter
         && archived.definition == supplied.definition
         && archived.definition_sha256 == supplied.definition_sha256
+        && archived.completed_creation_steps == supplied.completed_creation_steps
 }
 
 fn validate_target_definition(

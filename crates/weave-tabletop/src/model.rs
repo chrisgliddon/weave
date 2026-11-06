@@ -319,6 +319,9 @@ pub struct ArchivedAdapterProjection {
     pub adapter: ResolvedAdapter,
     pub definition: DomainValue,
     pub definition_sha256: String,
+    /// Exact creation-step completion retained with the immutable definition.
+    #[serde(default)]
+    pub completed_creation_steps: Vec<String>,
     pub reason: String,
 }
 
@@ -631,6 +634,8 @@ impl TabletopCharacterProjection {
         &self,
         adapter: &ResolvedAdapter,
     ) -> Option<&ArchivedAdapterProjection> {
-        self.inactive.get(&adapter.namespace_key())
+        self.inactive
+            .get(&adapter.namespace_key())
+            .filter(|archived| &archived.adapter == adapter)
     }
 }

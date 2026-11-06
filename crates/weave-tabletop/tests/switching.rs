@@ -346,7 +346,10 @@ fn archived_projection_is_restored_exactly_and_never_evaluated_while_inactive() 
     assert_eq!(restored.adapter, pnp.clone());
     assert_eq!(restored.definition, original.definition);
     assert_eq!(restored.definition_sha256, original.definition_sha256);
-    assert!(restored.completed_creation_steps.is_empty());
+    assert_eq!(
+        restored.completed_creation_steps,
+        original.completed_creation_steps
+    );
     assert!(projection.archived_projection(&pnp).is_none());
     assert!(projection.archived_projection(&dungeonpunk).is_some());
     assert!(audit.restored_projection.is_some());
@@ -719,4 +722,208 @@ fn explicit_discard_is_deterministic_and_unknown_namespaces_fail_closed() {
             .preview_switch(&installed, &unknown, None)
             .is_err()
     );
+}
+
+#[test]
+fn archived_coordinate_mismatch_is_never_restored() {
+    let installed = installed();
+    let pnp = resolved_adapter(&installed[0]).unwrap();
+    let dungeonpunk = resolved_adapter(&installed[1]).unwrap();
+    let mut projection = fixture_projection(PNP_PROJECTION);
+    let mut away = request(
+        Some(dungeonpunk.clone()),
+        Some(fixture_definition(DUNGEONPUNK_PROJECTION)),
+    );
+    let preview = projection
+        .preview_switch(&installed, &away, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+    accept_all(&preview, &mut away);
+    projection
+        .apply_switch(&installed, &away, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+
+    let mut mismatched = pnp.clone();
+    mismatched.content_sha256 = "f".repeat(64);
+    assert_eq!(mismatched.namespace_key(), pnp.namespace_key());
+    assert_ne!(mismatched, pnp);
+    projection
+        .inactive
+        .get_mut(&pnp.namespace_key())
+        .unwrap()
+        .adapter = mismatched.clone();
+
+    assert!(projection.archived_projection(&pnp).is_none());
+    assert!(projection.archived_projection(&mismatched).is_some());
+
+    let mut restore = request(Some(pnp.clone()), None);
+    let preview = projection
+        .preview_switch(
+            &installed,
+            &restore,
+            Some(&fixture_state(DUNGEONPUNK_STATE)),
+        )
+        .unwrap();
+    assert!(!preview.restore_existing_archive);
+    assert!(preview.restore.is_none());
+    accept_all(&preview, &mut restore);
+    let error = projection
+        .apply_switch(
+            &installed,
+            &restore,
+            Some(&fixture_state(DUNGEONPUNK_STATE)),
+        )
+        .unwrap_err();
+    assert!(error.to_string().contains("target projection is required"));
+}
+
+#[test]
+fn duplicate_installed_namespace_is_rejected() {
+    let first = plug_and_play_manifest();
+    let mut second = first.clone();
+    second.summary = format!("{} Synthetic second release.", second.summary);
+    let first_coordinate = resolved_adapter(&first).unwrap();
+    let second_coordinate = resolved_adapter(&second).unwrap();
+    assert_eq!(
+        first_coordinate.namespace_key(),
+        second_coordinate.namespace_key()
+    );
+    assert_ne!(first_coordinate, second_coordinate);
+
+    let projection = fixture_projection(PNP_PROJECTION);
+    let switch = request(
+        Some(first_coordinate),
+        Some(projection.active.clone().unwrap()),
+    );
+    let error = projection
+        .preview_switch(&[first, second], &switch, None)
+        .unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("duplicate installed adapter namespace")
+    );
+}
+
+#[test]
+fn discard_policy_reports_and_audits_no_archive() {
+    let installed = installed();
+    let pnp = resolved_adapter(&installed[0]).unwrap();
+    let dungeonpunk = resolved_adapter(&installed[1]).unwrap();
+    let mut projection = fixture_projection(PNP_PROJECTION);
+    let mut switch = request(
+        Some(dungeonpunk.clone()),
+        Some(fixture_definition(DUNGEONPUNK_PROJECTION)),
+    );
+    switch.outgoing_policy = SwitchOutgoingPolicy::Discard;
+    let preview = projection
+        .preview_switch(&installed, &switch, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+    assert!(!preview.archive_current);
+    assert!(preview.archive.is_none());
+    assert!(
+        preview
+            .required_decisions
+            .iter()
+            .any(|decision| decision.kind == SwitchDecisionKind::DiscardCurrentProjection)
+    );
+    accept_all(&preview, &mut switch);
+    let audit = projection
+        .apply_switch(&installed, &switch, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+    assert!(audit.archived_projection.is_none());
+    assert!(audit.discarded_current);
+    assert!(projection.archived_projection(&pnp).is_none());
+    assert!(projection.inactive.is_empty());
+    assert_eq!(projection.active.as_ref().unwrap().adapter, dungeonpunk);
+}
+
+#[test]
+fn definitions_differing_only_in_completed_steps_are_not_equal() {
+    let installed = installed();
+    let pnp = resolved_adapter(&installed[0]).unwrap();
+    let dungeonpunk = resolved_adapter(&installed[1]).unwrap();
+    let mut projection = fixture_projection(PNP_PROJECTION);
+    let active = projection.active.clone().unwrap();
+    let before = projection.clone();
+
+    let mut altered = active.clone();
+    let _ = altered.completed_creation_steps.pop();
+    assert_ne!(altered, active);
+    let mut same_coordinate = request(Some(pnp.clone()), Some(altered));
+    let preview = projection
+        .preview_switch(
+            &installed,
+            &same_coordinate,
+            Some(&fixture_state(PNP_STATE)),
+        )
+        .unwrap();
+    assert!(
+        preview
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.severity == SwitchDiagnosticSeverity::Error)
+    );
+    accept_all(&preview, &mut same_coordinate);
+    assert!(
+        projection
+            .apply_switch(
+                &installed,
+                &same_coordinate,
+                Some(&fixture_state(PNP_STATE))
+            )
+            .is_err()
+    );
+    assert_eq!(projection, before);
+
+    let mut away = request(
+        Some(dungeonpunk.clone()),
+        Some(fixture_definition(DUNGEONPUNK_PROJECTION)),
+    );
+    let preview = projection
+        .preview_switch(&installed, &away, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+    accept_all(&preview, &mut away);
+    projection
+        .apply_switch(&installed, &away, Some(&fixture_state(PNP_STATE)))
+        .unwrap();
+    assert_eq!(
+        projection
+            .archived_projection(&pnp)
+            .unwrap()
+            .completed_creation_steps,
+        active.completed_creation_steps
+    );
+
+    let restored_without_steps = AdapterCharacterDefinition {
+        adapter: pnp.clone(),
+        definition: active.definition.clone(),
+        definition_sha256: active.definition_sha256.clone(),
+        completed_creation_steps: Vec::new(),
+    };
+    let mut restore = request(Some(pnp.clone()), Some(restored_without_steps));
+    let preview = projection
+        .preview_switch(
+            &installed,
+            &restore,
+            Some(&fixture_state(DUNGEONPUNK_STATE)),
+        )
+        .unwrap();
+    assert!(
+        preview
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.severity == SwitchDiagnosticSeverity::Error)
+    );
+    accept_all(&preview, &mut restore);
+    let after_away = projection.clone();
+    assert!(
+        projection
+            .apply_switch(
+                &installed,
+                &restore,
+                Some(&fixture_state(DUNGEONPUNK_STATE))
+            )
+            .is_err()
+    );
+    assert_eq!(projection, after_away);
 }
