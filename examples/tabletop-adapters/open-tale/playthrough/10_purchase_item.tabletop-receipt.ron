@@ -1,0 +1,298 @@
+(
+    resolver_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.open_tale",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+    ),
+    operation: "purchase_item",
+    capability: equipment_and_abilities,
+    request_sha256: "2c198c57ab5ec4bfbdba1b2892611c0fcdb75af367af4a1cce8d3ca3f9947a60",
+    before_state_sha256: "11036919786f7eedd664849bb01cf2adeb9ee2fbdc6b18a90c92e84e4189ef2e",
+    before_revision: 9,
+    entropy_before: (
+        algorithm: "sha256_counter_v1",
+        seed: 42,
+        cursor: 21,
+    ),
+    after_state_sha256: "a8061777b5ca01b05787018616d9c8028c3e850770454deaf25485d74b2daaed",
+    entropy_consumed: 0,
+    after_state: (
+        state_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.open_tale",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+        ),
+        owner_id: "org.weave.fixture.alma",
+        definition_sha256: "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+        revision: 10,
+        entropy: (
+            algorithm: "sha256_counter_v1",
+            seed: 42,
+            cursor: 21,
+        ),
+        value: (
+            kind: object,
+            value: {
+                "challenges": (
+                    kind: object,
+                    value: {
+                        "cross_the_ford": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "critical",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 9.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 20.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Cross the ford",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: 14.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "succeeded",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "failed_omen": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "failure",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 30.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 1000.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Read the flood omen",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: -88.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "failed",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "combats": (
+                    kind: object,
+                    value: {
+                        "reed_watch": (
+                            kind: object,
+                            value: {
+                                "adversary_agility": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                                "adversary_damage": (
+                                    kind: number,
+                                    value: 2.0,
+                                ),
+                                "adversary_defense": (
+                                    kind: number,
+                                    value: 7.0,
+                                ),
+                                "adversary_health": (
+                                    kind: number,
+                                    value: 0.0,
+                                ),
+                                "adversary_max_health": (
+                                    kind: number,
+                                    value: 6.0,
+                                ),
+                                "adversary_name": (
+                                    kind: string,
+                                    value: "Bramble Hound",
+                                ),
+                                "attacks": (
+                                    kind: number,
+                                    value: 3.0,
+                                ),
+                                "character_first": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "character_initiative": (
+                                    kind: number,
+                                    value: 6.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 15.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Hold the reed watch",
+                                ),
+                                "round": (
+                                    kind: number,
+                                    value: 3.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "concluded",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "experience": (
+                    kind: number,
+                    value: 12.0,
+                ),
+                "health": (
+                    kind: number,
+                    value: 10.0,
+                ),
+                "heroic_badges": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "inventory": (
+                    kind: object,
+                    value: {
+                        "rope": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "short_blade": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "travel_cloak": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "level": (
+                    kind: number,
+                    value: 2.0,
+                ),
+                "marks": (
+                    kind: number,
+                    value: 0.0,
+                ),
+                "resolve": (
+                    kind: number,
+                    value: 4.0,
+                ),
+                "wealth": (
+                    kind: number,
+                    value: 1.0,
+                ),
+            },
+        ),
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "item_acquired",
+            capability: equipment_and_abilities,
+            visibility: public,
+            payload_sha256: "96251ebf55233d19705e2d2f683cf5431c0535e70534ad11622b32c51218ca8c",
+            payload: Some((
+                kind: object,
+                value: {
+                    "cost": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "item_id": (
+                        kind: string,
+                        value: "rope",
+                    ),
+                    "label": (
+                        kind: string,
+                        value: "Rope",
+                    ),
+                    "quantity_after": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 1,
+            kind: "wealth_spent",
+            capability: equipment_and_abilities,
+            visibility: public,
+            payload_sha256: "d4f26d04a01ae3b7b1a3e4e9b801b1f3e5e7ee9ae3f857735000030fadde11f9",
+            payload: Some((
+                kind: object,
+                value: {
+                    "cost": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "item_id": (
+                        kind: string,
+                        value: "rope",
+                    ),
+                    "wealth_after": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                },
+            )),
+        ),
+    ],
+)

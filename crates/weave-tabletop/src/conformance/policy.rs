@@ -168,6 +168,26 @@ pub const SPARK_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
     ],
 };
 
+/// Reviewed Open Tale source policy.
+pub const OPEN_TALE_SOURCE_POLICY: AdapterSourcePolicy = AdapterSourcePolicy {
+    adapter_id: crate::OPEN_TALE_ADAPTER_ID,
+    namespace: "open_tale",
+    license: "Apache-2.0",
+    source_class: AdapterSourceClass::SeparatelyLicensedApache2,
+    source_sha256: crate::OPEN_TALE_SOURCE_SHA256,
+    required_license_text: PolicyFile {
+        path: crate::OPEN_TALE_LICENSE_TEXT_ARTIFACT,
+        sha256: crate::OPEN_TALE_LICENSE_TEXT_SHA256,
+    },
+    required_notice_files: &[],
+    required_notices: crate::OPEN_TALE_NOTICES,
+    forbidden_files: &[
+        "open-tale-website-theme",
+        "open-tale-artwork",
+        "open-tale-font",
+    ],
+};
+
 /// Registry of reviewed source policies.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SourcePolicy {
@@ -204,5 +224,6 @@ pub fn standard_source_policy() -> SourcePolicy {
         FREEHACK_SOURCE_POLICY,
         WICKED_ONES_SOURCE_POLICY,
         SPARK_SOURCE_POLICY,
+        OPEN_TALE_SOURCE_POLICY,
     ])
 }

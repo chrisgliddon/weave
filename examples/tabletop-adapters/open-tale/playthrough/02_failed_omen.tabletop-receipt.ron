@@ -1,0 +1,321 @@
+(
+    resolver_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.open_tale",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+    ),
+    operation: "resolve_challenge",
+    capability: checks_and_conflicts,
+    request_sha256: "c53f23deddbe097388b1a8f91fe880e7f08811cd2c1a769ab09005dd6113e5f3",
+    before_state_sha256: "83684f1b1ffdf5cb54353216327636a55eca9a7524b098c2eca93d207878afcb",
+    before_revision: 1,
+    entropy_before: (
+        algorithm: "sha256_counter_v1",
+        seed: 42,
+        cursor: 3,
+    ),
+    after_state_sha256: "4a7c3720aaaa3618763e6acac80c63732da660b1eceb9d031fbd3a5a67efee97",
+    entropy_consumed: 2,
+    after_state: (
+        state_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.open_tale",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+        ),
+        owner_id: "org.weave.fixture.alma",
+        definition_sha256: "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+        revision: 2,
+        entropy: (
+            algorithm: "sha256_counter_v1",
+            seed: 42,
+            cursor: 5,
+        ),
+        value: (
+            kind: object,
+            value: {
+                "challenges": (
+                    kind: object,
+                    value: {
+                        "cross_the_ford": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "critical",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 9.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 20.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Cross the ford",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: 14.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "succeeded",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "failed_omen": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "failure",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 30.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 1000.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Read the flood omen",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: -88.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "failed",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "combats": (
+                    kind: object,
+                    value: {},
+                ),
+                "experience": (
+                    kind: number,
+                    value: 0.0,
+                ),
+                "health": (
+                    kind: number,
+                    value: 10.0,
+                ),
+                "heroic_badges": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "inventory": (
+                    kind: object,
+                    value: {
+                        "short_blade": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "travel_cloak": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "level": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "marks": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "resolve": (
+                    kind: number,
+                    value: 4.0,
+                ),
+                "wealth": (
+                    kind: number,
+                    value: 2.0,
+                ),
+            },
+        ),
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "roll_recorded",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "ddd4552575a7842ed244532a962cc237c3f49dd2e913d36907fbe864e01f5f41",
+            payload: Some((
+                kind: object,
+                value: {
+                    "actor": (
+                        kind: string,
+                        value: "character",
+                    ),
+                    "band": (
+                        kind: symbol,
+                        value: "failure",
+                    ),
+                    "context_id": (
+                        kind: string,
+                        value: "failed_omen",
+                    ),
+                    "dice": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 3.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 6.0,
+                            ),
+                        ],
+                    ),
+                    "dice_total": (
+                        kind: number,
+                        value: 9.0,
+                    ),
+                    "heroic_badge_spent": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "kept": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 3.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 6.0,
+                            ),
+                        ],
+                    ),
+                    "mode": (
+                        kind: symbol,
+                        value: "normal",
+                    ),
+                    "total": (
+                        kind: number,
+                        value: -88.0,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 1,
+            kind: "challenge_updated",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "b3e5222c8f07b9bb67a9aa1312319e6692b287ee30c610a9487524157946b7d4",
+            payload: Some((
+                kind: object,
+                value: {
+                    "band": (
+                        kind: symbol,
+                        value: "failure",
+                    ),
+                    "challenge_id": (
+                        kind: string,
+                        value: "failed_omen",
+                    ),
+                    "label": (
+                        kind: string,
+                        value: "Read the flood omen",
+                    ),
+                    "last_total": (
+                        kind: number,
+                        value: -88.0,
+                    ),
+                    "status": (
+                        kind: symbol,
+                        value: "failed",
+                    ),
+                    "turns": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 2,
+            kind: "challenge_resolved",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "1af50b2c69faeffb5dcbd1a802bebf16a75cebc8936a92b0329ecd581fc9c342",
+            payload: Some((
+                kind: object,
+                value: {
+                    "challenge_id": (
+                        kind: string,
+                        value: "failed_omen",
+                    ),
+                    "status": (
+                        kind: symbol,
+                        value: "failed",
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 3,
+            kind: "mark_applied",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "c4cc3abceb5456435228f7dd19d2666151e29e71f76ecac5bf6397b63e66a6c0",
+            payload: Some((
+                kind: object,
+                value: {
+                    "marks_after": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "reason": (
+                        kind: string,
+                        value: "failed_check",
+                    ),
+                },
+            )),
+        ),
+    ],
+)

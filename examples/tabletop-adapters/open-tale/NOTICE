@@ -1,0 +1,11 @@
+Open Tale adapter fixture
+=========================
+
+Open Tale is published at https://open-tale.github.io/ under the Apache License 2.0.
+
+This directory contains independently authored Weave integration code, formulas, fixture prose,
+and synthetic fixture names. It is not a copy of the upstream rules text, artwork, fonts, or
+layout. No upstream NOTICE file is known for the public rules reference; this NOTICE records the
+attribution and modification boundary.
+
+The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt.

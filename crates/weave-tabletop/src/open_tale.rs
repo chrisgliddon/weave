@@ -60,6 +60,15 @@ pub const OPEN_TALE_SOURCE_RECORD: &str = concat!(
 /// SHA-256 of [`OPEN_TALE_SOURCE_RECORD`] as UTF-8 bytes.
 pub const OPEN_TALE_SOURCE_SHA256: &str =
     "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270";
+/// Project-relative path of the retained Apache-2.0 license text.
+pub const OPEN_TALE_LICENSE_TEXT_ARTIFACT: &str =
+    "examples/tabletop-adapters/open-tale/LICENSE-APACHE-2.0.txt";
+/// Exact notices retained by the manifest and the conformance source policy.
+pub const OPEN_TALE_NOTICES: &[&str] = &[
+    "The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt and in OPEN_TALE_LICENSE_TEXT.",
+    "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled.",
+    "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead.",
+];
 
 /// Starting number of points allocated across the nine attributes.
 pub const OPEN_TALE_ATTRIBUTE_BUDGET: u32 = 18;
@@ -962,8 +971,48 @@ pub fn validate_open_tale_creation_preview(
     validate_tabletop_state(&preview.initial_state, &manifest)?;
 
     let fields = value_object("definition", &preview.definition.definition)?;
+    let character_id = object_string(fields, "character_id")?;
+    validate_global_identifier("definition.character_id", character_id)?;
+    validate_bounded_text("definition.name", object_string(fields, "name")?, 1, 160)?;
     let attributes = parse_attributes(object_field(fields, "attributes")?)?;
+    validate_preview_attributes(&attributes)?;
     let skills = parse_skills(object_map(fields, "skills")?)?;
+    validate_preview_skills(&skills)?;
+    let items = parse_items(object_map(fields, "items")?)?;
+    let starting_wealth = object_u32(fields, "starting_wealth")?;
+    let wealth_spent = validate_preview_items(&items, starting_wealth)?;
+    if preview.wealth_spent != wealth_spent {
+        return Err(invalid(
+            "wealth_spent",
+            "preview wealth spend does not match the definition items",
+        ));
+    }
+    let wealth_remaining = starting_wealth.saturating_sub(wealth_spent);
+    if preview.wealth_remaining != wealth_remaining {
+        return Err(invalid(
+            "wealth_remaining",
+            "preview wealth remainder does not match the definition",
+        ));
+    }
+    let expected_steps = vec![
+        "attributes".to_owned(),
+        "identity".to_owned(),
+        "skills_and_wealth".to_owned(),
+    ];
+    if preview.definition.completed_creation_steps != expected_steps {
+        return Err(invalid(
+            "completed_creation_steps",
+            "creation steps do not match this adapter release",
+        ));
+    }
+    if preview.skill_ids != skills.keys().cloned().collect::<Vec<_>>()
+        || preview.item_ids != items.keys().cloned().collect::<Vec<_>>()
+    {
+        return Err(invalid(
+            "preview",
+            "preview identity lists do not match the definition",
+        ));
+    }
     let passive_rank_total = skills
         .values()
         .filter(|skill| skill.kind == OpenTaleSkillKind::Passive)
@@ -978,7 +1027,7 @@ pub fn validate_open_tale_creation_preview(
             "declared qualities do not match the inspectable formulas",
         ));
     }
-    if object_string(fields, "character_id")? != preview.initial_state.owner_id {
+    if character_id != preview.initial_state.owner_id {
         return Err(invalid(
             "initial_state.owner_id",
             "state owner must equal the definition character identity",
@@ -995,7 +1044,125 @@ pub fn validate_open_tale_creation_preview(
             "initial resources do not match the created character",
         ));
     }
+    if object_u32(state_fields, "wealth")? != wealth_remaining {
+        return Err(invalid(
+            "initial_state.wealth",
+            "state wealth does not match the creation budget",
+        ));
+    }
+    if object_u32(state_fields, "heroic_badges")? > OPEN_TALE_MAX_HEROIC_BADGES {
+        return Err(invalid(
+            "initial_state.heroic_badges",
+            "initial heroic badges exceed the creation maximum",
+        ));
+    }
     Ok(())
+}
+
+fn validate_preview_attributes(attributes: &OpenTaleAttributes) -> Result<(), TabletopError> {
+    attributes.validate()?;
+    let total = attributes.total();
+    if total != OPEN_TALE_ATTRIBUTE_BUDGET {
+        return Err(invalid(
+            "attributes",
+            if total > OPEN_TALE_ATTRIBUTE_BUDGET {
+                "attributes overspend the starting attribute budget"
+            } else {
+                "attributes must allocate the full starting budget"
+            },
+        ));
+    }
+    Ok(())
+}
+
+fn validate_preview_skills(
+    skills: &BTreeMap<String, OpenTaleSkillDefinition>,
+) -> Result<(), TabletopError> {
+    if skills.len() > OPEN_TALE_MAX_SKILLS {
+        return Err(invalid(
+            "skills",
+            "too many skills selected for this creation",
+        ));
+    }
+    let catalog = skill_catalog_by_id();
+    let mut total_ranks = 0_u32;
+    for (id, skill) in skills {
+        let Some(canonical) = catalog.get(id) else {
+            return Err(invalid(
+                format!("skills.{id}"),
+                "skill is not in the adapter catalog",
+            ));
+        };
+        if !(1..=3).contains(&skill.rank) {
+            return Err(invalid(
+                format!("skills.{id}.rank"),
+                "skill rank must be within 1..3",
+            ));
+        }
+        if skill.kind != canonical.kind
+            || skill.attribute != canonical.attribute
+            || skill.label != canonical.label
+        {
+            return Err(invalid(
+                format!("skills.{id}"),
+                "skill does not match the adapter catalog",
+            ));
+        }
+        total_ranks = total_ranks
+            .checked_add(skill.rank)
+            .ok_or_else(|| invalid("skills", "skill rank overflow"))?;
+    }
+    if total_ranks > OPEN_TALE_MAX_SKILL_RANKS {
+        return Err(invalid(
+            "skills",
+            "total skill ranks exceed the creation budget",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_preview_items(
+    items: &BTreeMap<String, OpenTaleItemDefinition>,
+    starting_wealth: u32,
+) -> Result<u32, TabletopError> {
+    if items.len() > OPEN_TALE_MAX_ITEMS {
+        return Err(invalid(
+            "items",
+            "too many items selected for this creation",
+        ));
+    }
+    if starting_wealth > OPEN_TALE_MAX_STARTING_WEALTH {
+        return Err(invalid(
+            "starting_wealth",
+            "starting wealth exceeds the reviewed maximum",
+        ));
+    }
+    let catalog = item_catalog_by_id();
+    let mut spent = 0_u32;
+    for (id, item) in items {
+        let Some(canonical) = catalog.get(id) else {
+            return Err(invalid(
+                format!("items.{id}"),
+                "item is not in the adapter catalog",
+            ));
+        };
+        if item != canonical {
+            return Err(invalid(
+                format!("items.{id}"),
+                "item does not match the adapter catalog",
+            ));
+        }
+        spent = spent
+            .checked_add(item.wealth_cost)
+            .ok_or_else(|| invalid("items", "item cost overflow"))?;
+    }
+    if spent > starting_wealth {
+        return Err(invalid(
+            "items",
+            "selected items exceed the starting wealth budget",
+        ));
+    }
+    Ok(spent)
 }
 
 fn validate_open_tale_creation_request(
@@ -1678,7 +1845,7 @@ fn resolve_combat_turn(
 
     let definition_fields = value_object("definition", definition)?;
     let attributes = parse_attributes(object_field(definition_fields, "attributes")?)?;
-    let qualities = parse_qualities(object_field(definition_fields, "qualities")?)?;
+    let qualities = trusted_qualities(definition)?;
     let items = parse_items(object_map(definition_fields, "items")?)?;
     let character_defense = items
         .values()
@@ -1939,7 +2106,7 @@ fn resolve_recovery(
 ) -> Result<(DomainValue, Vec<ResolverEvent>), TabletopError> {
     let fields = value_object("input", request)?;
     let mode = parse_recovery_mode(object_symbol(fields, "mode")?)?;
-    let qualities = definition_qualities(definition)?;
+    let qualities = trusted_qualities(definition)?;
     let state_fields = value_object("state", state)?;
     let health = object_u32(state_fields, "health")?;
     let resolve = object_u32(state_fields, "resolve")?;
@@ -2310,6 +2477,32 @@ fn definition_attributes(definition: &DomainValue) -> Result<OpenTaleAttributes,
 fn definition_qualities(definition: &DomainValue) -> Result<OpenTaleQualities, TabletopError> {
     let fields = value_object("definition", definition)?;
     parse_qualities(object_field(fields, "qualities")?)
+}
+
+/// Recompute the qualities from the authored attributes and passive skill ranks.
+fn recomputed_qualities(definition: &DomainValue) -> Result<OpenTaleQualities, TabletopError> {
+    let fields = value_object("definition", definition)?;
+    let attributes = parse_attributes(object_field(fields, "attributes")?)?;
+    let skills = parse_skills(object_map(fields, "skills")?)?;
+    let passive_rank_total = skills
+        .values()
+        .filter(|skill| skill.kind == OpenTaleSkillKind::Passive)
+        .map(|skill| skill.rank)
+        .sum::<u32>();
+    Ok(open_tale_compute_qualities(&attributes, passive_rank_total))
+}
+
+/// Recompute the qualities and reject a definition whose stored map disagrees.
+fn trusted_qualities(definition: &DomainValue) -> Result<OpenTaleQualities, TabletopError> {
+    let stored = definition_qualities(definition)?;
+    let recomputed = recomputed_qualities(definition)?;
+    if stored != recomputed {
+        return Err(invalid(
+            "definition.qualities",
+            "stored qualities do not match the inspectable formulas",
+        ));
+    }
+    Ok(recomputed)
 }
 
 fn parse_attributes(value: &DomainValue) -> Result<OpenTaleAttributes, TabletopError> {
@@ -2790,18 +2983,14 @@ pub fn open_tale_manifest() -> AdapterManifest {
             attribution: "Open Tale is published at https://open-tale.github.io/ under the Apache License 2.0. This adapter is an independent implementation by the Weave project and is not endorsed by the Open Tale project. Weave integration code remains MIT; this adapter declares the upstream rules reference separately under Apache-2.0."
                 .to_owned(),
             required_license_text: LicenseTextReference {
-                artifact: "crates/weave-tabletop/src/open_tale.rs".to_owned(),
+                artifact: OPEN_TALE_LICENSE_TEXT_ARTIFACT.to_owned(),
                 sha256: OPEN_TALE_LICENSE_TEXT_SHA256.to_owned(),
             },
             additional_artifacts: Vec::new(),
-            notices: vec![
-                "The complete Apache-2.0 license text is retained in OPEN_TALE_LICENSE_TEXT in this module."
-                    .to_owned(),
-                "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled."
-                    .to_owned(),
-                "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead."
-                    .to_owned(),
-            ],
+            notices: OPEN_TALE_NOTICES
+                .iter()
+                .map(|notice| (*notice).to_owned())
+                .collect(),
             compatibility_statement: "Open Tale is named only to describe rules compatibility. This project is independent and does not imply endorsement, sponsorship, or affiliation."
                 .to_owned(),
         },

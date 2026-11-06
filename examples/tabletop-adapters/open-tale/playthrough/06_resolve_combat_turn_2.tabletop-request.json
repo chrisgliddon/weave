@@ -1,0 +1,228 @@
+{
+  "resolver_format_version": 1,
+  "request_id": "req_resolve_combat_turn_2",
+  "adapter": {
+    "id": "org.weave.tabletop.open_tale",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
+  },
+  "operation": "resolve_combat_turn",
+  "capability": "checks_and_conflicts",
+  "definition_sha256": "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+  "definition": {
+    "kind": "object",
+    "value": {
+      "attributes": {
+        "kind": "object",
+        "value": {
+          "dexterity": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "intelligence": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "magicy": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "motion": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "perception": {
+            "kind": "number",
+            "value": 2.0
+          },
+          "persuasion": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "strength": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "vitality": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "volition": {
+            "kind": "number",
+            "value": 1.0
+          }
+        }
+      },
+      "character_id": {
+        "kind": "string",
+        "value": "org.weave.fixture.alma"
+      },
+      "items": {
+        "kind": "object",
+        "value": {
+          "short_blade": {
+            "kind": "object",
+            "value": {
+              "capacity_cost": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "damage_bonus": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "defense_bonus": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "kind": {
+                "kind": "symbol",
+                "value": "weapon"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Short Blade"
+              },
+              "wealth_cost": {
+                "kind": "number",
+                "value": 3.0
+              }
+            }
+          },
+          "travel_cloak": {
+            "kind": "object",
+            "value": {
+              "capacity_cost": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "damage_bonus": {
+                "kind": "number",
+                "value": 0.0
+              },
+              "defense_bonus": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "kind": {
+                "kind": "symbol",
+                "value": "armor"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Travel Cloak"
+              },
+              "wealth_cost": {
+                "kind": "number",
+                "value": 1.0
+              }
+            }
+          }
+        }
+      },
+      "name": {
+        "kind": "string",
+        "value": "Alma Reed"
+      },
+      "qualities": {
+        "kind": "object",
+        "value": {
+          "capacity": {
+            "kind": "number",
+            "value": 8.0
+          },
+          "defense": {
+            "kind": "number",
+            "value": 8.0
+          },
+          "hit_points": {
+            "kind": "number",
+            "value": 10.0
+          },
+          "resolve": {
+            "kind": "number",
+            "value": 4.0
+          },
+          "toughness": {
+            "kind": "number",
+            "value": 8.0
+          }
+        }
+      },
+      "skills": {
+        "kind": "object",
+        "value": {
+          "athletics": {
+            "kind": "object",
+            "value": {
+              "attribute": {
+                "kind": "symbol",
+                "value": "strength"
+              },
+              "kind": {
+                "kind": "symbol",
+                "value": "active"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Athletics"
+              },
+              "rank": {
+                "kind": "number",
+                "value": 2.0
+              }
+            }
+          },
+          "composure": {
+            "kind": "object",
+            "value": {
+              "attribute": {
+                "kind": "symbol",
+                "value": "volition"
+              },
+              "kind": {
+                "kind": "symbol",
+                "value": "passive"
+              },
+              "label": {
+                "kind": "string",
+                "value": "Composure"
+              },
+              "rank": {
+                "kind": "number",
+                "value": 2.0
+              }
+            }
+          }
+        }
+      },
+      "starting_wealth": {
+        "kind": "number",
+        "value": 6.0
+      }
+    }
+  },
+  "expected_state_sha256": "2816e60ae1c3d646231da6b0b1594aa10b5472a995685996e118c60203b30eb0",
+  "input": {
+    "kind": "object",
+    "value": {
+      "combat_id": {
+        "kind": "string",
+        "value": "reed_watch"
+      },
+      "heroic_badge": {
+        "kind": "bool",
+        "value": false
+      },
+      "mode": {
+        "kind": "symbol",
+        "value": "normal"
+      },
+      "weapon_id": {
+        "kind": "string",
+        "value": "short_blade"
+      }
+    }
+  }
+}

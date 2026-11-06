@@ -32,8 +32,8 @@ pub use policy::{
     SourcePolicy, standard_source_policy,
 };
 pub use standard::{
-    DungeonpunkConformance, FreehackConformance, PlugAndPlayConformance, SparkConformance,
-    WickedOnesConformance, standard_suite,
+    DungeonpunkConformance, FreehackConformance, OpenTaleConformance, PlugAndPlayConformance,
+    SparkConformance, WickedOnesConformance, standard_suite,
 };
 
 /// Deterministic creation seed shared by every adapter fixture.
@@ -1805,7 +1805,10 @@ mod tests {
             "assets/Undead Awakening Notes.txt",
             "Undead Awakening"
         ));
-        assert!(!path_mentions_forbidden("notes.txt", "War for the Overworld"));
+        assert!(!path_mentions_forbidden(
+            "notes.txt",
+            "War for the Overworld"
+        ));
         assert!(!path_mentions_forbidden("notes.txt", "  "));
     }
 }

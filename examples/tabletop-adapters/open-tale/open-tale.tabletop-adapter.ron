@@ -1,0 +1,2070 @@
+(
+    manifest_format_version: 1,
+    id: "org.weave.tabletop.open_tale",
+    version: "1.0.0",
+    schema_version: 1,
+    namespace: "open_tale",
+    title: "Open Tale adapter",
+    compatibility_label: "Compatible with the Open Tale public rules reference",
+    summary: "Point-budget characters, nine attributes, five derived qualities, active and passive skills, wealth, deterministic two-d6 checks, challenges, combat, recovery, and advancement.",
+    weave_version: ">=0.1.0, <0.2.0",
+    character_contract_version: ">=1.0.0, <2.0.0",
+    extension_surface: (
+        kind: "declarative_data_with_registered_resolver",
+        resolver_contract_version: 1,
+    ),
+    capabilities: [
+        (
+            capability: character_creation,
+            version: 1,
+        ),
+        (
+            capability: derived_values,
+            version: 1,
+        ),
+        (
+            capability: checks_and_conflicts,
+            version: 1,
+        ),
+        (
+            capability: resources_and_conditions,
+            version: 1,
+        ),
+        (
+            capability: equipment_and_abilities,
+            version: 1,
+        ),
+        (
+            capability: advancement,
+            version: 1,
+        ),
+        (
+            capability: encounters,
+            version: 1,
+        ),
+    ],
+    types: {
+        "Attributes": (
+            kind: "object",
+            fields: {
+                "dexterity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Dexterity rating.",
+                ),
+                "intelligence": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Intelligence rating.",
+                ),
+                "magicy": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Magicy rating.",
+                ),
+                "motion": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Motion rating.",
+                ),
+                "perception": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Perception rating.",
+                ),
+                "persuasion": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Persuasion rating.",
+                ),
+                "strength": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Strength rating.",
+                ),
+                "vitality": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Vitality rating.",
+                ),
+                "volition": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Volition rating.",
+                ),
+            },
+        ),
+        "ChallengeState": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "dexterity",
+                            "intelligence",
+                            "magicy",
+                            "motion",
+                            "perception",
+                            "persuasion",
+                            "strength",
+                            "vitality",
+                            "volition",
+                        ],
+                    ),
+                    required: true,
+                    description: "Attribute used by the check.",
+                ),
+                "band": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "critical",
+                            "failure",
+                            "partial",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Last documented result band.",
+                ),
+                "difficulty": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(30.0),
+                    ),
+                    required: true,
+                    description: "Challenge difficulty.",
+                ),
+                "distance": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Challenge distance.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Challenge label.",
+                ),
+                "last_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Last check total.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failed",
+                            "open",
+                            "succeeded",
+                        ],
+                    ),
+                    required: true,
+                    description: "Challenge lifecycle.",
+                ),
+                "turns": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Attempts recorded.",
+                ),
+            },
+        ),
+        "CombatState": (
+            kind: "object",
+            fields: {
+                "adversary_agility": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10.0),
+                    ),
+                    required: true,
+                    description: "Adversary agility rating.",
+                ),
+                "adversary_damage": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Adversary damage rating.",
+                ),
+                "adversary_defense": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(30.0),
+                    ),
+                    required: true,
+                    description: "Adversary defense value.",
+                ),
+                "adversary_health": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Current adversary health.",
+                ),
+                "adversary_max_health": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Starting adversary health.",
+                ),
+                "adversary_name": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Adversary display name.",
+                ),
+                "attacks": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Exchanges taken.",
+                ),
+                "character_first": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the character acts first.",
+                ),
+                "character_initiative": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(40.0),
+                    ),
+                    required: true,
+                    description: "Character initiative.",
+                ),
+                "distance": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Current distance.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Combat label.",
+                ),
+                "round": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Completed rounds.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "concluded",
+                            "open",
+                        ],
+                    ),
+                    required: true,
+                    description: "Combat lifecycle.",
+                ),
+            },
+        ),
+        "InventoryState": (
+            kind: "object",
+            fields: {
+                "quantity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(9999.0),
+                    ),
+                    required: true,
+                    description: "Carried quantity.",
+                ),
+            },
+        ),
+        "ItemDefinition": (
+            kind: "object",
+            fields: {
+                "capacity_cost": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Capacity consumed.",
+                ),
+                "damage_bonus": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10.0),
+                    ),
+                    required: true,
+                    description: "Weapon damage bonus.",
+                ),
+                "defense_bonus": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(10.0),
+                    ),
+                    required: true,
+                    description: "Armor defense bonus.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "armor",
+                            "gear",
+                            "tool",
+                            "weapon",
+                        ],
+                    ),
+                    required: true,
+                    description: "Equipment category.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Item display label.",
+                ),
+                "wealth_cost": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Wealth cost.",
+                ),
+            },
+        ),
+        "Qualities": (
+            kind: "object",
+            fields: {
+                "capacity": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Carrying capacity.",
+                ),
+                "defense": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Defense quality.",
+                ),
+                "hit_points": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Maximum health.",
+                ),
+                "resolve": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Maximum resolve.",
+                ),
+                "toughness": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Damage reduction.",
+                ),
+            },
+        ),
+        "SkillDefinition": (
+            kind: "object",
+            fields: {
+                "attribute": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "dexterity",
+                            "intelligence",
+                            "magicy",
+                            "motion",
+                            "perception",
+                            "persuasion",
+                            "strength",
+                            "vitality",
+                            "volition",
+                        ],
+                    ),
+                    required: true,
+                    description: "Governing attribute.",
+                ),
+                "kind": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "active",
+                            "passive",
+                        ],
+                    ),
+                    required: true,
+                    description: "Active or passive skill.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Skill display label.",
+                ),
+                "rank": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(5.0),
+                    ),
+                    required: true,
+                    description: "Selected skill rank.",
+                ),
+            },
+        ),
+    },
+    definition_type: (
+        kind: "object",
+        fields: {
+            "attributes": (
+                type: (
+                    kind: "named",
+                    name: "Attributes",
+                ),
+                required: true,
+                description: "Authored attribute ratings.",
+            ),
+            "character_id": (
+                type: (
+                    kind: "string",
+                    min_length: 3,
+                    max_length: 255,
+                ),
+                required: true,
+                description: "Stable character identity.",
+            ),
+            "items": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "ItemDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 64,
+                ),
+                required: true,
+                description: "Owned equipment.",
+            ),
+            "name": (
+                type: (
+                    kind: "string",
+                    min_length: 1,
+                    max_length: 160,
+                ),
+                required: true,
+                description: "Fictional display name.",
+            ),
+            "qualities": (
+                type: (
+                    kind: "named",
+                    name: "Qualities",
+                ),
+                required: true,
+                description: "Derived quality values.",
+            ),
+            "skills": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "SkillDefinition",
+                    ),
+                    min_entries: 0,
+                    max_entries: 16,
+                ),
+                required: true,
+                description: "Selected skills.",
+            ),
+            "starting_wealth": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(20.0),
+                ),
+                required: true,
+                description: "Declared starting wealth.",
+            ),
+        },
+    ),
+    state_type: (
+        kind: "object",
+        fields: {
+            "challenges": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "ChallengeState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 128,
+                ),
+                required: true,
+                description: "Recorded challenges.",
+            ),
+            "combats": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "CombatState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 64,
+                ),
+                required: true,
+                description: "Recorded combats.",
+            ),
+            "experience": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(1000000.0),
+                ),
+                required: true,
+                description: "Accumulated experience.",
+            ),
+            "health": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(999.0),
+                ),
+                required: true,
+                description: "Current health.",
+            ),
+            "heroic_badges": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(99.0),
+                ),
+                required: true,
+                description: "Remaining heroic badges.",
+            ),
+            "inventory": (
+                type: (
+                    kind: "map",
+                    values: (
+                        kind: "named",
+                        name: "InventoryState",
+                    ),
+                    min_entries: 0,
+                    max_entries: 64,
+                ),
+                required: true,
+                description: "Purchased items.",
+            ),
+            "level": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(1.0),
+                    maximum: Some(20.0),
+                ),
+                required: true,
+                description: "Current level.",
+            ),
+            "marks": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(3.0),
+                ),
+                required: true,
+                description: "Carried marks.",
+            ),
+            "resolve": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(999.0),
+                ),
+                required: true,
+                description: "Current resolve.",
+            ),
+            "wealth": (
+                type: (
+                    kind: "number",
+                    integer: true,
+                    minimum: Some(0.0),
+                    maximum: Some(1000000.0),
+                ),
+                required: true,
+                description: "Remaining wealth.",
+            ),
+        },
+    ),
+    creation_steps: [
+        (
+            id: "attributes",
+            title: "Attributes",
+            description: "Allocate the fixed starting attribute budget across the nine attributes.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "attributes",
+                    label: "Attributes",
+                    description: "Explicit adapter-owned Attributes input.",
+                    value_type: (
+                        kind: "named",
+                        name: "Attributes",
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "identity",
+            title: "Identity",
+            description: "Name the character and declare the starting level, wealth, and heroic badges.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "character_id",
+                    label: "Character identity",
+                    description: "Explicit adapter-owned Character identity input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 3,
+                        max_length: 255,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "name",
+                    label: "Name",
+                    description: "Explicit adapter-owned Name input.",
+                    value_type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "level",
+                    label: "Level",
+                    description: "Explicit adapter-owned Level input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1.0),
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "starting_wealth",
+                    label: "Starting wealth",
+                    description: "Explicit adapter-owned Starting wealth input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "heroic_badges",
+                    label: "Heroic badges",
+                    description: "Explicit adapter-owned Heroic badges input.",
+                    value_type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: false,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+        (
+            id: "skills_and_wealth",
+            title: "Skills and wealth",
+            description: "Select bounded active and passive skills and spend the starting wealth on catalog equipment.",
+            required_capability: character_creation,
+            fields: [
+                (
+                    id: "skills",
+                    label: "Skills",
+                    description: "Explicit adapter-owned Skills input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 4,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+                (
+                    id: "items",
+                    label: "Items",
+                    description: "Explicit adapter-owned Items input.",
+                    value_type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 8,
+                    ),
+                    required: true,
+                    authority: adapter_owned,
+                ),
+            ],
+        ),
+    ],
+    operations: {
+        "advance_character": (
+            id: "advance_character",
+            title: "Advance a character",
+            description: "Record a milestone and add experience when the character is below the maximum level.",
+            required_capability: advancement,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "experience_gain": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(1000.0),
+                        ),
+                        required: true,
+                        description: "Experience awarded.",
+                    ),
+                    "milestone": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 240,
+                        ),
+                        required: true,
+                        description: "Recorded milestone.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "advancement_applied",
+            ],
+            consumes_entropy: false,
+        ),
+        "apply_recovery": (
+            id: "apply_recovery",
+            title: "Apply recovery",
+            description: "Restore health and resolve or remove marks through a rest or treatment.",
+            required_capability: resources_and_conditions,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "rest",
+                                "treat",
+                            ],
+                        ),
+                        required: true,
+                        description: "Recovery procedure.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "recovery_applied",
+            ],
+            consumes_entropy: false,
+        ),
+        "inspect_character": (
+            id: "inspect_character",
+            title: "Inspect the character",
+            description: "Report attributes, qualities, skills, items, wealth, level, and experience without mutation.",
+            required_capability: derived_values,
+            request_type: (
+                kind: "object",
+                fields: {},
+            ),
+            event_kinds: [
+                "character_inspected",
+            ],
+            consumes_entropy: false,
+        ),
+        "move_combat": (
+            id: "move_combat",
+            title: "Move during combat",
+            description: "Close or open distance by no more than the character\'s movement allowance.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "combat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Combat identity.",
+                    ),
+                    "movement": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(100.0),
+                        ),
+                        required: true,
+                        description: "Distance moved.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "combat_moved",
+            ],
+            consumes_entropy: false,
+        ),
+        "purchase_item": (
+            id: "purchase_item",
+            title: "Purchase an item",
+            description: "Spend wealth for catalog equipment and record the carried quantity.",
+            required_capability: equipment_and_abilities,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "item_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Catalog item identity.",
+                    ),
+                    "quantity": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(99.0),
+                        ),
+                        required: true,
+                        description: "Purchased quantity.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "item_acquired",
+                "wealth_spent",
+            ],
+            consumes_entropy: false,
+        ),
+        "resolve_challenge": (
+            id: "resolve_challenge",
+            title: "Resolve a challenge",
+            description: "Roll a deterministic attribute check against a difficulty, distance, and mode, then record the challenge state.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "attribute": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "dexterity",
+                                "intelligence",
+                                "magicy",
+                                "motion",
+                                "perception",
+                                "persuasion",
+                                "strength",
+                                "vitality",
+                                "volition",
+                            ],
+                        ),
+                        required: true,
+                        description: "Check attribute.",
+                    ),
+                    "challenge_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Challenge identity.",
+                    ),
+                    "difficulty": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(30.0),
+                        ),
+                        required: true,
+                        description: "Challenge difficulty.",
+                    ),
+                    "distance": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(1000.0),
+                        ),
+                        required: true,
+                        description: "Challenge distance.",
+                    ),
+                    "heroic_badge": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Whether to spend a heroic badge.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Challenge label.",
+                    ),
+                    "mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Dice mode.",
+                    ),
+                    "modifier": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(-5.0),
+                            maximum: Some(5.0),
+                        ),
+                        required: true,
+                        description: "Situational modifier.",
+                    ),
+                    "skill_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Optional active skill.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "challenge_resolved",
+                "challenge_updated",
+                "mark_applied",
+                "roll_recorded",
+            ],
+            consumes_entropy: true,
+        ),
+        "resolve_combat_turn": (
+            id: "resolve_combat_turn",
+            title: "Resolve a combat turn",
+            description: "Resolve one ordered exchange, apply damage and marks, and conclude the combat when either side is defeated.",
+            required_capability: checks_and_conflicts,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "combat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Combat identity.",
+                    ),
+                    "heroic_badge": (
+                        type: (
+                            kind: "bool",
+                        ),
+                        required: true,
+                        description: "Whether to spend a heroic badge.",
+                    ),
+                    "mode": (
+                        type: (
+                            kind: "symbol",
+                            values: [
+                                "advantage",
+                                "disadvantage",
+                                "normal",
+                            ],
+                        ),
+                        required: true,
+                        description: "Character attack mode.",
+                    ),
+                    "weapon_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Optional owned weapon.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "combat_concluded",
+                "combat_updated",
+                "damage_applied",
+                "mark_applied",
+                "roll_recorded",
+            ],
+            consumes_entropy: true,
+        ),
+        "start_combat": (
+            id: "start_combat",
+            title: "Start a combat",
+            description: "Record an adversary and draw deterministic initiative for both sides.",
+            required_capability: encounters,
+            request_type: (
+                kind: "object",
+                fields: {
+                    "adversary_agility": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(10.0),
+                        ),
+                        required: true,
+                        description: "Adversary agility.",
+                    ),
+                    "adversary_damage": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(20.0),
+                        ),
+                        required: true,
+                        description: "Adversary damage.",
+                    ),
+                    "adversary_defense": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(30.0),
+                        ),
+                        required: true,
+                        description: "Adversary defense.",
+                    ),
+                    "adversary_health": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(999.0),
+                        ),
+                        required: true,
+                        description: "Adversary health.",
+                    ),
+                    "adversary_name": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Adversary name.",
+                    ),
+                    "combat_id": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 128,
+                        ),
+                        required: true,
+                        description: "Combat identity.",
+                    ),
+                    "distance": (
+                        type: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(0.0),
+                            maximum: Some(1000.0),
+                        ),
+                        required: true,
+                        description: "Starting distance.",
+                    ),
+                    "label": (
+                        type: (
+                            kind: "string",
+                            min_length: 1,
+                            max_length: 160,
+                        ),
+                        required: true,
+                        description: "Combat label.",
+                    ),
+                },
+            ),
+            event_kinds: [
+                "combat_started",
+                "initiative_recorded",
+            ],
+            consumes_entropy: true,
+        ),
+    },
+    event_types: {
+        "advancement_applied": (
+            kind: "object",
+            fields: {
+                "experience_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Experience after.",
+                ),
+                "experience_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Experience before.",
+                ),
+                "level_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Level after.",
+                ),
+                "level_before": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Level before.",
+                ),
+                "milestone": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 240,
+                    ),
+                    required: true,
+                    description: "Recorded milestone.",
+                ),
+            },
+        ),
+        "challenge_resolved": (
+            kind: "object",
+            fields: {
+                "challenge_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Challenge identity.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failed",
+                            "open",
+                            "succeeded",
+                        ],
+                    ),
+                    required: true,
+                    description: "Final status.",
+                ),
+            },
+        ),
+        "challenge_updated": (
+            kind: "object",
+            fields: {
+                "band": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "critical",
+                            "failure",
+                            "partial",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Result band.",
+                ),
+                "challenge_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Challenge identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Challenge label.",
+                ),
+                "last_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Check total.",
+                ),
+                "status": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "failed",
+                            "open",
+                            "succeeded",
+                        ],
+                    ),
+                    required: true,
+                    description: "Challenge status.",
+                ),
+                "turns": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Attempts.",
+                ),
+            },
+        ),
+        "character_inspected": (
+            kind: "object",
+            fields: {
+                "attributes": (
+                    type: (
+                        kind: "named",
+                        name: "Attributes",
+                    ),
+                    required: true,
+                    description: "Attribute ratings.",
+                ),
+                "experience": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Experience.",
+                ),
+                "items": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 64,
+                    ),
+                    required: true,
+                    description: "Owned item ids.",
+                ),
+                "level": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(20.0),
+                    ),
+                    required: true,
+                    description: "Level.",
+                ),
+                "qualities": (
+                    type: (
+                        kind: "named",
+                        name: "Qualities",
+                    ),
+                    required: true,
+                    description: "Derived qualities.",
+                ),
+                "skills": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "string",
+                            min_length: 0,
+                            max_length: 128,
+                        ),
+                        min_items: 0,
+                        max_items: 16,
+                    ),
+                    required: true,
+                    description: "Selected skill ids.",
+                ),
+                "wealth": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Remaining wealth.",
+                ),
+            },
+        ),
+        "combat_concluded": (
+            kind: "object",
+            fields: {
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+                "outcome": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "defeat",
+                            "victory",
+                        ],
+                    ),
+                    required: true,
+                    description: "Final outcome.",
+                ),
+            },
+        ),
+        "combat_moved": (
+            kind: "object",
+            fields: {
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+                "distance_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Distance after.",
+                ),
+                "movement": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(100.0),
+                    ),
+                    required: true,
+                    description: "Distance moved.",
+                ),
+            },
+        ),
+        "combat_started": (
+            kind: "object",
+            fields: {
+                "adversary_health": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Adversary health.",
+                ),
+                "adversary_name": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Adversary name.",
+                ),
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+                "distance": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Starting distance.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Combat label.",
+                ),
+            },
+        ),
+        "combat_updated": (
+            kind: "object",
+            fields: {
+                "adversary_health": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Adversary health.",
+                ),
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+                "distance": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Current distance.",
+                ),
+                "health": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Character health.",
+                ),
+                "round": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Round number.",
+                ),
+            },
+        ),
+        "damage_applied": (
+            kind: "object",
+            fields: {
+                "amount": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Damage dealt.",
+                ),
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+                "health_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Health after damage.",
+                ),
+                "target": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "adversary",
+                            "character",
+                        ],
+                    ),
+                    required: true,
+                    description: "Damage target.",
+                ),
+            },
+        ),
+        "initiative_recorded": (
+            kind: "object",
+            fields: {
+                "adversary_initiative": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(40.0),
+                    ),
+                    required: true,
+                    description: "Adversary initiative.",
+                ),
+                "character_first": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether the character acts first.",
+                ),
+                "character_initiative": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(40.0),
+                    ),
+                    required: true,
+                    description: "Character initiative.",
+                ),
+                "combat_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Combat identity.",
+                ),
+            },
+        ),
+        "item_acquired": (
+            kind: "object",
+            fields: {
+                "cost": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Wealth cost.",
+                ),
+                "item_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Item identity.",
+                ),
+                "label": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 160,
+                    ),
+                    required: true,
+                    description: "Item label.",
+                ),
+                "quantity_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(9999.0),
+                    ),
+                    required: true,
+                    description: "Carried quantity.",
+                ),
+            },
+        ),
+        "mark_applied": (
+            kind: "object",
+            fields: {
+                "marks_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(1.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Marks after.",
+                ),
+                "reason": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 64,
+                    ),
+                    required: true,
+                    description: "Mark reason.",
+                ),
+            },
+        ),
+        "recovery_applied": (
+            kind: "object",
+            fields: {
+                "health_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Health after.",
+                ),
+                "marks_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(3.0),
+                    ),
+                    required: true,
+                    description: "Marks after.",
+                ),
+                "mode": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "rest",
+                            "treat",
+                        ],
+                    ),
+                    required: true,
+                    description: "Recovery mode.",
+                ),
+                "resolve_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(999.0),
+                    ),
+                    required: true,
+                    description: "Resolve after.",
+                ),
+            },
+        ),
+        "roll_recorded": (
+            kind: "object",
+            fields: {
+                "actor": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 32,
+                    ),
+                    required: true,
+                    description: "Acting side.",
+                ),
+                "band": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "critical",
+                            "failure",
+                            "partial",
+                            "success",
+                        ],
+                    ),
+                    required: true,
+                    description: "Result band.",
+                ),
+                "context_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 0,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Challenge or combat id.",
+                ),
+                "dice": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 2,
+                        max_items: 4,
+                    ),
+                    required: true,
+                    description: "Rolled dice.",
+                ),
+                "dice_total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(2.0),
+                        maximum: Some(24.0),
+                    ),
+                    required: true,
+                    description: "Kept dice total.",
+                ),
+                "heroic_badge_spent": (
+                    type: (
+                        kind: "bool",
+                    ),
+                    required: true,
+                    description: "Whether a badge was spent.",
+                ),
+                "kept": (
+                    type: (
+                        kind: "list",
+                        items: (
+                            kind: "number",
+                            integer: true,
+                            minimum: Some(1.0),
+                            maximum: Some(6.0),
+                        ),
+                        min_items: 2,
+                        max_items: 2,
+                    ),
+                    required: true,
+                    description: "Kept dice.",
+                ),
+                "mode": (
+                    type: (
+                        kind: "symbol",
+                        values: [
+                            "advantage",
+                            "disadvantage",
+                            "normal",
+                        ],
+                    ),
+                    required: true,
+                    description: "Dice mode.",
+                ),
+                "total": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(-1000.0),
+                        maximum: Some(1000.0),
+                    ),
+                    required: true,
+                    description: "Final total.",
+                ),
+            },
+        ),
+        "wealth_spent": (
+            kind: "object",
+            fields: {
+                "cost": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Wealth cost.",
+                ),
+                "item_id": (
+                    type: (
+                        kind: "string",
+                        min_length: 1,
+                        max_length: 128,
+                    ),
+                    required: true,
+                    description: "Item identity.",
+                ),
+                "wealth_after": (
+                    type: (
+                        kind: "number",
+                        integer: true,
+                        minimum: Some(0.0),
+                        maximum: Some(1000000.0),
+                    ),
+                    required: true,
+                    description: "Remaining wealth.",
+                ),
+            },
+        ),
+    },
+    visibility: (
+        runtime: [
+            public,
+        ],
+        authoring: [
+            public,
+            authoring,
+        ],
+        authority_host: [
+            public,
+            authoring,
+            host_only,
+        ],
+    ),
+    migrations: [],
+    provenance: (
+        source_class: separately_licensed_apache2,
+        source_url: "https://open-tale.github.io/",
+        exact_artifact: "open-tale-public-rules-reference",
+        revision: "public rules reference retrieved 2026-11-06",
+        retrieved_on: "2026-11-06",
+        sha256: "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270",
+        license: "Apache-2.0",
+        license_url: "https://www.apache.org/licenses/LICENSE-2.0",
+        covered_files_or_sections: [
+            "Public Open Tale rules reference: attributes, derived qualities, skills, wealth, checks, challenges, combat, recovery, and advancement.",
+            "Adapter behavior is independently specified from the public rules reference.",
+        ],
+        exclusions: [
+            community_supplements,
+            logos,
+            trade_dress,
+            artwork,
+            layout,
+            unverified_assets,
+        ],
+        attribution: "Open Tale is published at https://open-tale.github.io/ under the Apache License 2.0. This adapter is an independent implementation by the Weave project and is not endorsed by the Open Tale project. Weave integration code remains MIT; this adapter declares the upstream rules reference separately under Apache-2.0.",
+        required_license_text: (
+            artifact: "examples/tabletop-adapters/open-tale/LICENSE-APACHE-2.0.txt",
+            sha256: "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb",
+        ),
+        notices: [
+            "The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt and in OPEN_TALE_LICENSE_TEXT.",
+            "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled.",
+            "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead.",
+        ],
+        compatibility_statement: "Open Tale is named only to describe rules compatibility. This project is independent and does not imply endorsement, sponsorship, or affiliation.",
+    ),
+)

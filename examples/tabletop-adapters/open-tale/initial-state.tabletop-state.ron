@@ -1,0 +1,81 @@
+(
+    state_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.open_tale",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+    ),
+    owner_id: "org.weave.fixture.alma",
+    definition_sha256: "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+    revision: 0,
+    entropy: (
+        algorithm: "sha256_counter_v1",
+        seed: 42,
+        cursor: 0,
+    ),
+    value: (
+        kind: object,
+        value: {
+            "challenges": (
+                kind: object,
+                value: {},
+            ),
+            "combats": (
+                kind: object,
+                value: {},
+            ),
+            "experience": (
+                kind: number,
+                value: 0.0,
+            ),
+            "health": (
+                kind: number,
+                value: 10.0,
+            ),
+            "heroic_badges": (
+                kind: number,
+                value: 1.0,
+            ),
+            "inventory": (
+                kind: object,
+                value: {
+                    "short_blade": (
+                        kind: object,
+                        value: {
+                            "quantity": (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                        },
+                    ),
+                    "travel_cloak": (
+                        kind: object,
+                        value: {
+                            "quantity": (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+            "level": (
+                kind: number,
+                value: 1.0,
+            ),
+            "marks": (
+                kind: number,
+                value: 0.0,
+            ),
+            "resolve": (
+                kind: number,
+                value: 4.0,
+            ),
+            "wealth": (
+                kind: number,
+                value: 2.0,
+            ),
+        },
+    ),
+)

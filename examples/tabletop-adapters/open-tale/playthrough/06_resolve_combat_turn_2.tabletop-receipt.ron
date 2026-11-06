@@ -1,0 +1,429 @@
+(
+    resolver_format_version: 1,
+    adapter: (
+        id: "org.weave.tabletop.open_tale",
+        version: "1.0.0",
+        schema_version: 1,
+        content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+    ),
+    operation: "resolve_combat_turn",
+    capability: checks_and_conflicts,
+    request_sha256: "0dc792c3511b7df3536663fb04fa51f522d38df07c13d422420de83d7da208bd",
+    before_state_sha256: "2816e60ae1c3d646231da6b0b1594aa10b5472a995685996e118c60203b30eb0",
+    before_revision: 5,
+    entropy_before: (
+        algorithm: "sha256_counter_v1",
+        seed: 42,
+        cursor: 13,
+    ),
+    after_state_sha256: "424347c84178df8f00714081ec54c932a849f6b6c6d003424304bad995567c64",
+    entropy_consumed: 4,
+    after_state: (
+        state_format_version: 1,
+        adapter: (
+            id: "org.weave.tabletop.open_tale",
+            version: "1.0.0",
+            schema_version: 1,
+            content_sha256: "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4",
+        ),
+        owner_id: "org.weave.fixture.alma",
+        definition_sha256: "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+        revision: 6,
+        entropy: (
+            algorithm: "sha256_counter_v1",
+            seed: 42,
+            cursor: 17,
+        ),
+        value: (
+            kind: object,
+            value: {
+                "challenges": (
+                    kind: object,
+                    value: {
+                        "cross_the_ford": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "critical",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 9.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 20.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Cross the ford",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: 14.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "succeeded",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "failed_omen": (
+                            kind: object,
+                            value: {
+                                "attribute": (
+                                    kind: symbol,
+                                    value: "strength",
+                                ),
+                                "band": (
+                                    kind: symbol,
+                                    value: "failure",
+                                ),
+                                "difficulty": (
+                                    kind: number,
+                                    value: 30.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 1000.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Read the flood omen",
+                                ),
+                                "last_total": (
+                                    kind: number,
+                                    value: -88.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "failed",
+                                ),
+                                "turns": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "combats": (
+                    kind: object,
+                    value: {
+                        "reed_watch": (
+                            kind: object,
+                            value: {
+                                "adversary_agility": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                                "adversary_damage": (
+                                    kind: number,
+                                    value: 2.0,
+                                ),
+                                "adversary_defense": (
+                                    kind: number,
+                                    value: 7.0,
+                                ),
+                                "adversary_health": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                                "adversary_max_health": (
+                                    kind: number,
+                                    value: 6.0,
+                                ),
+                                "adversary_name": (
+                                    kind: string,
+                                    value: "Bramble Hound",
+                                ),
+                                "attacks": (
+                                    kind: number,
+                                    value: 2.0,
+                                ),
+                                "character_first": (
+                                    kind: bool,
+                                    value: false,
+                                ),
+                                "character_initiative": (
+                                    kind: number,
+                                    value: 6.0,
+                                ),
+                                "distance": (
+                                    kind: number,
+                                    value: 15.0,
+                                ),
+                                "label": (
+                                    kind: string,
+                                    value: "Hold the reed watch",
+                                ),
+                                "round": (
+                                    kind: number,
+                                    value: 2.0,
+                                ),
+                                "status": (
+                                    kind: symbol,
+                                    value: "open",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "experience": (
+                    kind: number,
+                    value: 0.0,
+                ),
+                "health": (
+                    kind: number,
+                    value: 10.0,
+                ),
+                "heroic_badges": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "inventory": (
+                    kind: object,
+                    value: {
+                        "short_blade": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                        "travel_cloak": (
+                            kind: object,
+                            value: {
+                                "quantity": (
+                                    kind: number,
+                                    value: 1.0,
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                "level": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "marks": (
+                    kind: number,
+                    value: 1.0,
+                ),
+                "resolve": (
+                    kind: number,
+                    value: 4.0,
+                ),
+                "wealth": (
+                    kind: number,
+                    value: 2.0,
+                ),
+            },
+        ),
+    ),
+    events: [
+        (
+            sequence: 0,
+            kind: "roll_recorded",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "1bc0aae2e58178fe251a57392c6e9602a8912578bbd5967472d5657adf6b6ac4",
+            payload: Some((
+                kind: object,
+                value: {
+                    "actor": (
+                        kind: string,
+                        value: "adversary",
+                    ),
+                    "band": (
+                        kind: symbol,
+                        value: "partial",
+                    ),
+                    "context_id": (
+                        kind: string,
+                        value: "reed_watch",
+                    ),
+                    "dice": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 6.0,
+                            ),
+                        ],
+                    ),
+                    "dice_total": (
+                        kind: number,
+                        value: 7.0,
+                    ),
+                    "heroic_badge_spent": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "kept": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 6.0,
+                            ),
+                        ],
+                    ),
+                    "mode": (
+                        kind: symbol,
+                        value: "normal",
+                    ),
+                    "total": (
+                        kind: number,
+                        value: 7.0,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 1,
+            kind: "roll_recorded",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "b5a7c68ee56ea547f1cae39ba9e3313ba55df5ec2118b972943b9cc3a23a4d26",
+            payload: Some((
+                kind: object,
+                value: {
+                    "actor": (
+                        kind: string,
+                        value: "character",
+                    ),
+                    "band": (
+                        kind: symbol,
+                        value: "partial",
+                    ),
+                    "context_id": (
+                        kind: string,
+                        value: "reed_watch",
+                    ),
+                    "dice": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                        ],
+                    ),
+                    "dice_total": (
+                        kind: number,
+                        value: 5.0,
+                    ),
+                    "heroic_badge_spent": (
+                        kind: bool,
+                        value: false,
+                    ),
+                    "kept": (
+                        kind: list,
+                        value: [
+                            (
+                                kind: number,
+                                value: 1.0,
+                            ),
+                            (
+                                kind: number,
+                                value: 4.0,
+                            ),
+                        ],
+                    ),
+                    "mode": (
+                        kind: symbol,
+                        value: "normal",
+                    ),
+                    "total": (
+                        kind: number,
+                        value: 6.0,
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 2,
+            kind: "damage_applied",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "ba113392adb3dae03ed40921d37e026e7b053c6287bfefcf80e550a107aa1f8f",
+            payload: Some((
+                kind: object,
+                value: {
+                    "amount": (
+                        kind: number,
+                        value: 2.0,
+                    ),
+                    "combat_id": (
+                        kind: string,
+                        value: "reed_watch",
+                    ),
+                    "health_after": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "target": (
+                        kind: symbol,
+                        value: "adversary",
+                    ),
+                },
+            )),
+        ),
+        (
+            sequence: 3,
+            kind: "combat_updated",
+            capability: checks_and_conflicts,
+            visibility: public,
+            payload_sha256: "90069cd4d65a46f43cc48d4085e51d5957ef87b4a3351caa050e70d953d83108",
+            payload: Some((
+                kind: object,
+                value: {
+                    "adversary_health": (
+                        kind: number,
+                        value: 1.0,
+                    ),
+                    "combat_id": (
+                        kind: string,
+                        value: "reed_watch",
+                    ),
+                    "distance": (
+                        kind: number,
+                        value: 15.0,
+                    ),
+                    "health": (
+                        kind: number,
+                        value: 10.0,
+                    ),
+                    "round": (
+                        kind: number,
+                        value: 2.0,
+                    ),
+                },
+            )),
+        ),
+    ],
+)

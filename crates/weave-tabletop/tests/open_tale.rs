@@ -3,12 +3,16 @@
 //! Fixtures use original synthetic names and prose. The upstream rules reference contributes no
 //! copied text, artwork, or character names.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs;
+use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
 use weave_domain::DomainValue;
 use weave_tabletop::{
-    AdapterSourceClass, EntropyState, EntropyStream, EventVisibility, OPEN_TALE_ADAPTER_ID,
-    OPEN_TALE_EDITION, OPEN_TALE_LICENSE_TEXT, OPEN_TALE_LICENSE_TEXT_SHA256,
+    AdapterManifest, AdapterSourceClass, EntropyState, EntropyStream, EventVisibility,
+    OPEN_TALE_ADAPTER_ID, OPEN_TALE_ADAPTER_VERSION, OPEN_TALE_EDITION, OPEN_TALE_LICENSE_TEXT,
+    OPEN_TALE_LICENSE_TEXT_ARTIFACT, OPEN_TALE_LICENSE_TEXT_SHA256, OPEN_TALE_LICENSE_URL,
     OPEN_TALE_SOURCE_RECORD, OPEN_TALE_SOURCE_SHA256, OpenTaleAttributes, OpenTaleCreationPreview,
     OpenTaleCreationRequest, OpenTaleItemKind, OpenTaleOutcomeBand, OpenTaleQuality,
     OpenTaleResolver, OpenTaleRollInput, OpenTaleRollMode, OpenTaleSkillKind,
@@ -989,4 +993,625 @@ fn catalog_kinds_and_bounds_are_stable() {
         },
     ];
     assert!(create_open_tale_character(&request).is_err());
+}
+
+const FIXTURE_OPERATIONS: [&str; 8] = [
+    "resolve_challenge",
+    "start_combat",
+    "move_combat",
+    "resolve_combat_turn",
+    "apply_recovery",
+    "advance_character",
+    "purchase_item",
+    "inspect_character",
+];
+
+fn fixture_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/tabletop-adapters/open-tale")
+}
+
+fn fixture_creation_request() -> OpenTaleCreationRequest {
+    let mut request = creation_request();
+    request.character_id = "org.weave.fixture.alma".to_owned();
+    request.name = "Alma Reed".to_owned();
+    request
+}
+
+fn fixture_challenge_input(
+    id: &str,
+    label: &str,
+    difficulty: u32,
+    distance: u32,
+    mode: OpenTaleRollMode,
+    heroic_badge: bool,
+    skill_id: &str,
+) -> DomainValue {
+    object([
+        ("attribute", symbol("strength")),
+        ("challenge_id", text(id)),
+        ("difficulty", number(difficulty)),
+        ("distance", number(distance)),
+        ("heroic_badge", DomainValue::Bool(heroic_badge)),
+        ("label", text(label)),
+        ("mode", symbol(roll_mode_name(mode))),
+        ("modifier", signed(0)),
+        ("skill_id", text(skill_id)),
+    ])
+}
+
+fn fixture_start_combat_input() -> DomainValue {
+    object([
+        ("adversary_agility", number(1)),
+        ("adversary_damage", number(2)),
+        ("adversary_defense", number(7)),
+        ("adversary_health", number(6)),
+        ("adversary_name", text("Bramble Hound")),
+        ("combat_id", text("reed_watch")),
+        ("distance", number(20)),
+        ("label", text("Hold the reed watch")),
+    ])
+}
+
+fn fixture_move_input() -> DomainValue {
+    object([("combat_id", text("reed_watch")), ("movement", number(5))])
+}
+
+fn fixture_combat_turn_input() -> DomainValue {
+    object([
+        ("combat_id", text("reed_watch")),
+        ("heroic_badge", DomainValue::Bool(false)),
+        ("mode", symbol("normal")),
+        ("weapon_id", text("short_blade")),
+    ])
+}
+
+fn fixture_recovery_input() -> DomainValue {
+    object([("mode", symbol("rest"))])
+}
+
+fn fixture_advancement_input() -> DomainValue {
+    object([
+        ("experience_gain", number(12)),
+        ("milestone", text("Held the reed watch")),
+    ])
+}
+
+fn fixture_purchase_input() -> DomainValue {
+    object([("item_id", text("rope")), ("quantity", number(1))])
+}
+
+fn fixture_inspect_input() -> DomainValue {
+    object([])
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct FixtureStep {
+    id: String,
+    operation: String,
+    request_json: String,
+    request_ron: String,
+    receipt_json: String,
+    receipt_ron: String,
+    event_kinds: Vec<String>,
+}
+
+fn write_text(path: &Path, contents: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, contents)?;
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_fixture_step(
+    root: &Path,
+    index: &mut Vec<FixtureStep>,
+    counter: &mut usize,
+    registry: &ResolverRegistry,
+    preview: &OpenTaleCreationPreview,
+    state: &mut TabletopState,
+    id: &str,
+    operation: &str,
+    capability: TabletopCapability,
+    input: DomainValue,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut request = request(preview, state, operation, capability, input);
+    request.request_id = format!("req_{id}");
+    let receipt = registry.execute(&manifest(), &request, state)?;
+    registry.replay(&manifest(), &request, state, &receipt)?;
+    let stem = format!("{counter:02}_{id}");
+    let request_json = format!("playthrough/{stem}.tabletop-request.json");
+    let request_ron = format!("playthrough/{stem}.tabletop-request.ron");
+    let receipt_json = format!("playthrough/{stem}.tabletop-receipt.json");
+    let receipt_ron = format!("playthrough/{stem}.tabletop-receipt.ron");
+    write_text(&root.join(&request_json), &request.to_json()?)?;
+    write_text(&root.join(&request_ron), &request.to_ron()?)?;
+    write_text(&root.join(&receipt_json), &receipt.to_json()?)?;
+    write_text(&root.join(&receipt_ron), &receipt.to_ron()?)?;
+    index.push(FixtureStep {
+        id: id.to_owned(),
+        operation: operation.to_owned(),
+        request_json,
+        request_ron,
+        receipt_json,
+        receipt_ron,
+        event_kinds: receipt
+            .events
+            .iter()
+            .map(|event| event.kind.clone())
+            .collect(),
+    });
+    *state = receipt.after_state.clone();
+    *counter += 1;
+    Ok(())
+}
+
+/// Regenerate the checked-in fixtures. Run explicitly:
+/// `cargo test -p weave-tabletop --test open_tale -- --ignored --exact generate_open_tale_fixtures`
+#[test]
+#[ignore = "regenerates the checked-in Open Tale fixtures"]
+fn generate_open_tale_fixtures() -> Result<(), Box<dyn std::error::Error>> {
+    let root = fixture_root();
+    fs::create_dir_all(root.join("playthrough"))?;
+
+    let manifest = manifest();
+    validate_adapter_manifest(&manifest)?;
+    write_text(
+        &root.join("open-tale.tabletop-adapter.json"),
+        &manifest.to_json()?,
+    )?;
+    write_text(
+        &root.join("open-tale.tabletop-adapter.ron"),
+        &manifest.to_ron()?,
+    )?;
+
+    let creation = fixture_creation_request();
+    let preview = create_open_tale_character(&creation)?;
+    validate_open_tale_creation_preview(&preview)?;
+    write_text(
+        &root.join("creation.tabletop-creation.json"),
+        &creation.to_json()?,
+    )?;
+    write_text(
+        &root.join("creation.tabletop-creation.ron"),
+        &creation.to_ron()?,
+    )?;
+    write_text(
+        &root.join("preview.tabletop-creation-preview.json"),
+        &preview.to_json()?,
+    )?;
+    write_text(
+        &root.join("preview.tabletop-creation-preview.ron"),
+        &preview.to_ron()?,
+    )?;
+    write_text(
+        &root.join("initial-state.tabletop-state.json"),
+        &preview.initial_state.to_json()?,
+    )?;
+    write_text(
+        &root.join("initial-state.tabletop-state.ron"),
+        &preview.initial_state.to_ron()?,
+    )?;
+
+    let registry = registry();
+    let mut state = preview.initial_state.clone();
+    let mut index = Vec::new();
+    let mut counter = 1;
+
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "cross_the_ford",
+        "resolve_challenge",
+        TabletopCapability::ChecksAndConflicts,
+        fixture_challenge_input(
+            "cross_the_ford",
+            "Cross the ford",
+            9,
+            20,
+            OpenTaleRollMode::Advantage,
+            false,
+            "athletics",
+        ),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "failed_omen",
+        "resolve_challenge",
+        TabletopCapability::ChecksAndConflicts,
+        fixture_challenge_input(
+            "failed_omen",
+            "Read the flood omen",
+            30,
+            1_000,
+            OpenTaleRollMode::Normal,
+            false,
+            "",
+        ),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "start_combat",
+        "start_combat",
+        TabletopCapability::Encounters,
+        fixture_start_combat_input(),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "move_combat",
+        "move_combat",
+        TabletopCapability::Encounters,
+        fixture_move_input(),
+    )?;
+    let mut turn = 1;
+    loop {
+        let id = format!("resolve_combat_turn_{turn}");
+        run_fixture_step(
+            &root,
+            &mut index,
+            &mut counter,
+            &registry,
+            &preview,
+            &mut state,
+            &id,
+            "resolve_combat_turn",
+            TabletopCapability::ChecksAndConflicts,
+            fixture_combat_turn_input(),
+        )?;
+        let combats = field_map(&state.value, "combats");
+        let combat = combats.get("reed_watch").ok_or("combat is absent")?;
+        if field_symbol(combat, "status") == "concluded" {
+            break;
+        }
+        turn += 1;
+        if turn > 20 {
+            return Err("combat did not conclude within twenty turns".into());
+        }
+    }
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "apply_recovery",
+        "apply_recovery",
+        TabletopCapability::ResourcesAndConditions,
+        fixture_recovery_input(),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "advance_character",
+        "advance_character",
+        TabletopCapability::Advancement,
+        fixture_advancement_input(),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "purchase_item",
+        "purchase_item",
+        TabletopCapability::EquipmentAndAbilities,
+        fixture_purchase_input(),
+    )?;
+    run_fixture_step(
+        &root,
+        &mut index,
+        &mut counter,
+        &registry,
+        &preview,
+        &mut state,
+        "inspect_character",
+        "inspect_character",
+        TabletopCapability::DerivedValues,
+        fixture_inspect_input(),
+    )?;
+
+    write_text(
+        &root.join("final-state.tabletop-state.json"),
+        &state.to_json()?,
+    )?;
+    write_text(
+        &root.join("final-state.tabletop-state.ron"),
+        &state.to_ron()?,
+    )?;
+    write_text(
+        &root.join("playthrough/index.json"),
+        &format!("{}\n", serde_json::to_string_pretty(&index)?),
+    )?;
+
+    let source_lock = serde_json::json!({
+        "adapter_id": OPEN_TALE_ADAPTER_ID,
+        "adapter_version": OPEN_TALE_ADAPTER_VERSION,
+        "source_url": "https://open-tale.github.io/",
+        "edition": OPEN_TALE_EDITION,
+        "source_record": OPEN_TALE_SOURCE_RECORD,
+        "source_record_sha256": OPEN_TALE_SOURCE_SHA256,
+        "license": "Apache-2.0",
+        "license_url": OPEN_TALE_LICENSE_URL,
+        "license_text_artifact": "LICENSE-APACHE-2.0.txt",
+        "license_text_sha256": OPEN_TALE_LICENSE_TEXT_SHA256,
+        "redistributed": {
+            "license_text": true,
+            "upstream_prose": false,
+            "artwork": false,
+            "fonts": false,
+            "layout": false
+        }
+    });
+    write_text(
+        &root.join("SOURCE.lock.json"),
+        &format!("{}\n", serde_json::to_string_pretty(&source_lock)?),
+    )?;
+    write_text(&root.join("LICENSE-APACHE-2.0.txt"), OPEN_TALE_LICENSE_TEXT)?;
+    Ok(())
+}
+
+#[test]
+fn checked_in_fixtures_are_equivalent_and_replay() -> Result<(), Box<dyn std::error::Error>> {
+    let root = fixture_root();
+    let manifest = manifest();
+    let manifest_json = AdapterManifest::from_json(&fs::read_to_string(
+        root.join("open-tale.tabletop-adapter.json"),
+    )?)?;
+    let manifest_ron = AdapterManifest::from_ron(&fs::read_to_string(
+        root.join("open-tale.tabletop-adapter.ron"),
+    )?)?;
+    assert_eq!(manifest_json, manifest);
+    assert_eq!(manifest_ron, manifest);
+
+    let creation_json = OpenTaleCreationRequest::from_json(&fs::read_to_string(
+        root.join("creation.tabletop-creation.json"),
+    )?)?;
+    let creation_ron = OpenTaleCreationRequest::from_ron(&fs::read_to_string(
+        root.join("creation.tabletop-creation.ron"),
+    )?)?;
+    assert_eq!(creation_json, creation_ron);
+    assert_eq!(creation_json, fixture_creation_request());
+
+    let preview_json = OpenTaleCreationPreview::from_json(&fs::read_to_string(
+        root.join("preview.tabletop-creation-preview.json"),
+    )?)?;
+    let preview_ron = OpenTaleCreationPreview::from_ron(&fs::read_to_string(
+        root.join("preview.tabletop-creation-preview.ron"),
+    )?)?;
+    assert_eq!(preview_json, preview_ron);
+    assert_eq!(preview_json, create_open_tale_character(&creation_json)?);
+    validate_open_tale_creation_preview(&preview_json)?;
+
+    let initial_json = TabletopState::from_json(&fs::read_to_string(
+        root.join("initial-state.tabletop-state.json"),
+    )?)?;
+    let initial_ron = TabletopState::from_ron(&fs::read_to_string(
+        root.join("initial-state.tabletop-state.ron"),
+    )?)?;
+    assert_eq!(initial_json, initial_ron);
+    assert_eq!(initial_json, preview_json.initial_state);
+
+    let source_lock: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(root.join("SOURCE.lock.json"))?)?;
+    assert_eq!(
+        source_lock["source_record_sha256"].as_str(),
+        Some(OPEN_TALE_SOURCE_SHA256)
+    );
+    assert_eq!(
+        source_lock["license_text_sha256"].as_str(),
+        Some(OPEN_TALE_LICENSE_TEXT_SHA256)
+    );
+    assert_eq!(source_lock["license"].as_str(), Some("Apache-2.0"));
+    let license_text = fs::read_to_string(root.join("LICENSE-APACHE-2.0.txt"))?;
+    assert_eq!(license_text, OPEN_TALE_LICENSE_TEXT);
+    assert_eq!(
+        sha256_bytes(license_text.as_bytes()),
+        OPEN_TALE_LICENSE_TEXT_SHA256
+    );
+
+    let index: Vec<FixtureStep> =
+        serde_json::from_str(&fs::read_to_string(root.join("playthrough/index.json"))?)?;
+    assert!(!index.is_empty());
+    let registry = registry();
+    let mut state = initial_json;
+    let mut operations = BTreeSet::new();
+    let mut event_kinds = BTreeSet::new();
+    for step in &index {
+        let request_json =
+            ResolutionRequest::from_json(&fs::read_to_string(root.join(&step.request_json))?)?;
+        let request_ron =
+            ResolutionRequest::from_ron(&fs::read_to_string(root.join(&step.request_ron))?)?;
+        assert_eq!(request_json, request_ron);
+        assert_eq!(request_json.operation, step.operation);
+        let receipt_json =
+            ResolutionReceipt::from_json(&fs::read_to_string(root.join(&step.receipt_json))?)?;
+        let receipt_ron =
+            ResolutionReceipt::from_ron(&fs::read_to_string(root.join(&step.receipt_ron))?)?;
+        assert_eq!(receipt_json, receipt_ron);
+        let replayed = registry.execute(&manifest, &request_json, &state)?;
+        assert_eq!(receipt_json, replayed);
+        registry.replay(&manifest, &request_json, &state, &receipt_json)?;
+        let kinds = receipt_json
+            .events
+            .iter()
+            .map(|event| event.kind.clone())
+            .collect::<Vec<_>>();
+        assert_eq!(step.event_kinds, kinds);
+        operations.insert(request_json.operation.clone());
+        for kind in &kinds {
+            event_kinds.insert(kind.clone());
+        }
+        state = receipt_json.after_state.clone();
+    }
+
+    let final_json = TabletopState::from_json(&fs::read_to_string(
+        root.join("final-state.tabletop-state.json"),
+    )?)?;
+    let final_ron = TabletopState::from_ron(&fs::read_to_string(
+        root.join("final-state.tabletop-state.ron"),
+    )?)?;
+    assert_eq!(final_json, final_ron);
+    assert_eq!(final_json, state);
+
+    for operation in FIXTURE_OPERATIONS {
+        assert!(
+            operations.contains(operation),
+            "missing operation {operation}"
+        );
+    }
+    for kind in [
+        "advancement_applied",
+        "challenge_resolved",
+        "challenge_updated",
+        "character_inspected",
+        "combat_concluded",
+        "combat_moved",
+        "combat_started",
+        "combat_updated",
+        "damage_applied",
+        "initiative_recorded",
+        "item_acquired",
+        "mark_applied",
+        "recovery_applied",
+        "roll_recorded",
+        "wealth_spent",
+    ] {
+        assert!(event_kinds.contains(kind), "missing event {kind}");
+    }
+    Ok(())
+}
+
+fn definition_fields_mut(
+    preview: &mut OpenTaleCreationPreview,
+) -> &mut BTreeMap<String, DomainValue> {
+    match &mut preview.definition.definition {
+        DomainValue::Object(fields) => fields,
+        _ => panic!("definition is an object"),
+    }
+}
+
+fn reseal_preview(mut preview: OpenTaleCreationPreview) -> OpenTaleCreationPreview {
+    let sha256 =
+        canonical_fingerprint(&preview.definition.definition).expect("definition fingerprint");
+    preview.definition.definition_sha256 = sha256.clone();
+    preview.initial_state.definition_sha256 = sha256;
+    preview
+}
+
+#[test]
+fn manifest_license_artifact_matches_retained_file() {
+    let manifest = manifest();
+    assert_eq!(
+        manifest.provenance.required_license_text.artifact,
+        OPEN_TALE_LICENSE_TEXT_ARTIFACT
+    );
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(&manifest.provenance.required_license_text.artifact);
+    let bytes = fs::read(&path).expect("retained license file");
+    assert_eq!(
+        sha256_bytes(&bytes),
+        manifest.provenance.required_license_text.sha256
+    );
+}
+
+#[test]
+fn preview_rejects_out_of_budget_attributes() {
+    let mut preview = preview();
+    {
+        let fields = definition_fields_mut(&mut preview);
+        let attributes = match fields.get_mut("attributes") {
+            Some(DomainValue::Object(attributes)) => attributes,
+            _ => panic!("attributes are an object"),
+        };
+        attributes.insert("strength".to_owned(), number(4));
+    }
+    let preview = reseal_preview(preview);
+    let error =
+        validate_open_tale_creation_preview(&preview).expect_err("overspend must be refused");
+    match error {
+        TabletopError::InvalidField { path, .. } => assert_eq!(path, "attributes"),
+        other => panic!("unexpected error: {other:?}"),
+    }
+}
+
+#[test]
+fn preview_rejects_out_of_rank_skill() {
+    let mut preview = preview();
+    {
+        let fields = definition_fields_mut(&mut preview);
+        let skills = match fields.get_mut("skills") {
+            Some(DomainValue::Object(skills)) => skills,
+            _ => panic!("skills are an object"),
+        };
+        let athletics = match skills.get_mut("athletics") {
+            Some(DomainValue::Object(athletics)) => athletics,
+            _ => panic!("athletics is an object"),
+        };
+        athletics.insert("rank".to_owned(), number(4));
+    }
+    let preview = reseal_preview(preview);
+    let error = validate_open_tale_creation_preview(&preview)
+        .expect_err("out-of-rank skill must be refused");
+    match error {
+        TabletopError::InvalidField { path, .. } => assert_eq!(path, "skills.athletics.rank"),
+        other => panic!("unexpected error: {other:?}"),
+    }
+}
+
+#[test]
+fn recovery_rejects_forged_qualities() {
+    let mut preview = preview();
+    {
+        let fields = definition_fields_mut(&mut preview);
+        let qualities = match fields.get_mut("qualities") {
+            Some(DomainValue::Object(qualities)) => qualities,
+            _ => panic!("qualities are an object"),
+        };
+        qualities.insert("toughness".to_owned(), number(999));
+    }
+    let preview = reseal_preview(preview);
+    let registry = registry();
+    let state = preview.initial_state.clone();
+    let request = request(
+        &preview,
+        &state,
+        "apply_recovery",
+        TabletopCapability::ResourcesAndConditions,
+        object([("mode", symbol("rest"))]),
+    );
+    let error = registry
+        .execute(&manifest(), &request, &state)
+        .expect_err("forged qualities must be refused");
+    match error {
+        TabletopError::InvalidField { path, .. } => assert_eq!(path, "definition.qualities"),
+        other => panic!("unexpected error: {other:?}"),
+    }
 }

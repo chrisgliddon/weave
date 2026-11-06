@@ -1,0 +1,35 @@
+(
+    attributes: (
+        dexterity: 3,
+        intelligence: 1,
+        magicy: 1,
+        motion: 3,
+        perception: 2,
+        persuasion: 1,
+        strength: 3,
+        vitality: 3,
+        volition: 1,
+    ),
+    character_id: "org.weave.fixture.alma",
+    creation_format_version: 1,
+    experience: 0,
+    heroic_badges: 1,
+    items: [
+        "short_blade",
+        "travel_cloak",
+    ],
+    level: 1,
+    name: "Alma Reed",
+    seed: 42,
+    skills: [
+        (
+            id: "athletics",
+            rank: 2,
+        ),
+        (
+            id: "composure",
+            rank: 2,
+        ),
+    ],
+    starting_wealth: 6,
+)

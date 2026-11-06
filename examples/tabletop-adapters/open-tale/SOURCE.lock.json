@@ -1,0 +1,19 @@
+{
+  "adapter_id": "org.weave.tabletop.open_tale",
+  "adapter_version": "1.0.0",
+  "edition": "public rules reference retrieved 2026-11-06",
+  "license": "Apache-2.0",
+  "license_text_artifact": "LICENSE-APACHE-2.0.txt",
+  "license_text_sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "redistributed": {
+    "artwork": false,
+    "fonts": false,
+    "layout": false,
+    "license_text": true,
+    "upstream_prose": false
+  },
+  "source_record": "Open Tale public rules reference\nsource: https://open-tale.github.io/\nlicense: Apache-2.0\nedition: public rules reference retrieved 2026-11-06\nimplementation: independent Weave adapter; no upstream text, artwork, fonts, or layout is redistributed\n",
+  "source_record_sha256": "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270",
+  "source_url": "https://open-tale.github.io/"
+}

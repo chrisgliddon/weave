@@ -23,14 +23,18 @@ use crate::{
     FreehackDisclosure, FreehackFeatureOption, FreehackFeatureSelection, FreehackInventoryOption,
     FreehackInventorySelection, FreehackMemorySeed, FreehackModifierGeneration,
     FreehackModifierSpec, FreehackRarity, FreehackResolver, FreehackTrackOutcome,
-    FreehackTrackTemplate, PLUG_AND_PLAY_CREATION_FORMAT_VERSION, PlugAndPlayAttributes,
-    PlugAndPlayCreationRequest, PlugAndPlayMentalAttribute, PlugAndPlayModifier,
-    PlugAndPlayPhysicalAttribute, PlugAndPlayResolver, PlugAndPlayRollAssignment,
-    PlugAndPlayStatSource, TabletopCapability, TabletopError, TabletopResolver,
-    WICKED_ONES_CREATION_FORMAT_VERSION, WickedOnesActionRatings, WickedOnesCalling,
-    WickedOnesCreationRequest, WickedOnesGearItem, WickedOnesResolver, WickedOnesVileFriend,
-    create_dungeonpunk_character, create_freehack_character, create_plug_and_play_character,
-    create_wicked_ones_character, dungeonpunk_manifest, freehack_manifest, plug_and_play_manifest,
+    FreehackTrackTemplate, OPEN_TALE_CREATION_FORMAT_VERSION, OPEN_TALE_LICENSE_TEXT,
+    OPEN_TALE_LICENSE_TEXT_ARTIFACT, OPEN_TALE_LICENSE_TEXT_SHA256, OPEN_TALE_NOTICES,
+    OPEN_TALE_SOURCE_RECORD, OPEN_TALE_SOURCE_SHA256, OpenTaleAttributes, OpenTaleCreationRequest,
+    OpenTaleResolver, OpenTaleSkillSelection, PLUG_AND_PLAY_CREATION_FORMAT_VERSION,
+    PlugAndPlayAttributes, PlugAndPlayCreationRequest, PlugAndPlayMentalAttribute,
+    PlugAndPlayModifier, PlugAndPlayPhysicalAttribute, PlugAndPlayResolver,
+    PlugAndPlayRollAssignment, PlugAndPlayStatSource, TabletopCapability, TabletopError,
+    TabletopResolver, WICKED_ONES_CREATION_FORMAT_VERSION, WickedOnesActionRatings,
+    WickedOnesCalling, WickedOnesCreationRequest, WickedOnesGearItem, WickedOnesResolver,
+    WickedOnesVileFriend, create_dungeonpunk_character, create_freehack_character,
+    create_open_tale_character, create_plug_and_play_character, create_wicked_ones_character,
+    dungeonpunk_manifest, freehack_manifest, open_tale_manifest, plug_and_play_manifest,
     wicked_ones_manifest,
 };
 use crate::{
@@ -317,7 +321,6 @@ impl ConformanceAdapter for WickedOnesConformance {
 /// Spark registration.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SparkConformance;
-
 impl ConformanceAdapter for SparkConformance {
     fn adapter_id(&self) -> &str {
         SPARK_ADAPTER_ID
@@ -478,6 +481,82 @@ impl ConformanceAdapter for SparkConformance {
     }
 }
 
+/// Open Tale registration.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct OpenTaleConformance;
+
+impl ConformanceAdapter for OpenTaleConformance {
+    fn adapter_id(&self) -> &str {
+        crate::OPEN_TALE_ADAPTER_ID
+    }
+
+    fn manifest(&self) -> crate::AdapterManifest {
+        open_tale_manifest()
+    }
+
+    fn resolver(&self) -> Box<dyn TabletopResolver> {
+        Box::new(OpenTaleResolver)
+    }
+
+    fn create(&self, seed: u64) -> Result<ConformanceCreation, TabletopError> {
+        let preview = create_open_tale_character(&open_tale_creation_request(seed))?;
+        let canonical = preview.to_json()?;
+        Ok(ConformanceCreation {
+            adapter: preview.adapter,
+            definition: preview.definition,
+            initial_state: preview.initial_state,
+            canonical,
+        })
+    }
+
+    fn scenario(
+        &self,
+        _creation: &ConformanceCreation,
+    ) -> Result<Vec<ConformanceOperation>, TabletopError> {
+        Ok(vec![ConformanceOperation {
+            request_id: "conformance_challenge".to_owned(),
+            operation: "resolve_challenge".to_owned(),
+            capability: TabletopCapability::ChecksAndConflicts,
+            input: object([
+                ("attribute", DomainValue::Symbol("strength".to_owned())),
+                (
+                    "challenge_id",
+                    DomainValue::String("conformance_ford".to_owned()),
+                ),
+                ("difficulty", DomainValue::Number(9.0)),
+                ("distance", DomainValue::Number(0.0)),
+                ("heroic_badge", DomainValue::Bool(false)),
+                (
+                    "label",
+                    DomainValue::String("Cross the conformance ford".to_owned()),
+                ),
+                ("mode", DomainValue::Symbol("advantage".to_owned())),
+                ("modifier", DomainValue::Number(0.0)),
+                ("skill_id", DomainValue::String("athletics".to_owned())),
+            ]),
+        }])
+    }
+
+    fn source_bundle(&self) -> ConformanceSourceBundle {
+        ConformanceSourceBundle::new(
+            ConformanceArtifact::checked_bytes(
+                "open-tale-public-rules-reference",
+                OPEN_TALE_SOURCE_SHA256,
+                OPEN_TALE_SOURCE_RECORD.as_bytes(),
+            )
+            .bundled(),
+            Vec::new(),
+            ConformanceArtifact::checked_bytes(
+                OPEN_TALE_LICENSE_TEXT_ARTIFACT,
+                OPEN_TALE_LICENSE_TEXT_SHA256,
+                OPEN_TALE_LICENSE_TEXT.as_bytes(),
+            )
+            .bundled(),
+            reviewed_notices(OPEN_TALE_NOTICES),
+        )
+    }
+}
+
 /// Suite covering every adapter shipped in this build.
 #[must_use]
 pub fn standard_suite() -> ConformanceSuite {
@@ -488,6 +567,7 @@ pub fn standard_suite() -> ConformanceSuite {
             Box::new(FreehackConformance),
             Box::new(WickedOnesConformance),
             Box::new(SparkConformance),
+            Box::new(OpenTaleConformance),
         ],
         standard_source_policy(),
     )
@@ -872,6 +952,41 @@ fn freehack_campaign() -> FreehackCampaignSchema {
 }
 
 const SPARK_CONFORMANCE_CHARACTER_ID: &str = "org.weave.character.conformance_lumen";
+
+fn open_tale_creation_request(seed: u64) -> OpenTaleCreationRequest {
+    OpenTaleCreationRequest {
+        creation_format_version: OPEN_TALE_CREATION_FORMAT_VERSION,
+        character_id: "org.weave.character.conformance_alma".to_owned(),
+        name: "Conformance Alma".to_owned(),
+        seed,
+        attributes: OpenTaleAttributes {
+            dexterity: 3,
+            intelligence: 1,
+            magicy: 1,
+            motion: 3,
+            perception: 2,
+            persuasion: 1,
+            strength: 3,
+            vitality: 3,
+            volition: 1,
+        },
+        skills: vec![
+            OpenTaleSkillSelection {
+                id: "athletics".to_owned(),
+                rank: 2,
+            },
+            OpenTaleSkillSelection {
+                id: "composure".to_owned(),
+                rank: 2,
+            },
+        ],
+        items: vec!["short_blade".to_owned(), "travel_cloak".to_owned()],
+        starting_wealth: 6,
+        heroic_badges: 1,
+        level: 1,
+        experience: 0,
+    }
+}
 
 fn spark_creation_request(seed: u64) -> SparkCreationRequest {
     SparkCreationRequest {

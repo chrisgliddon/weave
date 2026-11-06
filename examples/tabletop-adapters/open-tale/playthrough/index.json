@@ -1,0 +1,140 @@
+[
+  {
+    "id": "cross_the_ford",
+    "operation": "resolve_challenge",
+    "request_json": "playthrough/01_cross_the_ford.tabletop-request.json",
+    "request_ron": "playthrough/01_cross_the_ford.tabletop-request.ron",
+    "receipt_json": "playthrough/01_cross_the_ford.tabletop-receipt.json",
+    "receipt_ron": "playthrough/01_cross_the_ford.tabletop-receipt.ron",
+    "event_kinds": [
+      "roll_recorded",
+      "challenge_updated",
+      "challenge_resolved"
+    ]
+  },
+  {
+    "id": "failed_omen",
+    "operation": "resolve_challenge",
+    "request_json": "playthrough/02_failed_omen.tabletop-request.json",
+    "request_ron": "playthrough/02_failed_omen.tabletop-request.ron",
+    "receipt_json": "playthrough/02_failed_omen.tabletop-receipt.json",
+    "receipt_ron": "playthrough/02_failed_omen.tabletop-receipt.ron",
+    "event_kinds": [
+      "roll_recorded",
+      "challenge_updated",
+      "challenge_resolved",
+      "mark_applied"
+    ]
+  },
+  {
+    "id": "start_combat",
+    "operation": "start_combat",
+    "request_json": "playthrough/03_start_combat.tabletop-request.json",
+    "request_ron": "playthrough/03_start_combat.tabletop-request.ron",
+    "receipt_json": "playthrough/03_start_combat.tabletop-receipt.json",
+    "receipt_ron": "playthrough/03_start_combat.tabletop-receipt.ron",
+    "event_kinds": [
+      "combat_started",
+      "initiative_recorded"
+    ]
+  },
+  {
+    "id": "move_combat",
+    "operation": "move_combat",
+    "request_json": "playthrough/04_move_combat.tabletop-request.json",
+    "request_ron": "playthrough/04_move_combat.tabletop-request.ron",
+    "receipt_json": "playthrough/04_move_combat.tabletop-receipt.json",
+    "receipt_ron": "playthrough/04_move_combat.tabletop-receipt.ron",
+    "event_kinds": [
+      "combat_moved"
+    ]
+  },
+  {
+    "id": "resolve_combat_turn_1",
+    "operation": "resolve_combat_turn",
+    "request_json": "playthrough/05_resolve_combat_turn_1.tabletop-request.json",
+    "request_ron": "playthrough/05_resolve_combat_turn_1.tabletop-request.ron",
+    "receipt_json": "playthrough/05_resolve_combat_turn_1.tabletop-receipt.json",
+    "receipt_ron": "playthrough/05_resolve_combat_turn_1.tabletop-receipt.ron",
+    "event_kinds": [
+      "roll_recorded",
+      "roll_recorded",
+      "damage_applied",
+      "combat_updated"
+    ]
+  },
+  {
+    "id": "resolve_combat_turn_2",
+    "operation": "resolve_combat_turn",
+    "request_json": "playthrough/06_resolve_combat_turn_2.tabletop-request.json",
+    "request_ron": "playthrough/06_resolve_combat_turn_2.tabletop-request.ron",
+    "receipt_json": "playthrough/06_resolve_combat_turn_2.tabletop-receipt.json",
+    "receipt_ron": "playthrough/06_resolve_combat_turn_2.tabletop-receipt.ron",
+    "event_kinds": [
+      "roll_recorded",
+      "roll_recorded",
+      "damage_applied",
+      "combat_updated"
+    ]
+  },
+  {
+    "id": "resolve_combat_turn_3",
+    "operation": "resolve_combat_turn",
+    "request_json": "playthrough/07_resolve_combat_turn_3.tabletop-request.json",
+    "request_ron": "playthrough/07_resolve_combat_turn_3.tabletop-request.ron",
+    "receipt_json": "playthrough/07_resolve_combat_turn_3.tabletop-receipt.json",
+    "receipt_ron": "playthrough/07_resolve_combat_turn_3.tabletop-receipt.ron",
+    "event_kinds": [
+      "roll_recorded",
+      "roll_recorded",
+      "damage_applied",
+      "combat_updated",
+      "combat_concluded"
+    ]
+  },
+  {
+    "id": "apply_recovery",
+    "operation": "apply_recovery",
+    "request_json": "playthrough/08_apply_recovery.tabletop-request.json",
+    "request_ron": "playthrough/08_apply_recovery.tabletop-request.ron",
+    "receipt_json": "playthrough/08_apply_recovery.tabletop-receipt.json",
+    "receipt_ron": "playthrough/08_apply_recovery.tabletop-receipt.ron",
+    "event_kinds": [
+      "recovery_applied"
+    ]
+  },
+  {
+    "id": "advance_character",
+    "operation": "advance_character",
+    "request_json": "playthrough/09_advance_character.tabletop-request.json",
+    "request_ron": "playthrough/09_advance_character.tabletop-request.ron",
+    "receipt_json": "playthrough/09_advance_character.tabletop-receipt.json",
+    "receipt_ron": "playthrough/09_advance_character.tabletop-receipt.ron",
+    "event_kinds": [
+      "advancement_applied"
+    ]
+  },
+  {
+    "id": "purchase_item",
+    "operation": "purchase_item",
+    "request_json": "playthrough/10_purchase_item.tabletop-request.json",
+    "request_ron": "playthrough/10_purchase_item.tabletop-request.ron",
+    "receipt_json": "playthrough/10_purchase_item.tabletop-receipt.json",
+    "receipt_ron": "playthrough/10_purchase_item.tabletop-receipt.ron",
+    "event_kinds": [
+      "item_acquired",
+      "wealth_spent"
+    ]
+  },
+  {
+    "id": "inspect_character",
+    "operation": "inspect_character",
+    "request_json": "playthrough/11_inspect_character.tabletop-request.json",
+    "request_ron": "playthrough/11_inspect_character.tabletop-request.ron",
+    "receipt_json": "playthrough/11_inspect_character.tabletop-receipt.json",
+    "receipt_ron": "playthrough/11_inspect_character.tabletop-receipt.ron",
+    "event_kinds": [
+      "character_inspected"
+    ]
+  }
+]

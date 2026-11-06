@@ -14,8 +14,8 @@ use weave_tabletop::conformance::{
     ConformanceSuite, SourcePolicy, standard_source_policy, standard_suite,
 };
 use weave_tabletop::{
-    AdapterManifest, EntropyStream, PlugAndPlayConformance, PlugAndPlayResolver, ResolverOutput,
-    TabletopError, TabletopResolver, resolved_adapter,
+    AdapterManifest, AdapterSourceClass, EntropyStream, PlugAndPlayConformance,
+    PlugAndPlayResolver, ResolverOutput, TabletopError, TabletopResolver, resolved_adapter,
 };
 
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -35,10 +35,11 @@ fn every_registered_adapter_passes_every_check() {
             "org.weave.tabletop.freehack",
             "org.weave.tabletop.wicked_ones",
             "org.weave.tabletop.spark",
+            "org.weave.tabletop.open_tale",
         ]
     );
     assert!(report.passed(), "{}", report.render());
-    assert_eq!(report.adapters.len(), 5);
+    assert_eq!(report.adapters.len(), 6);
     for adapter in &report.adapters {
         assert!(adapter.failures.is_empty(), "{}", adapter.summary());
         assert_eq!(adapter.executed, ConformanceCheck::ALL.len());
@@ -91,12 +92,32 @@ fn every_registered_adapter_has_a_source_policy_row() {
         spark.source_sha256,
         weave_tabletop::SPARK_SOURCE_RECORD_SHA256
     );
+    let open_tale = policy
+        .entry("org.weave.tabletop.open_tale")
+        .expect("missing Open Tale source policy row");
+    assert_eq!(open_tale.license, "Apache-2.0");
+    assert_eq!(
+        open_tale.source_class,
+        AdapterSourceClass::SeparatelyLicensedApache2
+    );
+    assert_eq!(
+        open_tale.source_sha256,
+        weave_tabletop::OPEN_TALE_SOURCE_SHA256
+    );
+    assert_eq!(
+        open_tale.required_license_text.path,
+        weave_tabletop::OPEN_TALE_LICENSE_TEXT_ARTIFACT
+    );
+    assert_eq!(
+        open_tale.required_license_text.sha256,
+        weave_tabletop::OPEN_TALE_LICENSE_TEXT_SHA256
+    );
 }
 
 #[test]
 fn source_policy_is_complete_and_data_driven() {
     let policy = standard_source_policy();
-    assert_eq!(policy.entries().count(), 5);
+    assert_eq!(policy.entries().count(), 6);
     for adapter_id in standard_suite().adapter_ids() {
         let entry = policy
             .entry(adapter_id)

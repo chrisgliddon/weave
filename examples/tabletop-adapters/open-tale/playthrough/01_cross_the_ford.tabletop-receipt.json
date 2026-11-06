@@ -1,0 +1,268 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.open_tale",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
+  },
+  "operation": "resolve_challenge",
+  "capability": "checks_and_conflicts",
+  "request_sha256": "a4e1fb6fbe8085ef61ef6e2ed81024cd8e311a31a3108e276d0c998ef78aba43",
+  "before_state_sha256": "999021ccbf4630c89f9596967187d5d557141c8c57934a7d80175e974ae62d92",
+  "before_revision": 0,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 42,
+    "cursor": 0
+  },
+  "after_state_sha256": "83684f1b1ffdf5cb54353216327636a55eca9a7524b098c2eca93d207878afcb",
+  "entropy_consumed": 3,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.open_tale",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
+    },
+    "owner_id": "org.weave.fixture.alma",
+    "definition_sha256": "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+    "revision": 1,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 42,
+      "cursor": 3
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "challenges": {
+          "kind": "object",
+          "value": {
+            "cross_the_ford": {
+              "kind": "object",
+              "value": {
+                "attribute": {
+                  "kind": "symbol",
+                  "value": "strength"
+                },
+                "band": {
+                  "kind": "symbol",
+                  "value": "critical"
+                },
+                "difficulty": {
+                  "kind": "number",
+                  "value": 9.0
+                },
+                "distance": {
+                  "kind": "number",
+                  "value": 20.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Cross the ford"
+                },
+                "last_total": {
+                  "kind": "number",
+                  "value": 14.0
+                },
+                "status": {
+                  "kind": "symbol",
+                  "value": "succeeded"
+                },
+                "turns": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        },
+        "combats": {
+          "kind": "object",
+          "value": {}
+        },
+        "experience": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "health": {
+          "kind": "number",
+          "value": 10.0
+        },
+        "heroic_badges": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "object",
+          "value": {
+            "short_blade": {
+              "kind": "object",
+              "value": {
+                "quantity": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            },
+            "travel_cloak": {
+              "kind": "object",
+              "value": {
+                "quantity": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        },
+        "level": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "marks": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "resolve": {
+          "kind": "number",
+          "value": 4.0
+        },
+        "wealth": {
+          "kind": "number",
+          "value": 2.0
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "roll_recorded",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "6a762bd8b46b3559238b510e2af2d26cccd9020e0c0dc94d0140549cdf544dd6",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "actor": {
+            "kind": "string",
+            "value": "character"
+          },
+          "band": {
+            "kind": "symbol",
+            "value": "critical"
+          },
+          "context_id": {
+            "kind": "string",
+            "value": "cross_the_ford"
+          },
+          "dice": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 2.0
+              },
+              {
+                "kind": "number",
+                "value": 5.0
+              },
+              {
+                "kind": "number",
+                "value": 6.0
+              }
+            ]
+          },
+          "dice_total": {
+            "kind": "number",
+            "value": 11.0
+          },
+          "heroic_badge_spent": {
+            "kind": "bool",
+            "value": false
+          },
+          "kept": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "number",
+                "value": 5.0
+              },
+              {
+                "kind": "number",
+                "value": 6.0
+              }
+            ]
+          },
+          "mode": {
+            "kind": "symbol",
+            "value": "advantage"
+          },
+          "total": {
+            "kind": "number",
+            "value": 14.0
+          }
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "kind": "challenge_updated",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "c5d3f3a47522761ae7670af2788913db1ec24ce0786f0617c4befbbc1a522a7e",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "band": {
+            "kind": "symbol",
+            "value": "critical"
+          },
+          "challenge_id": {
+            "kind": "string",
+            "value": "cross_the_ford"
+          },
+          "label": {
+            "kind": "string",
+            "value": "Cross the ford"
+          },
+          "last_total": {
+            "kind": "number",
+            "value": 14.0
+          },
+          "status": {
+            "kind": "symbol",
+            "value": "succeeded"
+          },
+          "turns": {
+            "kind": "number",
+            "value": 1.0
+          }
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "kind": "challenge_resolved",
+      "capability": "checks_and_conflicts",
+      "visibility": "public",
+      "payload_sha256": "bb68aff7f8f5c928bcc96321eb73471d00f1818bf8a29aaa7527d98a829406aa",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "challenge_id": {
+            "kind": "string",
+            "value": "cross_the_ford"
+          },
+          "status": {
+            "kind": "symbol",
+            "value": "succeeded"
+          }
+        }
+      }
+    }
+  ]
+}

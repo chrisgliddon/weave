@@ -1,0 +1,362 @@
+{
+  "resolver_format_version": 1,
+  "adapter": {
+    "id": "org.weave.tabletop.open_tale",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
+  },
+  "operation": "inspect_character",
+  "capability": "derived_values",
+  "request_sha256": "808be9de48f1b64ceaacf222e4b50b8d6846fbd083dfc68f5db587f85c1714c9",
+  "before_state_sha256": "a8061777b5ca01b05787018616d9c8028c3e850770454deaf25485d74b2daaed",
+  "before_revision": 10,
+  "entropy_before": {
+    "algorithm": "sha256_counter_v1",
+    "seed": 42,
+    "cursor": 21
+  },
+  "after_state_sha256": "362f3423ac139cdf8cc45674e8c6aa1aa2396ebabe248018f6d056bee19c7fea",
+  "entropy_consumed": 0,
+  "after_state": {
+    "state_format_version": 1,
+    "adapter": {
+      "id": "org.weave.tabletop.open_tale",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
+    },
+    "owner_id": "org.weave.fixture.alma",
+    "definition_sha256": "55bf891f4c07c535cbd87c65d4937907e269fc806990fe81464b1b6c0c50c4e1",
+    "revision": 11,
+    "entropy": {
+      "algorithm": "sha256_counter_v1",
+      "seed": 42,
+      "cursor": 21
+    },
+    "value": {
+      "kind": "object",
+      "value": {
+        "challenges": {
+          "kind": "object",
+          "value": {
+            "cross_the_ford": {
+              "kind": "object",
+              "value": {
+                "attribute": {
+                  "kind": "symbol",
+                  "value": "strength"
+                },
+                "band": {
+                  "kind": "symbol",
+                  "value": "critical"
+                },
+                "difficulty": {
+                  "kind": "number",
+                  "value": 9.0
+                },
+                "distance": {
+                  "kind": "number",
+                  "value": 20.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Cross the ford"
+                },
+                "last_total": {
+                  "kind": "number",
+                  "value": 14.0
+                },
+                "status": {
+                  "kind": "symbol",
+                  "value": "succeeded"
+                },
+                "turns": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            },
+            "failed_omen": {
+              "kind": "object",
+              "value": {
+                "attribute": {
+                  "kind": "symbol",
+                  "value": "strength"
+                },
+                "band": {
+                  "kind": "symbol",
+                  "value": "failure"
+                },
+                "difficulty": {
+                  "kind": "number",
+                  "value": 30.0
+                },
+                "distance": {
+                  "kind": "number",
+                  "value": 1000.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Read the flood omen"
+                },
+                "last_total": {
+                  "kind": "number",
+                  "value": -88.0
+                },
+                "status": {
+                  "kind": "symbol",
+                  "value": "failed"
+                },
+                "turns": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        },
+        "combats": {
+          "kind": "object",
+          "value": {
+            "reed_watch": {
+              "kind": "object",
+              "value": {
+                "adversary_agility": {
+                  "kind": "number",
+                  "value": 1.0
+                },
+                "adversary_damage": {
+                  "kind": "number",
+                  "value": 2.0
+                },
+                "adversary_defense": {
+                  "kind": "number",
+                  "value": 7.0
+                },
+                "adversary_health": {
+                  "kind": "number",
+                  "value": 0.0
+                },
+                "adversary_max_health": {
+                  "kind": "number",
+                  "value": 6.0
+                },
+                "adversary_name": {
+                  "kind": "string",
+                  "value": "Bramble Hound"
+                },
+                "attacks": {
+                  "kind": "number",
+                  "value": 3.0
+                },
+                "character_first": {
+                  "kind": "bool",
+                  "value": false
+                },
+                "character_initiative": {
+                  "kind": "number",
+                  "value": 6.0
+                },
+                "distance": {
+                  "kind": "number",
+                  "value": 15.0
+                },
+                "label": {
+                  "kind": "string",
+                  "value": "Hold the reed watch"
+                },
+                "round": {
+                  "kind": "number",
+                  "value": 3.0
+                },
+                "status": {
+                  "kind": "symbol",
+                  "value": "concluded"
+                }
+              }
+            }
+          }
+        },
+        "experience": {
+          "kind": "number",
+          "value": 12.0
+        },
+        "health": {
+          "kind": "number",
+          "value": 10.0
+        },
+        "heroic_badges": {
+          "kind": "number",
+          "value": 1.0
+        },
+        "inventory": {
+          "kind": "object",
+          "value": {
+            "rope": {
+              "kind": "object",
+              "value": {
+                "quantity": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            },
+            "short_blade": {
+              "kind": "object",
+              "value": {
+                "quantity": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            },
+            "travel_cloak": {
+              "kind": "object",
+              "value": {
+                "quantity": {
+                  "kind": "number",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        },
+        "level": {
+          "kind": "number",
+          "value": 2.0
+        },
+        "marks": {
+          "kind": "number",
+          "value": 0.0
+        },
+        "resolve": {
+          "kind": "number",
+          "value": 4.0
+        },
+        "wealth": {
+          "kind": "number",
+          "value": 1.0
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "character_inspected",
+      "capability": "derived_values",
+      "visibility": "public",
+      "payload_sha256": "bb25839c528690c5c73257fd8f3fc7821bac8c8d62c313acc21dbcd496c26343",
+      "payload": {
+        "kind": "object",
+        "value": {
+          "attributes": {
+            "kind": "object",
+            "value": {
+              "dexterity": {
+                "kind": "number",
+                "value": 3.0
+              },
+              "intelligence": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "magicy": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "motion": {
+                "kind": "number",
+                "value": 3.0
+              },
+              "perception": {
+                "kind": "number",
+                "value": 2.0
+              },
+              "persuasion": {
+                "kind": "number",
+                "value": 1.0
+              },
+              "strength": {
+                "kind": "number",
+                "value": 3.0
+              },
+              "vitality": {
+                "kind": "number",
+                "value": 3.0
+              },
+              "volition": {
+                "kind": "number",
+                "value": 1.0
+              }
+            }
+          },
+          "experience": {
+            "kind": "number",
+            "value": 12.0
+          },
+          "items": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "string",
+                "value": "short_blade"
+              },
+              {
+                "kind": "string",
+                "value": "travel_cloak"
+              }
+            ]
+          },
+          "level": {
+            "kind": "number",
+            "value": 2.0
+          },
+          "qualities": {
+            "kind": "object",
+            "value": {
+              "capacity": {
+                "kind": "number",
+                "value": 8.0
+              },
+              "defense": {
+                "kind": "number",
+                "value": 8.0
+              },
+              "hit_points": {
+                "kind": "number",
+                "value": 10.0
+              },
+              "resolve": {
+                "kind": "number",
+                "value": 4.0
+              },
+              "toughness": {
+                "kind": "number",
+                "value": 8.0
+              }
+            }
+          },
+          "skills": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "string",
+                "value": "athletics"
+              },
+              {
+                "kind": "string",
+                "value": "composure"
+              }
+            ]
+          },
+          "wealth": {
+            "kind": "number",
+            "value": 1.0
+          }
+        }
+      }
+    }
+  ]
+}
