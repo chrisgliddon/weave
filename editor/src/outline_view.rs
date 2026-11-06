@@ -60,6 +60,25 @@ impl OutlineSurface {
         cx.notify();
     }
 
+    /// Apply one navigation key. Returns false when the key is not an outline command.
+    pub fn handle_key(&mut self, key: &str, cx: &mut Context<Self>) -> bool {
+        match key {
+            "down" | "arrowdown" => {
+                self.move_selection(true, cx);
+                true
+            }
+            "up" | "arrowup" => {
+                self.move_selection(false, cx);
+                true
+            }
+            "enter" => {
+                self.open_selected(cx);
+                true
+            }
+            _ => false,
+        }
+    }
+
     fn open_selected(&mut self, cx: &mut Context<Self>) {
         let Some(row) = self.outline.selected_row() else {
             return;

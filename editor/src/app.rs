@@ -1474,6 +1474,18 @@ impl gpui::Render for EditorShell {
             .on_action(cx.listener(|this, _: &ShowOutline, _, cx| {
                 this.apply(EditorCommand::ShowOutline, cx);
             }))
+            .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, _, cx| {
+                if this.state.layout.center != CenterView::Outline {
+                    return;
+                }
+                let key = event.keystroke.key.clone();
+                let handled = this
+                    .outline
+                    .update(cx, |outline, cx| outline.handle_key(&key, cx));
+                if handled {
+                    cx.stop_propagation();
+                }
+            }))
             .on_action(cx.listener(|this, _: &MoveChapterUp, _, cx| {
                 this.manuscript_move(MoveVerb::Up, cx);
             }))
