@@ -12,18 +12,41 @@ const HISTORY_LIMIT: usize = 500;
 /// Semantic edit requested by the graph surface.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GraphEdit {
-    AddKnot {
-        preferred_name: String,
-    },
+    /// Append a new knot with a generated identifier.
+    AddKnot { preferred_name: String },
+    /// Append a choice to a knot that diverts to `target`.
     AddChoice {
         knot: String,
         label: String,
         target: String,
     },
+    /// Replace the tail of one knot with a divert or thread to another.
     ConnectKnots {
         source: String,
         target: String,
         thread: bool,
+    },
+    /// Replace the knot's first prose line, inserting one when absent.
+    ///
+    /// Empty text removes the first prose line.
+    SetKnotText { knot: String, text: String },
+    /// Rename a knot and every divert, thread, and choice target that names it.
+    RenameKnot { knot: String, name: String },
+    /// Replace the label of the choice at `path`.
+    SetChoiceText {
+        knot: String,
+        path: Vec<usize>,
+        text: String,
+    },
+    /// Remove a knot that nothing references.
+    RemoveKnot { knot: String },
+    /// Remove the choice at `path`.
+    RemoveChoice { knot: String, path: Vec<usize> },
+    /// Point the choice at `path` at another knot.
+    ConnectChoice {
+        knot: String,
+        path: Vec<usize>,
+        target: String,
     },
 }
 
@@ -75,6 +98,20 @@ pub enum SyncConflict {
     MissingKnot(String),
     #[error("cannot connect knot `{0}` to itself")]
     SelfConnection(String),
+    #[error(
+        "`{0}` is not a valid knot name; start with a letter or underscore and use only ASCII letters, digits, and underscores"
+    )]
+    InvalidIdentifier(String),
+    #[error("a knot named `{0}` already exists")]
+    DuplicateKnot(String),
+    #[error("choice {path:?} does not exist in knot `{knot}`")]
+    MissingChoice { knot: String, path: Vec<usize> },
+    #[error(
+        "knot `{knot}` is still referenced by {references} connection(s); remove those connections first"
+    )]
+    KnotInUse { knot: String, references: usize },
+    #[error("a story needs at least one knot")]
+    LastKnot,
 }
 
 #[derive(Debug, Clone)]
@@ -194,7 +231,14 @@ impl CanonicalProjectModel {
     ) -> Result<GraphSync, SyncConflict> {
         self.ensure_revision(expected_revision)?;
         let mut document = self.document.clone().ok_or(SyncConflict::InvalidText)?;
+        let mut layout_before_rename = None;
+        if let GraphEdit::RenameKnot { knot, name } = edit {
+            layout_before_rename = Some((knot.clone(), name.clone()));
+        }
         let (focus_node, summary) = mutate_document(&mut document, edit)?;
+        if let Some((old, new)) = layout_before_rename {
+            self.remap_knot_layout(&old, &new);
+        }
         let source = weave_fmt::format_document(&document);
         let reparsed = parse_document(&source)
             .expect("formatter output from a parsed and locally-mutated document remains valid");
@@ -284,6 +328,26 @@ impl CanonicalProjectModel {
         self.layout = snapshot.layout;
         self.revision = self.revision.saturating_add(1);
         self.reconcile_layout();
+    }
+
+    fn remap_knot_layout(&mut self, old: &str, new: &str) {
+        let old_knot = format!("knot:{old}");
+        let old_choice = format!("choice:{old}:");
+        let new_knot = format!("knot:{new}");
+        let new_choice = format!("choice:{new}:");
+        let previous = std::mem::take(&mut self.layout);
+        self.layout = previous
+            .into_iter()
+            .map(|(id, point)| {
+                if id == old_knot {
+                    (new_knot.clone(), point)
+                } else if let Some(rest) = id.strip_prefix(&old_choice) {
+                    (format!("{new_choice}{rest}"), point)
+                } else {
+                    (id, point)
+                }
+            })
+            .collect();
     }
 
     fn reconcile_layout(&mut self) {
@@ -385,6 +449,234 @@ fn mutate_document(
                     if *thread { "as a thread to" } else { "to" }
                 ),
             ))
+        }
+        GraphEdit::SetKnotText { knot, text } => {
+            let owner = find_knot_mut(document, knot)?;
+            let text = single_line(text);
+            let position = owner
+                .node
+                .body
+                .iter()
+                .position(|statement| matches!(statement.node, Statement::Text(_)));
+            match position {
+                Some(index) if text.is_empty() => {
+                    owner.node.body.remove(index);
+                }
+                Some(index) => {
+                    owner.node.body[index].node = Statement::Text(text);
+                }
+                None if !text.is_empty() => {
+                    owner
+                        .node
+                        .body
+                        .insert(0, Spanned::new(Statement::Text(text), Span::default()));
+                }
+                None => {}
+            }
+            Ok((Some(format!("knot:{knot}")), format!("Edited knot {knot}")))
+        }
+        GraphEdit::RenameKnot { knot, name } => {
+            if !is_valid_identifier(name) {
+                return Err(SyncConflict::InvalidIdentifier(name.clone()));
+            }
+            if name != knot && document.knots().any(|other| other.node.name == *name) {
+                return Err(SyncConflict::DuplicateKnot(name.clone()));
+            }
+            let owner = find_knot_mut(document, knot)?;
+            owner.node.name.clone_from(name);
+            for owner in document
+                .items
+                .iter_mut()
+                .filter_map(|item| match &mut item.node {
+                    Item::Knot(knot) => Some(knot),
+                    _ => None,
+                })
+            {
+                rename_references(&mut owner.node.body, knot, name);
+            }
+            Ok((
+                Some(format!("knot:{name}")),
+                format!("Renamed {knot} to {name}"),
+            ))
+        }
+        GraphEdit::SetChoiceText { knot, path, text } => {
+            let choice = find_choice_mut(document, knot, path)?;
+            choice.text = single_line(text);
+            Ok((
+                Some(choice_focus(knot, path)),
+                format!("Edited a choice in {knot}"),
+            ))
+        }
+        GraphEdit::RemoveKnot { knot } => {
+            if document.knots().count() <= 1 {
+                return Err(SyncConflict::LastKnot);
+            }
+            let references = document
+                .knots()
+                .map(|owner| count_references(&owner.node.body, knot))
+                .sum::<usize>();
+            if references > 0 {
+                return Err(SyncConflict::KnotInUse {
+                    knot: knot.clone(),
+                    references,
+                });
+            }
+            let position = document.items.iter().position(
+                |item| matches!(&item.node, Item::Knot(owner) if owner.node.name == *knot),
+            );
+            let Some(position) = position else {
+                return Err(SyncConflict::MissingKnot(knot.clone()));
+            };
+            document.items.remove(position);
+            Ok((None, format!("Removed knot {knot}")))
+        }
+        GraphEdit::RemoveChoice { knot, path } => {
+            let owner = find_knot_mut(document, knot)?;
+            let (parent, index) =
+                find_choice_slot(&mut owner.node.body, path).ok_or_else(|| {
+                    SyncConflict::MissingChoice {
+                        knot: knot.clone(),
+                        path: path.clone(),
+                    }
+                })?;
+            parent.remove(index);
+            Ok((None, format!("Removed a choice from {knot}")))
+        }
+        GraphEdit::ConnectChoice { knot, path, target } => {
+            if !document.knots().any(|owner| owner.node.name == *target) {
+                return Err(SyncConflict::MissingKnot(target.clone()));
+            }
+            let choice = find_choice_mut(document, knot, path)?;
+            choice.divert = Some(target.clone());
+            Ok((
+                Some(choice_focus(knot, path)),
+                format!("Connected a choice in {knot} to {target}"),
+            ))
+        }
+    }
+}
+
+fn single_line(text: &str) -> String {
+    text.replace(['\n', '\r'], " ").trim().to_owned()
+}
+
+fn choice_focus(knot: &str, path: &[usize]) -> String {
+    format!(
+        "choice:{knot}:{}",
+        path.iter()
+            .map(usize::to_string)
+            .collect::<Vec<_>>()
+            .join(".")
+    )
+}
+
+fn is_valid_identifier(value: &str) -> bool {
+    let mut characters = value.chars();
+    matches!(characters.next(), Some(first) if first.is_ascii_alphabetic() || first == '_')
+        && characters.all(|character| character.is_ascii_alphanumeric() || character == '_')
+}
+
+fn find_choice_mut<'a>(
+    document: &'a mut Document,
+    knot: &str,
+    path: &[usize],
+) -> Result<&'a mut Choice, SyncConflict> {
+    let owner = find_knot_mut(document, knot)?;
+    find_choice_in(&mut owner.node.body, path, knot, path)
+}
+
+fn find_choice_in<'a>(
+    body: &'a mut [Spanned<Statement>],
+    remaining: &[usize],
+    knot: &str,
+    full_path: &[usize],
+) -> Result<&'a mut Choice, SyncConflict> {
+    let missing = || SyncConflict::MissingChoice {
+        knot: knot.to_owned(),
+        path: full_path.to_vec(),
+    };
+    let (first, tail) = remaining.split_first().ok_or_else(&missing)?;
+    let statement = body.get_mut(*first).ok_or_else(&missing)?;
+    match &mut statement.node {
+        Statement::Choice(choice) => {
+            if tail.is_empty() {
+                Ok(choice)
+            } else {
+                find_choice_in(&mut choice.body, tail, knot, full_path)
+            }
+        }
+        _ => Err(missing()),
+    }
+}
+
+fn find_choice_slot<'a>(
+    body: &'a mut Vec<Spanned<Statement>>,
+    path: &[usize],
+) -> Option<(&'a mut Vec<Spanned<Statement>>, usize)> {
+    let (last, parents) = path.split_last()?;
+    match parents.split_first() {
+        None => body
+            .get(*last)
+            .is_some_and(|statement| matches!(statement.node, Statement::Choice(_)))
+            .then_some((body, *last)),
+        Some((head, _)) => {
+            let statement = body.get_mut(*head)?;
+            match &mut statement.node {
+                Statement::Choice(choice) => find_choice_slot(&mut choice.body, &path[1..]),
+                _ => None,
+            }
+        }
+    }
+}
+
+fn count_references(statements: &[Spanned<Statement>], name: &str) -> usize {
+    statements
+        .iter()
+        .map(|statement| match &statement.node {
+            Statement::Divert(target) | Statement::Thread(target) => usize::from(target == name),
+            Statement::Choice(choice) => {
+                usize::from(choice.divert.as_deref() == Some(name))
+                    + count_references(&choice.body, name)
+            }
+            Statement::Conditional(conditional) => {
+                conditional
+                    .branches
+                    .iter()
+                    .map(|branch| count_references(&branch.body, name))
+                    .sum::<usize>()
+                    + conditional
+                        .fallback
+                        .as_ref()
+                        .map_or(0, |fallback| count_references(fallback, name))
+            }
+            _ => 0,
+        })
+        .sum()
+}
+
+fn rename_references(statements: &mut [Spanned<Statement>], old: &str, new: &str) {
+    for statement in statements {
+        match &mut statement.node {
+            Statement::Divert(target) | Statement::Thread(target) => {
+                if target == old {
+                    *target = new.to_owned();
+                }
+            }
+            Statement::Choice(choice) => {
+                if choice.divert.as_deref() == Some(old) {
+                    choice.divert = Some(new.to_owned());
+                }
+                rename_references(&mut choice.body, old, new);
+            }
+            Statement::Conditional(conditional) => {
+                for branch in &mut conditional.branches {
+                    rename_references(&mut branch.body, old, new);
+                }
+                if let Some(fallback) = &mut conditional.fallback {
+                    rename_references(fallback, old, new);
+                }
+            }
+            _ => {}
         }
     }
 }
@@ -543,6 +835,245 @@ Welcome.
         assert!(model.source().contains("temporary"));
         assert_eq!(model.undo().as_deref(), Some(original.as_str()));
         assert!(model.redo().unwrap().contains("temporary"));
+    }
+
+    const LINKED: &str = r#"=== start ===
+Welcome.
+* [Leave] -> shore
+-> END
+=== shore ===
+The shore.
+<- start
+=== loop ===
+-> start
+"#;
+
+    #[test]
+    fn knot_prose_is_replaced_inserted_and_removed() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let edited = model
+            .apply_graph_edit(
+                &GraphEdit::SetKnotText {
+                    knot: "start".to_owned(),
+                    text: "A dark welcome.".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("edit prose");
+        assert!(edited.source.contains("A dark welcome."));
+        assert!(!edited.source.contains("Welcome."));
+        assert_eq!(edited.focus_node.as_deref(), Some("knot:start"));
+
+        let multiline = model
+            .apply_graph_edit(
+                &GraphEdit::SetKnotText {
+                    knot: "start".to_owned(),
+                    text: "One line.\nAnd another.".to_owned(),
+                },
+                edited.revision,
+            )
+            .expect("collapse newlines");
+        assert!(multiline.source.contains("One line. And another."));
+
+        let inserted = model
+            .apply_graph_edit(
+                &GraphEdit::SetKnotText {
+                    knot: "loop".to_owned(),
+                    text: "Back to the beginning.".to_owned(),
+                },
+                multiline.revision,
+            )
+            .expect("insert prose");
+        assert!(
+            inserted
+                .source
+                .contains("=== loop ===\nBack to the beginning.\n-> start")
+        );
+
+        let removed = model
+            .apply_graph_edit(
+                &GraphEdit::SetKnotText {
+                    knot: "loop".to_owned(),
+                    text: "   ".to_owned(),
+                },
+                inserted.revision,
+            )
+            .expect("remove prose");
+        assert!(!removed.source.contains("Back to the beginning."));
+        assert!(removed.source.contains("=== loop ===\n-> start"));
+    }
+
+    #[test]
+    fn renaming_rewrites_references_choices_and_layout_keys() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let mut layout = model.layout().clone();
+        layout.insert("knot:start".to_owned(), GraphPoint::new(640.0, 240.0));
+        layout.insert("choice:start:1".to_owned(), GraphPoint::new(900.0, 240.0));
+        assert!(model.capture_layout(layout));
+
+        let renamed = model
+            .apply_graph_edit(
+                &GraphEdit::RenameKnot {
+                    knot: "start".to_owned(),
+                    name: "opening".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("rename");
+        assert!(renamed.source.contains("=== opening ==="));
+        assert!(!renamed.source.contains("start"));
+        assert!(renamed.source.contains("<- opening"));
+        assert_eq!(renamed.focus_node.as_deref(), Some("knot:opening"));
+        assert_eq!(
+            model.layout().get("knot:opening"),
+            Some(&GraphPoint::new(640.0, 240.0))
+        );
+        assert_eq!(
+            model.layout().get("choice:opening:1"),
+            Some(&GraphPoint::new(900.0, 240.0))
+        );
+
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::RenameKnot {
+                        knot: "opening".to_owned(),
+                        name: "shore".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("duplicate name"),
+            SyncConflict::DuplicateKnot("shore".to_owned())
+        );
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::RenameKnot {
+                        knot: "opening".to_owned(),
+                        name: "9 lives".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("invalid identifier"),
+            SyncConflict::InvalidIdentifier("9 lives".to_owned())
+        );
+    }
+
+    #[test]
+    fn removal_refuses_live_references_and_the_last_knot() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::RemoveKnot {
+                        knot: "start".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("referenced knot"),
+            SyncConflict::KnotInUse {
+                knot: "start".to_owned(),
+                references: 2,
+            }
+        );
+
+        let removed = model
+            .apply_graph_edit(
+                &GraphEdit::RemoveKnot {
+                    knot: "loop".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("remove unreferenced knot");
+        assert!(!removed.source.contains("=== loop ==="));
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::RemoveKnot {
+                        knot: "shore".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("referenced by choice"),
+            SyncConflict::KnotInUse {
+                knot: "shore".to_owned(),
+                references: 1,
+            }
+        );
+
+        let mut single = CanonicalProjectModel::new(SOURCE);
+        assert_eq!(
+            single
+                .apply_graph_edit(
+                    &GraphEdit::RemoveKnot {
+                        knot: "start".to_owned(),
+                    },
+                    single.revision(),
+                )
+                .expect_err("last knot"),
+            SyncConflict::LastKnot
+        );
+    }
+
+    #[test]
+    fn choice_edits_use_statement_paths() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let path = vec![1];
+        let edited = model
+            .apply_graph_edit(
+                &GraphEdit::SetChoiceText {
+                    knot: "start".to_owned(),
+                    path: path.clone(),
+                    text: "Flee".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("edit choice");
+        assert!(edited.source.contains("* [Flee] -> shore"));
+        assert_eq!(edited.focus_node.as_deref(), Some("choice:start:1"));
+
+        let connected = model
+            .apply_graph_edit(
+                &GraphEdit::ConnectChoice {
+                    knot: "start".to_owned(),
+                    path: path.clone(),
+                    target: "loop".to_owned(),
+                },
+                edited.revision,
+            )
+            .expect("reconnect choice");
+        assert!(connected.source.contains("* [Flee] -> loop"));
+
+        let missing = model
+            .apply_graph_edit(
+                &GraphEdit::SetChoiceText {
+                    knot: "start".to_owned(),
+                    path: vec![9],
+                    text: "Nowhere".to_owned(),
+                },
+                connected.revision,
+            )
+            .expect_err("missing choice");
+        assert_eq!(
+            missing,
+            SyncConflict::MissingChoice {
+                knot: "start".to_owned(),
+                path: vec![9],
+            }
+        );
+
+        let before_removal = model.source().to_owned();
+        let removed = model
+            .apply_graph_edit(
+                &GraphEdit::RemoveChoice {
+                    knot: "start".to_owned(),
+                    path,
+                },
+                connected.revision,
+            )
+            .expect("remove choice");
+        assert!(!removed.source.contains("[Flee]"));
+        assert_eq!(model.undo().as_deref(), Some(before_removal.as_str()));
     }
 
     proptest! {
