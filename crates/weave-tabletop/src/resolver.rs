@@ -497,7 +497,8 @@ impl TabletopCharacterProjection {
 
         let from_caps = from_manifest.map(capability_set).unwrap_or_default();
         let target_caps = target_manifest.map(capability_set).unwrap_or_default();
-        if coordinate_changed && !(upgrading && from_manifest.is_none()) {
+        let outgoing_uninstalled = from.is_some() && from_manifest.is_none();
+        if coordinate_changed && !outgoing_uninstalled {
             preview.capabilities_gained = target_caps
                 .difference(&from_caps)
                 .copied()
@@ -507,7 +508,7 @@ impl TabletopCharacterProjection {
                 .copied()
                 .collect::<Vec<_>>();
         }
-        if upgrading && from_manifest.is_none() {
+        if coordinate_changed && outgoing_uninstalled {
             preview.diagnostics.push(SwitchDiagnostic {
                 code: "TT103".to_owned(),
                 severity: SwitchDiagnosticSeverity::Warning,
@@ -653,11 +654,26 @@ impl TabletopCharacterProjection {
                 });
             }
         }
+        let restored_key = preview
+            .restore_existing_archive
+            .then(|| to.as_ref().map(ResolvedAdapter::namespace_key))
+            .flatten();
+        let archived_key = archiving_outgoing
+            .then(|| {
+                self.active
+                    .as_ref()
+                    .map(|active| active.adapter.namespace_key())
+            })
+            .flatten();
         preview.retained_inactive = self
             .inactive
             .keys()
             .filter(|key| !discarded.contains(key.as_str()))
+            .filter(|key| restored_key.as_ref() != Some(key))
             .cloned()
+            .chain(archived_key)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
             .collect();
 
         if let (Some(target_definition), Some(target)) = (&request.target_definition, &to) {

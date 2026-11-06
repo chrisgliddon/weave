@@ -1173,7 +1173,7 @@ fn forbidden_file(
         if entry
             .forbidden_files
             .iter()
-            .any(|forbidden| forbidden.eq_ignore_ascii_case(&artifact.path))
+            .any(|forbidden| path_mentions_forbidden(&artifact.path, forbidden))
         {
             return Err(format!(
                 "forbidden file `{}` is present in the bundled file list",
@@ -1192,6 +1192,26 @@ fn forbidden_file(
         }
     }
     Ok(())
+}
+
+/// True when any part of a bundle path names the forbidden artifact.
+///
+/// Forbidden entries are upstream names, so a file may carry one as a directory segment or as the
+/// stem of a file name with any extension.
+fn path_mentions_forbidden(path: &str, forbidden: &str) -> bool {
+    let forbidden = forbidden.trim();
+    if forbidden.is_empty() {
+        return false;
+    }
+    if path.eq_ignore_ascii_case(forbidden) {
+        return true;
+    }
+    let name = path.rsplit('/').next().unwrap_or(path);
+    let stem = name.rsplit_once('.').map_or(name, |(stem, _)| stem);
+    path.split('/')
+        .chain(std::iter::once(name))
+        .chain(std::iter::once(stem))
+        .any(|segment| segment.eq_ignore_ascii_case(forbidden))
 }
 
 struct NamespaceClaims {
@@ -1761,4 +1781,31 @@ fn deterministic_output(
         ));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::path_mentions_forbidden;
+
+    #[test]
+    fn forbidden_names_match_any_path_segment_or_stem() {
+        assert!(path_mentions_forbidden(
+            "docs/War for the Overworld",
+            "War for the Overworld"
+        ));
+        assert!(path_mentions_forbidden(
+            "assets/WAR FOR THE OVERWORLD.pdf",
+            "War for the Overworld"
+        ));
+        assert!(path_mentions_forbidden(
+            "war for the overworld/notes.txt",
+            "War for the Overworld"
+        ));
+        assert!(!path_mentions_forbidden(
+            "assets/Undead Awakening Notes.txt",
+            "Undead Awakening"
+        ));
+        assert!(!path_mentions_forbidden("notes.txt", "War for the Overworld"));
+        assert!(!path_mentions_forbidden("notes.txt", "  "));
+    }
 }

@@ -927,3 +927,23 @@ fn definitions_differing_only_in_completed_steps_are_not_equal() {
     );
     assert_eq!(projection, after_away);
 }
+
+#[test]
+fn an_uninstalled_outgoing_release_warns_instead_of_reporting_no_loss() {
+    let mut projection = fixture_projection(FREEHACK_PROJECTION);
+    projection.active = Some(fixture_definition(FREEHACK_PROJECTION));
+    let state = fixture_state(FREEHACK_STATE);
+    let target = resolved_adapter(&dungeonpunk_manifest()).expect("target coordinate");
+    let switch = request(Some(target), None);
+    let preview = projection
+        .preview_switch(&[dungeonpunk_manifest()], &switch, Some(&state))
+        .expect("preview");
+    assert!(
+        preview
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code == "TT103"),
+        "an unknown outgoing release must warn that the capability delta is unknown"
+    );
+    assert!(preview.capabilities_lost.is_empty());
+}
