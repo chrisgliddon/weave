@@ -417,3 +417,54 @@ resolution, and the same standalone/Bevy/PixiJS boundary without compiler or edi
 The checked Freehack fixture adds arbitrary campaign-shaped characters, exact integer
 support/opposition resolution, generic tracks, simultaneous sections, and structurally separate
 authority/public transports for standalone Rust, Bevy, and PixiJS.
+
+## Adapter conformance harness
+
+`weave-tabletop` ships a registry-driven conformance suite that checks every installed adapter
+against one public contract. Run it from a local checkout; it is deterministic and performs no
+network access:
+
+```bash
+cargo test -p weave-tabletop --test conformance
+cargo test -p weave-tabletop --test conformance -- --ignored --nocapture
+cargo run -p weave-tabletop --example tabletop_conformance
+```
+
+The suite discovers adapters through `weave_tabletop::conformance::standard_suite()`, not a
+hard-coded test list. For each registered adapter it verifies:
+
+- manifest validation, namespace attribution and isolation, and registry-wide namespace and
+  identity uniqueness;
+- creation from one seed is byte-for-byte reproducible, and resolution of the same before-state
+  produces an identical receipt;
+- entropy replays from the same seed, survives a saved cursor, and is actually consumed by the
+  exercised operation;
+- JSON and RON state round-trip, restore, and resume identically;
+- authoring projections retain strictly more payloads than compact runtime projections while every
+  projection keeps the event envelope and payload fingerprint;
+- events are contiguous, declared by the operation, typed by the manifest, capability-consistent,
+  and hash the exact payload;
+- undeclared capabilities, undeclared operations, unsupported manifest/state/resolver versions,
+  and malformed state artifacts fail closed;
+- the machine-readable source policy matches the exact primary source digest, the allowlisted
+  licence and source class, the retained licence text and notice text, and never redistributes a
+  forbidden layout, artwork, or font file.
+
+Policy expectations are data, not code: `conformance::policy::standard_source_policy()` returns one
+`AdapterSourcePolicy` row per adapter, including its exact source digest, licence, required files,
+required notices, and forbidden files. A changed hash, a missing review row, an unknown licence, or
+a redistributed forbidden file is a data change plus a failing check — not a new branch in the
+suite.
+
+Every failure names the adapter, the check identifier, and the offending value, and the report ends
+with one summary line per adapter. Adding an adapter requires no change to the checks:
+
+1. implement `ConformanceAdapter` with the manifest, a trusted resolver factory, a deterministic
+   creation fixture, and a short operation scenario;
+2. add its `AdapterSourcePolicy` row to `standard_source_policy()`;
+3. register the descriptor in `conformance::standard_suite()`.
+
+The integration test `tests/conformance.rs` additionally runs deliberately broken fixtures that
+must fail exactly one check each — changed source hash, missing source hash, namespace collision,
+non-deterministic creation, missing notice, permissive resolver, policy licence mismatch, and
+redistributed forbidden file — so the harness itself cannot silently stop detecting regressions.

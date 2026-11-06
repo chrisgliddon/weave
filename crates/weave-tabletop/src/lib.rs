@@ -13,8 +13,17 @@ mod plug_and_play;
 mod resolver;
 mod validation;
 
+pub mod conformance;
+
 use schemars::JsonSchema;
 use serde::Deserialize;
+
+pub use conformance::{
+    AdapterReport, AdapterSourcePolicy, ConformanceAdapter, ConformanceCheck, ConformanceCreation,
+    ConformanceFailure, ConformanceOperation, ConformanceReport, ConformanceSuite,
+    DungeonpunkConformance, FreehackConformance, PlugAndPlayConformance, PolicyFile, SourcePolicy,
+    standard_source_policy, standard_suite,
+};
 
 pub use domain::{tabletop_domain_manifest, tabletop_domain_pack};
 pub use dungeonpunk::*;

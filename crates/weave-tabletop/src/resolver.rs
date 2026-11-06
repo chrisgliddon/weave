@@ -95,6 +95,28 @@ pub trait TabletopResolver: Send + Sync {
     ) -> Result<ResolverOutput, TabletopError>;
 }
 
+impl<T: TabletopResolver + ?Sized> TabletopResolver for Box<T> {
+    fn adapter_id(&self) -> &str {
+        self.as_ref().adapter_id()
+    }
+
+    fn adapter_version(&self) -> &str {
+        self.as_ref().adapter_version()
+    }
+
+    fn resolve(
+        &self,
+        operation: &str,
+        definition: &weave_domain::DomainValue,
+        request: &weave_domain::DomainValue,
+        state: &weave_domain::DomainValue,
+        entropy: &mut EntropyStream,
+    ) -> Result<ResolverOutput, TabletopError> {
+        self.as_ref()
+            .resolve(operation, definition, request, state, entropy)
+    }
+}
+
 /// Exact resolver registry that replaces adapter-specific host branches.
 #[derive(Default)]
 pub struct ResolverRegistry {
