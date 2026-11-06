@@ -32,7 +32,6 @@ pub use dungeonpunk::*;
 pub use freehack::*;
 pub use model::*;
 pub use plug_and_play::*;
-pub use wicked_ones::*;
 pub use resolver::{
     EntropyStream, ResolverRegistry, TabletopResolver, preview_adapter_switch,
     project_receipt_for_audience,
@@ -45,6 +44,7 @@ pub use validation::{
     validate_resolution_request, validate_tabletop_state, verify_adapter_source,
     verify_adapter_source_bundle,
 };
+pub use wicked_ones::*;
 
 /// Redaction-safe tabletop contract failure with a stable diagnostic code.
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
