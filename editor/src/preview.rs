@@ -17,9 +17,13 @@ use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
 use crate::play_view::{
-    CharacterPresentation, NARRATOR, PlayMode, PlayScene, PresentationDrawerRows, SLOT_ORDER,
-    StagedCharacter, WorldPresentation, presentation_drawer_rows, resolve_presentation,
-    scene_from_session, scene_tone,
+    AutoAdvancePolicy, AutoAdvanceState, CharacterPresentation, DEFAULT_TEXT_SCALE,
+    DIALOGUE_BASE_PX, DIALOGUE_MAX_HEIGHT_PX, MotionPreference, NARRATOR, PLAY_KEYBOARD_HINT,
+    PlayAction, PlayFocus, PlayFocusContext, PlayFocusTarget, PlayMode, PresentationDrawerRows,
+    REVEAL_SPEED_STEP, SLOT_ORDER, StagedCharacter, TextReveal, WorldPresentation,
+    focus_indicator_colour, has_critical_diagnostics, play_diagnostics, play_focus_order_for,
+    play_key_for, presentation_drawer_rows, resolve_presentation, scaled_dialogue_height,
+    scaled_text_px, scene_from_session, scene_tone, step_text_scale,
 };
 use crate::playtest::{PlaytestOutcome, PlaytestRecord};
 use crate::presentation_assets::PresentationAssets;
@@ -30,6 +34,9 @@ const MAX_CONTINUE_BOUNDARIES: usize = 10_000;
 /// Extra fraction of the frame an anchored cover background extends past each
 /// edge, so the declared anchor can bias the crop in any direction.
 const SCENE_OVERSCAN: f32 = 0.16;
+
+/// Maximum events, cues, or checkpoints the playtest drawer renders at once.
+pub const PLAYTEST_DRAWER_WINDOW: usize = 200;
 
 /// Transcript item retained for the current preview run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -241,6 +248,22 @@ impl PreviewSession {
     #[must_use]
     pub fn choices(&self) -> Vec<ChoiceView> {
         self.runtime.as_ref().map_or_else(Vec::new, Story::choices)
+    }
+
+    /// Number of pending choices without cloning their text.
+    #[must_use]
+    pub fn choice_count(&self) -> usize {
+        self.runtime
+            .as_ref()
+            .map_or(0, |runtime| runtime.choices().len())
+    }
+
+    /// Number of knots in the last valid story.
+    #[must_use]
+    pub fn knot_count(&self) -> usize {
+        self.last_valid_story
+            .as_ref()
+            .map_or(0, |story| story.knots.len())
     }
 
     /// Display name declared for a stage, if the story names one.
@@ -588,6 +611,10 @@ pub struct PlaytestDrawer {
     message: Option<String>,
     mismatch: Option<String>,
     replay_outcome: Option<PlaytestOutcome>,
+    /// Outcome summary computed once when the record is captured or imported.
+    outcome_summary: Option<String>,
+    /// Replay outcome summary computed once when replay succeeds.
+    replay_summary: Option<String>,
 }
 
 impl PlaytestDrawer {
@@ -638,6 +665,63 @@ impl PlaytestDrawer {
         self.replay_outcome.as_ref()
     }
 
+    /// Record outcome summary, computed when the record was captured or imported.
+    #[must_use]
+    pub fn outcome_summary(&self) -> Option<&str> {
+        self.outcome_summary.as_deref()
+    }
+
+    /// Replay outcome summary, computed when the last replay succeeded.
+    #[must_use]
+    pub fn replay_summary(&self) -> Option<&str> {
+        self.replay_summary.as_deref()
+    }
+
+    /// First bounded window of recorded events and the count omitted.
+    #[must_use]
+    pub fn event_window(&self) -> (Vec<String>, usize) {
+        self.record.as_ref().map_or((Vec::new(), 0), |record| {
+            let shown = record.events.len().min(PLAYTEST_DRAWER_WINDOW);
+            let rows = record.events[..shown]
+                .iter()
+                .map(|event| format!("{} · {}", event.kind, event.knot))
+                .collect();
+            (rows, record.events.len() - shown)
+        })
+    }
+
+    /// First bounded window of recorded cues and the count omitted.
+    #[must_use]
+    pub fn cue_window(&self) -> (Vec<String>, usize) {
+        self.record.as_ref().map_or((Vec::new(), 0), |record| {
+            let shown = record.cues.len().min(PLAYTEST_DRAWER_WINDOW);
+            let rows = record.cues[..shown]
+                .iter()
+                .map(|cue| format!("{:?} · {}", cue.cue, cue.knot))
+                .collect();
+            (rows, record.cues.len() - shown)
+        })
+    }
+
+    /// First bounded window of checkpoints and the count omitted.
+    #[must_use]
+    pub fn checkpoint_window(&self) -> (Vec<String>, usize) {
+        self.record.as_ref().map_or((Vec::new(), 0), |record| {
+            let shown = record.checkpoints.len().min(PLAYTEST_DRAWER_WINDOW);
+            let rows = record.checkpoints[..shown]
+                .iter()
+                .enumerate()
+                .map(|(index, checkpoint)| {
+                    format!(
+                        "#{index} · event {} · choice {} · `{}`",
+                        checkpoint.event, checkpoint.choice, checkpoint.knot
+                    )
+                })
+                .collect();
+            (rows, record.checkpoints.len() - shown)
+        })
+    }
+
     /// Record a note shown by the drawer.
     pub fn note(&mut self, message: impl Into<String>) {
         self.message = Some(message.into());
@@ -662,9 +746,11 @@ impl PlaytestDrawer {
                     record.events.len(),
                     record.checkpoints.len()
                 ));
+                self.outcome_summary = Some(record.outcome.summary());
                 self.record = Some(record);
                 self.mismatch = None;
                 self.replay_outcome = None;
+                self.replay_summary = None;
                 true
             }
             Err(error) => {
@@ -716,10 +802,12 @@ impl PlaytestDrawer {
     pub fn import_json(&mut self, source: &str) -> bool {
         match PlaytestRecord::from_json(source) {
             Ok(record) => {
+                self.outcome_summary = Some(record.outcome.summary());
                 self.record = Some(record);
                 self.json = source.to_owned();
                 self.mismatch = None;
                 self.replay_outcome = None;
+                self.replay_summary = None;
                 self.message = Some("Imported a JSON playtest".to_owned());
                 true
             }
@@ -734,10 +822,12 @@ impl PlaytestDrawer {
     pub fn import_ron(&mut self, source: &str) -> bool {
         match PlaytestRecord::from_ron(source) {
             Ok(record) => {
+                self.outcome_summary = Some(record.outcome.summary());
                 self.record = Some(record);
                 self.ron = source.to_owned();
                 self.mismatch = None;
                 self.replay_outcome = None;
+                self.replay_summary = None;
                 self.message = Some("Imported a RON playtest".to_owned());
                 true
             }
@@ -765,6 +855,7 @@ impl PlaytestDrawer {
         };
         match record.replay(story) {
             Ok(report) => {
+                self.replay_summary = Some(report.outcome.summary());
                 self.replay_outcome = Some(report.outcome.clone());
                 self.mismatch = None;
                 self.message = Some("Replayed the record against this story".to_owned());
@@ -772,6 +863,7 @@ impl PlaytestDrawer {
             }
             Err(error) => {
                 self.replay_outcome = None;
+                self.replay_summary = None;
                 self.mismatch = Some(error.to_string());
                 false
             }
@@ -875,6 +967,24 @@ pub struct PreviewSurface {
     playtest_drawer: PlaytestDrawer,
     presentation_drawer: PresentationDrawer,
     focus: FocusHandle,
+    /// Logical focus order shared by the scene and the author controls.
+    play_focus: PlayFocus,
+    /// Whether the diagnostics drawer body is visible.
+    diagnostics_expanded: bool,
+    /// Requested motion preference.
+    motion: MotionPreference,
+    /// Dialogue text scale, clamped into the documented steps.
+    text_scale: f32,
+    /// Dialogue reveal timing.
+    text_reveal: TextReveal,
+    /// Bounded auto-advance progress.
+    auto_advance: AutoAdvanceState,
+    /// Line the reveal clock belongs to.
+    reveal_line: String,
+    /// Characters visible at the last tick.
+    revealed_chars: usize,
+    /// When the current line began revealing.
+    line_started: Instant,
 }
 
 impl PreviewSurface {
@@ -893,6 +1003,15 @@ impl PreviewSurface {
             playtest_drawer: PlaytestDrawer::default(),
             presentation_drawer: PresentationDrawer::default(),
             focus: cx.focus_handle(),
+            play_focus: PlayFocus::default(),
+            diagnostics_expanded: false,
+            motion: MotionPreference::Full,
+            text_scale: DEFAULT_TEXT_SCALE,
+            text_reveal: TextReveal::default(),
+            auto_advance: AutoAdvanceState::default(),
+            reveal_line: String::new(),
+            revealed_chars: 0,
+            line_started: Instant::now(),
         }
     }
 
@@ -966,6 +1085,72 @@ impl PreviewSurface {
         &self.presentation_drawer
     }
 
+    /// Currently focused Play control.
+    #[must_use]
+    pub const fn focused_control(&self) -> PlayFocusTarget {
+        self.play_focus.current()
+    }
+
+    /// Whether the diagnostics drawer body is visible.
+    #[must_use]
+    pub const fn diagnostics_expanded(&self) -> bool {
+        self.diagnostics_expanded
+    }
+
+    /// Current motion preference.
+    #[must_use]
+    pub const fn motion(&self) -> MotionPreference {
+        self.motion
+    }
+
+    /// Apply a reduced-motion preference.
+    pub fn set_reduced_motion(&mut self, reduced: bool, cx: &mut Context<Self>) {
+        self.motion = if reduced {
+            MotionPreference::Reduced
+        } else {
+            MotionPreference::Full
+        };
+        cx.notify();
+    }
+
+    /// Current dialogue text scale.
+    #[must_use]
+    pub const fn text_scale(&self) -> f32 {
+        self.text_scale
+    }
+
+    /// Apply a dialogue text scale, clamped into the documented steps.
+    pub fn set_text_scale(&mut self, scale: f32, cx: &mut Context<Self>) {
+        self.text_scale = crate::play_view::clamp_text_scale(scale);
+        cx.notify();
+    }
+
+    /// Current reveal timing.
+    #[must_use]
+    pub const fn text_reveal(&self) -> TextReveal {
+        self.text_reveal
+    }
+
+    /// Replace reveal timing and restart the current line.
+    pub fn set_text_reveal(&mut self, reveal: TextReveal, cx: &mut Context<Self>) {
+        self.text_reveal = reveal;
+        self.revealed_chars = 0;
+        self.line_started = Instant::now();
+        cx.notify();
+    }
+
+    /// Current auto-advance policy.
+    #[must_use]
+    pub const fn auto_advance(&self) -> AutoAdvancePolicy {
+        self.auto_advance.policy()
+    }
+
+    /// Replace the bounded auto-advance policy.
+    pub fn set_auto_advance(&mut self, policy: AutoAdvancePolicy, cx: &mut Context<Self>) {
+        self.auto_advance.set_policy(policy);
+        cx.notify();
+    }
+
     /// Replace the world-driven presentation configuration shown by the drawer.
     pub fn set_world_presentation(
         &mut self,
@@ -1009,6 +1194,7 @@ impl PreviewSurface {
     }
 
     pub fn poll_compile(&mut self, now: Instant, cx: &mut Context<Self>) -> bool {
+        self.tick_playback(now, cx);
         let Some(revision) = self.debouncer.take_ready(now) else {
             return false;
         };
@@ -1075,7 +1261,7 @@ impl PreviewSurface {
         cx.notify();
     }
 
-    fn mode_bar(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn mode_bar(&self, focused: PlayFocusTarget, cx: &mut Context<Self>) -> AnyElement {
         let mut bar = div()
             .id("preview-mode-bar")
             .flex()
@@ -1087,6 +1273,7 @@ impl PreviewSurface {
             .border_color(rgb(DARK_THEME.border));
         for mode in [PlayMode::Debug, PlayMode::Play] {
             let active = self.mode == mode;
+            let target = PlayFocusTarget::Mode(mode);
             bar = bar.child(
                 div()
                     .id(match mode {
@@ -1096,6 +1283,8 @@ impl PreviewSurface {
                     .px_2()
                     .py_1()
                     .rounded_md()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(focused == target)))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if active {
@@ -1108,6 +1297,8 @@ impl PreviewSurface {
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.focus.focus(window, cx);
                         this.set_mode(mode, cx);
+                        this.play_focus.focus(target);
+                        this.reconcile_play_focus();
                     })),
             );
         }
@@ -1116,15 +1307,28 @@ impl PreviewSurface {
                 .ml_auto()
                 .text_xs()
                 .text_color(rgb(DARK_THEME.muted_text))
-                .child(
-                    "Space to advance · 1-9 to choose · R to restart · D playtest · V references",
-                ),
+                .child(PLAY_KEYBOARD_HINT),
         )
         .into_any_element()
     }
 
-    fn play_panel(&mut self, cx: &mut Context<Self>) -> AnyElement {
+    fn play_panel(&mut self, focused: PlayFocusTarget, cx: &mut Context<Self>) -> AnyElement {
         let scene = scene_from_session(&self.session);
+        let now = Instant::now();
+        if self.reveal_line != scene.line {
+            self.reveal_line = scene.line.clone();
+            self.line_started = now;
+            self.revealed_chars = 0;
+        }
+        let elapsed = now.saturating_duration_since(self.line_started);
+        let reveal = self.motion.reveal(self.text_reveal);
+        let revealed_line = if scene.line.is_empty() {
+            "Press Space to begin".to_owned()
+        } else if self.reveal_line == scene.line {
+            reveal.reveal(&scene.line, elapsed)
+        } else {
+            scene.line.clone()
+        };
 
         // Resolve every declared path before touching the image cache, so the
         // session reads and the loader writes stay independent borrows.
@@ -1217,7 +1421,7 @@ impl PreviewSurface {
             .bottom_0()
             .overflow_hidden();
         if let Some(image) = background_image {
-            let opacity = scene.background_opacity();
+            let opacity = self.motion.background_opacity(&scene);
             backdrop = match scene.fit {
                 Fit::Cover => {
                     let (left, right) = anchor_inset(scene.anchor.x);
@@ -1272,6 +1476,7 @@ impl PreviewSurface {
                 column = column.child(stage_figure(
                     character,
                     stage_images.get(&character.id).cloned().flatten(),
+                    self.motion,
                 ));
             }
             grid = grid.child(column);
@@ -1335,21 +1540,25 @@ impl PreviewSurface {
         let mut dialogue = div()
             .id("play-dialogue")
             .flex_none()
-            .max_h(px(220.0))
+            .max_h(px(scaled_dialogue_height(
+                DIALOGUE_MAX_HEIGHT_PX,
+                self.text_scale,
+            )))
             .overflow_y_scroll()
             .p_3()
             .flex()
             .flex_col()
             .gap_2()
-            .border_t_1()
-            .border_color(rgb(DARK_THEME.border))
-            .child(div().text_lg().text_color(rgb(DARK_THEME.text)).child(
-                if scene.line.is_empty() {
-                    "Press Space to begin".to_owned()
-                } else {
-                    scene.line.clone()
-                },
-            ));
+            .border_1()
+            .border_color(rgb(focus_indicator_colour(
+                focused == PlayFocusTarget::Advance,
+            )))
+            .child(
+                div()
+                    .text_size(px(scaled_text_px(DIALOGUE_BASE_PX, self.text_scale)))
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(revealed_line),
+            );
 
         if scene.ended {
             dialogue = dialogue.child(
@@ -1363,11 +1572,17 @@ impl PreviewSurface {
                             .text_color(rgb(DARK_THEME.muted_text))
                             .child("The end"),
                     )
-                    .child(preview_button("Restart", "play-restart", cx, |this, cx| {
-                        this.session.restart();
-                        this.session.run();
-                        cx.notify();
-                    })),
+                    .child(preview_button(
+                        "Restart",
+                        "play-restart",
+                        focused == PlayFocusTarget::Restart,
+                        cx,
+                        |this, cx| {
+                            this.session.restart();
+                            this.session.run();
+                            cx.notify();
+                        },
+                    )),
             );
         } else if !scene.choices.is_empty() {
             for (index, choice) in scene.choices.iter().enumerate() {
@@ -1378,14 +1593,19 @@ impl PreviewSurface {
                         .py_2()
                         .rounded_md()
                         .border_1()
-                        .border_color(rgb(DARK_THEME.border))
+                        .border_color(rgb(focus_indicator_colour(
+                            focused == PlayFocusTarget::Choice(index),
+                        )))
                         .bg(rgb(DARK_THEME.chrome))
                         .cursor_pointer()
-                        .text_sm()
+                        .text_size(px(scaled_text_px(13.0, self.text_scale)))
                         .text_color(rgb(DARK_THEME.text))
                         .child(format!("{}. {}", index + 1, choice.text))
-                        .on_click(cx.listener(move |this, _, _, cx| {
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.focus.focus(window, cx);
                             this.session.choose(index);
+                            this.play_focus.focus(PlayFocusTarget::Advance);
+                            this.reconcile_play_focus();
                             cx.notify();
                         })),
                 );
@@ -1395,12 +1615,17 @@ impl PreviewSurface {
         frame
             .child(stage_area)
             .child(dialogue)
-            .child(self.playtest_drawer_panel(cx))
-            .child(self.presentation_drawer_panel(cx))
+            .child(self.playtest_drawer_panel(focused, cx))
+            .child(self.presentation_drawer_panel(focused, cx))
+            .child(self.diagnostics_panel(focused, cx))
             .into_any_element()
     }
 
-    fn playtest_drawer_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn playtest_drawer_panel(
+        &self,
+        focused: PlayFocusTarget,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let expanded = self.playtest_drawer.is_expanded();
         let panel = div()
             .id("playtest-drawer")
@@ -1416,6 +1641,10 @@ impl PreviewSurface {
                     .gap_2()
                     .px_3()
                     .py_1()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::PlaytestToggle,
+                    )))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if expanded {
@@ -1427,8 +1656,11 @@ impl PreviewSurface {
                         "{} Playtest drawer · D",
                         if expanded { "▾" } else { "▸" }
                     ))
-                    .on_click(cx.listener(|this, _, _, cx| {
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.focus.focus(window, cx);
                         this.playtest_drawer.toggle();
+                        this.play_focus.focus(PlayFocusTarget::PlaytestToggle);
+                        this.reconcile_play_focus();
                         cx.notify();
                     })),
             );
@@ -1445,6 +1677,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Capture",
                 "playtest-capture",
+                focused == PlayFocusTarget::PlaytestCapture,
                 cx,
                 |this, _cx| {
                     let session = &this.session;
@@ -1454,6 +1687,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Export JSON",
                 "playtest-export-json",
+                focused == PlayFocusTarget::PlaytestExportJson,
                 cx,
                 |this, cx| {
                     if this.playtest_drawer.export_json() {
@@ -1465,6 +1699,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Export RON",
                 "playtest-export-ron",
+                focused == PlayFocusTarget::PlaytestExportRon,
                 cx,
                 |this, cx| {
                     if this.playtest_drawer.export_ron() {
@@ -1476,6 +1711,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Import JSON",
                 "playtest-import-json",
+                focused == PlayFocusTarget::PlaytestImportJson,
                 cx,
                 |this, cx| match cx.read_from_clipboard().and_then(|item| item.text()) {
                     Some(source) => {
@@ -1489,6 +1725,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Import RON",
                 "playtest-import-ron",
+                focused == PlayFocusTarget::PlaytestImportRon,
                 cx,
                 |this, cx| match cx.read_from_clipboard().and_then(|item| item.text()) {
                     Some(source) => {
@@ -1502,6 +1739,7 @@ impl PreviewSurface {
             .child(preview_button(
                 "Replay",
                 "playtest-replay",
+                focused == PlayFocusTarget::PlaytestReplay,
                 cx,
                 |this, _cx| {
                     let session = &this.session;
@@ -1558,33 +1796,41 @@ impl PreviewSurface {
             body = body.child(drawer_section("OUTCOME"));
             body = body.child(drawer_text(format!(
                 "{} · seed {} · start `{}`",
-                record.outcome.summary(),
+                self.playtest_drawer
+                    .outcome_summary()
+                    .unwrap_or("unknown outcome"),
                 record.seed,
                 record.start_knot
             )));
-            if let Some(outcome) = self.playtest_drawer.replay_outcome() {
-                body = body.child(drawer_text(format!(
-                    "Replay reproduced: {}",
-                    outcome.summary()
-                )));
+            if let Some(outcome) = self.playtest_drawer.replay_summary() {
+                body = body.child(drawer_text(format!("Replay reproduced: {outcome}")));
             }
 
             body = body.child(drawer_section("CHECKPOINTS"));
-            for (index, checkpoint) in record.checkpoints.iter().enumerate() {
-                body = body.child(drawer_text(format!(
-                    "#{index} · event {} · choice {} · `{}`",
-                    checkpoint.event, checkpoint.choice, checkpoint.knot
-                )));
+            let (checkpoints, omitted) = self.playtest_drawer.checkpoint_window();
+            for checkpoint in checkpoints {
+                body = body.child(drawer_text(checkpoint));
+            }
+            if omitted > 0 {
+                body = body.child(drawer_note(format!("{omitted} more checkpoints not shown")));
             }
 
             body = body.child(drawer_section("HISTORY"));
-            for event in &record.events {
-                body = body.child(drawer_text(format!("{} · {}", event.kind, event.knot)));
+            let (events, omitted) = self.playtest_drawer.event_window();
+            for event in events {
+                body = body.child(drawer_text(event));
+            }
+            if omitted > 0 {
+                body = body.child(drawer_note(format!("{omitted} more events not shown")));
             }
 
             body = body.child(drawer_section("CUES"));
-            for cue in &record.cues {
-                body = body.child(drawer_text(format!("{:?} · {}", cue.cue, cue.knot)));
+            let (cues, omitted) = self.playtest_drawer.cue_window();
+            for cue in cues {
+                body = body.child(drawer_text(cue));
+            }
+            if omitted > 0 {
+                body = body.child(drawer_note(format!("{omitted} more cues not shown")));
             }
         } else {
             body = body.child(drawer_note(
@@ -1605,7 +1851,11 @@ impl PreviewSurface {
         panel.child(controls).child(body).into_any_element()
     }
 
-    fn presentation_drawer_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn presentation_drawer_panel(
+        &self,
+        focused: PlayFocusTarget,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let expanded = self.presentation_drawer.is_expanded();
         let panel = div()
             .id("presentation-drawer")
@@ -1621,6 +1871,10 @@ impl PreviewSurface {
                     .gap_2()
                     .px_3()
                     .py_1()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::PresentationToggle,
+                    )))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if expanded {
@@ -1632,8 +1886,11 @@ impl PreviewSurface {
                         "{} Resolved presentation · V",
                         if expanded { "▾" } else { "▸" }
                     ))
-                    .on_click(cx.listener(|this, _, _, cx| {
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.focus.focus(window, cx);
                         this.presentation_drawer.toggle();
+                        this.play_focus.focus(PlayFocusTarget::PresentationToggle);
+                        this.reconcile_play_focus();
                         cx.notify();
                     })),
             );
@@ -1682,52 +1939,356 @@ impl PreviewSurface {
         if !rows.diagnostics.is_empty() {
             body = body.child(drawer_section("DIAGNOSTICS"));
             for diagnostic in &rows.diagnostics {
-                body = body.child(div().text_xs().text_color(rgb(DARK_THEME.warning)).child(
-                    format!(
-                        "{} · {} — {}",
-                        diagnostic.kind.label(),
-                        diagnostic.source,
-                        diagnostic.detail
-                    ),
-                ));
+                body = body.child(
+                    div()
+                        .text_xs()
+                        .text_color(rgb(DARK_THEME.text))
+                        .child(format!(
+                            "{} · {} — {}",
+                            diagnostic.kind.label(),
+                            diagnostic.source,
+                            diagnostic.detail
+                        )),
+                );
             }
         }
 
         panel.child(body).into_any_element()
     }
 
-    fn preview_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
-        if self.mode != PlayMode::Play
-            || event.keystroke.modifiers.platform
-            || event.keystroke.modifiers.control
-            || event.keystroke.modifiers.alt
-        {
-            return;
+    /// Diagnostics drawer below the scene and dialogue.
+    ///
+    /// The body sits in the author-control column, so a critical diagnostic
+    /// stays reachable without covering the playable frame.
+    fn diagnostics_panel(&self, focused: PlayFocusTarget, cx: &mut Context<Self>) -> AnyElement {
+        let expanded = self.diagnostics_expanded;
+        let scene = scene_from_session(&self.session);
+        let rows = self.presentation_drawer.view(&self.session);
+        let diagnostics = play_diagnostics(&scene, Some(&rows));
+        let critical = has_critical_diagnostics(&diagnostics);
+        let summary = if diagnostics.is_empty() {
+            String::new()
+        } else if critical {
+            format!(" · {} critical", diagnostics.len())
+        } else {
+            format!(" · {}", diagnostics.len())
+        };
+        let panel = div()
+            .id("play-diagnostics")
+            .flex_none()
+            .border_t_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .child(
+                div()
+                    .id("play-diagnostics-toggle")
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .px_3()
+                    .py_1()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::DiagnosticsToggle,
+                    )))
+                    .cursor_pointer()
+                    .text_xs()
+                    .text_color(rgb(if expanded {
+                        DARK_THEME.text
+                    } else {
+                        DARK_THEME.muted_text
+                    }))
+                    .child(format!(
+                        "{} Diagnostics · I{summary}",
+                        if expanded { "▾" } else { "▸" }
+                    ))
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.focus.focus(window, cx);
+                        this.diagnostics_expanded = !this.diagnostics_expanded;
+                        this.play_focus.focus(PlayFocusTarget::DiagnosticsToggle);
+                        this.reconcile_play_focus();
+                        cx.notify();
+                    })),
+            );
+        if !expanded {
+            return panel.into_any_element();
         }
-        match event.keystroke.key.as_str() {
-            "space" | "enter" => {
-                self.session.run();
-            }
-            "r" => {
-                self.session.restart();
-                self.session.run();
-            }
-            "d" => {
-                self.playtest_drawer.toggle();
-            }
-            "v" => {
-                self.presentation_drawer.toggle();
-            }
-            _ => {
-                if let Some(character) = &event.keystroke.key_char
-                    && let Some(digit) = character.chars().next().and_then(|c| c.to_digit(10))
-                    && digit >= 1
-                {
-                    self.session.choose(digit as usize - 1);
+
+        let mut body = div()
+            .id("play-diagnostics-body")
+            .px_3()
+            .pb_2()
+            .max_h(px(160.0))
+            .overflow_y_scroll()
+            .flex()
+            .flex_col()
+            .gap_1();
+        if diagnostics.is_empty() {
+            body = body.child(drawer_note("No diagnostics".to_owned()));
+        }
+        for diagnostic in &diagnostics {
+            body = body.child(
+                div()
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(format!(
+                        "{} · {}",
+                        diagnostic.severity.label(),
+                        diagnostic.summary
+                    )),
+            );
+        }
+        panel.child(body).into_any_element()
+    }
+
+    fn preview_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
+        let keystroke = &event.keystroke;
+        let Some(key) = play_key_for(
+            &keystroke.key,
+            keystroke.key_char.as_deref(),
+            keystroke.modifiers.shift,
+            keystroke.modifiers.control,
+            keystroke.modifiers.alt,
+            keystroke.modifiers.platform,
+        ) else {
+            return;
+        };
+        let order = self.focus_order_now();
+        let action = self.play_focus.handle_key(key, &order);
+        self.apply_play_action(action, cx);
+        self.reconcile_play_focus();
+        cx.notify();
+    }
+
+    fn focus_order_now(&self) -> Vec<PlayFocusTarget> {
+        let choice_count = self.session.choice_count();
+        play_focus_order_for(
+            self.session.status() == PreviewStatus::Ended,
+            choice_count,
+            PlayFocusContext {
+                mode: self.mode,
+                playtest_expanded: self.playtest_drawer.is_expanded(),
+                debug_choices: choice_count,
+                debug_knots: self.session.knot_count(),
+                has_issue: self.session.issue().is_some(),
+            },
+        )
+    }
+
+    fn reconcile_play_focus(&mut self) {
+        let order = self.focus_order_now();
+        self.play_focus.reconcile(&order);
+    }
+
+    fn reset_reveal(&mut self, now: Instant) {
+        self.reveal_line.clear();
+        self.line_started = now;
+        self.revealed_chars = 0;
+    }
+
+    fn after_advance(&mut self) {
+        self.reset_reveal(Instant::now());
+        self.auto_advance.reset();
+    }
+
+    fn tick_playback(&mut self, now: Instant, cx: &mut Context<Self>) {
+        let scene = scene_from_session(&self.session);
+        if self.reveal_line != scene.line {
+            self.reveal_line = scene.line.clone();
+            self.line_started = now;
+            self.revealed_chars = 0;
+        }
+
+        let reveal = self.motion.reveal(self.text_reveal);
+        let elapsed = now.saturating_duration_since(self.line_started);
+        let visible = reveal.visible_chars(&scene.line, elapsed);
+        if visible != self.revealed_chars {
+            self.revealed_chars = visible;
+            cx.notify();
+        }
+
+        if self.mode == PlayMode::Play && self.auto_advance.can_advance(&scene, elapsed) {
+            self.auto_advance.record_advance();
+            self.session.step();
+            // Keep the auto-advance count across the steps it owns. The
+            // bound is reset only when the author acts.
+            self.reset_reveal(now);
+            cx.notify();
+        }
+    }
+
+    fn apply_play_action(&mut self, action: PlayAction, cx: &mut Context<Self>) {
+        match action {
+            PlayAction::FocusChanged(_) => {}
+            PlayAction::Activate(target) => self.activate_play_target(target, cx),
+            PlayAction::Choose(index) => {
+                self.session.choose(index);
+                self.after_advance();
+                if self.mode == PlayMode::Play {
+                    self.play_focus.focus(PlayFocusTarget::Advance);
                 }
             }
+            PlayAction::Restart => {
+                self.session.restart();
+                self.session.run();
+                self.after_advance();
+                self.play_focus.focus(PlayFocusTarget::Advance);
+            }
+            PlayAction::TogglePlaytest => {
+                self.playtest_drawer.toggle();
+                self.play_focus.focus(PlayFocusTarget::PlaytestToggle);
+            }
+            PlayAction::TogglePresentation => {
+                self.presentation_drawer.toggle();
+                self.play_focus.focus(PlayFocusTarget::PresentationToggle);
+            }
+            PlayAction::ToggleDiagnostics => {
+                self.diagnostics_expanded = !self.diagnostics_expanded;
+                self.play_focus.focus(PlayFocusTarget::DiagnosticsToggle);
+            }
+            PlayAction::StepTextScale(direction) => {
+                self.text_scale = step_text_scale(self.text_scale, direction);
+            }
+            PlayAction::ToggleMotion => {
+                self.motion = self.motion.toggled();
+            }
+            PlayAction::SkipReveal => {
+                self.text_reveal = self.text_reveal.with_instant(!self.text_reveal.instant);
+                self.revealed_chars = self
+                    .text_reveal
+                    .visible_chars(&self.reveal_line, Duration::ZERO);
+            }
+            PlayAction::StepRevealSpeed(direction) => {
+                let speed = if direction > 0 {
+                    self.text_reveal
+                        .chars_per_second
+                        .saturating_add(REVEAL_SPEED_STEP)
+                } else {
+                    self.text_reveal
+                        .chars_per_second
+                        .saturating_sub(REVEAL_SPEED_STEP)
+                };
+                self.text_reveal = self.text_reveal.with_speed(speed);
+            }
+            PlayAction::ToggleAutoAdvance => {
+                self.auto_advance.toggle();
+            }
         }
-        cx.notify();
+    }
+
+    fn activate_play_target(&mut self, target: PlayFocusTarget, cx: &mut Context<Self>) {
+        match target {
+            PlayFocusTarget::Mode(mode) => {
+                self.set_mode(mode, cx);
+                self.play_focus.focus(match mode {
+                    PlayMode::Play => PlayFocusTarget::Advance,
+                    PlayMode::Debug => PlayFocusTarget::Mode(PlayMode::Debug),
+                });
+            }
+            PlayFocusTarget::Advance => {
+                self.session.run();
+                self.after_advance();
+            }
+            PlayFocusTarget::Restart => {
+                self.session.restart();
+                self.session.run();
+                self.after_advance();
+                self.play_focus.focus(PlayFocusTarget::Advance);
+            }
+            PlayFocusTarget::Choice(index) | PlayFocusTarget::DebugChoice(index) => {
+                self.session.choose(index);
+                self.after_advance();
+                if self.mode == PlayMode::Play {
+                    self.play_focus.focus(PlayFocusTarget::Advance);
+                }
+            }
+            PlayFocusTarget::DebugStep => {
+                self.session.step();
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugContinue => {
+                self.session.run();
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugRestart => {
+                self.session.restart();
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugStop => {
+                self.session.stop();
+            }
+            PlayFocusTarget::DebugSeedDown => {
+                self.session.change_seed(-1);
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugSeedUp => {
+                self.session.change_seed(1);
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugKnot(index) => {
+                let knot = self.session.knots().get(index).cloned();
+                if let Some(knot) = knot {
+                    self.session.jump(&knot);
+                }
+                self.after_advance();
+            }
+            PlayFocusTarget::DebugIssue => {
+                let span = self.session.issue().and_then(|issue| issue.span);
+                if let Some(span) = span {
+                    cx.emit(PreviewEvent::RevealSource(span));
+                }
+            }
+            PlayFocusTarget::PlaytestToggle => {
+                self.playtest_drawer.toggle();
+            }
+            PlayFocusTarget::PlaytestCapture => {
+                let session = &self.session;
+                self.playtest_drawer.capture(session);
+            }
+            PlayFocusTarget::PlaytestExportJson => {
+                if self.playtest_drawer.export_json() {
+                    let encoded = self.playtest_drawer.json().to_owned();
+                    cx.write_to_clipboard(ClipboardItem::new_string(encoded));
+                }
+            }
+            PlayFocusTarget::PlaytestExportRon => {
+                if self.playtest_drawer.export_ron() {
+                    let encoded = self.playtest_drawer.ron().to_owned();
+                    cx.write_to_clipboard(ClipboardItem::new_string(encoded));
+                }
+            }
+            PlayFocusTarget::PlaytestImportJson => {
+                match cx.read_from_clipboard().and_then(|item| item.text()) {
+                    Some(source) => {
+                        self.playtest_drawer.import_json(&source);
+                    }
+                    None => self
+                        .playtest_drawer
+                        .note("The clipboard has no text to import"),
+                }
+            }
+            PlayFocusTarget::PlaytestImportRon => {
+                match cx.read_from_clipboard().and_then(|item| item.text()) {
+                    Some(source) => {
+                        self.playtest_drawer.import_ron(&source);
+                    }
+                    None => self
+                        .playtest_drawer
+                        .note("The clipboard has no text to import"),
+                }
+            }
+            PlayFocusTarget::PlaytestReplay => {
+                let session = &self.session;
+                self.playtest_drawer.replay(session);
+            }
+            PlayFocusTarget::PresentationToggle => {
+                self.presentation_drawer.toggle();
+            }
+            PlayFocusTarget::DiagnosticsToggle => {
+                self.diagnostics_expanded = !self.diagnostics_expanded;
+            }
+        }
+        self.reconcile_play_focus();
     }
 
     fn transcript_panel(&self) -> AnyElement {
@@ -1766,7 +2327,7 @@ impl PreviewSurface {
         transcript.into_any_element()
     }
 
-    fn controls_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn controls_panel(&self, focused: PlayFocusTarget, cx: &mut Context<Self>) -> AnyElement {
         let stale = if self.session.is_stale() {
             " · showing last valid build"
         } else {
@@ -1792,12 +2353,19 @@ impl PreviewSurface {
                 div()
                     .flex()
                     .gap_1()
-                    .child(preview_button("Step", "preview-step", cx, |this, cx| {
-                        this.step(cx);
-                    }))
+                    .child(preview_button(
+                        "Step",
+                        "preview-step",
+                        focused == PlayFocusTarget::DebugStep,
+                        cx,
+                        |this, cx| {
+                            this.step(cx);
+                        },
+                    ))
                     .child(preview_button(
                         "Continue",
                         "preview-continue",
+                        focused == PlayFocusTarget::DebugContinue,
                         cx,
                         |this, cx| {
                             this.run(cx);
@@ -1806,14 +2374,21 @@ impl PreviewSurface {
                     .child(preview_button(
                         "Restart",
                         "preview-restart",
+                        focused == PlayFocusTarget::DebugRestart,
                         cx,
                         |this, cx| {
                             this.restart(cx);
                         },
                     ))
-                    .child(preview_button("Stop", "preview-stop", cx, |this, cx| {
-                        this.stop(cx);
-                    })),
+                    .child(preview_button(
+                        "Stop",
+                        "preview-stop",
+                        focused == PlayFocusTarget::DebugStop,
+                        cx,
+                        |this, cx| {
+                            this.stop(cx);
+                        },
+                    )),
             )
             .child(
                 div()
@@ -1823,6 +2398,7 @@ impl PreviewSurface {
                     .child(preview_button(
                         "Seed −",
                         "preview-seed-down",
+                        focused == PlayFocusTarget::DebugSeedDown,
                         cx,
                         |this, cx| {
                             this.change_seed(-1, cx);
@@ -1838,6 +2414,7 @@ impl PreviewSurface {
                     .child(preview_button(
                         "Seed +",
                         "preview-seed-up",
+                        focused == PlayFocusTarget::DebugSeedUp,
                         cx,
                         |this, cx| {
                             this.change_seed(1, cx);
@@ -1852,11 +2429,19 @@ impl PreviewSurface {
                     .px_2()
                     .py_1()
                     .rounded_md()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::DebugChoice(index),
+                    )))
                     .bg(rgb(DARK_THEME.accent))
                     .cursor_pointer()
                     .text_xs()
                     .child(choice.text)
-                    .on_click(cx.listener(move |this, _, _, cx| this.choose(index, cx))),
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.focus.focus(window, cx);
+                        this.choose(index, cx);
+                        this.reconcile_play_focus();
+                    })),
             );
         }
 
@@ -1867,12 +2452,17 @@ impl PreviewSurface {
                     .id("preview-issue")
                     .p_2()
                     .rounded_md()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::DebugIssue,
+                    )))
                     .bg(rgb(DARK_THEME.error))
                     .cursor_pointer()
                     .text_xs()
                     .child(issue.message.clone())
                     .when_some(span, |issue, span| {
-                        issue.on_click(cx.listener(move |_, _, _, cx| {
+                        issue.on_click(cx.listener(move |this, _, window, cx| {
+                            this.focus.focus(window, cx);
                             cx.emit(PreviewEvent::RevealSource(span));
                         }))
                     }),
@@ -1890,11 +2480,18 @@ impl PreviewSurface {
                     .id(("preview-knot", index))
                     .px_2()
                     .py_1()
+                    .border_1()
+                    .border_color(rgb(focus_indicator_colour(
+                        focused == PlayFocusTarget::DebugKnot(index),
+                    )))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(DARK_THEME.accent))
                     .child(format!("Replay {knot}"))
-                    .on_click(cx.listener(move |this, _, _, cx| this.jump(&target, cx))),
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.focus.focus(window, cx);
+                        this.jump(&target, cx);
+                    })),
             );
         }
         panel.child(knots).into_any_element()
@@ -1946,6 +2543,8 @@ impl EventEmitter<PreviewEvent> for PreviewSurface {}
 
 impl gpui::Render for PreviewSurface {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let order = self.focus_order_now();
+        let focused = self.play_focus.reconcile(&order);
         let body = match self.mode {
             PlayMode::Debug => div()
                 .flex_1()
@@ -1954,10 +2553,10 @@ impl gpui::Render for PreviewSurface {
                 .flex()
                 .gap_3()
                 .child(self.transcript_panel())
-                .child(self.controls_panel(cx))
+                .child(self.controls_panel(focused, cx))
                 .child(self.state_panel())
                 .into_any_element(),
-            PlayMode::Play => self.play_panel(cx),
+            PlayMode::Play => self.play_panel(focused, cx),
         };
         div()
             .id("play-preview")
@@ -1972,7 +2571,7 @@ impl gpui::Render for PreviewSurface {
             .on_key_down(cx.listener(|this, event: &KeyDownEvent, _, cx| {
                 this.preview_key(event, cx);
             }))
-            .child(self.mode_bar(cx))
+            .child(self.mode_bar(focused, cx))
             .child(body)
     }
 }
@@ -2005,6 +2604,7 @@ fn drawer_note(text: String) -> AnyElement {
 fn preview_button(
     label: &str,
     id: &'static str,
+    focused: bool,
     cx: &mut Context<PreviewSurface>,
     action: impl Fn(&mut PreviewSurface, &mut Context<PreviewSurface>) + 'static,
 ) -> AnyElement {
@@ -2013,11 +2613,16 @@ fn preview_button(
         .px_2()
         .py_1()
         .rounded_md()
+        .border_1()
+        .border_color(rgb(focus_indicator_colour(focused)))
         .bg(rgb(DARK_THEME.chrome))
         .cursor_pointer()
         .text_xs()
         .child(label.to_owned())
-        .on_click(cx.listener(move |this, _, _, cx| action(this, cx)))
+        .on_click(cx.listener(move |this, _, window, cx| {
+            this.focus.focus(window, cx);
+            action(this, cx);
+        }))
         .into_any_element()
 }
 
@@ -2039,7 +2644,11 @@ fn anchor_inset(anchor: f64) -> (f32, f32) {
 ///
 /// The figure keeps its aspect ratio inside the column, so the scene stays
 /// readable when the panel is narrow and does not balloon when it is wide.
-fn stage_figure(stage: &StagedCharacter, image: Option<Arc<RenderImage>>) -> AnyElement {
+fn stage_figure(
+    stage: &StagedCharacter,
+    image: Option<Arc<RenderImage>>,
+    motion: MotionPreference,
+) -> AnyElement {
     let figure = match image {
         Some(image) => img(ImageSource::Render(image))
             .w_full()
@@ -2066,7 +2675,7 @@ fn stage_figure(stage: &StagedCharacter, image: Option<Arc<RenderImage>>) -> Any
         .w(relative(0.9))
         .min_w(px(24.0))
         .max_w(px(170.0))
-        .opacity(PlayScene::stage_opacity(stage))
+        .opacity(motion.stage_opacity(stage))
         .child(div().flex_1().w_full().child(figure))
         .child(
             div()
@@ -2147,6 +2756,7 @@ mod tests {
     use crate::play_view::{
         CharacterProjection, PresentationDiagnosticKind, ResolvedTarget, ValueRef,
     };
+    use crate::playtest::{PlaytestCue, PlaytestEvent, PlaytestEventKind};
     use weave_core::ir::{Instruction, InstructionKind};
 
     const STORY: &str = r#"grammar names {
@@ -2346,7 +2956,11 @@ The harbour is quiet.
         let record = drawer.record().cloned().expect("captured record");
         assert_eq!(record.seed, 7);
         assert_eq!(record.start_knot, "start");
-        assert!(record.outcome.summary().contains("waiting for choice"));
+        assert!(
+            drawer
+                .outcome_summary()
+                .is_some_and(|summary| summary.contains("waiting for choice"))
+        );
 
         assert!(drawer.export_json());
         let json = drawer.json().to_owned();
@@ -2358,8 +2972,10 @@ The harbour is quiet.
         let mut imported = PlaytestDrawer::default();
         assert!(imported.import_json(&json));
         assert_eq!(imported.record(), Some(&record));
+        assert!(imported.outcome_summary().is_some());
         assert!(imported.import_ron(&ron));
         assert_eq!(imported.record(), Some(&record));
+        assert!(imported.outcome_summary().is_some());
 
         assert_eq!(preview.transcript(), transcript);
         assert_eq!(preview.presentation(), cues);
@@ -2519,5 +3135,39 @@ The harbour is quiet.
             assert!(!diagnostic.source.contains("never-print-this-token"));
             assert!(!diagnostic.detail.contains("never-print-this-token"));
         }
+    }
+
+    #[test]
+    fn playtest_drawer_renders_a_bounded_window_for_a_large_record() {
+        let preview = drawer_session(DRAWER_STORY);
+        let mut drawer = PlaytestDrawer::default();
+        assert!(drawer.capture(&preview));
+
+        let mut record = drawer.record().cloned().expect("captured record");
+        while record.events.len() < PLAYTEST_DRAWER_WINDOW + 5 {
+            record.events.push(PlaytestEvent {
+                kind: PlaytestEventKind::Line {
+                    text: "line".to_owned(),
+                },
+                knot: "start".to_owned(),
+                span: None,
+            });
+        }
+        while record.cues.len() < PLAYTEST_DRAWER_WINDOW + 3 {
+            record.cues.push(PlaytestCue {
+                cue: PresentationEvent::Scene("harbour".to_owned()),
+                knot: "start".to_owned(),
+                span: None,
+            });
+        }
+        drawer.record = Some(record);
+
+        let (events, omitted_events) = drawer.event_window();
+        assert_eq!(events.len(), PLAYTEST_DRAWER_WINDOW);
+        assert_eq!(omitted_events, 5);
+
+        let (cues, omitted_cues) = drawer.cue_window();
+        assert_eq!(cues.len(), PLAYTEST_DRAWER_WINDOW);
+        assert_eq!(omitted_cues, 3);
     }
 }

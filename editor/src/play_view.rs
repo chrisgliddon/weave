@@ -28,15 +28,17 @@
 //!   exposed on the scene, where a renderer may ignore it or draw it.
 
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use weave_core::ir::{AnchorIr, DomainValueIr, Fit, Slot, StoryIr, TransitionKind};
 use weave_runtime::{ChoiceView, PresentationEvent, Value};
 
 use crate::preview::{PreviewSession, PreviewStatus, PreviewTranscript};
+use crate::theme::DARK_THEME;
 
 /// Which presentation the preview panel uses.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum PlayMode {
     /// The diagnostic transcript.
     #[default]
@@ -1329,6 +1331,947 @@ fn current_text(
     }
 }
 
+// --- Accessibility and interaction -------------------------------------------------
+//
+// The Play surface exposes one logical focus order. A window toolkit maps its
+// own keys onto [`PlayKey`]; the model below owns every decision about order,
+// focus restoration, activation, motion, scaling, reveal timing, and
+// auto-advance, so the behaviour is testable without a window.
+//
+// Documented focus order:
+//
+// 1. the Debug and Play mode tabs, left to right;
+// 2. in Debug mode, the Step, Continue, Restart, Stop, seed, choice, knot, and
+//    diagnostic controls, in the order they are drawn;
+// 3. in Play mode, the scene action (Advance, or Restart after the end), then
+//    the numbered choices;
+// 4. in Play mode, the author controls from top to bottom: Playtest drawer and
+//    its buttons when open, Resolved presentation, then Diagnostics.
+//
+// Tab and Shift+Tab move one step and wrap. Home and End jump to the first and
+// last reachable control. Enter or Space activates the focused control. A
+// control that disappears because a drawer closed restores focus to that
+// drawer's toggle or to the nearest reachable control.
+
+/// Minimum contrast ratio for body text against its background (WCAG 2.2 AA).
+pub const MIN_TEXT_CONTRAST: f32 = 4.5;
+
+/// Minimum contrast ratio for the focus indicator (WCAG 2.2 non-text).
+pub const MIN_FOCUS_CONTRAST: f32 = 3.0;
+
+/// Available dialogue text scales, smallest first.
+pub const TEXT_SCALE_STEPS: [f32; 5] = [0.85, 1.0, 1.15, 1.3, 1.5];
+
+/// Default dialogue text scale.
+pub const DEFAULT_TEXT_SCALE: f32 = 1.0;
+
+/// Base dialogue size in logical pixels at [`DEFAULT_TEXT_SCALE`].
+pub const DIALOGUE_BASE_PX: f32 = 18.0;
+
+/// Base maximum dialogue height in logical pixels at [`DEFAULT_TEXT_SCALE`].
+pub const DIALOGUE_MAX_HEIGHT_PX: f32 = 220.0;
+
+/// Default reveal speed in characters per second.
+pub const DEFAULT_REVEAL_CPS: u32 = 45;
+
+/// Lowest configurable reveal speed.
+pub const MIN_REVEAL_CPS: u32 = 1;
+
+/// Highest configurable reveal speed.
+pub const MAX_REVEAL_CPS: u32 = 240;
+
+/// Characters per second added or removed by one reveal-speed key.
+pub const REVEAL_SPEED_STEP: u32 = 15;
+
+/// Largest number of steps one auto-advance run may take.
+pub const MAX_AUTO_ADVANCE_STEPS: u32 = 1_000;
+
+/// Documented shortcuts shared by the Play surface, its hint text, and tests.
+pub const PLAY_KEYBOARD_HINT: &str = "Tab/Shift+Tab move · Enter/Space activate · 1-9 choose · R restart · D playtest · V references · I diagnostics · +/− text size · [ ] reveal speed · M reduced motion · S skip text · A auto-advance";
+
+/// WCAG relative luminance of one `0xRRGGBB` colour.
+#[must_use]
+pub fn relative_luminance(colour: u32) -> f32 {
+    fn channel(value: u32) -> f32 {
+        let value = (value & 0xff) as f32 / 255.0;
+        if value <= 0.040_45 {
+            value / 12.92
+        } else {
+            ((value + 0.055) / 1.055).powf(2.4)
+        }
+    }
+    let red = channel(colour >> 16);
+    let green = channel(colour >> 8);
+    let blue = channel(colour);
+    0.2126 * red + 0.7152 * green + 0.0722 * blue
+}
+
+/// WCAG contrast ratio between two `0xRRGGBB` colours.
+#[must_use]
+pub fn contrast_ratio(first: u32, second: u32) -> f32 {
+    let first = relative_luminance(first);
+    let second = relative_luminance(second);
+    let (lighter, darker) = if first >= second {
+        (first, second)
+    } else {
+        (second, first)
+    };
+    (lighter + 0.05) / (darker + 0.05)
+}
+
+/// Border colour for a control, derived from the theme accent token.
+#[must_use]
+pub fn focus_indicator_colour(focused: bool) -> u32 {
+    if focused {
+        DARK_THEME.accent
+    } else {
+        DARK_THEME.border
+    }
+}
+
+/// Clamp a requested text scale into the documented steps.
+#[must_use]
+pub fn clamp_text_scale(scale: f32) -> f32 {
+    if scale.is_finite() {
+        scale.clamp(
+            TEXT_SCALE_STEPS[0],
+            TEXT_SCALE_STEPS[TEXT_SCALE_STEPS.len() - 1],
+        )
+    } else {
+        DEFAULT_TEXT_SCALE
+    }
+}
+
+/// Scale one logical pixel size. Dialogue reflows because larger type wraps.
+#[must_use]
+pub fn scaled_text_px(base: f32, scale: f32) -> f32 {
+    base * clamp_text_scale(scale)
+}
+
+/// Scale the maximum dialogue height so enlarged text is not clipped.
+#[must_use]
+pub fn scaled_dialogue_height(base: f32, scale: f32) -> f32 {
+    base * clamp_text_scale(scale)
+}
+
+/// Next or previous text scale step. Direction `0` keeps the current scale.
+#[must_use]
+pub fn step_text_scale(scale: f32, direction: i32) -> f32 {
+    let current = clamp_text_scale(scale);
+    if direction > 0 {
+        TEXT_SCALE_STEPS
+            .iter()
+            .copied()
+            .find(|step| *step > current)
+            .unwrap_or(TEXT_SCALE_STEPS[TEXT_SCALE_STEPS.len() - 1])
+    } else if direction < 0 {
+        TEXT_SCALE_STEPS
+            .iter()
+            .rev()
+            .copied()
+            .find(|step| *step < current)
+            .unwrap_or(TEXT_SCALE_STEPS[0])
+    } else {
+        current
+    }
+}
+
+/// Whether the surface animates transitions and text reveal.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum MotionPreference {
+    /// Draw bounded transitions and animated text reveal.
+    #[default]
+    Full,
+    /// Settle every frame immediately while keeping cue order unchanged.
+    Reduced,
+}
+
+impl MotionPreference {
+    /// The other preference.
+    #[must_use]
+    pub const fn toggled(self) -> Self {
+        match self {
+            Self::Full => Self::Reduced,
+            Self::Reduced => Self::Full,
+        }
+    }
+
+    /// Author-facing preference name.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Full => "Full motion",
+            Self::Reduced => "Reduced motion",
+        }
+    }
+
+    /// Transition to apply, suppressed entirely under reduced motion.
+    #[must_use]
+    pub fn transition(self, transition: Option<PlayTransition>) -> Option<PlayTransition> {
+        match self {
+            Self::Full => transition,
+            Self::Reduced => None,
+        }
+    }
+
+    /// Opacity of one staged figure under this preference.
+    #[must_use]
+    pub fn stage_opacity(self, stage: &StagedCharacter) -> f32 {
+        match self {
+            Self::Full => PlayScene::stage_opacity(stage),
+            Self::Reduced => 1.0,
+        }
+    }
+
+    /// Opacity of the background under this preference.
+    #[must_use]
+    pub fn background_opacity(self, scene: &PlayScene) -> f32 {
+        match self {
+            Self::Full => scene.background_opacity(),
+            Self::Reduced => 1.0,
+        }
+    }
+
+    /// Reveal setting to use. Reduced motion reveals text immediately.
+    #[must_use]
+    pub fn reveal(self, reveal: TextReveal) -> TextReveal {
+        match self {
+            Self::Full => reveal,
+            Self::Reduced => TextReveal::instant(),
+        }
+    }
+}
+
+/// Configurable dialogue text reveal.
+///
+/// Counting characters, not bytes, keeps multi-byte text intact. The speed is
+/// clamped so timing stays bounded on both ends.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TextReveal {
+    /// Characters revealed per second.
+    pub chars_per_second: u32,
+    /// Whether the whole line appears at once.
+    pub instant: bool,
+}
+
+impl Default for TextReveal {
+    fn default() -> Self {
+        Self::new(DEFAULT_REVEAL_CPS)
+    }
+}
+
+impl TextReveal {
+    /// Clamp a requested speed into the documented bounds.
+    #[must_use]
+    pub const fn clamp_speed(chars_per_second: u32) -> u32 {
+        if chars_per_second < MIN_REVEAL_CPS {
+            MIN_REVEAL_CPS
+        } else if chars_per_second > MAX_REVEAL_CPS {
+            MAX_REVEAL_CPS
+        } else {
+            chars_per_second
+        }
+    }
+
+    /// Animated reveal at the requested speed.
+    #[must_use]
+    pub const fn new(chars_per_second: u32) -> Self {
+        Self {
+            chars_per_second: Self::clamp_speed(chars_per_second),
+            instant: false,
+        }
+    }
+
+    /// Reveal the whole line immediately.
+    #[must_use]
+    pub const fn instant() -> Self {
+        Self {
+            chars_per_second: MAX_REVEAL_CPS,
+            instant: true,
+        }
+    }
+
+    /// Same mode at a different speed.
+    #[must_use]
+    pub const fn with_speed(self, chars_per_second: u32) -> Self {
+        Self {
+            chars_per_second: Self::clamp_speed(chars_per_second),
+            instant: self.instant,
+        }
+    }
+
+    /// Same speed with instant reveal on or off.
+    #[must_use]
+    pub const fn with_instant(self, instant: bool) -> Self {
+        Self {
+            chars_per_second: self.chars_per_second,
+            instant,
+        }
+    }
+
+    /// Number of characters visible after `elapsed`.
+    #[must_use]
+    pub fn visible_chars(self, text: &str, elapsed: Duration) -> usize {
+        let total = text.chars().count();
+        if self.instant {
+            return total;
+        }
+        let revealed = (elapsed.as_secs_f64() * f64::from(self.chars_per_second)).floor() as usize;
+        revealed.min(total)
+    }
+
+    /// Whether the whole line is visible after `elapsed`.
+    #[must_use]
+    pub fn is_complete(self, text: &str, elapsed: Duration) -> bool {
+        self.visible_chars(text, elapsed) >= text.chars().count()
+    }
+
+    /// The visible prefix after `elapsed`.
+    #[must_use]
+    pub fn reveal(self, text: &str, elapsed: Duration) -> String {
+        text.chars()
+            .take(self.visible_chars(text, elapsed))
+            .collect()
+    }
+}
+
+/// Bounded auto-advance configuration.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AutoAdvancePolicy {
+    /// Whether auto-advance is requested.
+    pub enabled: bool,
+    /// Quiet time after a line before advancing.
+    pub delay: Duration,
+    /// Maximum number of steps one run may take.
+    pub max_steps: u32,
+}
+
+impl Default for AutoAdvancePolicy {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            delay: Duration::from_millis(1_500),
+            max_steps: 200,
+        }
+    }
+}
+
+impl AutoAdvancePolicy {
+    /// Whether the surface may take another step.
+    fn bounded_max_steps(max_steps: u32) -> u32 {
+        if max_steps > MAX_AUTO_ADVANCE_STEPS {
+            MAX_AUTO_ADVANCE_STEPS
+        } else {
+            max_steps
+        }
+    }
+}
+
+/// Auto-advance progress, bounded by its policy.
+#[derive(Debug, Clone)]
+pub struct AutoAdvanceState {
+    policy: AutoAdvancePolicy,
+    advanced: u32,
+}
+
+impl Default for AutoAdvanceState {
+    fn default() -> Self {
+        Self::new(AutoAdvancePolicy::default())
+    }
+}
+
+impl AutoAdvanceState {
+    /// New state with a bounded copy of `policy`.
+    #[must_use]
+    pub fn new(policy: AutoAdvancePolicy) -> Self {
+        let policy = AutoAdvancePolicy {
+            max_steps: AutoAdvancePolicy::bounded_max_steps(policy.max_steps),
+            ..policy
+        };
+        Self {
+            policy,
+            advanced: 0,
+        }
+    }
+
+    /// Current policy.
+    #[must_use]
+    pub const fn policy(&self) -> AutoAdvancePolicy {
+        self.policy
+    }
+
+    /// Replace the policy, resetting the step count.
+    pub fn set_policy(&mut self, policy: AutoAdvancePolicy) {
+        *self = Self::new(policy);
+    }
+
+    /// Enable or disable auto-advance and reset the step count.
+    pub fn toggle(&mut self) {
+        self.policy.enabled = !self.policy.enabled;
+        self.advanced = 0;
+    }
+
+    /// Steps taken in this run.
+    #[must_use]
+    pub const fn advanced(&self) -> u32 {
+        self.advanced
+    }
+
+    /// Reset the step count.
+    pub fn reset(&mut self) {
+        self.advanced = 0;
+    }
+
+    /// Whether one more step is allowed now.
+    ///
+    /// Auto-advance stops at a choice, at the end, on a diagnostic, and when
+    /// the bounded step count is exhausted. It never reorders cues; it only
+    /// asks the session to take its next step.
+    #[must_use]
+    pub fn can_advance(&self, scene: &PlayScene, elapsed_since_line: Duration) -> bool {
+        self.policy.enabled
+            && self.advanced < self.policy.max_steps
+            && scene.status == PreviewStatus::Ready
+            && !scene.ended
+            && scene.choices.is_empty()
+            && scene.issue.is_none()
+            && elapsed_since_line >= self.policy.delay
+    }
+
+    /// Record one step. Returns `false` when the bound is already reached.
+    pub fn record_advance(&mut self) -> bool {
+        if self.advanced >= self.policy.max_steps {
+            return false;
+        }
+        self.advanced += 1;
+        true
+    }
+}
+
+/// Every focusable control in the Play or Debug surface.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PlayFocusTarget {
+    /// A presentation mode tab.
+    Mode(PlayMode),
+    /// Advance the scene in Play mode.
+    Advance,
+    /// Restart the story after the end.
+    Restart,
+    /// One numbered Play choice.
+    Choice(usize),
+    /// Debug transcript: step one line.
+    DebugStep,
+    /// Debug transcript: continue to the next boundary.
+    DebugContinue,
+    /// Debug transcript: restart the story.
+    DebugRestart,
+    /// Debug transcript: stop playback.
+    DebugStop,
+    /// Debug transcript: previous seed.
+    DebugSeedDown,
+    /// Debug transcript: next seed.
+    DebugSeedUp,
+    /// Debug transcript: choose one option.
+    DebugChoice(usize),
+    /// Debug transcript: replay one knot.
+    DebugKnot(usize),
+    /// Debug transcript: reveal the source of the current diagnostic.
+    DebugIssue,
+    /// Playtest drawer toggle.
+    PlaytestToggle,
+    /// Capture the current playthrough.
+    PlaytestCapture,
+    /// Export the record as JSON.
+    PlaytestExportJson,
+    /// Export the record as RON.
+    PlaytestExportRon,
+    /// Import a record as JSON.
+    PlaytestImportJson,
+    /// Import a record as RON.
+    PlaytestImportRon,
+    /// Replay the record.
+    PlaytestReplay,
+    /// Resolved-presentation drawer toggle.
+    PresentationToggle,
+    /// Diagnostics drawer toggle.
+    DiagnosticsToggle,
+}
+
+impl PlayFocusTarget {
+    /// Author-facing label.
+    #[must_use]
+    pub fn label(self) -> String {
+        match self {
+            Self::Mode(mode) => format!("{} mode", mode.label()),
+            Self::Advance => "Advance scene".to_owned(),
+            Self::Restart => "Restart story".to_owned(),
+            Self::Choice(index) => format!("Choice {}", index + 1),
+            Self::DebugStep => "Step".to_owned(),
+            Self::DebugContinue => "Continue".to_owned(),
+            Self::DebugRestart => "Restart".to_owned(),
+            Self::DebugStop => "Stop".to_owned(),
+            Self::DebugSeedDown => "Previous seed".to_owned(),
+            Self::DebugSeedUp => "Next seed".to_owned(),
+            Self::DebugChoice(index) => format!("Debug choice {}", index + 1),
+            Self::DebugKnot(index) => format!("Replay knot {}", index + 1),
+            Self::DebugIssue => "Reveal diagnostic source".to_owned(),
+            Self::PlaytestToggle => "Playtest drawer".to_owned(),
+            Self::PlaytestCapture => "Capture playtest".to_owned(),
+            Self::PlaytestExportJson => "Export playtest JSON".to_owned(),
+            Self::PlaytestExportRon => "Export playtest RON".to_owned(),
+            Self::PlaytestImportJson => "Import playtest JSON".to_owned(),
+            Self::PlaytestImportRon => "Import playtest RON".to_owned(),
+            Self::PlaytestReplay => "Replay playtest".to_owned(),
+            Self::PresentationToggle => "Resolved presentation drawer".to_owned(),
+            Self::DiagnosticsToggle => "Diagnostics drawer".to_owned(),
+        }
+    }
+
+    /// Accessibility role.
+    #[must_use]
+    pub const fn role(self) -> &'static str {
+        match self {
+            Self::Mode(_) => "tab",
+            Self::Choice(_) | Self::DebugChoice(_) => "option",
+            Self::DiagnosticsToggle => "disclosure",
+            _ => "button",
+        }
+    }
+
+    /// The toggle to focus when this control disappears, if any.
+    #[must_use]
+    pub const fn restore_target(self) -> Option<Self> {
+        match self {
+            Self::Restart | Self::Choice(_) => Some(Self::Advance),
+            Self::PlaytestCapture
+            | Self::PlaytestExportJson
+            | Self::PlaytestExportRon
+            | Self::PlaytestImportJson
+            | Self::PlaytestImportRon
+            | Self::PlaytestReplay => Some(Self::PlaytestToggle),
+            _ => None,
+        }
+    }
+}
+
+/// Inputs that determine which controls are reachable.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PlayFocusContext {
+    /// Current presentation mode.
+    pub mode: PlayMode,
+    /// Whether the Playtest drawer body is open.
+    pub playtest_expanded: bool,
+    /// Number of choices in the Debug panel.
+    pub debug_choices: usize,
+    /// Number of knots in the Debug panel.
+    pub debug_knots: usize,
+    /// Whether a compile or runtime issue is shown.
+    pub has_issue: bool,
+}
+
+/// Build the documented focus order for the current surface state.
+#[must_use]
+pub fn play_focus_order(scene: &PlayScene, context: PlayFocusContext) -> Vec<PlayFocusTarget> {
+    play_focus_order_for(scene.ended, scene.choices.len(), context)
+}
+
+/// Build the focus order from the few session facts it depends on.
+///
+/// The surface uses this form so a render does not fold every presentation cue
+/// just to decide which controls are reachable.
+#[must_use]
+pub fn play_focus_order_for(
+    ended: bool,
+    choice_count: usize,
+    context: PlayFocusContext,
+) -> Vec<PlayFocusTarget> {
+    let mut order = vec![
+        PlayFocusTarget::Mode(PlayMode::Debug),
+        PlayFocusTarget::Mode(PlayMode::Play),
+    ];
+    match context.mode {
+        PlayMode::Debug => {
+            order.extend([
+                PlayFocusTarget::DebugStep,
+                PlayFocusTarget::DebugContinue,
+                PlayFocusTarget::DebugRestart,
+                PlayFocusTarget::DebugStop,
+                PlayFocusTarget::DebugSeedDown,
+                PlayFocusTarget::DebugSeedUp,
+            ]);
+            order.extend((0..context.debug_choices).map(PlayFocusTarget::DebugChoice));
+            order.extend((0..context.debug_knots).map(PlayFocusTarget::DebugKnot));
+            if context.has_issue {
+                order.push(PlayFocusTarget::DebugIssue);
+            }
+        }
+        PlayMode::Play => {
+            if ended {
+                order.push(PlayFocusTarget::Restart);
+            } else {
+                order.push(PlayFocusTarget::Advance);
+            }
+            order.extend((0..choice_count).map(PlayFocusTarget::Choice));
+            order.push(PlayFocusTarget::PlaytestToggle);
+            if context.playtest_expanded {
+                order.extend([
+                    PlayFocusTarget::PlaytestCapture,
+                    PlayFocusTarget::PlaytestExportJson,
+                    PlayFocusTarget::PlaytestExportRon,
+                    PlayFocusTarget::PlaytestImportJson,
+                    PlayFocusTarget::PlaytestImportRon,
+                    PlayFocusTarget::PlaytestReplay,
+                ]);
+            }
+            // The resolved-presentation body is read-only, so its toggle is the
+            // single focus stop for that drawer.
+            order.push(PlayFocusTarget::PresentationToggle);
+            order.push(PlayFocusTarget::DiagnosticsToggle);
+        }
+    }
+    order
+}
+
+/// Logical keys accepted by the Play surface, independent of a window toolkit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlayKey {
+    /// Move to the next control.
+    Next,
+    /// Move to the previous control.
+    Previous,
+    /// Jump to the first control.
+    Home,
+    /// Jump to the last control.
+    End,
+    /// Activate the focused control.
+    Activate,
+    /// Select one choice by zero-based index.
+    Choose(usize),
+    /// Restart the story.
+    Restart,
+    /// Toggle the Playtest drawer.
+    TogglePlaytest,
+    /// Toggle the resolved-presentation drawer.
+    TogglePresentation,
+    /// Toggle the diagnostics drawer.
+    ToggleDiagnostics,
+    /// Enlarge dialogue text by one step.
+    ScaleUp,
+    /// Reduce dialogue text by one step.
+    ScaleDown,
+    /// Toggle full and reduced motion.
+    ToggleMotion,
+    /// Toggle instant text reveal.
+    SkipReveal,
+    /// Make text reveal slower by one step.
+    RevealSlower,
+    /// Make text reveal faster by one step.
+    RevealFaster,
+    /// Toggle bounded auto-advance.
+    ToggleAutoAdvance,
+}
+
+/// Result of one logical key.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlayAction {
+    /// Focus moved to this control.
+    FocusChanged(PlayFocusTarget),
+    /// Activate this control.
+    Activate(PlayFocusTarget),
+    /// Select one choice.
+    Choose(usize),
+    /// Restart the story.
+    Restart,
+    /// Toggle the Playtest drawer.
+    TogglePlaytest,
+    /// Toggle the resolved-presentation drawer.
+    TogglePresentation,
+    /// Toggle the diagnostics drawer.
+    ToggleDiagnostics,
+    /// Change the text scale by one step.
+    StepTextScale(i32),
+    /// Toggle full and reduced motion.
+    ToggleMotion,
+    /// Toggle instant text reveal.
+    SkipReveal,
+    /// Change reveal speed by one step.
+    StepRevealSpeed(i32),
+    /// Toggle bounded auto-advance.
+    ToggleAutoAdvance,
+}
+
+/// Map one window key onto a logical Play key.
+///
+/// Platform, control, and alt chords are left to the host. Shift is used only
+/// by Tab and does not change a letter shortcut.
+#[must_use]
+pub fn play_key_for(
+    key: &str,
+    key_char: Option<&str>,
+    shift: bool,
+    control: bool,
+    alt: bool,
+    platform: bool,
+) -> Option<PlayKey> {
+    if control || alt || platform {
+        return None;
+    }
+    match key {
+        "tab" => Some(if shift {
+            PlayKey::Previous
+        } else {
+            PlayKey::Next
+        }),
+        "up" => Some(PlayKey::Previous),
+        "down" => Some(PlayKey::Next),
+        "home" => Some(PlayKey::Home),
+        "end" => Some(PlayKey::End),
+        "enter" | "space" => Some(PlayKey::Activate),
+        "r" => Some(PlayKey::Restart),
+        "d" => Some(PlayKey::TogglePlaytest),
+        "v" => Some(PlayKey::TogglePresentation),
+        "i" => Some(PlayKey::ToggleDiagnostics),
+        "m" => Some(PlayKey::ToggleMotion),
+        "s" => Some(PlayKey::SkipReveal),
+        "[" => Some(PlayKey::RevealSlower),
+        "]" => Some(PlayKey::RevealFaster),
+        "a" => Some(PlayKey::ToggleAutoAdvance),
+        "=" | "+" => Some(PlayKey::ScaleUp),
+        "-" | "_" => Some(PlayKey::ScaleDown),
+        _ => {
+            let character = key_char
+                .and_then(|text| text.chars().next())
+                .or_else(|| key.chars().next())?;
+            let digit = character.to_digit(10)?;
+            if (1..=9).contains(&digit) {
+                Some(PlayKey::Choose(digit as usize - 1))
+            } else {
+                None
+            }
+        }
+    }
+}
+
+/// Logical focus with predictable restoration.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayFocus {
+    focused: PlayFocusTarget,
+}
+
+impl Default for PlayFocus {
+    fn default() -> Self {
+        Self {
+            focused: PlayFocusTarget::Advance,
+        }
+    }
+}
+
+impl PlayFocus {
+    /// Currently focused control.
+    #[must_use]
+    pub const fn current(&self) -> PlayFocusTarget {
+        self.focused
+    }
+
+    /// Focus one control explicitly.
+    pub fn focus(&mut self, target: PlayFocusTarget) {
+        self.focused = target;
+    }
+
+    /// Reconcile focus with the reachable controls.
+    ///
+    /// A control that vanished restores focus to its drawer toggle or to the
+    /// first reachable control, so focus never becomes unreachable.
+    pub fn reconcile(&mut self, order: &[PlayFocusTarget]) -> PlayFocusTarget {
+        if order.contains(&self.focused) {
+            return self.focused;
+        }
+        let restored = self
+            .focused
+            .restore_target()
+            .filter(|target| order.contains(target));
+        if let Some(target) = restored {
+            self.focused = target;
+        } else if let Some(first) = order.first() {
+            self.focused = *first;
+        }
+        self.focused
+    }
+
+    /// Move one control forward or backward, wrapping at the ends.
+    pub fn step(&mut self, order: &[PlayFocusTarget], forward: bool) -> PlayFocusTarget {
+        if order.is_empty() {
+            return self.focused;
+        }
+        let next = order
+            .iter()
+            .position(|target| *target == self.focused)
+            .map_or(0, |index| {
+                if forward {
+                    (index + 1) % order.len()
+                } else {
+                    (index + order.len() - 1) % order.len()
+                }
+            });
+        self.focused = order[next];
+        self.focused
+    }
+
+    /// Jump to the first reachable control.
+    pub fn home(&mut self, order: &[PlayFocusTarget]) -> PlayFocusTarget {
+        if let Some(first) = order.first() {
+            self.focused = *first;
+        }
+        self.focused
+    }
+
+    /// Jump to the last reachable control.
+    pub fn end(&mut self, order: &[PlayFocusTarget]) -> PlayFocusTarget {
+        if let Some(last) = order.last() {
+            self.focused = *last;
+        }
+        self.focused
+    }
+
+    /// Apply one logical key to the focus and return the resulting action.
+    pub fn handle_key(&mut self, key: PlayKey, order: &[PlayFocusTarget]) -> PlayAction {
+        match key {
+            PlayKey::Next => PlayAction::FocusChanged(self.step(order, true)),
+            PlayKey::Previous => PlayAction::FocusChanged(self.step(order, false)),
+            PlayKey::Home => PlayAction::FocusChanged(self.home(order)),
+            PlayKey::End => PlayAction::FocusChanged(self.end(order)),
+            PlayKey::Activate => PlayAction::Activate(self.focused),
+            PlayKey::Choose(index) => PlayAction::Choose(index),
+            PlayKey::Restart => PlayAction::Restart,
+            PlayKey::TogglePlaytest => PlayAction::TogglePlaytest,
+            PlayKey::TogglePresentation => PlayAction::TogglePresentation,
+            PlayKey::ToggleDiagnostics => PlayAction::ToggleDiagnostics,
+            PlayKey::ScaleUp => PlayAction::StepTextScale(1),
+            PlayKey::ScaleDown => PlayAction::StepTextScale(-1),
+            PlayKey::ToggleMotion => PlayAction::ToggleMotion,
+            PlayKey::SkipReveal => PlayAction::SkipReveal,
+            PlayKey::RevealSlower => PlayAction::StepRevealSpeed(-1),
+            PlayKey::RevealFaster => PlayAction::StepRevealSpeed(1),
+            PlayKey::ToggleAutoAdvance => PlayAction::ToggleAutoAdvance,
+        }
+    }
+}
+
+/// Accessibility metadata for the focused control.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayAccessibility {
+    /// Toolkit-independent role.
+    pub role: &'static str,
+    /// Author-facing label.
+    pub label: String,
+    /// One-based position in the focus order.
+    pub position: usize,
+    /// Number of reachable controls.
+    pub total: usize,
+    /// Documented shortcut hint.
+    pub keyboard_hint: &'static str,
+}
+
+/// Describe the focused control for assistive output.
+#[must_use]
+pub fn play_accessibility(
+    order: &[PlayFocusTarget],
+    focused: PlayFocusTarget,
+) -> PlayAccessibility {
+    PlayAccessibility {
+        role: focused.role(),
+        label: focused.label(),
+        position: order
+            .iter()
+            .position(|target| *target == focused)
+            .map_or(1, |index| index + 1),
+        total: order.len(),
+        keyboard_hint: PLAY_KEYBOARD_HINT,
+    }
+}
+
+/// Severity of one Play diagnostic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum PlayDiagnosticSeverity {
+    /// Informational fallback.
+    Note,
+    /// A frame degraded without losing story state.
+    Warning,
+    /// The last valid frame is shown because the current build failed.
+    Error,
+}
+
+impl PlayDiagnosticSeverity {
+    /// Author-facing severity name.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Note => "note",
+            Self::Warning => "warning",
+            Self::Error => "error",
+        }
+    }
+}
+
+/// One diagnostic reachable from the Play author-control region.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayDiagnostic {
+    /// Severity, ordered from information to critical.
+    pub severity: PlayDiagnosticSeverity,
+    /// Redaction-safe summary.
+    pub summary: String,
+}
+
+/// Collect diagnostics in deterministic order: compile issue, cue notes, then
+/// resolved-presentation diagnostics. The surface lists them below the scene,
+/// never over it, so the playable frame stays visible.
+#[must_use]
+pub fn play_diagnostics(
+    scene: &PlayScene,
+    rows: Option<&PresentationDrawerRows>,
+) -> Vec<PlayDiagnostic> {
+    let mut diagnostics = Vec::new();
+    if let Some(issue) = &scene.issue {
+        diagnostics.push(PlayDiagnostic {
+            severity: PlayDiagnosticSeverity::Error,
+            summary: issue.clone(),
+        });
+    }
+    for note in &scene.notes {
+        diagnostics.push(PlayDiagnostic {
+            severity: PlayDiagnosticSeverity::Warning,
+            summary: note.clone(),
+        });
+    }
+    if let Some(rows) = rows {
+        for diagnostic in &rows.diagnostics {
+            let severity = if diagnostic.kind == PresentationDiagnosticKind::Fallback {
+                PlayDiagnosticSeverity::Note
+            } else {
+                PlayDiagnosticSeverity::Warning
+            };
+            diagnostics.push(PlayDiagnostic {
+                severity,
+                summary: format!(
+                    "{} · {} — {}",
+                    diagnostic.kind.label(),
+                    diagnostic.source,
+                    diagnostic.detail
+                ),
+            });
+        }
+    }
+    diagnostics
+}
+
+/// Whether any diagnostic reports a failed build or runtime.
+#[must_use]
+pub fn has_critical_diagnostics(diagnostics: &[PlayDiagnostic]) -> bool {
+    diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.severity == PlayDiagnosticSeverity::Error)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
@@ -2365,5 +3308,465 @@ Mara: The ferry leaves at dusk.
         assert_eq!(rows.references[0].id, "cabin");
         assert!(rows.references[0].fallback);
         assert_eq!(rows.references[0].value, None);
+    }
+
+    // --- Accessibility and interaction ------------------------------------------
+
+    fn play_context(playtest_expanded: bool) -> PlayFocusContext {
+        PlayFocusContext {
+            mode: PlayMode::Play,
+            playtest_expanded,
+            ..PlayFocusContext::default()
+        }
+    }
+
+    fn ready_scene() -> PlayScene {
+        let mut scene = scene_from_session(&session());
+        scene.status = PreviewStatus::Ready;
+        scene.choices.clear();
+        scene
+    }
+
+    #[test]
+    fn focus_order_is_documented_and_covers_every_visible_control() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(&scene, play_context(false));
+
+        assert_eq!(order[0], PlayFocusTarget::Mode(PlayMode::Debug));
+        assert_eq!(order[1], PlayFocusTarget::Mode(PlayMode::Play));
+        assert_eq!(order[2], PlayFocusTarget::Advance);
+        assert_eq!(
+            order
+                .iter()
+                .filter(|target| matches!(target, PlayFocusTarget::Choice(_)))
+                .count(),
+            scene.choices.len(),
+            "every pending choice is reachable in numeric order"
+        );
+        assert!(order.contains(&PlayFocusTarget::PlaytestToggle));
+        assert!(order.contains(&PlayFocusTarget::PresentationToggle));
+        assert!(order.contains(&PlayFocusTarget::DiagnosticsToggle));
+        assert!(
+            !order.contains(&PlayFocusTarget::PlaytestCapture),
+            "a closed drawer exposes no focus stops"
+        );
+
+        let open = play_focus_order(&scene, play_context(true));
+        let toggle = open
+            .iter()
+            .position(|target| *target == PlayFocusTarget::PlaytestToggle)
+            .expect("the toggle is reachable");
+        assert_eq!(open[toggle + 1], PlayFocusTarget::PlaytestCapture);
+        assert_eq!(
+            open[toggle + 6],
+            PlayFocusTarget::PlaytestReplay,
+            "the drawer buttons follow the toggle in draw order"
+        );
+
+        let mut ended_session = session();
+        ended_session.choose(0);
+        let ended = scene_from_session(&ended_session);
+        let ended_order = play_focus_order(&ended, play_context(false));
+        assert!(ended_order.contains(&PlayFocusTarget::Restart));
+        assert!(!ended_order.contains(&PlayFocusTarget::Advance));
+    }
+
+    #[test]
+    fn debug_mode_exposes_every_debug_control_in_draw_order() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(
+            &scene,
+            PlayFocusContext {
+                mode: PlayMode::Debug,
+                debug_choices: scene.choices.len(),
+                debug_knots: 2,
+                has_issue: true,
+                ..PlayFocusContext::default()
+            },
+        );
+
+        assert_eq!(order[0], PlayFocusTarget::Mode(PlayMode::Debug));
+        assert_eq!(order[2], PlayFocusTarget::DebugStep);
+        assert_eq!(order[7], PlayFocusTarget::DebugSeedUp);
+        assert!(order.contains(&PlayFocusTarget::DebugChoice(0)));
+        assert!(order.contains(&PlayFocusTarget::DebugKnot(1)));
+        assert_eq!(order.last(), Some(&PlayFocusTarget::DebugIssue));
+    }
+
+    #[test]
+    fn tab_shift_tab_and_home_end_follow_the_documented_order() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(&scene, play_context(false));
+        let mut focus = PlayFocus::default();
+        focus.focus(PlayFocusTarget::Advance);
+
+        assert_eq!(
+            focus.step(&order, true),
+            PlayFocusTarget::Choice(0),
+            "Tab moves forward one control"
+        );
+        assert_eq!(
+            focus.step(&order, false),
+            PlayFocusTarget::Advance,
+            "Shift+Tab moves backward one control"
+        );
+        assert_eq!(focus.home(&order), PlayFocusTarget::Mode(PlayMode::Debug));
+        assert_eq!(
+            focus.step(&order, false),
+            PlayFocusTarget::DiagnosticsToggle,
+            "the order wraps at the start"
+        );
+        assert_eq!(focus.end(&order), PlayFocusTarget::DiagnosticsToggle);
+        assert_eq!(
+            focus.step(&order, true),
+            PlayFocusTarget::Mode(PlayMode::Debug)
+        );
+    }
+
+    #[test]
+    fn keyboard_number_keys_and_enter_select_a_choice() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(&scene, play_context(false));
+
+        assert_eq!(
+            play_key_for("2", Some("2"), false, false, false, false),
+            Some(PlayKey::Choose(1)),
+            "number keys select the matching choice"
+        );
+        assert_eq!(
+            play_key_for("9", Some("9"), false, false, false, false),
+            Some(PlayKey::Choose(8))
+        );
+        assert_eq!(
+            play_key_for("0", Some("0"), false, false, false, false),
+            None,
+            "there is no zero-th choice"
+        );
+
+        let mut focus = PlayFocus::default();
+        focus.focus(PlayFocusTarget::Choice(1));
+        assert_eq!(
+            focus.handle_key(PlayKey::Activate, &order),
+            PlayAction::Activate(PlayFocusTarget::Choice(1)),
+            "Enter or Space activates the focused choice"
+        );
+        assert_eq!(
+            focus.handle_key(PlayKey::Choose(1), &order),
+            PlayAction::Choose(1)
+        );
+    }
+
+    #[test]
+    fn focus_restores_to_the_drawer_toggle_when_a_control_closes() {
+        let scene = scene_from_session(&session());
+        let open = play_focus_order(&scene, play_context(true));
+        let closed = play_focus_order(&scene, play_context(false));
+        assert!(open.contains(&PlayFocusTarget::PlaytestExportJson));
+        assert!(!closed.contains(&PlayFocusTarget::PlaytestExportJson));
+
+        let mut focus = PlayFocus::default();
+        focus.focus(PlayFocusTarget::PlaytestExportJson);
+        assert_eq!(
+            focus.reconcile(&closed),
+            PlayFocusTarget::PlaytestToggle,
+            "a vanished drawer control restores focus to its toggle"
+        );
+
+        focus.focus(PlayFocusTarget::DebugStep);
+        assert_eq!(
+            focus.reconcile(&closed),
+            PlayFocusTarget::Mode(PlayMode::Debug),
+            "an unreachable control restores a reachable one"
+        );
+
+        focus.focus(PlayFocusTarget::Choice(0));
+        assert_eq!(
+            focus.reconcile(&closed),
+            PlayFocusTarget::Advance,
+            "a chosen option restores focus to the next scene action"
+        );
+    }
+
+    #[test]
+    fn focus_indicator_and_body_text_meet_minimum_contrast() {
+        assert_eq!(focus_indicator_colour(true), DARK_THEME.accent);
+        assert_eq!(focus_indicator_colour(false), DARK_THEME.border);
+        assert!(
+            contrast_ratio(DARK_THEME.text, DARK_THEME.panel) >= MIN_TEXT_CONTRAST,
+            "dialogue text on the panel meets WCAG AA"
+        );
+        assert!(
+            contrast_ratio(DARK_THEME.text, DARK_THEME.chrome) >= MIN_TEXT_CONTRAST,
+            "dialogue text on chrome meets WCAG AA"
+        );
+        assert!(
+            contrast_ratio(DARK_THEME.accent, DARK_THEME.panel) >= MIN_FOCUS_CONTRAST,
+            "the focus indicator meets the non-text minimum on the panel"
+        );
+        assert!(
+            contrast_ratio(DARK_THEME.accent, DARK_THEME.border) >= MIN_FOCUS_CONTRAST,
+            "the focus indicator meets the non-text minimum beside a control border"
+        );
+        assert!(contrast_ratio(0x000000, 0xffffff) > 20.0);
+    }
+
+    #[test]
+    fn text_scale_steps_are_monotonic_and_bounded() {
+        assert_eq!(scaled_text_px(20.0, DEFAULT_TEXT_SCALE), 20.0);
+        assert!(scaled_text_px(20.0, 1.5) > scaled_text_px(20.0, 1.0));
+        assert!(scaled_dialogue_height(DIALOGUE_MAX_HEIGHT_PX, 1.5) > DIALOGUE_MAX_HEIGHT_PX);
+
+        assert_eq!(step_text_scale(1.0, 1), 1.15);
+        assert_eq!(step_text_scale(1.0, -1), 0.85);
+        assert_eq!(step_text_scale(1.5, 1), 1.5);
+        assert_eq!(step_text_scale(0.85, -1), 0.85);
+        assert_eq!(clamp_text_scale(f32::NAN), DEFAULT_TEXT_SCALE);
+        assert_eq!(clamp_text_scale(9.0), 1.5);
+    }
+
+    #[test]
+    fn reduced_motion_suppresses_transitions_without_reordering_cues() {
+        let lookup = staging_fixture();
+        let cues = vec![
+            PresentationEvent::Scene("deck".to_owned()),
+            PresentationEvent::Show("mara".to_owned()),
+            PresentationEvent::Show("keeper".to_owned()),
+            PresentationEvent::Transition {
+                kind: TransitionKind::Fade,
+                ms: 240,
+            },
+            PresentationEvent::Move {
+                stage: "mara".to_owned(),
+                to: Slot::Right,
+            },
+        ];
+        let state = fold_cues(&cues, &lookup);
+        let full_order = ordered_stages(&state.stages)
+            .iter()
+            .map(|stage| stage.id.as_str())
+            .collect::<Vec<_>>();
+        let reduced = MotionPreference::Reduced;
+        let reduced_order = ordered_stages(&state.stages)
+            .iter()
+            .map(|stage| stage.id.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            full_order, reduced_order,
+            "cue order is identical under reduced motion"
+        );
+        assert_eq!(
+            reduced.transition(state.stages[0].transition),
+            None,
+            "reduced motion suppresses the transition, not the cue"
+        );
+
+        let transition = Some(PlayTransition::new(TransitionKind::Fade, 240));
+        assert_eq!(MotionPreference::Full.transition(transition), transition);
+        assert_eq!(MotionPreference::Reduced.transition(transition), None);
+        assert_eq!(
+            reduced.stage_opacity(&state.stages[0]),
+            1.0,
+            "reduced motion settles the figure immediately"
+        );
+        assert!(PlayScene::stage_opacity(&state.stages[0]) < 1.0);
+
+        let mut scene = ready_scene();
+        scene.background_transition = transition;
+        assert!(scene.background_opacity() < 1.0);
+        assert_eq!(reduced.background_opacity(&scene), 1.0);
+        assert!(reduced.reveal(TextReveal::new(5)).instant);
+    }
+
+    #[test]
+    fn text_reveal_honours_speed_instant_mode_and_character_boundaries() {
+        let reveal = TextReveal::new(10);
+        assert_eq!(
+            reveal.visible_chars("abcdefghij", Duration::ZERO),
+            0,
+            "nothing is revealed before the first tick"
+        );
+        assert_eq!(
+            reveal.visible_chars("abcdefghij", Duration::from_millis(500)),
+            5
+        );
+        assert_eq!(
+            reveal.visible_chars("abcdefghij", Duration::from_secs(5)),
+            10,
+            "reveal never exceeds the line"
+        );
+        assert!(reveal.is_complete("abc", Duration::from_secs(1)));
+        assert_eq!(
+            TextReveal::instant().visible_chars("abcdef", Duration::ZERO),
+            6,
+            "instant reveal shows the whole line at once"
+        );
+        assert_eq!(reveal.with_speed(0).chars_per_second, MIN_REVEAL_CPS);
+        assert_eq!(reveal.with_speed(9999).chars_per_second, MAX_REVEAL_CPS);
+
+        let multibyte = "é中🙂x";
+        assert_eq!(
+            TextReveal::new(10).visible_chars(multibyte, Duration::from_millis(200)),
+            2
+        );
+        assert_eq!(
+            TextReveal::new(10).reveal(multibyte, Duration::from_millis(200)),
+            "é中",
+            "multi-byte characters are not split"
+        );
+    }
+
+    #[test]
+    fn auto_advance_is_bounded_and_stops_at_choices_and_the_end() {
+        let waiting = scene_from_session(&session());
+        let ready = ready_scene();
+        let policy = AutoAdvancePolicy {
+            enabled: true,
+            delay: Duration::from_millis(100),
+            max_steps: 2,
+        };
+        let mut state = AutoAdvanceState::new(policy);
+
+        assert!(
+            !state.can_advance(&waiting, Duration::from_secs(1)),
+            "auto-advance stops at a choice"
+        );
+        assert!(
+            !state.can_advance(&ready, Duration::from_millis(99)),
+            "the delay is respected"
+        );
+        assert!(state.can_advance(&ready, Duration::from_millis(100)));
+
+        assert!(state.record_advance());
+        assert!(state.record_advance());
+        assert!(!state.record_advance(), "the third step exceeds the bound");
+        assert_eq!(state.advanced(), 2);
+        assert!(!state.can_advance(&ready, Duration::from_secs(1)));
+
+        state.reset();
+        let mut ended = ready.clone();
+        ended.ended = true;
+        ended.status = PreviewStatus::Ended;
+        assert!(!state.can_advance(&ended, Duration::from_secs(1)));
+
+        state.reset();
+        let mut issue = ready;
+        issue.issue = Some("compile failed".to_owned());
+        assert!(!state.can_advance(&issue, Duration::from_secs(1)));
+
+        let clamped = AutoAdvanceState::new(AutoAdvancePolicy {
+            enabled: true,
+            delay: Duration::ZERO,
+            max_steps: u32::MAX,
+        });
+        assert_eq!(clamped.policy().max_steps, MAX_AUTO_ADVANCE_STEPS);
+    }
+
+    #[test]
+    fn diagnostics_are_critical_first_and_reachable_from_the_control_region() {
+        let mut scene = scene_from_session(&session());
+        scene.issue = Some("Last valid frame kept: E001: broken".to_owned());
+        scene
+            .notes
+            .push("stage \"mara\" — the image is missing".to_owned());
+        let rows = PresentationDrawerRows {
+            references: Vec::new(),
+            diagnostics: vec![PresentationDiagnostic {
+                kind: PresentationDiagnosticKind::UnmappedValue,
+                source: "variable `place`".to_owned(),
+                detail: "the selected value has no host scene mapping".to_owned(),
+            }],
+        };
+
+        let diagnostics = play_diagnostics(&scene, Some(&rows));
+        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(
+            diagnostics[0].severity,
+            PlayDiagnosticSeverity::Error,
+            "the compile issue is the first critical diagnostic"
+        );
+        assert!(has_critical_diagnostics(&diagnostics));
+        assert_eq!(diagnostics[1].severity, PlayDiagnosticSeverity::Warning);
+        assert_eq!(diagnostics[2].severity, PlayDiagnosticSeverity::Warning);
+        assert_eq!(diagnostics[0].severity.label(), "error");
+
+        let order = play_focus_order(&scene, play_context(false));
+        assert!(order.contains(&PlayFocusTarget::DiagnosticsToggle));
+        assert!(
+            play_diagnostics(&ready_scene(), None).is_empty(),
+            "a clean frame reports no diagnostics"
+        );
+    }
+
+    #[test]
+    fn accessibility_metadata_names_the_focused_control() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(&scene, play_context(false));
+        let metadata = play_accessibility(&order, PlayFocusTarget::PlaytestToggle);
+
+        assert_eq!(metadata.role, "button");
+        assert_eq!(metadata.label, "Playtest drawer");
+        assert_eq!(
+            metadata.position,
+            order
+                .iter()
+                .position(|target| *target == PlayFocusTarget::PlaytestToggle)
+                .expect("the toggle is in the order")
+                + 1
+        );
+        assert_eq!(metadata.total, order.len());
+        assert!(metadata.keyboard_hint.contains("Tab"));
+        assert!(metadata.keyboard_hint.contains("Enter"));
+        for target in &order {
+            assert!(!target.label().is_empty());
+            assert!(!target.role().is_empty());
+        }
+    }
+
+    #[test]
+    fn keyboard_hint_documents_every_shortcut_and_chords_are_left_to_the_host() {
+        for shortcut in [
+            "Tab",
+            "Enter",
+            "choose",
+            "restart",
+            "playtest",
+            "diagnostics",
+            "reveal speed",
+            "auto-advance",
+        ] {
+            assert!(
+                PLAY_KEYBOARD_HINT.contains(shortcut),
+                "the hint documents {shortcut}"
+            );
+        }
+        assert_eq!(
+            play_key_for("tab", None, true, false, false, false),
+            Some(PlayKey::Previous)
+        );
+        assert_eq!(
+            play_key_for("space", None, false, false, false, false),
+            Some(PlayKey::Activate)
+        );
+        assert_eq!(
+            play_key_for("[", Some("["), false, false, false, false),
+            Some(PlayKey::RevealSlower)
+        );
+        assert_eq!(
+            play_key_for("]", Some("]"), false, false, false, false),
+            Some(PlayKey::RevealFaster)
+        );
+        let mut reveal = TextReveal::new(DEFAULT_REVEAL_CPS);
+        reveal = reveal.with_speed(reveal.chars_per_second + REVEAL_SPEED_STEP);
+        assert!(reveal.chars_per_second > DEFAULT_REVEAL_CPS);
+        assert_eq!(
+            play_key_for("r", Some("r"), true, true, false, false),
+            None,
+            "control chords are left to the host"
+        );
+        assert_eq!(
+            play_key_for("d", Some("d"), false, false, false, true),
+            None,
+            "platform chords are left to the host"
+        );
     }
 }

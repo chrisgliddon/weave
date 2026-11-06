@@ -46,11 +46,35 @@ use weave_runtime::{ChoiceView, PresentationEvent, RuntimeError, Story, StoryEve
 /// Current playtest record format version.
 pub const PLAYTEST_FORMAT_VERSION: u32 = 1;
 
-/// Maximum number of story advances one capture may perform.
+/// Maximum number of story advances one capture or replay may perform.
 ///
 /// The bound keeps a cyclic story from allocating without limit and makes a
-/// capture failure deterministic.
+/// capture or replay failure deterministic.
 pub const MAX_CAPTURE_STEPS: usize = 100_000;
+
+/// Maximum size of one encoded playtest document, in bytes.
+///
+/// The cap is checked before decoding, so an untrusted clipboard document
+/// cannot force an unbounded allocation.
+pub const MAX_PLAYTEST_SOURCE_BYTES: usize = 8 * 1024 * 1024;
+
+/// Maximum transcript events one record may contain.
+pub const MAX_PLAYTEST_EVENTS: usize = 10_000;
+
+/// Maximum presentation cues one record may contain.
+pub const MAX_PLAYTEST_CUES: usize = 10_000;
+
+/// Maximum replay checkpoints one record may contain.
+pub const MAX_PLAYTEST_CHECKPOINTS: usize = MAX_PLAYTEST_EVENTS + 1;
+
+/// Maximum recorded choice selections one record may contain.
+pub const MAX_PLAYTEST_CHOICES: usize = MAX_PLAYTEST_EVENTS;
+
+/// Maximum choices a waiting outcome may list.
+pub const MAX_PLAYTEST_OUTCOME_CHOICES: usize = 1_000;
+
+/// Maximum choices named by one outcome summary.
+pub const MAX_SUMMARY_CHOICES: usize = 20;
 
 /// Digest algorithm prefix recorded beside the digest hex.
 const DIGEST_ALGORITHM: &str = "fnv1a128:";
@@ -136,6 +160,9 @@ pub enum PlaytestOutcome {
 
 impl PlaytestOutcome {
     /// Short author-facing description of where the playthrough stopped.
+    ///
+    /// The summary names at most [`MAX_SUMMARY_CHOICES`] choices, so a hostile
+    /// waiting outcome cannot force an unbounded string.
     #[must_use]
     pub fn summary(&self) -> String {
         match self {
@@ -144,7 +171,20 @@ impl PlaytestOutcome {
                 "waiting for choice".to_owned()
             }
             Self::WaitingForChoice { choices } => {
-                format!("waiting for choice: {}", choices.join(", "))
+                let shown = choices
+                    .iter()
+                    .take(MAX_SUMMARY_CHOICES)
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                if choices.len() > MAX_SUMMARY_CHOICES {
+                    format!(
+                        "waiting for choice: {shown} (+{} more)",
+                        choices.len() - MAX_SUMMARY_CHOICES
+                    )
+                } else {
+                    format!("waiting for choice: {shown}")
+                }
             }
         }
     }
@@ -296,6 +336,20 @@ pub enum ReplayMismatch {
         /// Recorded choice position.
         choice: usize,
     },
+    /// The record exceeds one hard structural limit.
+    Limit {
+        /// Record section name.
+        field: &'static str,
+        /// Number found in the record.
+        found: usize,
+        /// Maximum accepted count.
+        limit: usize,
+    },
+    /// The replay exceeded its advance bound.
+    StepLimit {
+        /// The configured bound.
+        limit: usize,
+    },
 }
 
 impl fmt::Display for ReplayMismatch {
@@ -375,6 +429,18 @@ impl fmt::Display for ReplayMismatch {
                 formatter,
                 "checkpoint #{index} at event {event} and choice {choice} was not reached; the record is internally inconsistent"
             ),
+            Self::Limit {
+                field,
+                found,
+                limit,
+            } => write!(
+                formatter,
+                "the playtest {field} has {found} entries, exceeding the limit of {limit}; capture a shorter playtest"
+            ),
+            Self::StepLimit { limit } => write!(
+                formatter,
+                "replay exceeded {limit} story advances; the story may loop without reaching a line, choice, or end"
+            ),
         }
     }
 }
@@ -419,11 +485,45 @@ pub enum PlaytestError {
     /// The story could not be digested.
     #[error("the story could not be digested: {0}")]
     Digest(String),
+    /// The capture produced one record section beyond its hard limit.
+    #[error(
+        "captured playtest {field} has {found} entries, exceeding the limit of {limit}; capture a shorter playtest"
+    )]
+    Limit {
+        /// Record section name.
+        field: &'static str,
+        /// Number captured.
+        found: usize,
+        /// Maximum accepted count.
+        limit: usize,
+    },
 }
 
 /// Record encoding or decoding failed.
 #[derive(Debug, thiserror::Error)]
 pub enum PlaytestFormatError {
+    /// The encoded document exceeds the source-size cap.
+    #[error(
+        "playtest document is {bytes} bytes, exceeding the {limit}-byte limit; trim the record or capture a shorter playtest"
+    )]
+    SourceTooLarge {
+        /// Encoded document size in bytes.
+        bytes: usize,
+        /// Maximum accepted size in bytes.
+        limit: usize,
+    },
+    /// One record section exceeds its hard limit.
+    #[error(
+        "playtest {field} has {found} entries, exceeding the limit of {limit}; capture a shorter playtest"
+    )]
+    Limit {
+        /// Record section name.
+        field: &'static str,
+        /// Number found in the document.
+        found: usize,
+        /// Maximum accepted count.
+        limit: usize,
+    },
     /// JSON encoding failed.
     #[error("could not encode the playtest as JSON: {0}")]
     JsonEncode(String),
@@ -510,7 +610,7 @@ impl PlaytestRecord {
                 StoryEvent::Choices(available) => {
                     let position = selected.len();
                     let Some(&index) = choices.get(position) else {
-                        return Ok(Self::assemble(
+                        return Self::assemble(
                             digest,
                             seed,
                             start_knot,
@@ -524,7 +624,8 @@ impl PlaytestRecord {
                                     .map(|choice| choice.text.clone())
                                     .collect(),
                             },
-                        ));
+                        )
+                        .check_capture();
                     };
                     let Some(choice) = available.get(index) else {
                         return Err(PlaytestError::ChoiceOutOfRange {
@@ -563,7 +664,7 @@ impl PlaytestRecord {
                             supplied: choices.len(),
                         });
                     }
-                    return Ok(Self::assemble(
+                    return Self::assemble(
                         digest,
                         seed,
                         start_knot,
@@ -572,7 +673,8 @@ impl PlaytestRecord {
                         cues,
                         checkpoints,
                         PlaytestOutcome::Ended,
-                    ));
+                    )
+                    .check_capture();
                 }
             }
         }
@@ -606,6 +708,18 @@ impl PlaytestRecord {
         }
     }
 
+    /// Reject one capture that exceeds a hard structural limit.
+    fn check_capture(self) -> Result<Self, PlaytestError> {
+        if let Some((field, found, limit)) = self.limit_violation() {
+            return Err(PlaytestError::Limit {
+                field,
+                found,
+                limit,
+            });
+        }
+        Ok(self)
+    }
+
     /// Encode as stable, pretty JSON.
     pub fn to_json(&self) -> Result<String, PlaytestFormatError> {
         let mut output = serde_json::to_string_pretty(self)
@@ -614,11 +728,25 @@ impl PlaytestRecord {
         Ok(output)
     }
 
-    /// Decode stable JSON and reject an unsupported format version.
+    /// Decode stable JSON and reject an unsupported format version or an
+    /// oversized document.
     pub fn from_json(source: &str) -> Result<Self, PlaytestFormatError> {
+        if source.len() > MAX_PLAYTEST_SOURCE_BYTES {
+            return Err(PlaytestFormatError::SourceTooLarge {
+                bytes: source.len(),
+                limit: MAX_PLAYTEST_SOURCE_BYTES,
+            });
+        }
         let record = serde_json::from_str::<Self>(source)
             .map_err(|error| PlaytestFormatError::JsonDecode(error.to_string()))?;
         record.validate_version()?;
+        if let Some((field, found, limit)) = record.limit_violation() {
+            return Err(PlaytestFormatError::Limit {
+                field,
+                found,
+                limit,
+            });
+        }
         Ok(record)
     }
 
@@ -637,11 +765,25 @@ impl PlaytestRecord {
         Ok(output)
     }
 
-    /// Decode stable RON and reject an unsupported format version.
+    /// Decode stable RON and reject an unsupported format version or an
+    /// oversized document.
     pub fn from_ron(source: &str) -> Result<Self, PlaytestFormatError> {
+        if source.len() > MAX_PLAYTEST_SOURCE_BYTES {
+            return Err(PlaytestFormatError::SourceTooLarge {
+                bytes: source.len(),
+                limit: MAX_PLAYTEST_SOURCE_BYTES,
+            });
+        }
         let record = ron::from_str::<Self>(source)
             .map_err(|error| PlaytestFormatError::RonDecode(error.to_string()))?;
         record.validate_version()?;
+        if let Some((field, found, limit)) = record.limit_violation() {
+            return Err(PlaytestFormatError::Limit {
+                field,
+                found,
+                limit,
+            });
+        }
         Ok(record)
     }
 
@@ -706,6 +848,36 @@ impl PlaytestRecord {
         Ok(())
     }
 
+    /// First hard structural limit this record exceeds, if any.
+    fn limit_violation(&self) -> Option<(&'static str, usize, usize)> {
+        if self.events.len() > MAX_PLAYTEST_EVENTS {
+            return Some(("events", self.events.len(), MAX_PLAYTEST_EVENTS));
+        }
+        if self.cues.len() > MAX_PLAYTEST_CUES {
+            return Some(("cues", self.cues.len(), MAX_PLAYTEST_CUES));
+        }
+        if self.checkpoints.len() > MAX_PLAYTEST_CHECKPOINTS {
+            return Some((
+                "checkpoints",
+                self.checkpoints.len(),
+                MAX_PLAYTEST_CHECKPOINTS,
+            ));
+        }
+        if self.choices.len() > MAX_PLAYTEST_CHOICES {
+            return Some(("choices", self.choices.len(), MAX_PLAYTEST_CHOICES));
+        }
+        if let PlaytestOutcome::WaitingForChoice { choices } = &self.outcome
+            && choices.len() > MAX_PLAYTEST_OUTCOME_CHOICES
+        {
+            return Some((
+                "outcome choices",
+                choices.len(),
+                MAX_PLAYTEST_OUTCOME_CHOICES,
+            ));
+        }
+        None
+    }
+
     fn verify(&self, story: &StoryIr, seed: u64) -> Result<(), ReplayMismatch> {
         let actual = story_digest(story).map_err(|error| ReplayMismatch::StoryUnreadable {
             detail: error.to_string(),
@@ -753,6 +925,13 @@ impl PlaytestRecord {
         seed: u64,
         stop: WalkStop,
     ) -> Result<WalkOutcome, ReplayMismatch> {
+        if let Some((field, found, limit)) = self.limit_violation() {
+            return Err(ReplayMismatch::Limit {
+                field,
+                found,
+                limit,
+            });
+        }
         let mut runtime = self.open(story, seed)?;
         let mut event_position = 0_usize;
         let mut cue_position = 0_usize;
@@ -771,7 +950,14 @@ impl PlaytestRecord {
             }));
         }
 
+        let mut steps = 0_usize;
         loop {
+            steps += 1;
+            if steps > MAX_CAPTURE_STEPS {
+                return Err(ReplayMismatch::StepLimit {
+                    limit: MAX_CAPTURE_STEPS,
+                });
+            }
             let event = runtime.advance().map_err(|error| ReplayMismatch::Runtime {
                 position: event_position,
                 detail: error.to_string(),
@@ -1650,6 +1836,108 @@ The landing is empty.
         assert!(matches!(
             PlaytestRecord::from_json(&json),
             Err(PlaytestFormatError::JsonDecode(_))
+        ));
+    }
+
+    #[test]
+    fn an_oversized_document_is_rejected_before_decoding() {
+        let oversized = " ".repeat(MAX_PLAYTEST_SOURCE_BYTES + 1);
+
+        assert!(matches!(
+            PlaytestRecord::from_json(&oversized),
+            Err(PlaytestFormatError::SourceTooLarge { bytes, limit })
+                if bytes == MAX_PLAYTEST_SOURCE_BYTES + 1
+                    && limit == MAX_PLAYTEST_SOURCE_BYTES
+        ));
+        assert!(matches!(
+            PlaytestRecord::from_ron(&oversized),
+            Err(PlaytestFormatError::SourceTooLarge { bytes, limit })
+                if bytes == MAX_PLAYTEST_SOURCE_BYTES + 1
+                    && limit == MAX_PLAYTEST_SOURCE_BYTES
+        ));
+    }
+
+    #[test]
+    fn a_record_with_too_many_events_is_rejected_in_json_and_ron() {
+        let mut record = record();
+        while record.events.len() <= MAX_PLAYTEST_EVENTS {
+            record.events.push(PlaytestEvent {
+                kind: PlaytestEventKind::Line {
+                    text: String::new(),
+                },
+                knot: "start".to_owned(),
+                span: None,
+            });
+        }
+
+        let json = record.to_json().expect("encode JSON");
+        let ron = record.to_ron().expect("encode RON");
+        for error in [
+            PlaytestRecord::from_json(&json).expect_err("oversized JSON"),
+            PlaytestRecord::from_ron(&ron).expect_err("oversized RON"),
+        ] {
+            assert!(matches!(
+                error,
+                PlaytestFormatError::Limit {
+                    field: "events",
+                    found,
+                    limit,
+                } if found == MAX_PLAYTEST_EVENTS + 1 && limit == MAX_PLAYTEST_EVENTS
+            ));
+            assert!(error.to_string().contains("capture a shorter playtest"));
+        }
+    }
+
+    #[test]
+    fn a_waiting_outcome_over_the_choice_limit_is_rejected() {
+        let mut record = record();
+        record.outcome = PlaytestOutcome::WaitingForChoice {
+            choices: vec!["choice".to_owned(); MAX_PLAYTEST_OUTCOME_CHOICES + 1],
+        };
+
+        let json = record.to_json().expect("encode JSON");
+        assert!(matches!(
+            PlaytestRecord::from_json(&json),
+            Err(PlaytestFormatError::Limit {
+                field: "outcome choices",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn a_waiting_outcome_summary_names_at_most_the_summary_limit() {
+        let choices = (0..MAX_SUMMARY_CHOICES + 5)
+            .map(|index| format!("choice {index}"))
+            .collect();
+        let summary = PlaytestOutcome::WaitingForChoice { choices }.summary();
+
+        assert!(summary.contains("(+5 more)"));
+        assert!(!summary.contains("choice 25"));
+        assert!(summary.len() < 500);
+    }
+
+    #[test]
+    fn replay_rejects_a_record_over_a_limit() {
+        let mut record = record();
+        record
+            .events
+            .resize_with(MAX_PLAYTEST_EVENTS + 1, || PlaytestEvent {
+                kind: PlaytestEventKind::Line {
+                    text: String::new(),
+                },
+                knot: "start".to_owned(),
+                span: None,
+            });
+
+        let error = record.replay(&story()).expect_err("over limit");
+        assert!(matches!(
+            error,
+            ReplayMismatch::Limit {
+                field: "events",
+                found,
+                limit,
+            } if found == MAX_PLAYTEST_EVENTS + 1 && limit == MAX_PLAYTEST_EVENTS
         ));
     }
 }
