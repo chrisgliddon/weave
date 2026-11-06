@@ -3479,9 +3479,10 @@ Mara: The ferry leaves at dusk.
             "an unreachable control restores a reachable one"
         );
 
+        let after_choice = play_focus_order(&ready_scene(), play_context(false));
         focus.focus(PlayFocusTarget::Choice(0));
         assert_eq!(
-            focus.reconcile(&closed),
+            focus.reconcile(&after_choice),
             PlayFocusTarget::Advance,
             "a chosen option restores focus to the next scene action"
         );
