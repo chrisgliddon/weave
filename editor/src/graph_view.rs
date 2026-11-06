@@ -368,6 +368,7 @@ impl GraphSurface {
     }
 
     fn edit_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
+        cx.stop_propagation();
         let key = event.keystroke.key.as_ref();
         match key {
             "escape" => {
@@ -725,14 +726,27 @@ impl gpui::Render for GraphSurface {
                     return;
                 }
                 if event.keystroke.modifiers.shift && event.keystroke.key == "enter" {
+                    cx.stop_propagation();
                     this.add_knot(cx);
                     return;
                 }
                 match event.keystroke.key.as_ref() {
-                    "enter" => this.edit_selected(false, cx),
-                    "f2" => this.edit_selected(true, cx),
-                    "tab" => this.add_choice(cx),
-                    "delete" | "backspace" => this.remove_selected(cx),
+                    "enter" => {
+                        cx.stop_propagation();
+                        this.edit_selected(false, cx);
+                    }
+                    "f2" => {
+                        cx.stop_propagation();
+                        this.edit_selected(true, cx);
+                    }
+                    "tab" => {
+                        cx.stop_propagation();
+                        this.add_choice(cx);
+                    }
+                    "delete" | "backspace" => {
+                        cx.stop_propagation();
+                        this.remove_selected(cx);
+                    }
                     "escape" => {}
                     key => {
                         let direction = match key {

@@ -8908,6 +8908,7 @@ dependencies = [
  "gpui-flow",
  "gpui_platform",
  "image",
+ "libc",
  "notify",
  "proptest",
  "ron",

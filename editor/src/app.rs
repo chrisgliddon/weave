@@ -1,8 +1,8 @@
 //! GPUI application shell, commands, menus, layout, and startup boundary.
 
 use std::cell::RefCell;
-use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::io::Read;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
@@ -136,6 +136,38 @@ fn launch_unchecked(mode: LaunchMode) -> Result<(), StartupError> {
         Some(message) => Err(StartupError::Window(message)),
         None => Ok(()),
     }
+}
+
+/// Largest preferences sidecar the editor will read.
+const MAX_SIDECAR_BYTES: u64 = 64 * 1024;
+
+/// Read a small project sidecar without following a link and without blocking on a special file.
+///
+/// The open is non-blocking and refuses symlinks on Unix, and every check runs against the opened
+/// handle rather than the path, so the file type and size cannot change between the check and the
+/// read.
+fn read_sidecar(path: &Path) -> Option<String> {
+    #[cfg(unix)]
+    let file = {
+        use std::os::unix::fs::OpenOptionsExt;
+        std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(path)
+            .ok()?
+    };
+    #[cfg(not(unix))]
+    let file = std::fs::File::open(path).ok()?;
+
+    let metadata = file.metadata().ok()?;
+    if !metadata.file_type().is_file() || metadata.len() > MAX_SIDECAR_BYTES {
+        return None;
+    }
+    let mut text = String::new();
+    file.take(MAX_SIDECAR_BYTES + 1)
+        .read_to_string(&mut text)
+        .ok()?;
+    (text.len() as u64 <= MAX_SIDECAR_BYTES).then_some(text)
 }
 
 /// Knot that owns a graph node, if the node belongs to a knot.
@@ -893,27 +925,9 @@ impl EditorShell {
         };
         // The sidecar is project-local data, not a trusted input: refuse a symlink or a
         // non-regular file, and bound the read so a large file cannot stall the editor.
-        const MAX_PREFERENCES_BYTES: u64 = 64 * 1024;
-        // Validate the opened handle, not the path, so the type and size cannot change
-        // between the check and the read.
-        let Ok(file) = std::fs::File::open(&path) else {
+        let Some(text) = read_sidecar(&path) else {
             return;
         };
-        let Ok(metadata) = file.metadata() else {
-            return;
-        };
-        if !metadata.file_type().is_file() || metadata.len() > MAX_PREFERENCES_BYTES {
-            return;
-        }
-        let mut text = String::new();
-        if file
-            .take(MAX_PREFERENCES_BYTES + 1)
-            .read_to_string(&mut text)
-            .is_err()
-            || text.len() as u64 > MAX_PREFERENCES_BYTES
-        {
-            return;
-        }
         match KnotViewPreferences::from_json(&text) {
             Ok(preferences) => self
                 .knot
