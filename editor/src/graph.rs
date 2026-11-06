@@ -92,6 +92,8 @@ pub struct GraphNode {
     pub kind: GraphNodeKind,
     pub label: String,
     pub preview: String,
+    /// Full first prose line for a knot, used as the inline editing value.
+    pub prose: Option<String>,
     pub position: GraphPoint,
     pub width: f32,
     pub height: f32,
@@ -429,6 +431,7 @@ impl GraphDocument {
             kind: GraphNodeKind::Knot,
             label: "New knot".to_owned(),
             preview: "Empty narrative block".to_owned(),
+            prose: None,
             position,
             width: NODE_WIDTH,
             height: NODE_HEIGHT,
@@ -818,13 +821,17 @@ impl GraphBuilder {
                     }
                 }
                 Item::Knot(knot) => {
-                    let preview = first_text(&knot.node.body)
-                        .unwrap_or_else(|| format!("{} statements", knot.node.body.len()));
+                    let prose = first_prose(&knot.node.body);
+                    let preview = prose.as_ref().map_or_else(
+                        || format!("{} statements", knot.node.body.len()),
+                        |text| truncate(text, 72),
+                    );
                     self.nodes.push(GraphNode {
                         id: knot_id(&knot.node.name),
                         kind: GraphNodeKind::Knot,
                         label: knot.node.name.clone(),
                         preview,
+                        prose,
                         position: GraphPoint::new(420.0, 72.0 + self.knot_row as f32 * 180.0),
                         width: NODE_WIDTH,
                         height: NODE_HEIGHT,
@@ -874,6 +881,7 @@ impl GraphBuilder {
                             || "Always available".to_owned(),
                             |_| "Conditional".to_owned(),
                         ),
+                        prose: None,
                         position: GraphPoint::new(
                             720.0 + depth as f32 * 260.0,
                             72.0 + self.nodes.len() as f32 * 118.0,
@@ -946,6 +954,7 @@ impl GraphBuilder {
             kind,
             label,
             preview,
+            prose: None,
             position: GraphPoint::new(72.0, 72.0 + self.declaration_row as f32 * 136.0),
             width: NODE_WIDTH,
             height: NODE_HEIGHT,
@@ -997,11 +1006,11 @@ fn knot_id(name: &str) -> String {
     format!("knot:{name}")
 }
 
-fn first_text(statements: &[Spanned<Statement>]) -> Option<String> {
+fn first_prose(statements: &[Spanned<Statement>]) -> Option<String> {
     statements
         .iter()
         .find_map(|statement| match &statement.node {
-            Statement::Text(text) => Some(truncate(text, 72)),
+            Statement::Text(text) => Some(text.clone()),
             _ => None,
         })
 }
@@ -1137,6 +1146,7 @@ Aside.
                 kind: GraphNodeKind::Knot,
                 label: format!("Knot {index}"),
                 preview: String::new(),
+                prose: None,
                 position: GraphPoint::new(
                     (index % 100) as f32 * 280.0,
                     (index / 100) as f32 * 140.0,

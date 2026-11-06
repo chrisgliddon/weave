@@ -25,6 +25,24 @@ Text edits update the graph only after they parse successfully. While source is 
 
 Semantic graph edits write canonical formatted source. Layout-only graph movement is stored separately and does not rewrite `.weave` content. Undo and redo treat a synchronized semantic change as one operation instead of replaying a feedback loop between views.
 
+### Mindmapping the story
+
+The graph works without writing syntax. A **beat** is a knot card; a **branch** is a choice card.
+
+| Action | How |
+|---|---|
+| Add a beat | `Shift+Enter`, or **+ Beat** |
+| Add a branch to the selected beat | `Tab`, or **+ Branch**, then type the label |
+| Edit the selected card's prose or label | `Enter`, or **Edit** |
+| Rename the selected beat | `F2` |
+| Connect two cards | Drag from a card handle to another beat card |
+| Move around | Arrow keys, drag the canvas, or use the minimap |
+| Remove the selected card | `Delete`, or **Delete** |
+
+Prose typed into a beat card becomes the knot's first prose line. A branch label becomes the choice label, and dragging that branch to a beat sets its target. Renaming a beat rewrites every divert, thread, and branch that points at it. A beat that other cards still reference cannot be deleted until those connections are removed, and the editor says how many remain.
+
+Text that Weave would read as a command, such as a line starting with `*`, `->`, or `===`, is refused with a message instead of being written into source. Use the card controls for those constructs.
+
 ## Domain-module inspection boundary
 
 The editor loads the adjacent `weave.modules.json` through the public `weave-domain` project API, then gives the same `DomainCatalog` to `ProjectSession`, `DomainSession`, `TextBuffer`, and live preview. A valid source `module` declaration follows the same compiler path as `weavec`; module inspections expose export descriptions, schemas, types, sources, and selected values. Character alignment sessions select an exact data-only pack and configuration, expose every proposed value and fixed-point “why” trace, create complete accept/reject/edit/withhold/override reviews, and support dry-run, atomic apply, stale detection, and refresh; only approved values reach the read-only runtime projection. Tabletop panels are similarly discovered from the exact selected adapter's declared capabilities, creation steps, and resolver-operation schemas; an absent capability returns `TT106` instead of an adapter-specific fallback. A registered Weave World composition receipt additionally exposes ordered candidate/selection records and leaf differences beside the resolved place/environment/climate preview. “Promote to authored” copies one effective generated leaf into canonical source; reset removes that override and reveals the composed value again. Both actions recompile atomically, so an invalid object-level promotion or schema violation leaves source and preview unchanged. Formatting or switching between editor-backed text views does not change the compiled module IR.
@@ -153,6 +171,10 @@ Recovery data is separate from the project file and never silently overwrites it
 | Graph / text view | `Primary+1` / `Primary+2` |
 | Run or continue preview | `Primary+Enter` |
 | Search in text | `Primary+F` |
+| Edit the selected graph card | `Enter` |
+| Rename the selected beat | `F2` |
+| Add a beat / branch card | `Shift+Enter` / `Tab` |
+| Remove the selected graph card | `Delete` |
 
 Every command is also available through the File, Edit, View, or Run menu. Errors are reported in the workspace instead of terminating the editing session.
 
