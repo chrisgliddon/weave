@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Refuse a commit that stages a credential. Installed by scripts/install-git-hooks.sh.
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+exec "$root/scripts/check-secrets.sh" staged

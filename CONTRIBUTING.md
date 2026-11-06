@@ -15,6 +15,7 @@ Thank you for helping build Weave. Contributions should be reviewable without re
 ```bash
 git clone https://github.com/chrisgliddon/weave.git
 cd weave
+./scripts/install-git-hooks.sh
 cargo build --workspace
 ```
 
@@ -23,6 +24,28 @@ Run the editor with:
 ```bash
 cargo run -p weave_editor
 ```
+
+### Secret scanning
+
+The repository scans for credentials with [gitleaks](https://github.com/gitleaks/gitleaks).
+Install it once:
+
+```bash
+brew install gitleaks
+```
+
+`scripts/install-git-hooks.sh` sets `core.hooksPath` to `.githooks/`, so every commit scans its
+staged changes and stops on a detected credential. Run the full-history scan before a release or a
+branch promotion:
+
+```bash
+./scripts/check-secrets.sh history
+./scripts/check-secrets.sh staged   # the same check the hook runs
+```
+
+`.gitleaks.toml` extends the default rules. Its only allowlist covers AppKit `NSKey` interface
+constants inside extracted nib evidence. Add an allowlist entry only for a proven false positive,
+scope it to one path and one value shape, and explain it in a comment.
 
 ## Writing issues
 

@@ -1,0 +1,15 @@
+title = "Weave secret scanning"
+
+[extend]
+useDefault = true
+
+# Extracted AppKit interface-builder archives store interface constants as
+# `"NSKey": "<name>"` entries. The default generic-api-key rule treats those
+# strings as credentials. The allowlist is scoped to the evidence directory
+# and to the exact key/value shape, so a real credential in an adjacent field
+# still fails the scan.
+[[allowlists]]
+description = "AppKit NSKey interface constants in extracted nib evidence"
+paths = ['''^research/scrivener/evidence/ib_nibs/[^/]+\.json$''']
+regexTarget = "line"
+regexes = ['''"NSKey"\s*:\s*"[A-Za-z0-9_]+"''']

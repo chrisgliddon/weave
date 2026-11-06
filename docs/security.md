@@ -2,6 +2,15 @@
 
 Do not report a suspected vulnerability through a public issue, pull request, discussion, dex task, or documentation change.
 
+## Secret scanning
+
+Every clone scans staged changes with gitleaks through a repository hook. Run
+`./scripts/install-git-hooks.sh` once after cloning, and run `./scripts/check-secrets.sh history`
+before a release or a `dev` to `staging` to `production` promotion. A finding names the rule, file,
+and commit; the matched value is redacted. Remove the value, rotate it, and rewrite history only
+with explicit approval. Never paste the raw value into an issue, a task, a log, or a chat message.
+
+
 Use the private [GitHub Security Advisory form](https://github.com/chrisgliddon/weave/security/advisories/new). The canonical [SECURITY.md](https://github.com/chrisgliddon/weave/blob/main/SECURITY.md) lists the useful report details, supported-version policy, response expectations, and coordinated-disclosure process.
 
 Use synthetic or throwaway data in a reproduction. Never include production credentials, personal data, or unrelated confidential material. Replace every credential value in text, logs, screenshots, and fixtures with `[REDACTED]`.
