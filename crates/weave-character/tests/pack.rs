@@ -10,15 +10,16 @@ use weave_character::{
     CharacterPackAdapterCapabilityDeclaration, CharacterPackAdapterCoordinate,
     CharacterPackAdapterDefinition, CharacterPackAdapterManifest, CharacterPackInactiveTabletop,
     CharacterPackLicense, CharacterPackLicenseNotice, CharacterPackMetadata,
-    CharacterPackTabletopProjection, CharacterPackTabletopState, CharacterProfile,
-    CharacterRuntimePack, CharacterRuntimeProfile, CharacterTemplate, CharacterTemplateRef,
-    EXPRESSION_EXTENSION_NAMESPACE, ExpressionPack, ExpressionTextAuthority, Freshness,
-    HexacoTrait, RELATIONSHIP_EXTENSION_NAMESPACE, ReviewState, character_authoring_pack_schema,
-    character_pack_adapter_manifest_fingerprint, character_pack_adapter_namespace_key,
+    CharacterPackTabletopProjection, CharacterPackTabletopState, CharacterPackTrustedAdapter,
+    CharacterProfile, CharacterRuntimePack, CharacterRuntimeProfile, CharacterTemplate,
+    CharacterTemplateRef, EXPRESSION_EXTENSION_NAMESPACE, ExpressionPack, ExpressionTextAuthority,
+    Freshness, HexacoTrait, RELATIONSHIP_EXTENSION_NAMESPACE, ReviewState,
+    character_authoring_pack_schema, character_pack_adapter_manifest_fingerprint,
+    character_pack_adapter_namespace_key, character_pack_archive_fingerprint,
     character_pack_profile_fingerprint, character_pack_value_fingerprint,
     character_runtime_pack_schema, expression_pack_ref, synthesize_character, template_fingerprint,
-    validate_authoring_pack_with_installed, validate_character_pack_adapter_types,
-    validate_runtime_pack_with_canonical_profile,
+    validate_authoring_pack_with_installed, validate_authoring_pack_with_trusted_adapters,
+    validate_character_pack_adapter_types, validate_runtime_pack_with_canonical_profile,
 };
 use weave_domain::{
     DomainValue, FieldDeclaration, Provenance, ProvenanceKind, ProvenanceSource, TypeExpression,
@@ -1199,17 +1200,18 @@ fn inactive_tabletop(
     let key = character_pack_adapter_namespace_key(&manifest.coordinate);
     let definition_sha256 =
         character_pack_value_fingerprint(&definition).expect("definition fingerprint");
-    (
-        key,
-        CharacterPackInactiveTabletop {
-            manifest,
-            provenance: adapter_provenance(),
-            definition,
-            definition_sha256,
-            completed_creation_steps: vec!["origin".to_owned()],
-            reason: "Superseded synthetic archive.".to_owned(),
-        },
-    )
+    let mut inactive = CharacterPackInactiveTabletop {
+        manifest,
+        provenance: adapter_provenance(),
+        definition,
+        definition_sha256,
+        completed_creation_steps: vec!["origin".to_owned()],
+        reason: "Superseded synthetic archive.".to_owned(),
+        archive_sha256: String::new(),
+    };
+    inactive.archive_sha256 =
+        character_pack_archive_fingerprint(&inactive).expect("archive fingerprint");
+    (key, inactive)
 }
 
 #[test]
@@ -1469,6 +1471,8 @@ fn inactive_archives_use_their_own_manifest_contract() {
     forged.definition = DomainValue::String("Wayfinder".to_owned());
     forged.definition_sha256 =
         character_pack_value_fingerprint(&forged.definition).expect("definition fingerprint");
+    forged.archive_sha256 =
+        character_pack_archive_fingerprint(&forged).expect("archive fingerprint");
     let mut pack = authoring_pack_with_tabletop();
     ari_tabletop_mut(&mut pack).inactive.insert(key, forged);
     pack.normalize();
@@ -1606,5 +1610,166 @@ fn archived_adapters_require_their_own_licence_notice() {
     assert_eq!(
         error.diagnostic().code,
         CharacterDiagnosticCode::InvalidLineage
+    );
+}
+
+#[test]
+fn adapter_type_memoization_cannot_bypass_the_depth_limit() {
+    let mut manifest = adapter_manifest();
+    manifest.types = BTreeMap::from([(
+        "leaf".to_owned(),
+        TypeExpression::String {
+            min_length: 0,
+            max_length: 64,
+        },
+    )]);
+    let nested = |depth: usize| {
+        let mut value_type = TypeExpression::Named {
+            name: "leaf".to_owned(),
+        };
+        for _ in 0..depth {
+            value_type = TypeExpression::List {
+                items: Box::new(value_type),
+                min_items: 0,
+                max_items: 4,
+            };
+        }
+        value_type
+    };
+    manifest.definition_type = nested(31);
+    manifest.state_type = TypeExpression::String {
+        min_length: 0,
+        max_length: 64,
+    };
+    validate_character_pack_adapter_types(&manifest, 1_000).expect("depth 32 is allowed");
+
+    manifest.definition_type = nested(32);
+    let error = validate_character_pack_adapter_types(&manifest, 1_000)
+        .expect_err("a memoized shallow type cannot bypass the depth limit");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("nesting limit"));
+}
+
+#[test]
+fn archived_provenance_is_pinned_by_the_host() {
+    let (key, inactive) = inactive_tabletop(
+        TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        DomainValue::String("Prior Wayfinder".to_owned()),
+    );
+    let mut pack = authoring_pack_with_tabletop();
+    let active_manifest = ari_tabletop_mut(&mut pack).manifest.clone();
+    ari_tabletop_mut(&mut pack)
+        .inactive
+        .insert(key, inactive.clone());
+    pack.normalize();
+    pack.validate().expect("self-consistent archive");
+
+    let trusted = vec![
+        CharacterPackTrustedAdapter {
+            manifest: active_manifest.clone(),
+            archive_sha256: None,
+        },
+        CharacterPackTrustedAdapter {
+            manifest: inactive.manifest.clone(),
+            archive_sha256: Some(inactive.archive_sha256.clone()),
+        },
+    ];
+    validate_authoring_pack_with_trusted_adapters(&pack, &trusted)
+        .expect("pinned archive provenance");
+
+    let unpinned = vec![
+        CharacterPackTrustedAdapter {
+            manifest: active_manifest.clone(),
+            archive_sha256: None,
+        },
+        CharacterPackTrustedAdapter {
+            manifest: inactive.manifest.clone(),
+            archive_sha256: None,
+        },
+    ];
+    let error = validate_authoring_pack_with_trusted_adapters(&pack, &unpinned)
+        .expect_err("archived provenance is unpinned");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+    assert!(error.to_string().contains("not pinned"));
+
+    let wrong_pin = vec![
+        CharacterPackTrustedAdapter {
+            manifest: active_manifest,
+            archive_sha256: None,
+        },
+        CharacterPackTrustedAdapter {
+            manifest: inactive.manifest,
+            archive_sha256: Some("0".repeat(64)),
+        },
+    ];
+    let error = validate_authoring_pack_with_trusted_adapters(&pack, &wrong_pin)
+        .expect_err("archive fingerprint does not match the pin");
+    assert_eq!(error.diagnostic().code, CharacterDiagnosticCode::StaleInput);
+}
+
+#[test]
+fn archived_provenance_changes_break_the_archive_fingerprint() {
+    let (key, mut inactive) = inactive_tabletop(
+        TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        DomainValue::String("Prior Wayfinder".to_owned()),
+    );
+    inactive.provenance.sources[0].attribution = "Tampered attribution.".to_owned();
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).inactive.insert(key, inactive);
+    pack.normalize();
+    let error = pack
+        .validate()
+        .expect_err("archived provenance is bound by the archive fingerprint");
+    assert_eq!(error.diagnostic().code, CharacterDiagnosticCode::StaleInput);
+}
+
+#[test]
+fn parse_boundaries_can_bind_installed_manifests() {
+    let authoring = authoring_pack_with_tabletop();
+    let manifest = authoring
+        .characters
+        .iter()
+        .find(|entry| entry.profile.id == ARI_VALE)
+        .and_then(|entry| entry.tabletop.as_ref())
+        .expect("fixture tabletop")
+        .manifest
+        .clone();
+
+    let json = authoring.to_json().expect("authoring JSON");
+    let ron = authoring.to_ron().expect("authoring RON");
+    CharacterAuthoringPack::from_json_with_installed(&json, std::slice::from_ref(&manifest))
+        .expect("authoring JSON trust");
+    CharacterAuthoringPack::from_ron_with_installed(&ron, std::slice::from_ref(&manifest))
+        .expect("authoring RON trust");
+
+    let runtime = authoring.to_runtime_pack().expect("runtime export");
+    let runtime_json = runtime.to_json().expect("runtime JSON");
+    let runtime_ron = runtime.to_ron().expect("runtime RON");
+    CharacterRuntimePack::from_json_with_installed(&runtime_json, std::slice::from_ref(&manifest))
+        .expect("runtime JSON trust");
+    CharacterRuntimePack::from_ron_with_installed(&runtime_ron, std::slice::from_ref(&manifest))
+        .expect("runtime RON trust");
+
+    let mut untrusted = manifest;
+    untrusted.title = "Untrusted Adapter".to_owned();
+    untrusted.coordinate.content_sha256 =
+        character_pack_adapter_manifest_fingerprint(&untrusted).expect("fingerprint");
+    let error = CharacterRuntimePack::from_json_with_installed(&runtime_json, &[untrusted])
+        .expect_err("runtime manifest is not trusted");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
     );
 }

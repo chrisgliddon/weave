@@ -645,12 +645,27 @@ pub struct CharacterPackInactiveTabletop {
     /// Exact archived adapter manifest; its coordinate types are validated for this entry.
     pub manifest: CharacterPackAdapterManifest,
     /// Archived adapter provenance retained only in authoring exports.
+    ///
+    /// Self-consistency only. This is not trusted attribution unless the host pins
+    /// `archive_sha256` through [`validate_authoring_pack_with_trusted_adapters`].
     pub provenance: Provenance,
     pub definition: DomainValue,
     pub definition_sha256: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub completed_creation_steps: Vec<String>,
     pub reason: String,
+    /// SHA-256 over the exact archived manifest, provenance, definition hash, steps, and reason.
+    pub archive_sha256: String,
+}
+
+/// Host-supplied trusted adapter entry, optionally pinning one archive fingerprint.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackTrustedAdapter {
+    pub manifest: CharacterPackAdapterManifest,
+    /// Exact archive fingerprint that makes the archived provenance trusted attribution.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archive_sha256: Option<String>,
 }
 
 /// Active adapter projection with authoring provenance and archived projections.
@@ -664,6 +679,10 @@ pub struct CharacterPackTabletopProjection {
     pub canonical_character_write_back: bool,
     pub manifest: CharacterPackAdapterManifest,
     /// Adapter provenance retained only in authoring exports.
+    ///
+    /// This is self-consistent pack data, not trusted attribution. Hosts must bind the manifest
+    /// to their installed set and treat provenance as reviewed only when their own trust policy
+    /// says so.
     pub provenance: Provenance,
     pub active: CharacterPackAdapterDefinition,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -816,17 +835,44 @@ impl CharacterAuthoringPack {
     }
 
     /// Parse and validate strict authoring-pack JSON.
+    ///
+    /// This is a self-consistency check, not a provenance check. Tabletop projections must be
+    /// bound to manifests the host already trusts; use [`Self::from_json_with_installed`] when a
+    /// pack may carry adapter data.
     pub fn from_json(source: &str) -> Result<Self, CharacterPackError> {
         let value = parse_strict_json(source).map_err(|_| encoding_error())?;
         validate_authoring_pack(&value)?;
         Ok(value)
     }
 
+    /// Parse authoring-pack JSON and bind every tabletop projection to an installed manifest.
+    pub fn from_json_with_installed(
+        source: &str,
+        installed: &[CharacterPackAdapterManifest],
+    ) -> Result<Self, CharacterPackError> {
+        let value = Self::from_json(source)?;
+        validate_authoring_pack_with_installed(&value, installed)?;
+        Ok(value)
+    }
+
     /// Parse and validate authoring-pack RON.
+    ///
+    /// This is a self-consistency check, not a provenance check. Use
+    /// [`Self::from_ron_with_installed`] when a pack may carry adapter data.
     pub fn from_ron(source: &str) -> Result<Self, CharacterPackError> {
         reject_duplicate_ron_map_keys(source)?;
         let value = ron::from_str(source).map_err(|_| encoding_error())?;
         validate_authoring_pack(&value)?;
+        Ok(value)
+    }
+
+    /// Parse authoring-pack RON and bind every tabletop projection to an installed manifest.
+    pub fn from_ron_with_installed(
+        source: &str,
+        installed: &[CharacterPackAdapterManifest],
+    ) -> Result<Self, CharacterPackError> {
+        let value = Self::from_ron(source)?;
+        validate_authoring_pack_with_installed(&value, installed)?;
         Ok(value)
     }
 
@@ -843,6 +889,9 @@ impl CharacterAuthoringPack {
     }
 
     /// Validate the complete authoring pack.
+    ///
+    /// Self-consistency only; use [`validate_authoring_pack_with_installed`] or
+    /// [`Self::from_json_with_installed`] to bind tabletop manifests to a trusted host set.
     pub fn validate(&self) -> Result<(), CharacterPackError> {
         validate_authoring_pack(self)
     }
@@ -868,6 +917,8 @@ impl CharacterAuthoringPack {
     }
 
     /// Validate the pack format version and return a normalized current-version pack.
+    ///
+    /// Self-consistency only; migration does not bind adapter manifests to a host trust set.
     pub fn migrate(mut self) -> Result<Self, CharacterPackError> {
         validate_pack_format_version(self.pack_format_version)?;
         self.pack_format_version = CHARACTER_PACK_FORMAT_VERSION;
@@ -879,7 +930,9 @@ impl CharacterAuthoringPack {
     /// Export the compact runtime projection of this authoring pack.
     ///
     /// The runtime pack keeps approved values and the references needed to render them. It
-    /// carries the pack metadata and licence unchanged.
+    /// carries the pack metadata and licence unchanged. The export is self-consistent only; a
+    /// runtime host that requires adapter trust must call [`validate_runtime_pack_with_installed`]
+    /// or use a `from_*_with_installed` constructor.
     pub fn to_runtime_pack(&self) -> Result<CharacterRuntimePack, CharacterPackError> {
         validate_authoring_pack(self)?;
         let mut characters = Vec::with_capacity(self.characters.len());
@@ -917,17 +970,43 @@ pub struct CharacterRuntimePack {
 
 impl CharacterRuntimePack {
     /// Parse and validate strict runtime-pack JSON.
+    ///
+    /// This is a self-consistency check, not a provenance check. Use
+    /// [`Self::from_json_with_installed`] when the pack carries adapter data.
     pub fn from_json(source: &str) -> Result<Self, CharacterPackError> {
         let value = parse_strict_json(source).map_err(|_| encoding_error())?;
         validate_runtime_pack(&value)?;
         Ok(value)
     }
 
+    /// Parse runtime-pack JSON and bind every active tabletop projection to an installed manifest.
+    pub fn from_json_with_installed(
+        source: &str,
+        installed: &[CharacterPackAdapterManifest],
+    ) -> Result<Self, CharacterPackError> {
+        let value = Self::from_json(source)?;
+        validate_runtime_pack_with_installed(&value, installed)?;
+        Ok(value)
+    }
+
     /// Parse and validate runtime-pack RON.
+    ///
+    /// This is a self-consistency check, not a provenance check. Use
+    /// [`Self::from_ron_with_installed`] when the pack carries adapter data.
     pub fn from_ron(source: &str) -> Result<Self, CharacterPackError> {
         reject_duplicate_ron_map_keys(source)?;
         let value = ron::from_str(source).map_err(|_| encoding_error())?;
         validate_runtime_pack(&value)?;
+        Ok(value)
+    }
+
+    /// Parse runtime-pack RON and bind every active tabletop projection to an installed manifest.
+    pub fn from_ron_with_installed(
+        source: &str,
+        installed: &[CharacterPackAdapterManifest],
+    ) -> Result<Self, CharacterPackError> {
+        let value = Self::from_ron(source)?;
+        validate_runtime_pack_with_installed(&value, installed)?;
         Ok(value)
     }
 
@@ -944,6 +1023,9 @@ impl CharacterRuntimePack {
     }
 
     /// Validate the complete runtime pack.
+    ///
+    /// Self-consistency only; use [`validate_runtime_pack_with_installed`] or
+    /// [`Self::from_json_with_installed`] to bind tabletop manifests to a trusted host set.
     pub fn validate(&self) -> Result<(), CharacterPackError> {
         validate_runtime_pack(self)
     }
@@ -981,6 +1063,8 @@ impl CharacterRuntimePack {
     }
 
     /// Validate the pack format version and return a normalized current-version pack.
+    ///
+    /// Self-consistency only; migration does not bind adapter manifests to a host trust set.
     pub fn migrate(mut self) -> Result<Self, CharacterPackError> {
         validate_pack_format_version(self.pack_format_version)?;
         self.pack_format_version = CHARACTER_PACK_FORMAT_VERSION;
@@ -1349,6 +1433,21 @@ pub fn character_pack_adapter_manifest_fingerprint(
     Ok(sha256_hex(&bytes))
 }
 
+/// Deterministic SHA-256 of one archived adapter entry, excluding its own `archive_sha256`.
+///
+/// This binds the archived manifest, its provenance, definition, completed steps, and reason so
+/// a host can pin one exact archive.
+pub fn character_pack_archive_fingerprint(
+    inactive: &CharacterPackInactiveTabletop,
+) -> Result<String, CharacterPackError> {
+    let mut value = serde_json::to_value(inactive).map_err(|_| encoding_error())?;
+    if let Some(object) = value.as_object_mut() {
+        object.remove("archive_sha256");
+    }
+    let bytes = serde_json::to_vec(&value).map_err(|_| encoding_error())?;
+    Ok(sha256_hex(&bytes))
+}
+
 /// Stable archive key for one packed adapter identity and release.
 #[must_use]
 pub fn character_pack_adapter_namespace_key(adapter: &CharacterPackAdapterCoordinate) -> String {
@@ -1528,17 +1627,7 @@ pub fn validate_authoring_pack_with_installed(
     installed: &[CharacterPackAdapterManifest],
 ) -> Result<(), CharacterPackError> {
     validate_authoring_pack(pack)?;
-    let mut trusted = BTreeSet::new();
-    for (index, manifest) in installed.iter().enumerate() {
-        validate_tabletop_manifest(&format!("installed[{index}]"), manifest, None)?;
-        if !trusted.insert(manifest.coordinate.clone()) {
-            return Err(pack_error(
-                CharacterDiagnosticCode::InvalidValue,
-                "installed",
-                "trusted adapter coordinates must be unique",
-            ));
-        }
-    }
+    let trusted = trusted_adapter_coordinates(installed, "installed")?;
     for entry in &pack.characters {
         let Some(projection) = &entry.tabletop else {
             continue;
@@ -1562,6 +1651,91 @@ pub fn validate_authoring_pack_with_installed(
         }
     }
     Ok(())
+}
+
+/// Validate an authoring pack and pin each archived adapter, including its provenance, to a
+/// host-supplied archive fingerprint.
+///
+/// [`validate_authoring_pack_with_installed`] binds manifests by coordinate but does not make an
+/// archive's provenance trusted attribution. This function additionally requires every archive to
+/// match a trusted `archive_sha256`; an archive without a host pin is rejected.
+pub fn validate_authoring_pack_with_trusted_adapters(
+    pack: &CharacterAuthoringPack,
+    trusted: &[CharacterPackTrustedAdapter],
+) -> Result<(), CharacterPackError> {
+    validate_authoring_pack(pack)?;
+    let mut pinned = BTreeMap::new();
+    for (index, entry) in trusted.iter().enumerate() {
+        validate_tabletop_manifest(&format!("trusted[{index}].manifest"), &entry.manifest, None)?;
+        if let Some(pin) = &entry.archive_sha256 {
+            validate_sha256(&format!("trusted[{index}].archive_sha256"), pin)?;
+        }
+        if pinned
+            .insert(entry.manifest.coordinate.clone(), entry)
+            .is_some()
+        {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                "trusted",
+                "trusted adapter coordinates must be unique",
+            ));
+        }
+    }
+    for entry in &pack.characters {
+        let Some(projection) = &entry.tabletop else {
+            continue;
+        };
+        let path = format!("characters.{}.tabletop", entry.profile.id);
+        if !pinned.contains_key(&projection.manifest.coordinate) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidReference,
+                format!("{path}.manifest.coordinate"),
+                "active adapter manifest is not installed in the trusted host set",
+            ));
+        }
+        for (key, inactive) in &projection.inactive {
+            let Some(trusted_entry) = pinned.get(&inactive.manifest.coordinate) else {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    format!("{path}.inactive.{key}.manifest.coordinate"),
+                    "archived adapter manifest is not installed in the trusted host set",
+                ));
+            };
+            let Some(pin) = &trusted_entry.archive_sha256 else {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    format!("{path}.inactive.{key}.archive_sha256"),
+                    "archived adapter provenance is not pinned by the host",
+                ));
+            };
+            if pin != &inactive.archive_sha256 {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::StaleInput,
+                    format!("{path}.inactive.{key}.archive_sha256"),
+                    "archived adapter fingerprint does not match the host pin",
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn trusted_adapter_coordinates(
+    installed: &[CharacterPackAdapterManifest],
+    path: &str,
+) -> Result<BTreeSet<CharacterPackAdapterCoordinate>, CharacterPackError> {
+    let mut trusted = BTreeSet::new();
+    for (index, manifest) in installed.iter().enumerate() {
+        validate_tabletop_manifest(&format!("{path}[{index}]"), manifest, None)?;
+        if !trusted.insert(manifest.coordinate.clone()) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                path,
+                "trusted adapter coordinates must be unique",
+            ));
+        }
+    }
+    Ok(trusted)
 }
 
 fn validate_authoring_lineage(
@@ -1845,10 +2019,19 @@ fn resolve_expression_pack<'a>(
 
 /// Validate a complete runtime pack and every required reference.
 ///
-/// Tabletop `canonical_profile_sha256` values are format-checked only because the runtime profile
-/// is intentionally lossy. Call [`validate_runtime_pack_with_canonical_profile`] to compare one
+/// This is a self-consistency check. It does not prove that a tabletop manifest came from a
+/// trusted host set; use [`validate_runtime_pack_with_installed`]. Tabletop
+/// `canonical_profile_sha256` values are also format-checked only because the runtime profile is
+/// intentionally lossy; call [`validate_runtime_pack_with_canonical_profile`] to compare one
 /// against the exact canonical profile held by the importer.
 pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), CharacterPackError> {
+    validate_runtime_pack_inner(pack, None)
+}
+
+fn validate_runtime_pack_inner(
+    pack: &CharacterRuntimePack,
+    trusted: Option<&BTreeSet<CharacterPackAdapterCoordinate>>,
+) -> Result<(), CharacterPackError> {
     validate_pack_format_version(pack.pack_format_version)?;
     CharacterPackMetadata {
         id: pack.id.clone(),
@@ -1882,9 +2065,19 @@ pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), Characte
         .collect::<BTreeMap<_, _>>();
 
     for profile in &pack.characters {
-        validate_runtime_profile(profile, &ids, &profiles)?;
+        validate_runtime_profile(profile, &ids, &profiles, trusted)?;
     }
     Ok(())
+}
+
+/// Validate a runtime pack and require every active tabletop projection to match an installed
+/// manifest by exact coordinate.
+pub fn validate_runtime_pack_with_installed(
+    pack: &CharacterRuntimePack,
+    installed: &[CharacterPackAdapterManifest],
+) -> Result<(), CharacterPackError> {
+    let trusted = trusted_adapter_coordinates(installed, "installed")?;
+    validate_runtime_pack_inner(pack, Some(&trusted))
 }
 
 /// Validate a runtime pack and verify one active tabletop projection against the exact canonical
@@ -1918,6 +2111,7 @@ pub fn validate_runtime_pack_with_canonical_profile(
         runtime_profile,
         tabletop,
         Some(&fingerprint),
+        None,
     )
 }
 
@@ -1925,6 +2119,7 @@ fn validate_runtime_profile(
     profile: &CharacterRuntimeProfile,
     ids: &BTreeSet<String>,
     profiles: &BTreeMap<&str, &CharacterRuntimeProfile>,
+    trusted: Option<&BTreeSet<CharacterPackAdapterCoordinate>>,
 ) -> Result<(), CharacterPackError> {
     let path = format!("characters.{}", profile.id);
     validate_namespaced_id(&format!("{path}.id"), &profile.id)?;
@@ -2063,7 +2258,7 @@ fn validate_runtime_profile(
         validate_runtime_expression(&format!("{path}.expression"), expression, ids)?;
     }
     if let Some(tabletop) = &profile.tabletop {
-        validate_runtime_tabletop(&path, profile, tabletop, None)?;
+        validate_runtime_tabletop(&path, profile, tabletop, None, trusted)?;
     }
     for (id, cue) in &profile.date_context {
         let cue_path = format!("{path}.date_context.{id}");
@@ -3098,6 +3293,7 @@ fn validate_runtime_tabletop(
     profile: &CharacterRuntimeProfile,
     projection: &CharacterPackActiveTabletop,
     expected_profile_sha256: Option<&str>,
+    trusted: Option<&BTreeSet<CharacterPackAdapterCoordinate>>,
 ) -> Result<(), CharacterPackError> {
     let root = format!("{path}.tabletop");
     if projection.projection_format_version != CHARACTER_PACK_TABLETOP_PROJECTION_FORMAT_VERSION {
@@ -3135,6 +3331,15 @@ fn validate_runtime_tabletop(
         ));
     }
     validate_tabletop_manifest(&format!("{root}.manifest"), &projection.manifest, None)?;
+    if let Some(trusted) = trusted
+        && !trusted.contains(&projection.manifest.coordinate)
+    {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{root}.manifest.coordinate"),
+            "runtime tabletop projection is not bound to an installed adapter manifest",
+        ));
+    }
     validate_adapter_definition(
         &format!("{root}.active"),
         &projection.active,
@@ -3250,37 +3455,67 @@ fn validate_adapter_type_contract(
         validate_local_id(&format!("{path}.types"), name)?;
     }
     let mut budget = max_nodes;
-    let mut validated = BTreeSet::new();
-    validate_adapter_type_expression(
+    let mut validated = BTreeMap::new();
+    for name in manifest.types.keys() {
+        validate_named_type_contract(
+            &format!("{path}.types.{name}"),
+            name,
+            &manifest.types,
+            &mut validated,
+            &mut budget,
+        )?;
+    }
+    validate_type_root(
         &format!("{path}.definition_type"),
         &manifest.definition_type,
         &manifest.types,
-        &mut BTreeSet::new(),
         &mut validated,
         &mut budget,
-        0,
     )?;
-    validate_adapter_type_expression(
+    validate_type_root(
         &format!("{path}.state_type"),
         &manifest.state_type,
         &manifest.types,
-        &mut BTreeSet::new(),
         &mut validated,
         &mut budget,
-        0,
     )?;
-    for (name, value_type) in &manifest.types {
-        validate_adapter_type_expression(
-            &format!("{path}.types.{name}"),
-            value_type,
-            &manifest.types,
-            &mut BTreeSet::new(),
-            &mut validated,
-            &mut budget,
-            0,
-        )?;
-    }
     Ok(())
+}
+
+fn validate_type_root(
+    path: &str,
+    value_type: &TypeExpression,
+    types: &BTreeMap<String, TypeExpression>,
+    validated: &mut BTreeMap<String, usize>,
+    budget: &mut usize,
+) -> Result<(), CharacterPackError> {
+    let mut stack = BTreeSet::new();
+    validate_type_node(path, value_type, types, &mut stack, validated, budget, 0)?;
+    Ok(())
+}
+
+/// Validate one named type as a standalone depth-0 contract and cache its internal depth.
+fn validate_named_type_contract(
+    path: &str,
+    name: &str,
+    types: &BTreeMap<String, TypeExpression>,
+    validated: &mut BTreeMap<String, usize>,
+    budget: &mut usize,
+) -> Result<usize, CharacterPackError> {
+    if let Some(internal) = validated.get(name) {
+        return Ok(*internal);
+    }
+    let Some(body) = types.get(name) else {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            path,
+            "adapter type references an unknown named type",
+        ));
+    };
+    let mut stack = BTreeSet::from([name.to_owned()]);
+    let internal = validate_type_node(path, body, types, &mut stack, validated, budget, 1)?;
+    validated.insert(name.to_owned(), internal);
+    Ok(internal)
 }
 
 fn spend_type_node(path: &str, budget: &mut usize) -> Result<(), CharacterPackError> {
@@ -3295,15 +3530,16 @@ fn spend_type_node(path: &str, budget: &mut usize) -> Result<(), CharacterPackEr
     Ok(())
 }
 
-fn validate_adapter_type_expression(
+/// Validate one type node and return the maximum depth reached in this subtree.
+fn validate_type_node(
     path: &str,
     value_type: &TypeExpression,
     types: &BTreeMap<String, TypeExpression>,
     stack: &mut BTreeSet<String>,
-    validated: &mut BTreeSet<String>,
+    validated: &mut BTreeMap<String, usize>,
     budget: &mut usize,
     depth: usize,
-) -> Result<(), CharacterPackError> {
+) -> Result<usize, CharacterPackError> {
     if depth > 32 {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidValue,
@@ -3311,10 +3547,38 @@ fn validate_adapter_type_expression(
             "adapter type exceeds the nesting limit",
         ));
     }
-    if let TypeExpression::Named { name } = value_type
-        && validated.contains(name)
-    {
-        return Ok(());
+    if let TypeExpression::Named { name } = value_type {
+        if let Some(internal) = validated.get(name) {
+            let total = depth.saturating_add(*internal);
+            if total > 32 {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidValue,
+                    path,
+                    "adapter type exceeds the nesting limit",
+                ));
+            }
+            return Ok(total);
+        }
+        let Some(body) = types.get(name) else {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidReference,
+                path,
+                "adapter type references an unknown named type",
+            ));
+        };
+        if !stack.insert(name.clone()) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                path,
+                "recursive adapter named types are forbidden",
+            ));
+        }
+        let result = validate_type_node(path, body, types, stack, validated, budget, depth + 1);
+        stack.remove(name);
+        let max_depth = result?;
+        let internal = max_depth.saturating_sub(depth);
+        validated.insert(name.clone(), internal);
+        return Ok(max_depth);
     }
     spend_type_node(path, budget)?;
     match value_type {
@@ -3337,7 +3601,7 @@ fn validate_adapter_type_expression(
             for value in values {
                 validate_local_id(path, value)?;
             }
-            Ok(())
+            Ok(depth)
         }
         TypeExpression::List {
             items,
@@ -3351,15 +3615,9 @@ fn validate_adapter_type_expression(
                 "adapter list bounds are invalid",
             ))
         }
-        TypeExpression::List { items, .. } => validate_adapter_type_expression(
-            path,
-            items,
-            types,
-            stack,
-            validated,
-            budget,
-            depth + 1,
-        ),
+        TypeExpression::List { items, .. } => {
+            validate_type_node(path, items, types, stack, validated, budget, depth + 1)
+        }
         TypeExpression::Map {
             values,
             min_entries,
@@ -3372,15 +3630,9 @@ fn validate_adapter_type_expression(
                 "adapter map bounds are invalid",
             ))
         }
-        TypeExpression::Map { values, .. } => validate_adapter_type_expression(
-            path,
-            values,
-            types,
-            stack,
-            validated,
-            budget,
-            depth + 1,
-        ),
+        TypeExpression::Map { values, .. } => {
+            validate_type_node(path, values, types, stack, validated, budget, depth + 1)
+        }
         TypeExpression::Object { fields } => {
             if fields.len() > 4_096 {
                 return Err(pack_error(
@@ -3389,9 +3641,10 @@ fn validate_adapter_type_expression(
                     "adapter object type declares too many fields",
                 ));
             }
+            let mut max_depth = depth;
             for (name, field) in fields {
                 validate_local_id(path, name)?;
-                validate_adapter_type_expression(
+                let child = validate_type_node(
                     path,
                     &field.value_type,
                     types,
@@ -3400,38 +3653,9 @@ fn validate_adapter_type_expression(
                     budget,
                     depth + 1,
                 )?;
+                max_depth = max_depth.max(child);
             }
-            Ok(())
-        }
-        TypeExpression::Named { name } => {
-            let Some(value_type) = types.get(name) else {
-                return Err(pack_error(
-                    CharacterDiagnosticCode::InvalidReference,
-                    path,
-                    "adapter type references an unknown named type",
-                ));
-            };
-            if !stack.insert(name.clone()) {
-                return Err(pack_error(
-                    CharacterDiagnosticCode::InvalidValue,
-                    path,
-                    "recursive adapter named types are forbidden",
-                ));
-            }
-            let result = validate_adapter_type_expression(
-                path,
-                value_type,
-                types,
-                stack,
-                validated,
-                budget,
-                depth + 1,
-            );
-            stack.remove(name);
-            if result.is_ok() {
-                validated.insert(name.clone());
-            }
-            result
+            Ok(max_depth)
         }
         TypeExpression::Number {
             minimum, maximum, ..
@@ -3445,7 +3669,7 @@ fn validate_adapter_type_expression(
                 "adapter numeric bounds are invalid",
             ))
         }
-        _ => Ok(()),
+        _ => Ok(depth),
     }
 }
 
@@ -3607,6 +3831,15 @@ fn validate_inactive_tabletop(
         &inactive.manifest,
         Some(&inactive.provenance),
     )?;
+    validate_archived_licence_boundary(path, &inactive.manifest, &inactive.provenance)?;
+    validate_sha256(&format!("{path}.archive_sha256"), &inactive.archive_sha256)?;
+    if inactive.archive_sha256 != character_pack_archive_fingerprint(inactive)? {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{path}.archive_sha256"),
+            "archived adapter fingerprint does not match its immutable archive",
+        ));
+    }
     if key != character_pack_adapter_namespace_key(&inactive.manifest.coordinate) {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidReference,
@@ -3629,6 +3862,28 @@ fn validate_inactive_tabletop(
         &inactive.manifest,
     )?;
     validate_text(&format!("{path}.reason"), &inactive.reason, 1, 2_048)
+}
+
+fn validate_archived_licence_boundary(
+    path: &str,
+    manifest: &CharacterPackAdapterManifest,
+    provenance: &Provenance,
+) -> Result<(), CharacterPackError> {
+    if manifest.license.license == "MIT" {
+        return Ok(());
+    }
+    if !provenance
+        .sources
+        .iter()
+        .any(|source| source.license == manifest.license.license)
+    {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidLineage,
+            format!("{path}.provenance.sources"),
+            "archived adapter provenance does not declare the manifest licence",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_completed_steps(
