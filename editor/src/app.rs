@@ -15,7 +15,7 @@ use gpui::{
 
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
-use crate::graph::GraphNodeKind;
+use crate::graph::{GraphNodeKind, GraphPoint};
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
 use crate::knot_editor::KnotViewPreferences;
 use crate::knot_view::{KnotView, KnotViewEvent};
@@ -632,15 +632,15 @@ impl EditorShell {
     }
 
     fn handle_graph_event(&mut self, event: &GraphSurfaceEvent, cx: &mut Context<Self>) {
-        let edit = match event {
+        let (edit, position) = match event {
             GraphSurfaceEvent::Unavailable(message) => {
                 self.state.report_error(message.clone());
                 cx.notify();
                 return;
             }
-            GraphSurfaceEvent::Edit(edit) => edit.clone(),
+            GraphSurfaceEvent::Edit { edit, position } => (edit.clone(), *position),
         };
-        self.apply_semantic_edit(&edit, cx);
+        self.apply_semantic_edit(&edit, position, cx);
         cx.notify();
     }
 
@@ -660,7 +660,7 @@ impl EditorShell {
 
     fn handle_knot_event(&mut self, event: &KnotViewEvent, cx: &mut Context<Self>) {
         match event {
-            KnotViewEvent::Edit(edit) => self.apply_semantic_edit(edit, cx),
+            KnotViewEvent::Edit(edit) => self.apply_semantic_edit(edit, None, cx),
             KnotViewEvent::ModeChanged { .. } => self.save_knot_preferences(cx),
             KnotViewEvent::OpenSource(knot) => {
                 self.state.layout.center = CenterView::Text;
@@ -679,7 +679,12 @@ impl EditorShell {
         cx.notify();
     }
 
-    fn apply_semantic_edit(&mut self, edit: &crate::sync::GraphEdit, cx: &mut Context<Self>) {
+    fn apply_semantic_edit(
+        &mut self,
+        edit: &crate::sync::GraphEdit,
+        position: Option<GraphPoint>,
+        cx: &mut Context<Self>,
+    ) {
         self.synchronize_text_view(cx);
         match self
             .canonical
@@ -691,6 +696,11 @@ impl EditorShell {
                     .update(cx, |text, cx| text.replace_source(&sync.source, cx));
                 self.text_revision_seen = self.text.read(cx).revision();
                 self.project.set_source(sync.source);
+                if let (Some(position), Some(node)) = (position, sync.focus_node.clone()) {
+                    let mut layout = self.canonical.layout().clone();
+                    layout.insert(node, position);
+                    let _ = self.canonical.capture_layout(layout);
+                }
                 self.schedule_preview_compile(cx);
                 let compiled = self.compile_current_source(cx);
                 if let Some(node) = sync.focus_node {

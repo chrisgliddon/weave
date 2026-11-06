@@ -104,12 +104,17 @@ pub struct GraphSurface {
     next_user_node: u64,
     pending_connections: Arc<Mutex<Vec<Connection>>>,
     inline: Option<InlineEdit>,
+    pointer: Option<GraphPoint>,
 }
 
 /// Semantic edit request or actionable graph feedback for the owning shell.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum GraphSurfaceEvent {
-    Edit(GraphEdit),
+    /// Apply one canonical edit. `position` is the canvas point for a newly created knot.
+    Edit {
+        edit: GraphEdit,
+        position: Option<GraphPoint>,
+    },
     Unavailable(String),
 }
 
@@ -171,6 +176,7 @@ impl GraphSurface {
             next_user_node,
             pending_connections,
             inline: None,
+            pointer: None,
         }
     }
 
@@ -273,9 +279,10 @@ impl GraphSurface {
     fn add_knot(&mut self, cx: &mut Context<Self>) {
         self.next_user_node += 1;
         let preferred_name = format!("beat_{}", self.next_user_node);
-        cx.emit(GraphSurfaceEvent::Edit(GraphEdit::AddKnot {
-            preferred_name,
-        }));
+        cx.emit(GraphSurfaceEvent::Edit {
+            edit: GraphEdit::AddKnot { preferred_name },
+            position: self.pointer,
+        });
     }
 
     fn add_choice(&mut self, cx: &mut Context<Self>) {
@@ -352,14 +359,17 @@ impl GraphSurface {
         };
         let id = node.id.to_string();
         if let Some(knot) = id.strip_prefix("knot:") {
-            cx.emit(GraphSurfaceEvent::Edit(GraphEdit::RemoveKnot {
-                knot: knot.to_owned(),
-            }));
+            cx.emit(GraphSurfaceEvent::Edit {
+                edit: GraphEdit::RemoveKnot {
+                    knot: knot.to_owned(),
+                },
+                position: None,
+            });
         } else if let Some((knot, path)) = choice_coordinate(&id) {
-            cx.emit(GraphSurfaceEvent::Edit(GraphEdit::RemoveChoice {
-                knot,
-                path,
-            }));
+            cx.emit(GraphSurfaceEvent::Edit {
+                edit: GraphEdit::RemoveChoice { knot, path },
+                position: None,
+            });
         } else {
             cx.emit(GraphSurfaceEvent::Unavailable(
                 "This card cannot be removed from the graph".to_owned(),
@@ -436,7 +446,10 @@ impl GraphSurface {
                 target: "END".to_owned(),
             },
         };
-        cx.emit(GraphSurfaceEvent::Edit(graph_edit));
+        cx.emit(GraphSurfaceEvent::Edit {
+            edit: graph_edit,
+            position: None,
+        });
         cx.notify();
     }
 
@@ -457,7 +470,12 @@ impl GraphSurface {
             };
             let entity = entity.clone();
             cx.defer(move |app| {
-                entity.update(app, |_, cx| cx.emit(GraphSurfaceEvent::Edit(edit.clone())));
+                entity.update(app, |_, cx| {
+                    cx.emit(GraphSurfaceEvent::Edit {
+                        edit: edit.clone(),
+                        position: None,
+                    });
+                });
             });
         }
     }
@@ -470,11 +488,14 @@ impl GraphSurface {
             ));
             return;
         }
-        cx.emit(GraphSurfaceEvent::Edit(GraphEdit::ConnectKnots {
-            source: knots[0].clone(),
-            target: knots[1].clone(),
-            thread,
-        }));
+        cx.emit(GraphSurfaceEvent::Edit {
+            edit: GraphEdit::ConnectKnots {
+                source: knots[0].clone(),
+                target: knots[1].clone(),
+                thread,
+            },
+            position: None,
+        });
     }
 
     fn selected_knot_names(&self, cx: &App) -> Vec<String> {
@@ -720,6 +741,16 @@ impl gpui::Render for GraphSurface {
                         ),
                 )
             })
+            .on_mouse_move(cx.listener(|this, event: &gpui::MouseMoveEvent, _, cx| {
+                let position = event.position;
+                let flow = this
+                    .state
+                    .read(cx)
+                    .viewport
+                    .screen_to_flow(f32::from(position.x), f32::from(position.y));
+                this.pointer = Some(GraphPoint::new(flow.x, flow.y));
+                let _ = cx;
+            }))
             .on_key_down(cx.listener(|this, event: &KeyDownEvent, _, cx| {
                 if this.inline.is_some() {
                     this.edit_key(event, cx);

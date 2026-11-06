@@ -31,7 +31,7 @@ The graph works without writing syntax. A **beat** is a knot card; a **branch** 
 
 | Action | How |
 |---|---|
-| Add a beat | `Shift+Enter`, or **+ Beat** |
+| Add a beat | `Shift+Enter`, or **+ Beat**. A new beat lands where the pointer is. |
 | Add a branch to the selected beat | `Tab`, or **+ Branch**, then type the label |
 | Edit the selected card's prose or label | `Enter`, or **Edit** |
 | Rename the selected beat | `F2` |
