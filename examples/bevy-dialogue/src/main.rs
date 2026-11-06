@@ -1,8 +1,18 @@
+//! The Ember Forecast: a portable Weave Play scene rendered with Bevy.
+//!
+//! The story asset is loaded through Bevy's asset pipeline. Every presentation
+//! cue the runtime emits is folded into a [`PlayFrame`] by `weave-bevy`, using
+//! only compiled presentation data and runtime cue types. The scene panel draws
+//! that frame without loading any image: backgrounds and character stages are
+//! deterministic colour blocks, so a missing image can never panic. Declared
+//! image paths stay visible in the frame for a host that does load them.
+
 use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
 use bevy::asset::AssetPlugin;
+use bevy::color::Alpha;
 use bevy::input_focus::InputFocus;
 use bevy::prelude::*;
 use weave_bevy::prelude::*;
@@ -19,6 +29,7 @@ const HOVERED_BUTTON: Color = Color::srgb(0.30, 0.23, 0.45);
 const PRESSED_BUTTON: Color = Color::srgb(0.45, 0.31, 0.65);
 const MAX_EVENT_LOG: usize = 32;
 const MAX_SMOKE_FRAMES: usize = 2_000;
+const MAX_CUE_LOG: usize = 6;
 
 #[derive(Resource, Clone, Copy)]
 struct RunMode {
@@ -28,6 +39,7 @@ struct RunMode {
 #[derive(Resource)]
 struct GameViewModel {
     status: String,
+    speaker: String,
     dialogue: String,
     choices: Vec<String>,
     patterns: Vec<String>,
@@ -40,12 +52,14 @@ struct GameViewModel {
     line_count: usize,
     largest_choice_set: usize,
     reload_count: usize,
+    frame: PlayFrame,
 }
 
 impl Default for GameViewModel {
     fn default() -> Self {
         Self {
             status: "Loading dialogue.weave through Bevy's asset pipeline...".to_owned(),
+            speaker: NARRATOR.to_owned(),
             dialogue: "The story will begin when its asset is ready.".to_owned(),
             choices: Vec::new(),
             patterns: Vec::new(),
@@ -58,6 +72,7 @@ impl Default for GameViewModel {
             line_count: 0,
             largest_choice_set: 0,
             reload_count: 0,
+            frame: PlayFrame::default(),
         }
     }
 }
@@ -74,11 +89,29 @@ impl GameViewModel {
 #[derive(Component)]
 enum ViewText {
     Status,
+    Speaker,
     Dialogue,
+    SceneHud,
     Pattern,
     ObservableState,
     EventLog,
+    CueLog,
 }
+
+#[derive(Component)]
+struct SceneBackdrop;
+
+#[derive(Component)]
+enum SceneDecor {
+    FitFrame,
+    AnchorMarker,
+}
+
+#[derive(Component)]
+struct StageLayer;
+
+#[derive(Component)]
+struct StageView;
 
 #[derive(Component)]
 struct ChoiceList;
@@ -140,6 +173,7 @@ impl Plugin for ExampleGamePlugin {
             )
             .add_observer(on_ready)
             .add_observer(on_reloaded)
+            .add_observer(on_presentation)
             .add_observer(on_line)
             .add_observer(on_choices)
             .add_observer(on_pattern)
@@ -211,8 +245,11 @@ fn run_smoke_test() -> Result<(), String> {
     drive_smoke_test(&mut app)?;
     let view = app.world().resource::<GameViewModel>();
     println!(
-        "Bevy integration smoke passed: {} lines, {} ordered pattern draws, choices, state, end, and reload feedback",
-        view.line_count, view.pattern_count
+        "Bevy Play smoke passed: {} lines, {} cues, {} staged characters, final scene {:?}",
+        view.line_count,
+        view.frame.cue_log.len(),
+        view.frame.stages.len(),
+        view.frame.background
     );
     Ok(())
 }
@@ -298,6 +335,94 @@ fn validate_smoke_result(view: &GameViewModel) -> Result<(), String> {
         };
         cursor += relative + 1;
     }
+
+    let expected_cues = [
+        "transition:fade:220",
+        "scene:tavern",
+        "show:innkeeper",
+        "speaker:innkeeper",
+        "swap:innkeeper:amused",
+        "move:innkeeper:center",
+        "transition:slide:180",
+        "transition:wipe:140",
+        "show:traveller",
+        "speaker:traveller",
+    ];
+    if view.frame.cue_log != expected_cues {
+        return Err(format!(
+            "presentation cues diverged: expected {expected_cues:?}, observed {:?}",
+            view.frame.cue_log
+        ));
+    }
+
+    if view.frame.background.as_deref() != Some("tavern") {
+        return Err(format!(
+            "expected the tavern background, observed {:?}",
+            view.frame.background
+        ));
+    }
+    if view.frame.fit != Fit::Cover {
+        return Err(format!("expected cover fit, observed {:?}", view.frame.fit));
+    }
+    if (view.frame.anchor.x - 0.5).abs() > f64::EPSILON
+        || (view.frame.anchor.y - 0.4).abs() > f64::EPSILON
+    {
+        return Err(format!(
+            "expected anchor 0.5, 0.4, observed {:?}",
+            view.frame.anchor
+        ));
+    }
+    if view.frame.background_transition != Some(PlayTransition::new(TransitionKind::Fade, 220)) {
+        return Err(format!(
+            "expected a 220 ms fade on the background, observed {:?}",
+            view.frame.background_transition
+        ));
+    }
+    if !view.frame.notes.is_empty() {
+        return Err(format!(
+            "expected a clean frame, observed fallback notes {:?}",
+            view.frame.notes
+        ));
+    }
+    if view.speaker != "Traveller" {
+        return Err(format!(
+            "expected the Traveller speaker, observed {:?}",
+            view.speaker
+        ));
+    }
+
+    let innkeeper = view
+        .frame
+        .stages
+        .iter()
+        .find(|stage| stage.id == "innkeeper")
+        .ok_or_else(|| "the innkeeper stage is missing".to_owned())?;
+    if innkeeper.slot != Slot::Center
+        || innkeeper.layer != 1
+        || innkeeper.variant.as_deref() != Some("amused")
+    {
+        return Err(format!(
+            "unexpected innkeeper staging: slot {:?}, layer {}, variant {:?}",
+            innkeeper.slot, innkeeper.layer, innkeeper.variant
+        ));
+    }
+
+    let traveller = view
+        .frame
+        .stages
+        .iter()
+        .find(|stage| stage.id == "traveller")
+        .ok_or_else(|| "the traveller stage is missing".to_owned())?;
+    if traveller.slot != Slot::Right
+        || traveller.layer != 2
+        || traveller.transition != Some(PlayTransition::new(TransitionKind::Wipe, 140))
+    {
+        return Err(format!(
+            "unexpected traveller staging: slot {:?}, layer {}, transition {:?}",
+            traveller.slot, traveller.layer, traveller.transition
+        ));
+    }
+
     Ok(())
 }
 
@@ -313,14 +438,34 @@ fn on_reloaded(_: On<StoryReloaded>, mut view: ResMut<GameViewModel>) {
     view.record("reloaded");
 }
 
+fn on_presentation(
+    cued: On<PresentationCued>,
+    story: Res<WeaveStory>,
+    mut view: ResMut<GameViewModel>,
+) {
+    let Some(runtime) = story.runtime() else {
+        return;
+    };
+    let label = view.frame.apply(&cued.cue, runtime.data());
+    view.record(format!("cue:{label}"));
+}
+
 fn on_line(
     line: On<DeliverLine>,
     mode: Res<RunMode>,
+    story: Res<WeaveStory>,
     mut view: ResMut<GameViewModel>,
     mut commands: Commands,
 ) {
+    let (prose_speaker, prose_line) = split_speaker(&line.text);
+    let speaker = story
+        .runtime()
+        .and_then(|runtime| view.frame.speaker_name(runtime.data()))
+        .unwrap_or(prose_speaker);
+
     view.line_count += 1;
-    view.dialogue.clone_from(&line.text);
+    view.speaker = speaker;
+    view.dialogue = prose_line;
     view.choices.clear();
     view.can_continue = !mode.auto_advance;
     view.status = if mode.auto_advance {
@@ -418,8 +563,8 @@ fn setup_ui(mut commands: Commands) {
                 width: vw(100),
                 height: vh(100),
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(px(28)),
-                row_gap: px(18),
+                padding: UiRect::all(px(24)),
+                row_gap: px(12),
                 ..default()
             },
             BackgroundColor(BACKGROUND),
@@ -428,15 +573,15 @@ fn setup_ui(mut commands: Commands) {
             root.spawn((
                 Text::new("THE EMBER FORECAST"),
                 TextFont {
-                    font_size: 34.0,
+                    font_size: 30.0,
                     ..default()
                 },
                 TextColor(TEXT),
             ));
             root.spawn((
-                Text::new("A tiny Weave + Bevy integration game"),
+                Text::new("A portable Weave Play scene rendered by Bevy"),
                 TextFont {
-                    font_size: 16.0,
+                    font_size: 15.0,
                     ..default()
                 },
                 TextColor(MUTED),
@@ -445,7 +590,7 @@ fn setup_ui(mut commands: Commands) {
                 ViewText::Status,
                 Text::new("Loading dialogue.weave through Bevy's asset pipeline..."),
                 TextFont {
-                    font_size: 15.0,
+                    font_size: 14.0,
                     ..default()
                 },
                 TextColor(ACCENT),
@@ -455,96 +600,189 @@ fn setup_ui(mut commands: Commands) {
                 width: percent(100),
                 flex_grow: 1.0,
                 flex_direction: FlexDirection::Row,
-                column_gap: px(18),
+                column_gap: px(14),
                 ..default()
             })
             .with_children(|main| {
-                main.spawn((
-                    Node {
-                        width: percent(62),
-                        height: percent(100),
-                        flex_direction: FlexDirection::Column,
-                        padding: UiRect::all(px(24)),
-                        row_gap: px(18),
-                        border: UiRect::all(px(1)),
-                        border_radius: BorderRadius::all(px(18)),
-                        ..default()
-                    },
-                    BackgroundColor(PANEL),
-                    BorderColor::all(BORDER),
-                ))
-                .with_children(|dialogue_panel| {
-                    dialogue_panel.spawn((
-                        Text::new("DIALOGUE"),
-                        TextFont {
-                            font_size: 13.0,
-                            ..default()
-                        },
-                        TextColor(ACCENT),
-                    ));
-                    dialogue_panel.spawn((
-                        ViewText::Dialogue,
-                        Text::new("The story will begin when its asset is ready."),
-                        TextFont {
-                            font_size: 28.0,
-                            ..default()
-                        },
-                        TextColor(TEXT),
+                main.spawn(Node {
+                    width: percent(66),
+                    height: percent(100),
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(12),
+                    ..default()
+                })
+                .with_children(|left| {
+                    left.spawn((
+                        Name::new("Play scene"),
                         Node {
                             width: percent(100),
-                            min_height: px(150),
+                            flex_grow: 1.0,
+                            min_height: px(300),
+                            overflow: Overflow::clip(),
+                            border: UiRect::all(px(1)),
+                            border_radius: BorderRadius::all(px(16)),
                             ..default()
                         },
-                    ));
-                    dialogue_panel.spawn((
-                        ChoiceList,
-                        Node {
-                            width: percent(100),
-                            flex_direction: FlexDirection::Column,
-                            row_gap: px(10),
-                            ..default()
-                        },
-                    ));
-                    dialogue_panel
-                        .spawn((
-                            ContinueButton,
-                            UiAction::Continue,
-                            Button,
+                        BackgroundColor(PANEL),
+                        BorderColor::all(BORDER),
+                    ))
+                    .with_children(|scene| {
+                        scene.spawn((
+                            SceneBackdrop,
                             Node {
-                                display: Display::None,
+                                position_type: PositionType::Absolute,
+                                left: px(0),
+                                top: px(0),
                                 width: percent(100),
-                                min_height: px(52),
-                                padding: UiRect::axes(px(18), px(12)),
-                                align_items: AlignItems::Center,
-                                justify_content: JustifyContent::Center,
-                                border: UiRect::all(px(1)),
-                                border_radius: BorderRadius::all(px(10)),
+                                height: percent(100),
                                 ..default()
                             },
-                            BackgroundColor(NORMAL_BUTTON),
-                            BorderColor::all(BORDER),
-                        ))
-                        .with_children(|button| {
-                            button.spawn((
-                                Text::new("Continue  >"),
-                                TextFont {
-                                    font_size: 18.0,
+                            BackgroundColor(BACKGROUND),
+                        ));
+                        scene.spawn((
+                            SceneDecor::FitFrame,
+                            Node {
+                                position_type: PositionType::Absolute,
+                                left: percent(0),
+                                top: percent(0),
+                                width: percent(100),
+                                height: percent(100),
+                                border: UiRect::all(px(2)),
+                                ..default()
+                            },
+                            BorderColor::all(ACCENT.with_alpha(0.35)),
+                        ));
+                        scene.spawn((
+                            SceneDecor::AnchorMarker,
+                            Node {
+                                position_type: PositionType::Absolute,
+                                left: percent(50),
+                                top: percent(50),
+                                width: px(16),
+                                height: px(16),
+                                margin: UiRect::all(px(-8)),
+                                border_radius: BorderRadius::all(px(8)),
+                                ..default()
+                            },
+                            BackgroundColor(ACCENT.with_alpha(0.85)),
+                        ));
+                        scene.spawn((
+                            StageLayer,
+                            Node {
+                                position_type: PositionType::Absolute,
+                                left: px(0),
+                                top: px(0),
+                                width: percent(100),
+                                height: percent(100),
+                                ..default()
+                            },
+                        ));
+                        scene.spawn((
+                            ViewText::SceneHud,
+                            Text::new("scene none  |  fit cover  |  anchor 0.50, 0.50"),
+                            TextFont {
+                                font_size: 11.0,
+                                ..default()
+                            },
+                            TextColor(MUTED),
+                            Node {
+                                position_type: PositionType::Absolute,
+                                left: px(12),
+                                bottom: px(10),
+                                width: percent(96),
+                                ..default()
+                            },
+                        ));
+                    });
+
+                    left.spawn((
+                        Node {
+                            width: percent(100),
+                            min_height: px(190),
+                            flex_direction: FlexDirection::Column,
+                            row_gap: px(8),
+                            padding: UiRect::all(px(18)),
+                            border: UiRect::all(px(1)),
+                            border_radius: BorderRadius::all(px(16)),
+                            ..default()
+                        },
+                        BackgroundColor(PANEL),
+                        BorderColor::all(BORDER),
+                    ))
+                    .with_children(|dialogue| {
+                        dialogue.spawn((
+                            ViewText::Speaker,
+                            Text::new("NARRATOR"),
+                            TextFont {
+                                font_size: 13.0,
+                                ..default()
+                            },
+                            TextColor(ACCENT),
+                        ));
+                        dialogue.spawn((
+                            ViewText::Dialogue,
+                            Text::new("The story will begin when its asset is ready."),
+                            TextFont {
+                                font_size: 23.0,
+                                ..default()
+                            },
+                            TextColor(TEXT),
+                            Node {
+                                width: percent(100),
+                                min_height: px(62),
+                                ..default()
+                            },
+                        ));
+                        dialogue.spawn((
+                            ChoiceList,
+                            Node {
+                                width: percent(100),
+                                flex_direction: FlexDirection::Column,
+                                row_gap: px(8),
+                                ..default()
+                            },
+                        ));
+                        dialogue
+                            .spawn((
+                                ContinueButton,
+                                UiAction::Continue,
+                                Button,
+                                Node {
+                                    display: Display::None,
+                                    width: percent(100),
+                                    min_height: px(46),
+                                    padding: UiRect::axes(px(18), px(10)),
+                                    align_items: AlignItems::Center,
+                                    justify_content: JustifyContent::Center,
+                                    border: UiRect::all(px(1)),
+                                    border_radius: BorderRadius::all(px(10)),
                                     ..default()
                                 },
-                                TextColor(TEXT),
-                            ));
-                        });
+                                BackgroundColor(NORMAL_BUTTON),
+                                BorderColor::all(BORDER),
+                            ))
+                            .with_children(|button| {
+                                button.spawn((
+                                    Text::new("Continue  >"),
+                                    TextFont {
+                                        font_size: 17.0,
+                                        ..default()
+                                    },
+                                    TextColor(TEXT),
+                                ));
+                            });
+                    });
                 });
 
                 main.spawn((
                     Node {
-                        width: percent(38),
+                        width: percent(34),
                         height: percent(100),
                         flex_direction: FlexDirection::Column,
-                        padding: UiRect::all(px(20)),
-                        row_gap: px(12),
+                        row_gap: px(8),
+                        padding: UiRect::all(px(16)),
                         border: UiRect::all(px(1)),
-                        border_radius: BorderRadius::all(px(18)),
+                        border_radius: BorderRadius::all(px(16)),
                         ..default()
                     },
                     BackgroundColor(PANEL_ALT),
@@ -552,9 +790,9 @@ fn setup_ui(mut commands: Commands) {
                 ))
                 .with_children(|telemetry| {
                     telemetry.spawn((
-                        Text::new("PATTERNDRAWN"),
+                        Text::new("OMEN SPREAD"),
                         TextFont {
-                            font_size: 13.0,
+                            font_size: 12.0,
                             ..default()
                         },
                         TextColor(ACCENT),
@@ -563,20 +801,20 @@ fn setup_ui(mut commands: Commands) {
                         ViewText::Pattern,
                         Text::new("Waiting for the omen spread..."),
                         TextFont {
-                            font_size: 16.0,
+                            font_size: 14.0,
                             ..default()
                         },
                         TextColor(TEXT),
                         Node {
                             width: percent(100),
-                            min_height: px(90),
+                            min_height: px(64),
                             ..default()
                         },
                     ));
                     telemetry.spawn((
                         Text::new("OBSERVABLE STATE"),
                         TextFont {
-                            font_size: 13.0,
+                            font_size: 12.0,
                             ..default()
                         },
                         TextColor(ACCENT),
@@ -585,20 +823,41 @@ fn setup_ui(mut commands: Commands) {
                         ViewText::ObservableState,
                         Text::new("Waiting for runtime state..."),
                         TextFont {
-                            font_size: 15.0,
+                            font_size: 13.0,
                             ..default()
                         },
                         TextColor(TEXT),
                         Node {
                             width: percent(100),
-                            min_height: px(100),
+                            min_height: px(50),
+                            ..default()
+                        },
+                    ));
+                    telemetry.spawn((
+                        Text::new("PRESENTATION CUES"),
+                        TextFont {
+                            font_size: 12.0,
+                            ..default()
+                        },
+                        TextColor(ACCENT),
+                    ));
+                    telemetry.spawn((
+                        ViewText::CueLog,
+                        Text::new("Waiting for the first cue..."),
+                        TextFont {
+                            font_size: 11.0,
+                            ..default()
+                        },
+                        TextColor(TEXT),
+                        Node {
+                            width: percent(100),
                             ..default()
                         },
                     ));
                     telemetry.spawn((
                         Text::new("STORY EVENTS"),
                         TextFont {
-                            font_size: 13.0,
+                            font_size: 12.0,
                             ..default()
                         },
                         TextColor(ACCENT),
@@ -607,7 +866,7 @@ fn setup_ui(mut commands: Commands) {
                         ViewText::EventLog,
                         Text::new("Waiting for StoryReady..."),
                         TextFont {
-                            font_size: 12.0,
+                            font_size: 10.0,
                             ..default()
                         },
                         TextColor(MUTED),
@@ -624,7 +883,7 @@ fn setup_ui(mut commands: Commands) {
                     "HOT RELOAD  |  Save examples/bevy-dialogue/assets/dialogue.weave while this window is open",
                 ),
                 TextFont {
-                    font_size: 13.0,
+                    font_size: 12.0,
                     ..default()
                 },
                 TextColor(MUTED),
@@ -677,12 +936,16 @@ fn button_interactions(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn sync_ui(
     mut commands: Commands,
     view: Res<GameViewModel>,
     mut texts: Query<(&ViewText, &mut Text)>,
-    mut continue_buttons: Query<&mut Node, With<ContinueButton>>,
+    mut backdrops: Query<&mut BackgroundColor, With<SceneBackdrop>>,
+    mut decor: Query<(&SceneDecor, &mut Node), Without<ContinueButton>>,
+    stage_layers: Query<Entity, With<StageLayer>>,
+    stage_views: Query<Entity, With<StageView>>,
+    mut continue_buttons: Query<&mut Node, (With<ContinueButton>, Without<SceneDecor>)>,
     choice_lists: Query<Entity, With<ChoiceList>>,
     choice_buttons: Query<Entity, With<ChoiceButton>>,
 ) {
@@ -691,10 +954,13 @@ fn sync_ui(
     }
 
     let first_event = view.events.len().saturating_sub(8);
+    let first_cue = view.frame.cue_log.len().saturating_sub(MAX_CUE_LOG);
     for (role, mut text) in &mut texts {
         **text = match role {
             ViewText::Status => view.status.clone(),
+            ViewText::Speaker => view.speaker.to_uppercase(),
             ViewText::Dialogue => view.dialogue.clone(),
+            ViewText::SceneHud => scene_hud(&view.frame),
             ViewText::Pattern if view.patterns.is_empty() => {
                 "Waiting for the omen spread...".to_owned()
             }
@@ -702,14 +968,109 @@ fn sync_ui(
             ViewText::ObservableState => view.observable_state.clone(),
             ViewText::EventLog if view.events.is_empty() => "Waiting for StoryReady...".to_owned(),
             ViewText::EventLog => view.events[first_event..].join("\n"),
+            ViewText::CueLog if view.frame.cue_log.is_empty() => {
+                "Waiting for the first cue...".to_owned()
+            }
+            ViewText::CueLog => view.frame.cue_log[first_cue..].join("\n"),
         };
     }
+
+    let background_opacity = view.frame.background_opacity();
+    for mut background in &mut backdrops {
+        *background = BackgroundColor(scene_color(
+            view.frame.background.as_deref(),
+            background_opacity,
+        ));
+    }
+
+    for (decor, mut node) in &mut decor {
+        match decor {
+            SceneDecor::FitFrame => {
+                let (size, inset) = match view.frame.fit {
+                    Fit::Cover => (100.0, 0.0),
+                    Fit::Contain => (78.0, 11.0),
+                };
+                node.width = percent(size);
+                node.height = percent(size);
+                node.left = percent(inset);
+                node.top = percent(inset);
+            }
+            SceneDecor::AnchorMarker => {
+                node.left = percent(view.frame.anchor.x as f32 * 100.0);
+                node.top = percent(view.frame.anchor.y as f32 * 100.0);
+            }
+        }
+    }
+
     for mut node in &mut continue_buttons {
         node.display = if view.can_continue {
             Display::Flex
         } else {
             Display::None
         };
+    }
+
+    for entity in &stage_views {
+        commands.entity(entity).despawn();
+    }
+    let stages = view.frame.ordered_stages();
+    for layer in &stage_layers {
+        commands.entity(layer).with_children(|parent| {
+            for stage in &stages {
+                let opacity = PlayFrame::stage_opacity(stage);
+                let fraction = slot_fraction(stage.slot);
+                parent
+                    .spawn((
+                        Name::new(format!("Stage {}", stage.id)),
+                        StageView,
+                        Node {
+                            position_type: PositionType::Absolute,
+                            left: percent(fraction * 100.0 - 10.0),
+                            bottom: percent(6.0),
+                            width: percent(20.0),
+                            height: percent(58.0),
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::FlexEnd,
+                            align_items: AlignItems::Center,
+                            padding: UiRect::all(px(8)),
+                            border: UiRect::all(px(1)),
+                            border_radius: BorderRadius::all(px(14)),
+                            ..default()
+                        },
+                        BackgroundColor(stage_color(stage, opacity)),
+                        BorderColor::all(ACCENT.with_alpha(0.5)),
+                        ZIndex(i32::from(stage.layer)),
+                    ))
+                    .with_children(|block| {
+                        block.spawn((
+                            Text::new(stage.name.clone()),
+                            TextFont {
+                                font_size: 14.0,
+                                ..default()
+                            },
+                            TextColor(TEXT),
+                        ));
+                        let detail = match &stage.variant {
+                            Some(variant) => format!(
+                                "{} slot  |  layer {}  |  {variant}",
+                                slot_label(stage.slot),
+                                stage.layer
+                            ),
+                            None => {
+                                format!("{} slot  |  layer {}", slot_label(stage.slot), stage.layer)
+                            }
+                        };
+                        block.spawn((
+                            Text::new(detail),
+                            TextFont {
+                                font_size: 10.0,
+                                ..default()
+                            },
+                            TextColor(MUTED),
+                        ));
+                    });
+            }
+        });
     }
 
     for entity in &choice_buttons {
@@ -726,8 +1087,8 @@ fn sync_ui(
                         Button,
                         Node {
                             width: percent(100),
-                            min_height: px(50),
-                            padding: UiRect::axes(px(18), px(12)),
+                            min_height: px(42),
+                            padding: UiRect::axes(px(16), px(8)),
                             align_items: AlignItems::Center,
                             border: UiRect::all(px(1)),
                             border_radius: BorderRadius::all(px(10)),
@@ -740,7 +1101,7 @@ fn sync_ui(
                         button.spawn((
                             Text::new(format!("{}. {label}", index + 1)),
                             TextFont {
-                                font_size: 17.0,
+                                font_size: 16.0,
                                 ..default()
                             },
                             TextColor(TEXT),
@@ -751,22 +1112,101 @@ fn sync_ui(
     }
 }
 
+fn scene_hud(frame: &PlayFrame) -> String {
+    let scene = frame.background.as_deref().unwrap_or("none");
+    let background = frame.background_transition.map_or_else(
+        || "none".to_owned(),
+        |transition| format!("{} {} ms", transition.label(), transition.ms),
+    );
+    let pending = frame.transition.map_or_else(
+        || "idle".to_owned(),
+        |transition| format!("{} {} ms", transition.label(), transition.ms),
+    );
+    format!(
+        "scene {scene}  |  fit {}  |  anchor {:.2}, {:.2}  |  background {background}  |  next {pending}",
+        fit_label(frame.fit),
+        frame.anchor.x,
+        frame.anchor.y
+    )
+}
+
+fn scene_color(scene: Option<&str>, opacity: f32) -> Color {
+    let tone = scene_tone(scene);
+    let red = ((tone >> 16) & 0xff) as u8;
+    let green = ((tone >> 8) & 0xff) as u8;
+    let blue = (tone & 0xff) as u8;
+    Color::srgb_u8(red, green, blue).with_alpha(opacity)
+}
+
+fn stage_color(stage: &StagedCharacter, opacity: f32) -> Color {
+    let mut hash = 2_166_136_261_u32;
+    for byte in stage
+        .id
+        .bytes()
+        .chain(stage.variant.as_deref().unwrap_or("base").bytes())
+    {
+        hash ^= u32::from(byte);
+        hash = hash.wrapping_mul(16_777_619);
+    }
+    let hue = (hash % 360) as f32;
+    Color::hsl(hue, 0.52, 0.58).with_alpha(opacity)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn example_asset_exercises_choices_patterns_and_observable_state() {
+    fn example_asset_exercises_choices_patterns_and_presentation() {
         let source = include_str!("../assets/dialogue.weave");
         assert!(source.contains("=== start ==="));
         assert!(source.contains("omens.spread.day.draw()"));
         assert!(source.contains("SET cups = cups + 1"));
+        assert!(source.contains("scene tavern"));
+        assert!(source.contains("stage innkeeper"));
+        assert!(source.contains("variant amused"));
+        assert!(source.contains("@transition fade 220"));
+        assert!(source.contains("@swap innkeeper amused"));
+        assert!(source.contains("@scene night"));
     }
 
     #[test]
     fn smoke_mode_loads_and_observes_the_complete_game_flow() {
         let mut app = build_smoke_app();
         drive_smoke_test(&mut app).expect("the packaged Bevy game should complete its smoke flow");
+    }
+
+    #[test]
+    fn the_same_seed_and_choices_produce_the_same_cue_order_and_frame() {
+        let mut first = build_smoke_app();
+        drive_smoke_test(&mut first).expect("first run completes");
+        let mut second = build_smoke_app();
+        drive_smoke_test(&mut second).expect("second run completes");
+
+        let first = first.world().resource::<GameViewModel>();
+        let second = second.world().resource::<GameViewModel>();
+        assert_eq!(first.frame.cue_log, second.frame.cue_log);
+        assert_eq!(first.frame, second.frame);
+        assert_eq!(first.observable_state, second.observable_state);
+        assert_eq!(first.speaker, second.speaker);
+        assert!(!first.frame.cue_log.is_empty());
+    }
+
+    #[test]
+    fn a_missing_image_path_renders_a_colour_block() {
+        let stage = StagedCharacter {
+            id: "ghost".to_owned(),
+            name: "Ghost".to_owned(),
+            slot: Slot::Center,
+            layer: 0,
+            image: Some("art/does_not_exist.png".to_owned()),
+            variant: None,
+            order: 0,
+            transition: None,
+        };
+        let _ = stage_color(&stage, 1.0);
+        let _ = scene_color(Some("missing_scene"), 1.0);
+        let _ = scene_color(None, 1.0);
     }
 
     #[test]

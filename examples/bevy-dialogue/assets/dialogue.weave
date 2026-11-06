@@ -11,16 +11,59 @@ pattern omens {
     spread day { positions: [dawn, noon, dusk] }
 }
 
+scene tavern {
+    background: "art/tavern_placeholder.png"
+    fit: cover
+    anchor: 0.5, 0.4
+}
+
+scene night {
+    background: "art/night_placeholder.png"
+    fit: contain
+    anchor: 0.5, 0.5
+}
+
+stage innkeeper {
+    image: "art/innkeeper_placeholder.png"
+    name: "The Innkeeper"
+    slot: left
+    layer: 1
+    variant amused {
+        image: "art/innkeeper_amused_placeholder.png"
+    }
+}
+
+stage traveller {
+    image: "art/traveller_placeholder.png"
+    name: "Traveller"
+    slot: right
+    layer: 2
+}
+
 VAR omen = omens.spread.day.draw()
 VAR cups = 0
 
 === start ===
+@transition fade 220
+@scene tavern
+@show innkeeper
+@speaker innkeeper
 #tavern.welcome#.
 The dawn omen is {omen.dawn.name}: {omen.dawn.meaning}.
+@swap innkeeper amused
+@move innkeeper center
+@transition slide 180
 * [Order tea]
     SET cups = cups + 1
+    @transition wipe 140
+    @show traveller
+    @speaker traveller
     The innkeeper pours a steaming cup.
     -> END
 + [Leave]
+    @speaker
+    @hide innkeeper
+    @scene night
+    @transition fade 300
     You step back into the night.
     -> END

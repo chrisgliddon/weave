@@ -23,6 +23,8 @@ use weave_runtime::{
     ChoiceView, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState, VariableState,
 };
 
+pub mod play;
+
 /// Bevy version targeted by this integration.
 pub const BEVY_VERSION: &str = "0.18";
 
@@ -482,6 +484,12 @@ fn trigger_story_event(world: &mut World, event: StoryEvent) {
 
 /// Commonly used integration types.
 pub mod prelude {
+    pub use crate::play::{
+        AnchorIr, Fit, MAX_TRANSITION_MS, NARRATOR, PlayFrame, PlayTransition, SCENE_TONES,
+        SLOT_FRACTIONS, SceneIr, Slot, StageIr, StagedCharacter, StoryIr, TransitionKind,
+        fit_label, fold_cues, sanitize_anchor, scene_tone, slot_fraction, slot_label,
+        split_speaker, transition_label,
+    };
     pub use crate::{
         DeliverChoices, DeliverLine, PatternDrawn, PresentationCued, StoryEnded, StoryFailed,
         StoryReady, StoryReloaded, WeaveAsset, WeaveCommandsExt, WeavePlugin, WeaveSet, WeaveStory,
