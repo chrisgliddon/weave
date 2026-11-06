@@ -21,7 +21,7 @@ use crate::theme::DARK_THEME;
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum EditTarget {
     /// Replace the first prose line of a knot.
-    Prose(String),
+    Prose { knot: String },
     /// Rename a knot.
     Title(String),
     /// Replace the label of an existing choice.
@@ -86,7 +86,7 @@ impl InlineEdit {
 
     fn prompt(&self) -> &'static str {
         match self.target {
-            EditTarget::Prose(_) => "Beat prose",
+            EditTarget::Prose { .. } => "Beat prose",
             EditTarget::Title(_) => "Knot name",
             EditTarget::ChoiceLabel { .. } => "Choice label",
             EditTarget::NewChoice { .. } => "New branch label",
@@ -309,9 +309,9 @@ impl GraphSurface {
         };
         let target = match presentation.kind {
             GraphNodeKind::Knot if rename => EditTarget::Title(presentation.title.clone()),
-            GraphNodeKind::Knot => {
-                EditTarget::Prose(presentation.prose.clone().unwrap_or_default())
-            }
+            GraphNodeKind::Knot => EditTarget::Prose {
+                knot: presentation.title.clone(),
+            },
             GraphNodeKind::Choice => {
                 let Some((knot, path)) = choice_coordinate(&id) else {
                     cx.emit(GraphSurfaceEvent::Unavailable(
@@ -333,7 +333,7 @@ impl GraphSurface {
             }
         };
         let initial = match &target {
-            EditTarget::Prose(_) => presentation.prose.clone().unwrap_or_default(),
+            EditTarget::Prose { .. } => presentation.prose.clone().unwrap_or_default(),
             EditTarget::Title(_) => presentation.title.clone(),
             EditTarget::ChoiceLabel { .. } | EditTarget::NewChoice { .. } => {
                 presentation.title.clone()
@@ -424,7 +424,7 @@ impl GraphSurface {
             return;
         };
         let graph_edit = match edit.target {
-            EditTarget::Prose(knot) => GraphEdit::SetKnotText { knot, text },
+            EditTarget::Prose { knot } => GraphEdit::SetKnotText { knot, text },
             EditTarget::Title(knot) => GraphEdit::RenameKnot { knot, name: text },
             EditTarget::ChoiceLabel { knot, path, .. } => {
                 GraphEdit::SetChoiceText { knot, path, text }
@@ -844,7 +844,12 @@ mod tests {
 
     #[test]
     fn inline_editor_handles_unicode_cursor_moves() {
-        let mut edit = InlineEdit::new(EditTarget::Prose("start".to_owned()), "héllo".to_owned());
+        let mut edit = InlineEdit::new(
+            EditTarget::Prose {
+                knot: "start".to_owned(),
+            },
+            "héllo".to_owned(),
+        );
         edit.move_left();
         edit.backspace();
         assert_eq!(edit.text, "hélo");

@@ -48,6 +48,16 @@ pub enum GraphEdit {
         path: Vec<usize>,
         target: String,
     },
+    /// Replace the prose at `path`. Empty text removes that prose line.
+    SetStatementText {
+        knot: String,
+        path: Vec<usize>,
+        text: String,
+    },
+    /// Remove the non-choice statement at `path`.
+    RemoveStatement { knot: String, path: Vec<usize> },
+    /// Append a prose line to the knot body.
+    AppendProse { knot: String, text: String },
 }
 
 /// Result of accepting source from the text view.
@@ -106,6 +116,8 @@ pub enum SyncConflict {
     DuplicateKnot(String),
     #[error("choice {path:?} does not exist in knot `{knot}`")]
     MissingChoice { knot: String, path: Vec<usize> },
+    #[error("statement {path:?} in knot `{knot}` cannot be edited this way")]
+    MissingStatement { knot: String, path: Vec<usize> },
     #[error(
         "knot `{knot}` is still referenced by {references} connection(s); remove those connections first"
     )]
@@ -565,6 +577,86 @@ fn mutate_document(
                 format!("Connected a choice in {knot} to {target}"),
             ))
         }
+        GraphEdit::SetStatementText { knot, path, text } => {
+            let text = single_line(text);
+            let owner = find_knot_mut(document, knot)?;
+            let index = top_level_index(knot, path)?;
+            let is_text = owner
+                .node
+                .body
+                .get(index)
+                .is_some_and(|statement| matches!(statement.node, Statement::Text(_)));
+            if !is_text {
+                return Err(missing_statement(knot, path));
+            }
+            if text.is_empty() {
+                owner.node.body.remove(index);
+            } else {
+                let statement = &mut owner.node.body[index];
+                if let Statement::Text(current) = &mut statement.node {
+                    *current = text;
+                }
+            }
+            Ok((
+                Some(format!("knot:{knot}")),
+                format!("Edited prose in {knot}"),
+            ))
+        }
+        GraphEdit::RemoveStatement { knot, path } => {
+            let owner = find_knot_mut(document, knot)?;
+            let index = top_level_index(knot, path)?;
+            let removable = owner.node.body.get(index).is_some_and(|statement| {
+                matches!(
+                    statement.node,
+                    Statement::Text(_)
+                        | Statement::Comment(_)
+                        | Statement::Blank
+                        | Statement::Cue(_)
+                        | Statement::End
+                )
+            });
+            if !removable {
+                return Err(missing_statement(knot, path));
+            }
+            owner.node.body.remove(index);
+            Ok((None, format!("Removed a statement from {knot}")))
+        }
+        GraphEdit::AppendProse { knot, text } => {
+            let text = single_line(text);
+            if text.is_empty() {
+                return Err(SyncConflict::NotRepresentable);
+            }
+            let owner = find_knot_mut(document, knot)?;
+            let insert_at = owner.node.body.len().saturating_sub(usize::from(
+                owner
+                    .node
+                    .body
+                    .last()
+                    .is_some_and(|statement| matches!(statement.node, Statement::End)),
+            ));
+            owner.node.body.insert(
+                insert_at,
+                Spanned::new(Statement::Text(text), Span::default()),
+            );
+            Ok((
+                Some(format!("knot:{knot}")),
+                format!("Added prose to {knot}"),
+            ))
+        }
+    }
+}
+
+fn top_level_index(knot: &str, path: &[usize]) -> Result<usize, SyncConflict> {
+    match path {
+        [index] => Ok(*index),
+        _ => Err(missing_statement(knot, path)),
+    }
+}
+
+fn missing_statement(knot: &str, path: &[usize]) -> SyncConflict {
+    SyncConflict::MissingStatement {
+        knot: knot.to_owned(),
+        path: path.to_vec(),
     }
 }
 

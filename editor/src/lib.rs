@@ -11,6 +11,8 @@ pub mod expression;
 pub mod graph;
 pub mod graph_view;
 pub mod health;
+pub mod knot_editor;
+pub mod knot_view;
 pub mod manuscript;
 pub mod manuscript_view;
 pub mod node_renderers;

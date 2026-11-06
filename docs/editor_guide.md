@@ -43,6 +43,12 @@ Prose typed into a beat card becomes the knot's first prose line. A branch label
 
 Text that Weave would read as a command, such as a line starting with `*`, `->`, or `===`, is refused with a message instead of being written into source. Use the card controls for those constructs.
 
+### Rich and source knot editing
+
+Selecting a beat or branch opens that knot in the right-hand panel. **Rich** mode lists its blocks — prose, choices, diverts, threads, cues, declarations, and end — with an **Edit** control on prose and choices, a **Remove** control where removal is safe, and buttons to add prose or a choice. **Source** mode links to the same knot in the raw text view.
+
+Each knot remembers the mode you last used. **Use as default** stores the current mode for knots with no remembered choice. The per-knot choices and the default are saved beside the project as `<name>.editor.json`, so they survive a restart. An unreadable or invalid preferences file is reported and ignored; knots then use the built-in default, Rich.
+
 ## Domain-module inspection boundary
 
 The editor loads the adjacent `weave.modules.json` through the public `weave-domain` project API, then gives the same `DomainCatalog` to `ProjectSession`, `DomainSession`, `TextBuffer`, and live preview. A valid source `module` declaration follows the same compiler path as `weavec`; module inspections expose export descriptions, schemas, types, sources, and selected values. Character alignment sessions select an exact data-only pack and configuration, expose every proposed value and fixed-point “why” trace, create complete accept/reject/edit/withhold/override reviews, and support dry-run, atomic apply, stale detection, and refresh; only approved values reach the read-only runtime projection. Tabletop panels are similarly discovered from the exact selected adapter's declared capabilities, creation steps, and resolver-operation schemas; an absent capability returns `TT106` instead of an adapter-specific fallback. A registered Weave World composition receipt additionally exposes ordered candidate/selection records and leaf differences beside the resolved place/environment/climate preview. “Promote to authored” copies one effective generated leaf into canonical source; reset removes that override and reveals the composed value again. Both actions recompile atomically, so an invalid object-level promotion or schema violation leaves source and preview unchanged. Formatting or switching between editor-backed text views does not change the compiled module IR.

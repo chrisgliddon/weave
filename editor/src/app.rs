@@ -14,7 +14,10 @@ use gpui::{
 
 use crate::WELCOME_SOURCE;
 use crate::domain::DomainSession;
+use crate::graph::GraphNodeKind;
 use crate::graph_view::{GraphSurface, GraphSurfaceEvent};
+use crate::knot_editor::KnotViewPreferences;
+use crate::knot_view::{KnotView, KnotViewEvent};
 use crate::manuscript_view::{ManuscriptSurface, MoveVerb, label_display, status_display};
 use crate::node_renderers::{InspectorData, kind_label};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
@@ -132,6 +135,16 @@ fn launch_unchecked(mode: LaunchMode) -> Result<(), StartupError> {
     }
 }
 
+/// Knot that owns a graph node, if the node belongs to a knot.
+fn knot_of_node(node_id: &str) -> Option<String> {
+    if let Some(knot) = node_id.strip_prefix("knot:") {
+        return Some(knot.to_owned());
+    }
+    let rest = node_id.strip_prefix("choice:")?;
+    let (knot, _) = rest.split_once(':')?;
+    (!knot.is_empty()).then(|| knot.to_owned())
+}
+
 fn panic_message(payload: Box<dyn std::any::Any + Send>) -> String {
     if let Some(message) = payload.downcast_ref::<&str>() {
         (*message).to_owned()
@@ -235,6 +248,7 @@ struct EditorShell {
     watcher: Option<ProjectWatcher>,
     last_recovery_revision: Option<u64>,
     graph: Entity<GraphSurface>,
+    knot: Entity<KnotView>,
     text: Entity<TextSurface>,
     patterns: Entity<PatternBrowserSurface>,
     preview: Entity<PreviewSurface>,
@@ -263,6 +277,12 @@ impl EditorShell {
         });
         cx.subscribe(&graph, |this, _, event, cx| {
             this.handle_graph_event(event, cx);
+        })
+        .detach();
+        let knot =
+            cx.new(|_| KnotView::new(canonical.graph_document(), KnotViewPreferences::default()));
+        cx.subscribe(&knot, |this, _, event, cx| {
+            this.handle_knot_event(event, cx);
         })
         .detach();
         let text = cx.new(|cx| TextSurface::new(WELCOME_SOURCE, cx));
@@ -305,6 +325,7 @@ impl EditorShell {
             watcher: None,
             last_recovery_revision: None,
             graph,
+            knot,
             text,
             patterns,
             preview,
@@ -575,10 +596,36 @@ impl EditorShell {
             }
             GraphSurfaceEvent::Edit(edit) => edit.clone(),
         };
+        self.apply_semantic_edit(&edit, cx);
+        cx.notify();
+    }
+
+    fn handle_knot_event(&mut self, event: &KnotViewEvent, cx: &mut Context<Self>) {
+        match event {
+            KnotViewEvent::Edit(edit) => self.apply_semantic_edit(&edit, cx),
+            KnotViewEvent::ModeChanged { .. } => self.save_knot_preferences(cx),
+            KnotViewEvent::OpenSource(knot) => {
+                self.state.layout.center = CenterView::Text;
+                if let Some(span) = self.domain.document().and_then(|document| {
+                    document.items.iter().find_map(|item| match &item.node {
+                        weave_core::ast::Item::Knot(owner) if owner.node.name == *knot => {
+                            Some(item.span)
+                        }
+                        _ => None,
+                    })
+                }) {
+                    self.text.update(cx, |text, cx| text.reveal_span(span, cx));
+                }
+            }
+        }
+        cx.notify();
+    }
+
+    fn apply_semantic_edit(&mut self, edit: &crate::sync::GraphEdit, cx: &mut Context<Self>) {
         self.synchronize_text_view(cx);
         match self
             .canonical
-            .apply_graph_edit(&edit, self.canonical_revision_seen)
+            .apply_graph_edit(edit, self.canonical_revision_seen)
         {
             Ok(sync) => {
                 self.canonical_revision_seen = sync.revision;
@@ -784,6 +831,7 @@ impl EditorShell {
             Ok(project) => {
                 self.project = project;
                 let compiled = self.load_project_source(cx);
+                self.load_knot_preferences(cx);
                 match ProjectWatcher::new(path, Duration::from_millis(150)) {
                     Ok(watcher) => {
                         self.watcher = Some(watcher);
@@ -805,6 +853,40 @@ impl EditorShell {
             Err(error) => self.state.report_error(error.to_string()),
         }
         cx.notify();
+    }
+
+    fn knot_preferences_path(&self) -> Option<PathBuf> {
+        self.project
+            .path()
+            .map(|path| path.with_extension("editor.json"))
+    }
+
+    fn load_knot_preferences(&mut self, cx: &mut Context<Self>) {
+        let Some(path) = self.knot_preferences_path() else {
+            return;
+        };
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            return;
+        };
+        match KnotViewPreferences::from_json(&text) {
+            Ok(preferences) => self
+                .knot
+                .update(cx, |view, cx| view.set_preferences(preferences, cx)),
+            Err(error) => self.state.report_error(format!(
+                "Ignored invalid editor preferences at {}: {error}",
+                path.display()
+            )),
+        }
+    }
+
+    fn save_knot_preferences(&self, cx: &App) {
+        let Some(path) = self.knot_preferences_path() else {
+            return;
+        };
+        let preferences = self.knot.read(cx).preferences().clone();
+        if let Ok(text) = preferences.to_json() {
+            let _ = std::fs::write(&path, text);
+        }
     }
 
     fn save_project(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -854,6 +936,7 @@ impl EditorShell {
     }
 
     fn finish_save(&mut self, diagnostic_count: usize, cx: &mut Context<Self>) {
+        self.save_knot_preferences(cx);
         self.install_project_domain_catalog(cx);
         self.synchronize_manuscript(cx);
         self.text.update(cx, |text, _| text.mark_saved());
@@ -1268,9 +1351,33 @@ impl gpui::Render for EditorShell {
             .child(center_content);
         workspace = workspace.child(center);
 
+        let selection = self.graph.read(cx).inspector_data(cx);
+        if let Some(document) = self.domain.document().cloned() {
+            let knot_name = selection.as_ref().and_then(|data| knot_of_node(&data.id));
+            self.knot.update(cx, |view, cx| {
+                view.set_knot(&document, knot_name.as_deref(), cx)
+            });
+        }
         if layout.inspector_sidebar {
-            let selection = self.graph.read(cx).inspector_data(cx);
-            workspace = workspace.child(Self::inspector_panel(selection, layout.right_width));
+            let knot_selected = selection.as_ref().is_some_and(|data| {
+                matches!(data.kind, GraphNodeKind::Knot | GraphNodeKind::Choice)
+            });
+            let panel = if knot_selected {
+                div()
+                    .w(px(layout.right_width))
+                    .h_full()
+                    .flex_none()
+                    .flex()
+                    .flex_col()
+                    .bg(rgb(DARK_THEME.panel))
+                    .border_l_1()
+                    .border_color(rgb(DARK_THEME.border))
+                    .child(self.knot.clone())
+                    .into_any_element()
+            } else {
+                Self::inspector_panel(selection, layout.right_width)
+            };
+            workspace = workspace.child(panel);
         }
 
         let mut root = div()
