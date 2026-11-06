@@ -20,6 +20,7 @@ pub mod outline;
 pub mod outline_view;
 pub mod pattern_browser;
 pub mod play_view;
+pub mod playtest;
 pub mod presentation_assets;
 pub mod preview;
 pub mod project;
