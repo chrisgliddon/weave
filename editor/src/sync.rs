@@ -60,6 +60,14 @@ pub enum GraphEdit {
     AppendProse { knot: String, text: String },
     /// Replace the knot body with a raw source fragment that excludes the header.
     ReplaceKnotSource { knot: String, source: String },
+    /// Move a knot by one or more positions in document order.
+    MoveKnot { knot: String, delta: i32 },
+    /// Swap one choice with the previous or next choice in its knot.
+    MoveChoice {
+        knot: String,
+        path: Vec<usize>,
+        delta: i32,
+    },
 }
 
 /// Result of accepting source from the text view.
@@ -622,6 +630,71 @@ fn mutate_document(
             }
             owner.node.body.remove(index);
             Ok((None, format!("Removed a statement from {knot}")))
+        }
+        GraphEdit::MoveKnot { knot, delta } => {
+            let knot_indices = document
+                .items
+                .iter()
+                .enumerate()
+                .filter(|(_, item)| matches!(item.node, Item::Knot(_)))
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            let position = knot_indices.iter().position(|index| {
+                matches!(&document.items[*index].node, Item::Knot(owner) if owner.node.name == *knot)
+            });
+            let Some(position) = position else {
+                return Err(SyncConflict::MissingKnot(knot.clone()));
+            };
+            let target = position as i64 + i64::from(*delta);
+            if *delta == 0 || target < 0 || target >= knot_indices.len() as i64 {
+                return Ok((Some(format!("knot:{knot}")), format!("Moved {knot}")));
+            }
+            let target = target as usize;
+            let first = knot_indices[0];
+            let mut knots = knot_indices
+                .iter()
+                .rev()
+                .map(|index| document.items.remove(*index))
+                .collect::<Vec<_>>();
+            knots.reverse();
+            let item = knots.remove(position);
+            knots.insert(target, item);
+            for (offset, item) in knots.into_iter().enumerate() {
+                document.items.insert(first + offset, item);
+            }
+            let summary = if target == 0 {
+                format!("Moved {knot} to the front; it is now the story entry")
+            } else {
+                format!("Moved {knot}")
+            };
+            Ok((Some(format!("knot:{knot}")), summary))
+        }
+        GraphEdit::MoveChoice { knot, path, delta } => {
+            let owner = find_knot_mut(document, knot)?;
+            let choices = owner
+                .node
+                .body
+                .iter()
+                .enumerate()
+                .filter(|(_, statement)| matches!(statement.node, Statement::Choice(_)))
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            let Some(position) = path
+                .first()
+                .and_then(|index| choices.iter().position(|choice| choice == index))
+            else {
+                return Err(SyncConflict::MissingChoice {
+                    knot: knot.clone(),
+                    path: path.clone(),
+                });
+            };
+            let target = position as i64 + i64::from(*delta);
+            if *delta == 0 || target < 0 || target >= choices.len() as i64 {
+                return Ok((None, format!("Moved a choice in {knot}")));
+            }
+            let target = target as usize;
+            owner.node.body.swap(choices[position], choices[target]);
+            Ok((None, format!("Moved a choice in {knot}")))
         }
         GraphEdit::ReplaceKnotSource { knot, source } => {
             let fragment = format!("=== {knot} ===\n{source}\n");
@@ -1325,6 +1398,54 @@ The shore.
             assert_eq!(model.source(), before);
             assert_eq!(model.revision(), revision);
         }
+    }
+
+    #[test]
+    fn knots_and_choices_reorder_without_touching_other_items() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let moved = model
+            .apply_graph_edit(
+                &GraphEdit::MoveKnot {
+                    knot: "loop".to_owned(),
+                    delta: -1,
+                },
+                model.revision(),
+            )
+            .expect("move knot");
+        let loop_at = moved.source.find("=== loop ===").expect("loop present");
+        let shore_at = moved.source.find("=== shore ===").expect("shore present");
+        assert!(loop_at < shore_at);
+        assert!(moved.source.starts_with("=== start ==="));
+
+        let two_choices = "=== branch ===
+Pick.\n* [Left] -> END\nProse.\n* [Right] -> END\n";
+        let mut choices = CanonicalProjectModel::new(two_choices);
+        let swapped = choices
+            .apply_graph_edit(
+                &GraphEdit::MoveChoice {
+                    knot: "branch".to_owned(),
+                    path: vec![3],
+                    delta: -1,
+                },
+                choices.revision(),
+            )
+            .expect("move choice");
+        let right_at = swapped.source.find("* [Right]").expect("right present");
+        let left_at = swapped.source.find("* [Left]").expect("left present");
+        assert!(right_at < left_at);
+        assert!(swapped.source.contains("Prose.\n* [Left]"));
+
+        let unchanged = choices
+            .apply_graph_edit(
+                &GraphEdit::MoveChoice {
+                    knot: "branch".to_owned(),
+                    path: vec![1],
+                    delta: -1,
+                },
+                choices.revision(),
+            )
+            .expect("clamped move");
+        assert_eq!(unchanged.source, choices.source());
     }
 
     proptest! {

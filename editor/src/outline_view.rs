@@ -13,6 +13,8 @@ pub enum OutlineViewEvent {
     SelectNode(String),
     /// Open the knot owning this row.
     OpenKnot(String),
+    /// Move the selected row earlier or later.
+    Move { node_id: String, delta: i32 },
 }
 
 /// Indented story outline.
@@ -61,8 +63,16 @@ impl OutlineSurface {
     }
 
     /// Apply one navigation key. Returns false when the key is not an outline command.
-    pub fn handle_key(&mut self, key: &str, cx: &mut Context<Self>) -> bool {
+    pub fn handle_key(&mut self, key: &str, alt: bool, cx: &mut Context<Self>) -> bool {
         match key {
+            "down" | "arrowdown" if alt => {
+                self.move_selected(1, cx);
+                true
+            }
+            "up" | "arrowup" if alt => {
+                self.move_selected(-1, cx);
+                true
+            }
             "down" | "arrowdown" => {
                 self.move_selection(true, cx);
                 true
@@ -77,6 +87,15 @@ impl OutlineSurface {
             }
             _ => false,
         }
+    }
+
+    fn move_selected(&mut self, delta: i32, cx: &mut Context<Self>) {
+        let Some(row) = self.outline.selected_row() else {
+            return;
+        };
+        let node_id = row.node_id.clone();
+        cx.emit(OutlineViewEvent::Move { node_id, delta });
+        cx.notify();
     }
 
     fn open_selected(&mut self, cx: &mut Context<Self>) {

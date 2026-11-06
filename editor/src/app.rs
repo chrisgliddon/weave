@@ -170,6 +170,18 @@ fn read_sidecar(path: &Path) -> Option<String> {
     (text.len() as u64 <= MAX_SIDECAR_BYTES).then_some(text)
 }
 
+/// Knot and statement path for a choice node, if the node is a choice.
+fn choice_of_node(node_id: &str) -> Option<(String, Vec<usize>)> {
+    let rest = node_id.strip_prefix("choice:")?;
+    let (knot, path) = rest.split_once(':')?;
+    let path = path
+        .split('.')
+        .map(str::parse::<usize>)
+        .collect::<Result<Vec<_>, _>>()
+        .ok()?;
+    Some((knot.to_owned(), path))
+}
+
 /// Knot that owns a graph node, if the node belongs to a knot.
 fn knot_of_node(node_id: &str) -> Option<String> {
     if let Some(knot) = node_id.strip_prefix("knot:") {
@@ -653,6 +665,28 @@ impl EditorShell {
             }
             OutlineViewEvent::OpenKnot(_) => {
                 self.state.layout.center = CenterView::Graph;
+            }
+            OutlineViewEvent::Move { node_id, delta } => {
+                if let Some(knot) = node_id.strip_prefix("knot:") {
+                    self.apply_semantic_edit(
+                        &crate::sync::GraphEdit::MoveKnot {
+                            knot: knot.to_owned(),
+                            delta: *delta,
+                        },
+                        None,
+                        cx,
+                    );
+                } else if let Some((knot, path)) = choice_of_node(node_id) {
+                    self.apply_semantic_edit(
+                        &crate::sync::GraphEdit::MoveChoice {
+                            knot,
+                            path,
+                            delta: *delta,
+                        },
+                        None,
+                        cx,
+                    );
+                }
             }
         }
         cx.notify();
@@ -1489,9 +1523,9 @@ impl gpui::Render for EditorShell {
                     return;
                 }
                 let key = event.keystroke.key.clone();
-                let handled = this
-                    .outline
-                    .update(cx, |outline, cx| outline.handle_key(&key, cx));
+                let handled = this.outline.update(cx, |outline, cx| {
+                    outline.handle_key(&key, event.keystroke.modifiers.alt, cx)
+                });
                 if handled {
                     cx.stop_propagation();
                 }
@@ -1769,6 +1803,17 @@ impl gpui::Render for EditorShell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn outline_choice_ids_split_into_a_knot_and_path() {
+        assert_eq!(
+            choice_of_node("choice:start:0.1"),
+            Some(("start".to_owned(), vec![0, 1]))
+        );
+        assert_eq!(choice_of_node("knot:start"), None);
+        assert_eq!(choice_of_node("choice:start:bad"), None);
+        assert_eq!(choice_of_node("choice:start"), None);
+    }
 
     #[test]
     fn panic_payloads_are_safely_rendered() {
