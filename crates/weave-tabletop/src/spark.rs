@@ -904,8 +904,10 @@ fn initial_state_value(request: &SparkCreationRequest) -> DomainValue {
         .collect();
     object([
         ("attributes", DomainValue::Object(attributes)),
+        ("belief_replacements", DomainValue::Object(BTreeMap::new())),
         ("beliefs", DomainValue::Object(beliefs)),
         ("conflicts", DomainValue::Object(BTreeMap::new())),
+        ("growth", DomainValue::Number(0.0)),
         (
             "influence",
             DomainValue::Number(f64::from(request.starting_influence)),
@@ -1150,9 +1152,51 @@ pub fn spark_manifest() -> AdapterManifest {
             required(talent_tier_type(), "Broad, Common, or Deep."),
         ),
     ]);
+    let belief_replacement_type = object_type([
+        (
+            "belief_id",
+            required(string(1, 128), "Replaced Belief identity."),
+        ),
+        (
+            "confirmed_by",
+            required(
+                list(string(1, 128), 1, 16),
+                "Participants confirming the replacement.",
+            ),
+        ),
+        (
+            "growth_awarded",
+            required(TypeExpression::Bool, "Whether Growth was granted."),
+        ),
+        (
+            "inspiration",
+            required(string(1, 512), "Inspiration used for the replacement."),
+        ),
+        (
+            "new_statement",
+            required(string(1, 512), "Replacement Belief statement."),
+        ),
+        (
+            "old_statement",
+            required(string(1, 512), "Prior Belief statement."),
+        ),
+        (
+            "rationale",
+            required(string(1, 512), "Participant rationale."),
+        ),
+        (
+            "replacement_id",
+            required(string(1, 128), "Stable replacement identity."),
+        ),
+        (
+            "sequence",
+            required(integer(1.0, 64.0), "Deterministic replacement order."),
+        ),
+    ]);
     let types = BTreeMap::from([
         ("AttributeState".to_owned(), attribute_state_type),
         ("BeliefDefinition".to_owned(), belief_definition_type),
+        ("BeliefReplacementState".to_owned(), belief_replacement_type),
         ("BeliefReviewState".to_owned(), belief_review_type),
         ("BeliefState".to_owned(), belief_state_type),
         ("ConflictState".to_owned(), conflict_state_type),
@@ -1207,6 +1251,13 @@ pub fn spark_manifest() -> AdapterManifest {
             required(map(named("AttributeState"), 4, 4), "Per-attribute Harm."),
         ),
         (
+            "belief_replacements",
+            required(
+                map(named("BeliefReplacementState"), 0, 64),
+                "Retained Belief replacement lineage.",
+            ),
+        ),
+        (
             "beliefs",
             required(
                 map(named("BeliefState"), MAX_BELIEFS, MAX_BELIEFS),
@@ -1218,6 +1269,13 @@ pub fn spark_manifest() -> AdapterManifest {
             required(
                 map(named("ConflictState"), 0, MAX_CONFLICTS),
                 "Saved conflicts.",
+            ),
+        ),
+        (
+            "growth",
+            required(
+                integer(0.0, 99.0),
+                "Growth earned from confirmed replacements.",
             ),
         ),
         (
@@ -1252,6 +1310,7 @@ pub fn spark_manifest() -> AdapterManifest {
             capability(TabletopCapability::CharacterCreation),
             capability(TabletopCapability::ChecksAndConflicts),
             capability(TabletopCapability::ResourcesAndConditions),
+            capability(TabletopCapability::Advancement),
             capability(TabletopCapability::Scenes),
         ],
         types,
@@ -1573,6 +1632,43 @@ fn operations() -> BTreeMap<String, ResolverOperationDeclaration> {
             ),
         ),
         (
+            "replace_belief".to_owned(),
+            operation(
+                "replace_belief",
+                "Replace a Belief through Inspiration",
+                "Record a confirmed scene Belief replacement, retain both statements, and grant Growth only after a refuted Belief.",
+                TabletopCapability::Advancement,
+                object_type([
+                    ("belief_id", required(string(1, 128), "Belief to replace.")),
+                    (
+                        "confirmed_by",
+                        required(
+                            list(string(1, 128), 1, 16),
+                            "Participants confirming the replacement.",
+                        ),
+                    ),
+                    (
+                        "inspiration",
+                        required(string(1, 512), "Inspiration used for the change."),
+                    ),
+                    (
+                        "new_statement",
+                        required(string(1, 512), "Replacement Belief statement."),
+                    ),
+                    (
+                        "rationale",
+                        required(string(1, 512), "Participant rationale."),
+                    ),
+                    (
+                        "replacement_id",
+                        required(string(1, 128), "Stable replacement identity."),
+                    ),
+                ]),
+                ["belief_replaced", "growth_changed"],
+                false,
+            ),
+        ),
+        (
             "resolve_conflict".to_owned(),
             operation(
                 "resolve_conflict",
@@ -1613,6 +1709,50 @@ fn operations() -> BTreeMap<String, ResolverOperationDeclaration> {
 
 fn event_types() -> BTreeMap<String, TypeExpression> {
     BTreeMap::from([
+        (
+            "belief_replaced".to_owned(),
+            object_type([
+                (
+                    "belief_id",
+                    required(string(1, 128), "Replaced Belief identity."),
+                ),
+                (
+                    "canonical_write_back",
+                    required(
+                        TypeExpression::Bool,
+                        "Always false: only adapter state changes.",
+                    ),
+                ),
+                (
+                    "confirmed_by",
+                    required(
+                        list(string(1, 128), 1, 16),
+                        "Participants confirming the replacement.",
+                    ),
+                ),
+                (
+                    "growth_awarded",
+                    required(TypeExpression::Bool, "Whether Growth was granted."),
+                ),
+                ("inspiration", required(string(1, 512), "Inspiration used.")),
+                (
+                    "new_statement",
+                    required(string(1, 512), "Replacement statement."),
+                ),
+                (
+                    "old_statement",
+                    required(string(1, 512), "Prior statement."),
+                ),
+                (
+                    "rationale",
+                    required(string(1, 512), "Participant rationale."),
+                ),
+                (
+                    "replacement_id",
+                    required(string(1, 128), "Stable replacement identity."),
+                ),
+            ]),
+        ),
         (
             "belief_reviewed".to_owned(),
             object_type([
@@ -1798,6 +1938,27 @@ fn event_types() -> BTreeMap<String, TypeExpression> {
                         integer(1.0, f64::from(MAX_DECLARATIONS as u32)),
                         "Declarations rolled.",
                     ),
+                ),
+            ]),
+        ),
+        (
+            "growth_changed".to_owned(),
+            object_type([
+                (
+                    "after",
+                    required(integer(0.0, 99.0), "Growth after the change."),
+                ),
+                (
+                    "before",
+                    required(integer(0.0, 99.0), "Growth before the change."),
+                ),
+                (
+                    "delta",
+                    required(integer(-99.0, 99.0), "Signed Growth change."),
+                ),
+                (
+                    "reason",
+                    required(string(1, 512), "Explicit change rationale."),
                 ),
             ]),
         ),
@@ -2179,6 +2340,7 @@ impl TabletopResolver for SparkResolver {
             "close_scene" => resolve_close_scene(definition, request, state)?,
             "declare_action" => resolve_declare_action(definition, request, state)?,
             "open_conflict" => resolve_open_conflict(request, state)?,
+            "replace_belief" => resolve_replace_belief(definition, request, state)?,
             "resolve_conflict" => resolve_resolve_conflict(definition, request, state)?,
             "roll_conflict" => resolve_roll_conflict(definition, request, state, entropy)?,
             _ => {
@@ -3501,6 +3663,13 @@ fn object_string<'a>(
     }
 }
 
+fn object_bool(fields: &BTreeMap<String, DomainValue>, field: &str) -> Result<bool, TabletopError> {
+    match object_field(fields, field)? {
+        DomainValue::Bool(value) => Ok(*value),
+        _ => Err(invalid(field, "expected a boolean")),
+    }
+}
+
 fn optional_string<'a>(
     fields: &'a BTreeMap<String, DomainValue>,
     field: &str,
@@ -3679,4 +3848,1877 @@ fn invalid(path: impl Into<String>, reason: &'static str) -> TabletopError {
         path: path.into(),
         reason,
     }
+}
+
+// ---------------------------------------------------------------------------
+// Setting model: typed, namespaced, portable without a bundled setting.
+// ---------------------------------------------------------------------------
+
+/// Versioned portable Spark setting artifact.
+pub const SPARK_SETTING_FORMAT_VERSION: u32 = 1;
+/// Adapter namespace recorded by every setting entity.
+pub const SPARK_SETTING_NAMESPACE: &str = "spark";
+const MAX_SETTING_ENTITIES: usize = 64;
+const MAX_SETTING_BELIEFS: usize = 3;
+const MAX_SETTING_TAGS: usize = 64;
+const MAX_GM_ATTRIBUTE_VALUE: u32 = 99;
+
+/// Participant role in a collaborative setting workshop.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum SparkParticipantRole {
+    Owner,
+    Gm,
+    Player,
+}
+
+impl SparkParticipantRole {
+    /// Portable lower-case symbol.
+    #[must_use]
+    pub const fn symbol(self) -> &'static str {
+        match self {
+            Self::Owner => "owner",
+            Self::Gm => "gm",
+            Self::Player => "player",
+        }
+    }
+}
+
+/// One named setting contributor.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingParticipant {
+    pub id: String,
+    pub display_name: String,
+    pub role: SparkParticipantRole,
+}
+
+/// One authored setting Belief.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingBelief {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub statement: String,
+}
+
+/// One authored GM-facing setting attribute.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkGmAttribute {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub name: String,
+    pub value: u32,
+    pub description: String,
+}
+
+/// One setting Faction.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkFaction {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub name: String,
+    pub description: String,
+}
+
+/// One authored Tie between two Factions.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkTie {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub from_faction: String,
+    pub to_faction: String,
+    pub description: String,
+}
+
+/// One setting Face.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkFace {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub name: String,
+    pub role: String,
+    pub description: String,
+    pub faction_id: Option<String>,
+}
+
+/// One setting Agenda.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkAgenda {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub name: String,
+    pub description: String,
+    pub faction_id: Option<String>,
+}
+
+/// Optional target kind for a stable Weave World reference.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum SparkWorldTargetKind {
+    Character,
+    Faction,
+    Location,
+    Other,
+}
+
+impl SparkWorldTargetKind {
+    /// Portable lower-case symbol.
+    #[must_use]
+    pub const fn symbol(self) -> &'static str {
+        match self {
+            Self::Character => "character",
+            Self::Faction => "faction",
+            Self::Location => "location",
+            Self::Other => "other",
+        }
+    }
+}
+
+/// Optional stable reference into a Weave World module.
+///
+/// The reference is inert data. Loading the setting never requires Weave World, and the adapter
+/// never reads or mutates World data.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkWorldReference {
+    pub id: String,
+    pub namespace: String,
+    pub owner_id: String,
+    pub target_kind: SparkWorldTargetKind,
+    pub target_id: String,
+    pub description: String,
+}
+
+/// Complete portable Spark setting.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSetting {
+    pub format_version: u32,
+    pub id: String,
+    pub namespace: String,
+    pub title: String,
+    pub inspirations: BTreeSet<String>,
+    pub genres: BTreeSet<String>,
+    pub facts: BTreeSet<String>,
+    pub setting_beliefs: BTreeMap<String, SparkSettingBelief>,
+    pub gm_attributes: BTreeMap<String, SparkGmAttribute>,
+    pub factions: BTreeMap<String, SparkFaction>,
+    pub ties: BTreeMap<String, SparkTie>,
+    pub faces: BTreeMap<String, SparkFace>,
+    pub agendas: BTreeMap<String, SparkAgenda>,
+    pub world_references: BTreeMap<String, SparkWorldReference>,
+}
+
+impl_spark_io!(SparkSetting);
+
+/// Canonical JSON Schema for portable Spark settings.
+pub fn spark_setting_schema() -> Result<String, TabletopError> {
+    spark_schema::<SparkSetting>(
+        "urn:weave:schema:tabletop-spark-setting:1",
+        "Weave Spark Setting v1",
+        Some(("format_version", SPARK_SETTING_FORMAT_VERSION)),
+    )
+}
+
+impl SparkSetting {
+    /// Validate every setting identity, owner, reference, and deterministic map key.
+    pub fn validate(&self) -> Result<(), TabletopError> {
+        validate_spark_setting(self)
+    }
+
+    /// Portable values exposed to story expressions.
+    ///
+    /// The projection contains only authored setting facts. It makes no personality, alignment,
+    /// or historical claim about any character.
+    #[must_use]
+    pub fn story_values(&self) -> BTreeMap<String, DomainValue> {
+        spark_setting_story_values(self)
+    }
+}
+
+/// Validate one portable Spark setting.
+pub fn validate_spark_setting(setting: &SparkSetting) -> Result<(), TabletopError> {
+    if setting.format_version != SPARK_SETTING_FORMAT_VERSION {
+        return Err(TabletopError::UnsupportedVersion {
+            path: "format_version",
+        });
+    }
+    validate_global_identifier("id", &setting.id)?;
+    if setting.namespace != SPARK_SETTING_NAMESPACE {
+        return Err(invalid(
+            "namespace",
+            "setting namespace must equal the adapter namespace",
+        ));
+    }
+    validate_bounded_text("title", &setting.title, 1, 160)?;
+    validate_setting_tags("inspirations", &setting.inspirations)?;
+    validate_setting_tags("genres", &setting.genres)?;
+    validate_setting_tags("facts", &setting.facts)?;
+    if setting.setting_beliefs.len() != MAX_SETTING_BELIEFS {
+        return Err(invalid(
+            "setting_beliefs",
+            "expected exactly three setting Beliefs",
+        ));
+    }
+    let mut entity_count = 0usize;
+    for (key, belief) in &setting.setting_beliefs {
+        validate_setting_entity_identity(
+            "setting_beliefs",
+            key,
+            &belief.id,
+            &belief.namespace,
+            &belief.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_bounded_text(
+            format!("setting_beliefs.{key}.statement"),
+            &belief.statement,
+            1,
+            512,
+        )?;
+        entity_count += 1;
+    }
+    for (key, attribute) in &setting.gm_attributes {
+        validate_setting_entity_identity(
+            "gm_attributes",
+            key,
+            &attribute.id,
+            &attribute.namespace,
+            &attribute.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_bounded_text(format!("gm_attributes.{key}.name"), &attribute.name, 1, 160)?;
+        validate_bounded_text(
+            format!("gm_attributes.{key}.description"),
+            &attribute.description,
+            0,
+            512,
+        )?;
+        if attribute.value > MAX_GM_ATTRIBUTE_VALUE {
+            return Err(invalid(
+                format!("gm_attributes.{key}.value"),
+                "GM attribute exceeds the reviewed domain",
+            ));
+        }
+        entity_count += 1;
+    }
+    for (key, faction) in &setting.factions {
+        validate_setting_entity_identity(
+            "factions",
+            key,
+            &faction.id,
+            &faction.namespace,
+            &faction.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_bounded_text(format!("factions.{key}.name"), &faction.name, 1, 160)?;
+        validate_bounded_text(
+            format!("factions.{key}.description"),
+            &faction.description,
+            0,
+            512,
+        )?;
+        entity_count += 1;
+    }
+    for (key, tie) in &setting.ties {
+        validate_setting_entity_identity(
+            "ties",
+            key,
+            &tie.id,
+            &tie.namespace,
+            &tie.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        require_setting_faction(
+            "ties",
+            key,
+            "from_faction",
+            &tie.from_faction,
+            &setting.factions,
+        )?;
+        require_setting_faction(
+            "ties",
+            key,
+            "to_faction",
+            &tie.to_faction,
+            &setting.factions,
+        )?;
+        if tie.from_faction == tie.to_faction {
+            return Err(invalid(
+                format!("ties.{key}"),
+                "a Tie must connect two distinct Factions",
+            ));
+        }
+        validate_bounded_text(format!("ties.{key}.description"), &tie.description, 0, 512)?;
+        entity_count += 1;
+    }
+    for (key, face) in &setting.faces {
+        validate_setting_entity_identity(
+            "faces",
+            key,
+            &face.id,
+            &face.namespace,
+            &face.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_bounded_text(format!("faces.{key}.name"), &face.name, 1, 160)?;
+        validate_bounded_text(format!("faces.{key}.role"), &face.role, 1, 160)?;
+        validate_bounded_text(
+            format!("faces.{key}.description"),
+            &face.description,
+            0,
+            512,
+        )?;
+        if let Some(faction_id) = &face.faction_id {
+            require_setting_faction("faces", key, "faction_id", faction_id, &setting.factions)?;
+        }
+        entity_count += 1;
+    }
+    for (key, agenda) in &setting.agendas {
+        validate_setting_entity_identity(
+            "agendas",
+            key,
+            &agenda.id,
+            &agenda.namespace,
+            &agenda.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_bounded_text(format!("agendas.{key}.name"), &agenda.name, 1, 160)?;
+        validate_bounded_text(
+            format!("agendas.{key}.description"),
+            &agenda.description,
+            0,
+            512,
+        )?;
+        if let Some(faction_id) = &agenda.faction_id {
+            require_setting_faction("agendas", key, "faction_id", faction_id, &setting.factions)?;
+        }
+        entity_count += 1;
+    }
+    for (key, reference) in &setting.world_references {
+        validate_setting_entity_identity(
+            "world_references",
+            key,
+            &reference.id,
+            &reference.namespace,
+            &reference.owner_id,
+            setting.namespace.as_str(),
+        )?;
+        validate_global_identifier(
+            &format!("world_references.{key}.target_id"),
+            &reference.target_id,
+        )?;
+        validate_bounded_text(
+            format!("world_references.{key}.description"),
+            &reference.description,
+            0,
+            512,
+        )?;
+        entity_count += 1;
+    }
+    if entity_count > MAX_SETTING_ENTITIES {
+        return Err(invalid(
+            "setting",
+            "setting entity count exceeds the reviewed domain",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_setting_tags(path: &str, values: &BTreeSet<String>) -> Result<(), TabletopError> {
+    if values.len() > MAX_SETTING_TAGS {
+        return Err(invalid(path, "setting tag collection exceeds 64 entries"));
+    }
+    for value in values {
+        validate_bounded_text(path, value, 1, 512)?;
+    }
+    Ok(())
+}
+
+fn validate_setting_entity_identity(
+    path: &str,
+    key: &str,
+    id: &str,
+    namespace: &str,
+    owner_id: &str,
+    setting_namespace: &str,
+) -> Result<(), TabletopError> {
+    if key != id {
+        return Err(invalid(
+            path,
+            "deterministic map key must equal the stable entity id",
+        ));
+    }
+    validate_local_identifier(&format!("{path}.{key}.id"), id)?;
+    if namespace != setting_namespace || namespace != SPARK_SETTING_NAMESPACE {
+        return Err(invalid(
+            format!("{path}.{key}.namespace"),
+            "entity namespace must equal the adapter namespace",
+        ));
+    }
+    validate_global_identifier(&format!("{path}.{key}.owner_id"), owner_id)?;
+    Ok(())
+}
+
+fn require_setting_faction(
+    path: &str,
+    key: &str,
+    field: &str,
+    faction_id: &str,
+    factions: &BTreeMap<String, SparkFaction>,
+) -> Result<(), TabletopError> {
+    validate_local_identifier(&format!("{path}.{key}.{field}"), faction_id)?;
+    if !factions.contains_key(faction_id) {
+        return Err(invalid(
+            format!("{path}.{key}.{field}"),
+            "reference does not name a declared Faction",
+        ));
+    }
+    Ok(())
+}
+
+/// Build the portable value projection read by story expressions.
+#[must_use]
+pub fn spark_setting_story_values(setting: &SparkSetting) -> BTreeMap<String, DomainValue> {
+    let setting_beliefs = setting
+        .setting_beliefs
+        .iter()
+        .map(|(id, belief)| {
+            (
+                id.clone(),
+                object([
+                    ("namespace", DomainValue::String(belief.namespace.clone())),
+                    ("owner_id", DomainValue::String(belief.owner_id.clone())),
+                    ("statement", DomainValue::String(belief.statement.clone())),
+                ]),
+            )
+        })
+        .collect();
+    let gm_attributes = setting
+        .gm_attributes
+        .iter()
+        .map(|(id, attribute)| {
+            (
+                id.clone(),
+                object([
+                    (
+                        "description",
+                        DomainValue::String(attribute.description.clone()),
+                    ),
+                    ("name", DomainValue::String(attribute.name.clone())),
+                    ("owner_id", DomainValue::String(attribute.owner_id.clone())),
+                    ("value", DomainValue::Number(f64::from(attribute.value))),
+                ]),
+            )
+        })
+        .collect();
+    let factions = setting
+        .factions
+        .iter()
+        .map(|(id, faction)| {
+            (
+                id.clone(),
+                object([
+                    (
+                        "description",
+                        DomainValue::String(faction.description.clone()),
+                    ),
+                    ("name", DomainValue::String(faction.name.clone())),
+                    ("owner_id", DomainValue::String(faction.owner_id.clone())),
+                ]),
+            )
+        })
+        .collect();
+    let ties = setting
+        .ties
+        .iter()
+        .map(|(id, tie)| {
+            (
+                id.clone(),
+                object([
+                    ("description", DomainValue::String(tie.description.clone())),
+                    (
+                        "from_faction",
+                        DomainValue::String(tie.from_faction.clone()),
+                    ),
+                    ("owner_id", DomainValue::String(tie.owner_id.clone())),
+                    ("to_faction", DomainValue::String(tie.to_faction.clone())),
+                ]),
+            )
+        })
+        .collect();
+    let faces = setting
+        .faces
+        .iter()
+        .map(|(id, face)| {
+            (
+                id.clone(),
+                object([
+                    ("description", DomainValue::String(face.description.clone())),
+                    (
+                        "faction_id",
+                        DomainValue::String(face.faction_id.clone().unwrap_or_default()),
+                    ),
+                    ("name", DomainValue::String(face.name.clone())),
+                    ("owner_id", DomainValue::String(face.owner_id.clone())),
+                    ("role", DomainValue::String(face.role.clone())),
+                ]),
+            )
+        })
+        .collect();
+    let agendas = setting
+        .agendas
+        .iter()
+        .map(|(id, agenda)| {
+            (
+                id.clone(),
+                object([
+                    (
+                        "description",
+                        DomainValue::String(agenda.description.clone()),
+                    ),
+                    (
+                        "faction_id",
+                        DomainValue::String(agenda.faction_id.clone().unwrap_or_default()),
+                    ),
+                    ("name", DomainValue::String(agenda.name.clone())),
+                    ("owner_id", DomainValue::String(agenda.owner_id.clone())),
+                ]),
+            )
+        })
+        .collect();
+    let world_references = setting
+        .world_references
+        .iter()
+        .map(|(id, reference)| {
+            (
+                id.clone(),
+                object([
+                    (
+                        "description",
+                        DomainValue::String(reference.description.clone()),
+                    ),
+                    ("owner_id", DomainValue::String(reference.owner_id.clone())),
+                    (
+                        "target_id",
+                        DomainValue::String(reference.target_id.clone()),
+                    ),
+                    (
+                        "target_kind",
+                        DomainValue::Symbol(reference.target_kind.symbol().to_owned()),
+                    ),
+                ]),
+            )
+        })
+        .collect();
+    BTreeMap::from([
+        (
+            "facts".to_owned(),
+            string_list_value(&setting.facts.iter().cloned().collect::<Vec<_>>()),
+        ),
+        ("factions".to_owned(), DomainValue::Object(factions)),
+        ("faces".to_owned(), DomainValue::Object(faces)),
+        ("agendas".to_owned(), DomainValue::Object(agendas)),
+        (
+            "genres".to_owned(),
+            string_list_value(&setting.genres.iter().cloned().collect::<Vec<_>>()),
+        ),
+        (
+            "gm_attributes".to_owned(),
+            DomainValue::Object(gm_attributes),
+        ),
+        (
+            "inspirations".to_owned(),
+            string_list_value(&setting.inspirations.iter().cloned().collect::<Vec<_>>()),
+        ),
+        (
+            "namespace".to_owned(),
+            DomainValue::String(setting.namespace.clone()),
+        ),
+        (
+            "setting_beliefs".to_owned(),
+            DomainValue::Object(setting_beliefs),
+        ),
+        (
+            "setting_id".to_owned(),
+            DomainValue::String(setting.id.clone()),
+        ),
+        ("ties".to_owned(), DomainValue::Object(ties)),
+        (
+            "title".to_owned(),
+            DomainValue::String(setting.title.clone()),
+        ),
+        (
+            "world_references".to_owned(),
+            DomainValue::Object(world_references),
+        ),
+    ])
+}
+
+// ---------------------------------------------------------------------------
+// Collaborative setting creation and scene framing.
+// ---------------------------------------------------------------------------
+
+/// Boundary notes for the Weave-authored collaboration layer.
+pub const SPARK_COLLABORATION_NOTES: &[&str] = &[
+    "The CC0-1.0 Spark core procedures are implemented independently in this adapter.",
+    "Collaborative setting creation, scene framing, belief review, and Evolution are Weave-authored workflow features, not Spark core rules.",
+    "Weave World references are optional stable identifiers; no World module is required and no World data is mutated.",
+    "Published settings, characters, themes, logos, artwork, and fonts are not reproduced.",
+];
+
+/// Versioned collaborative setting-creation format.
+pub const SPARK_SETTING_CREATION_FORMAT_VERSION: u32 = 1;
+/// Versioned scene framing format.
+pub const SPARK_SCENE_FRAME_FORMAT_VERSION: u32 = 1;
+const MAX_SETTING_CONTRIBUTIONS: usize = 256;
+const MAX_SETTING_PARTICIPANTS: usize = 64;
+
+/// Typed value proposed by one setting contribution.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
+pub enum SparkSettingContributionValue {
+    Text {
+        text: String,
+    },
+    Belief {
+        statement: String,
+    },
+    GmAttribute {
+        name: String,
+        value: u32,
+        description: String,
+    },
+    Faction {
+        name: String,
+        description: String,
+    },
+    Tie {
+        from_faction: String,
+        to_faction: String,
+        description: String,
+    },
+    Face {
+        name: String,
+        role: String,
+        description: String,
+        faction_id: Option<String>,
+    },
+    Agenda {
+        name: String,
+        description: String,
+        faction_id: Option<String>,
+    },
+    WorldReference {
+        target_kind: SparkWorldTargetKind,
+        target_id: String,
+        description: String,
+    },
+}
+
+/// One ordered, owned, consented setting contribution.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingContribution {
+    pub contribution_id: String,
+    pub participant_id: String,
+    pub path: String,
+    pub revision: u32,
+    pub consent: bool,
+    pub value: SparkSettingContributionValue,
+}
+
+/// Complete collaborative setting-creation input.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingCreation {
+    pub format_version: u32,
+    pub setting_id: String,
+    pub namespace: String,
+    pub participants: BTreeMap<String, SparkSettingParticipant>,
+    pub contributions: Vec<SparkSettingContribution>,
+}
+
+/// One retained contribution revision for a field or entity path.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingRevision {
+    pub contribution_id: String,
+    pub participant_id: String,
+    pub revision: u32,
+    pub consent: bool,
+    pub applied: bool,
+    pub value: SparkSettingContributionValue,
+}
+
+/// One predictable next responsibility for the workshop.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkResponsibility {
+    pub path: String,
+    pub participant_id: String,
+}
+
+/// Deterministic result of merging setting contributions.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSettingCreationResult {
+    pub format_version: u32,
+    pub setting_id: String,
+    pub completed: bool,
+    pub setting: Option<SparkSetting>,
+    pub history: BTreeMap<String, Vec<SparkSettingRevision>>,
+    pub missing_paths: Vec<String>,
+    pub next_responsibilities: Vec<SparkResponsibility>,
+    pub canonical_write_back: bool,
+}
+
+impl_spark_io!(SparkSettingCreation);
+impl_spark_io!(SparkSettingCreationResult);
+
+/// Validate a collaborative setting-creation request.
+pub fn validate_spark_setting_creation(
+    creation: &SparkSettingCreation,
+) -> Result<(), TabletopError> {
+    if creation.format_version != SPARK_SETTING_CREATION_FORMAT_VERSION {
+        return Err(TabletopError::UnsupportedVersion {
+            path: "format_version",
+        });
+    }
+    validate_global_identifier("setting_id", &creation.setting_id)?;
+    if creation.namespace != SPARK_SETTING_NAMESPACE {
+        return Err(invalid(
+            "namespace",
+            "setting namespace must equal the adapter namespace",
+        ));
+    }
+    if creation.participants.is_empty() || creation.participants.len() > MAX_SETTING_PARTICIPANTS {
+        return Err(invalid(
+            "participants",
+            "expected one to 64 setting participants",
+        ));
+    }
+    for (key, participant) in &creation.participants {
+        if key != &participant.id {
+            return Err(invalid(
+                "participants",
+                "participant map key must equal the participant id",
+            ));
+        }
+        validate_global_identifier(&format!("participants.{key}.id"), &participant.id)?;
+        validate_bounded_text(
+            format!("participants.{key}.display_name"),
+            &participant.display_name,
+            1,
+            160,
+        )?;
+    }
+    if creation.contributions.len() > MAX_SETTING_CONTRIBUTIONS {
+        return Err(invalid(
+            "contributions",
+            "contribution collection exceeds 256 entries",
+        ));
+    }
+    let mut ids = BTreeSet::new();
+    for (index, contribution) in creation.contributions.iter().enumerate() {
+        validate_local_identifier(
+            &format!("contributions[{index}].contribution_id"),
+            &contribution.contribution_id,
+        )?;
+        if !ids.insert(&contribution.contribution_id) {
+            return Err(invalid("contributions", "duplicate contribution identity"));
+        }
+        if !creation
+            .participants
+            .contains_key(&contribution.participant_id)
+        {
+            return Err(invalid(
+                format!("contributions[{index}].participant_id"),
+                "contribution owner is not a declared participant",
+            ));
+        }
+        if contribution.revision == 0 {
+            return Err(invalid(
+                format!("contributions[{index}].revision"),
+                "contribution revision must be positive",
+            ));
+        }
+        validate_contribution_path(
+            &format!("contributions[{index}].path"),
+            &contribution.path,
+            &contribution.value,
+        )?;
+    }
+    Ok(())
+}
+
+/// Merge contributions deterministically and report completion and next responsibilities.
+pub fn resolve_spark_setting_creation(
+    creation: &SparkSettingCreation,
+) -> Result<SparkSettingCreationResult, TabletopError> {
+    validate_spark_setting_creation(creation)?;
+    let mut ordered = creation.contributions.iter().collect::<Vec<_>>();
+    ordered.sort_by(|left, right| {
+        (
+            left.path.as_str(),
+            left.revision,
+            left.participant_id.as_str(),
+            left.contribution_id.as_str(),
+        )
+            .cmp(&(
+                right.path.as_str(),
+                right.revision,
+                right.participant_id.as_str(),
+                right.contribution_id.as_str(),
+            ))
+    });
+    let mut winners: BTreeMap<String, &SparkSettingContribution> = BTreeMap::new();
+    for contribution in &ordered {
+        if contribution.consent {
+            winners.insert(contribution.path.clone(), contribution);
+        }
+    }
+    let mut history: BTreeMap<String, Vec<SparkSettingRevision>> = BTreeMap::new();
+    for contribution in &ordered {
+        let applied = winners
+            .get(&contribution.path)
+            .is_some_and(|winner| winner.contribution_id == contribution.contribution_id);
+        history
+            .entry(contribution.path.clone())
+            .or_default()
+            .push(SparkSettingRevision {
+                contribution_id: contribution.contribution_id.clone(),
+                participant_id: contribution.participant_id.clone(),
+                revision: contribution.revision,
+                consent: contribution.consent,
+                applied,
+                value: contribution.value.clone(),
+            });
+    }
+
+    let mut title = None;
+    let mut inspirations = BTreeSet::new();
+    let mut genres = BTreeSet::new();
+    let mut facts = BTreeSet::new();
+    let mut setting_beliefs = BTreeMap::new();
+    let mut gm_attributes = BTreeMap::new();
+    let mut factions = BTreeMap::new();
+    let mut ties = BTreeMap::new();
+    let mut faces = BTreeMap::new();
+    let mut agendas = BTreeMap::new();
+    let mut world_references = BTreeMap::new();
+    for (path, contribution) in &winners {
+        let owner_id = contribution.participant_id.clone();
+        let namespace = creation.namespace.clone();
+        match (&contribution.value, contribution_path_suffix(path)) {
+            (SparkSettingContributionValue::Text { text }, None) if path == "title" => {
+                title = Some(text.clone());
+            }
+            (SparkSettingContributionValue::Text { text }, Some(_))
+                if path.starts_with("inspiration.") =>
+            {
+                inspirations.insert(text.clone());
+            }
+            (SparkSettingContributionValue::Text { text }, Some(_))
+                if path.starts_with("genre.") =>
+            {
+                genres.insert(text.clone());
+            }
+            (SparkSettingContributionValue::Text { text }, Some(_))
+                if path.starts_with("fact.") =>
+            {
+                facts.insert(text.clone());
+            }
+            (SparkSettingContributionValue::Belief { statement }, Some(id))
+                if path.starts_with("belief.") =>
+            {
+                setting_beliefs.insert(
+                    id.to_owned(),
+                    SparkSettingBelief {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        statement: statement.clone(),
+                    },
+                );
+            }
+            (
+                SparkSettingContributionValue::GmAttribute {
+                    name,
+                    value,
+                    description,
+                },
+                Some(id),
+            ) if path.starts_with("gm_attribute.") => {
+                gm_attributes.insert(
+                    id.to_owned(),
+                    SparkGmAttribute {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        name: name.clone(),
+                        value: *value,
+                        description: description.clone(),
+                    },
+                );
+            }
+            (SparkSettingContributionValue::Faction { name, description }, Some(id))
+                if path.starts_with("faction.") =>
+            {
+                factions.insert(
+                    id.to_owned(),
+                    SparkFaction {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        name: name.clone(),
+                        description: description.clone(),
+                    },
+                );
+            }
+            (
+                SparkSettingContributionValue::Tie {
+                    from_faction,
+                    to_faction,
+                    description,
+                },
+                Some(id),
+            ) if path.starts_with("tie.") => {
+                ties.insert(
+                    id.to_owned(),
+                    SparkTie {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        from_faction: from_faction.clone(),
+                        to_faction: to_faction.clone(),
+                        description: description.clone(),
+                    },
+                );
+            }
+            (
+                SparkSettingContributionValue::Face {
+                    name,
+                    role,
+                    description,
+                    faction_id,
+                },
+                Some(id),
+            ) if path.starts_with("face.") => {
+                faces.insert(
+                    id.to_owned(),
+                    SparkFace {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        name: name.clone(),
+                        role: role.clone(),
+                        description: description.clone(),
+                        faction_id: faction_id.clone(),
+                    },
+                );
+            }
+            (
+                SparkSettingContributionValue::Agenda {
+                    name,
+                    description,
+                    faction_id,
+                },
+                Some(id),
+            ) if path.starts_with("agenda.") => {
+                agendas.insert(
+                    id.to_owned(),
+                    SparkAgenda {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        name: name.clone(),
+                        description: description.clone(),
+                        faction_id: faction_id.clone(),
+                    },
+                );
+            }
+            (
+                SparkSettingContributionValue::WorldReference {
+                    target_kind,
+                    target_id,
+                    description,
+                },
+                Some(id),
+            ) if path.starts_with("world_reference.") => {
+                world_references.insert(
+                    id.to_owned(),
+                    SparkWorldReference {
+                        id: id.to_owned(),
+                        namespace: namespace.clone(),
+                        owner_id,
+                        target_kind: *target_kind,
+                        target_id: target_id.clone(),
+                        description: description.clone(),
+                    },
+                );
+            }
+            _ => {
+                return Err(invalid(
+                    format!("contributions.{path}"),
+                    "contribution value does not match its path",
+                ));
+            }
+        }
+    }
+
+    let mut missing_paths = Vec::new();
+    if title.is_none() {
+        missing_paths.push("title".to_owned());
+    }
+    if setting_beliefs.len() < MAX_SETTING_BELIEFS {
+        missing_paths.push("belief".to_owned());
+    }
+    let mut next_responsibilities = Vec::new();
+    let participant_ids = creation.participants.keys().cloned().collect::<Vec<_>>();
+    for (index, path) in missing_paths.iter().enumerate() {
+        if let Some(participant_id) = participant_ids.get(index % participant_ids.len()) {
+            next_responsibilities.push(SparkResponsibility {
+                path: path.clone(),
+                participant_id: participant_id.clone(),
+            });
+        }
+    }
+
+    let setting = if missing_paths.is_empty() {
+        let setting = SparkSetting {
+            format_version: SPARK_SETTING_FORMAT_VERSION,
+            id: creation.setting_id.clone(),
+            namespace: creation.namespace.clone(),
+            title: title.ok_or_else(|| invalid("title", "completed setting requires a title"))?,
+            inspirations,
+            genres,
+            facts,
+            setting_beliefs,
+            gm_attributes,
+            factions,
+            ties,
+            faces,
+            agendas,
+            world_references,
+        };
+        validate_spark_setting(&setting)?;
+        Some(setting)
+    } else {
+        None
+    };
+    Ok(SparkSettingCreationResult {
+        format_version: SPARK_SETTING_CREATION_FORMAT_VERSION,
+        setting_id: creation.setting_id.clone(),
+        completed: setting.is_some(),
+        setting,
+        history,
+        missing_paths,
+        next_responsibilities,
+        canonical_write_back: false,
+    })
+}
+
+fn validate_contribution_path(
+    path: &str,
+    value_path: &str,
+    value: &SparkSettingContributionValue,
+) -> Result<(), TabletopError> {
+    validate_bounded_text(path, value_path, 1, 160)?;
+    let (prefix, suffix) = match value_path.split_once('.') {
+        Some((prefix, suffix)) => (prefix, Some(suffix)),
+        None => (value_path, None),
+    };
+    let expected = match prefix {
+        "title" if suffix.is_none() => matches!(value, SparkSettingContributionValue::Text { .. }),
+        "inspiration" | "genre" | "fact" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::Text { .. })
+        }
+        "belief" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::Belief { .. })
+        }
+        "gm_attribute" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::GmAttribute { .. })
+        }
+        "faction" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::Faction { .. })
+        }
+        "tie" if suffix.is_some() => matches!(value, SparkSettingContributionValue::Tie { .. }),
+        "face" if suffix.is_some() => matches!(value, SparkSettingContributionValue::Face { .. }),
+        "agenda" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::Agenda { .. })
+        }
+        "world_reference" if suffix.is_some() => {
+            matches!(value, SparkSettingContributionValue::WorldReference { .. })
+        }
+        _ => {
+            return Err(invalid(path, "unknown setting contribution path"));
+        }
+    };
+    if !expected {
+        return Err(invalid(
+            path,
+            "contribution value kind does not match its path",
+        ));
+    }
+    if let Some(suffix) = suffix {
+        validate_local_identifier(&format!("{path}.suffix"), suffix)?;
+    }
+    validate_contribution_value(path, value)
+}
+
+fn validate_contribution_value(
+    path: &str,
+    value: &SparkSettingContributionValue,
+) -> Result<(), TabletopError> {
+    match value {
+        SparkSettingContributionValue::Text { text } => {
+            validate_bounded_text(format!("{path}.text"), text, 1, 512)
+        }
+        SparkSettingContributionValue::Belief { statement } => {
+            validate_bounded_text(format!("{path}.statement"), statement, 1, 512)
+        }
+        SparkSettingContributionValue::GmAttribute {
+            name,
+            value,
+            description,
+        } => {
+            validate_bounded_text(format!("{path}.name"), name, 1, 160)?;
+            if *value > MAX_GM_ATTRIBUTE_VALUE {
+                return Err(invalid(
+                    format!("{path}.value"),
+                    "GM attribute exceeds the reviewed domain",
+                ));
+            }
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)
+        }
+        SparkSettingContributionValue::Faction { name, description } => {
+            validate_bounded_text(format!("{path}.name"), name, 1, 160)?;
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)
+        }
+        SparkSettingContributionValue::Tie {
+            from_faction,
+            to_faction,
+            description,
+        } => {
+            validate_local_identifier(&format!("{path}.from_faction"), from_faction)?;
+            validate_local_identifier(&format!("{path}.to_faction"), to_faction)?;
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)
+        }
+        SparkSettingContributionValue::Face {
+            name,
+            role,
+            description,
+            faction_id,
+        } => {
+            validate_bounded_text(format!("{path}.name"), name, 1, 160)?;
+            validate_bounded_text(format!("{path}.role"), role, 1, 160)?;
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)?;
+            if let Some(faction_id) = faction_id {
+                validate_local_identifier(&format!("{path}.faction_id"), faction_id)?;
+            }
+            Ok(())
+        }
+        SparkSettingContributionValue::Agenda {
+            name,
+            description,
+            faction_id,
+        } => {
+            validate_bounded_text(format!("{path}.name"), name, 1, 160)?;
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)?;
+            if let Some(faction_id) = faction_id {
+                validate_local_identifier(&format!("{path}.faction_id"), faction_id)?;
+            }
+            Ok(())
+        }
+        SparkSettingContributionValue::WorldReference {
+            target_id,
+            description,
+            ..
+        } => {
+            validate_global_identifier(&format!("{path}.target_id"), target_id)?;
+            validate_bounded_text(format!("{path}.description"), description, 0, 512)
+        }
+    }
+}
+
+fn contribution_path_suffix(path: &str) -> Option<&str> {
+    path.split_once('.').map(|(_, suffix)| suffix)
+}
+
+/// Explicit scene-framing input.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSceneFrameRequest {
+    pub format_version: u32,
+    pub scene_id: String,
+    pub platform: String,
+    pub tilt: String,
+    pub question: String,
+    pub end_condition: String,
+    pub contributors: BTreeMap<String, String>,
+}
+
+/// Validated scene frame ready to feed the existing conflict loop.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkSceneFrame {
+    pub format_version: u32,
+    pub scene_id: String,
+    pub platform: String,
+    pub tilt: String,
+    pub question: String,
+    pub end_condition: String,
+    pub contributors: BTreeMap<String, String>,
+    pub next_actor_id: String,
+}
+
+impl_spark_io!(SparkSceneFrameRequest);
+impl_spark_io!(SparkSceneFrame);
+
+impl SparkSceneFrame {
+    /// Build the exact `open_conflict` input for the existing Spark resolver.
+    #[must_use]
+    pub fn open_conflict_input(
+        &self,
+        conflict_id: &str,
+        max_escalation: u32,
+        victory_cost_kind: SparkCostKind,
+        victory_cost_amount: u32,
+        victory_cost_attribute: &str,
+    ) -> DomainValue {
+        object([
+            ("conflict_id", DomainValue::String(conflict_id.to_owned())),
+            (
+                "max_escalation",
+                DomainValue::Number(f64::from(max_escalation)),
+            ),
+            ("stakes", DomainValue::String(self.question.clone())),
+            (
+                "victory_cost_amount",
+                DomainValue::Number(f64::from(victory_cost_amount)),
+            ),
+            (
+                "victory_cost_attribute",
+                DomainValue::String(victory_cost_attribute.to_owned()),
+            ),
+            (
+                "victory_cost_kind",
+                DomainValue::Symbol(victory_cost_kind.symbol().to_owned()),
+            ),
+        ])
+    }
+}
+
+/// Validate and frame one scene with explicit contributor ownership.
+pub fn frame_spark_scene(
+    request: &SparkSceneFrameRequest,
+    participants: &BTreeMap<String, SparkSettingParticipant>,
+) -> Result<SparkSceneFrame, TabletopError> {
+    if request.format_version != SPARK_SCENE_FRAME_FORMAT_VERSION {
+        return Err(TabletopError::UnsupportedVersion {
+            path: "format_version",
+        });
+    }
+    validate_local_identifier("scene_id", &request.scene_id)?;
+    validate_bounded_text("platform", &request.platform, 1, 240)?;
+    validate_bounded_text("tilt", &request.tilt, 1, 240)?;
+    validate_bounded_text("question", &request.question, 1, 512)?;
+    validate_bounded_text("end_condition", &request.end_condition, 1, 512)?;
+    if request.contributors.len() > 16 {
+        return Err(invalid(
+            "contributors",
+            "scene frame exceeds the reviewed contributor domain",
+        ));
+    }
+    for field in ["platform", "tilt", "question", "end_condition"] {
+        let Some(contributor) = request.contributors.get(field) else {
+            return Err(invalid(
+                format!("contributors.{field}"),
+                "framed scene requires an explicit contributor",
+            ));
+        };
+        if !participants.contains_key(contributor) {
+            return Err(invalid(
+                format!("contributors.{field}"),
+                "scene contributor is not a declared participant",
+            ));
+        }
+    }
+    let question_contributor = request
+        .contributors
+        .get("question")
+        .cloned()
+        .ok_or_else(|| invalid("contributors.question", "question contributor is missing"))?;
+    let next_actor_id = participants
+        .keys()
+        .find(|participant| participant.as_str() != question_contributor)
+        .cloned()
+        .unwrap_or(question_contributor);
+    Ok(SparkSceneFrame {
+        format_version: SPARK_SCENE_FRAME_FORMAT_VERSION,
+        scene_id: request.scene_id.clone(),
+        platform: request.platform.clone(),
+        tilt: request.tilt.clone(),
+        question: request.question.clone(),
+        end_condition: request.end_condition.clone(),
+        contributors: request.contributors.clone(),
+        next_actor_id,
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Belief replacement, Growth, and setting Evolution.
+// ---------------------------------------------------------------------------
+
+/// One retained Belief replacement in sequence order.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkBeliefLineage {
+    pub replacement_id: String,
+    pub belief_id: String,
+    pub old_statement: String,
+    pub new_statement: String,
+    pub inspiration: String,
+    pub confirmed_by: Vec<String>,
+    pub growth_awarded: bool,
+    pub rationale: String,
+    pub sequence: u32,
+}
+
+impl_spark_io!(SparkBeliefLineage);
+
+fn resolve_replace_belief(
+    definition: &DomainValue,
+    request: &DomainValue,
+    state: &DomainValue,
+) -> Result<(DomainValue, Vec<ResolverEvent>), TabletopError> {
+    let fields = value_object("input", request)?;
+    let belief_id = object_string(fields, "belief_id")?.to_owned();
+    let replacement_id = object_string(fields, "replacement_id")?.to_owned();
+    let new_statement = object_string(fields, "new_statement")?.to_owned();
+    let inspiration = object_string(fields, "inspiration")?.to_owned();
+    let rationale = object_string(fields, "rationale")?.to_owned();
+    validate_local_identifier("input.belief_id", &belief_id)?;
+    validate_local_identifier("input.replacement_id", &replacement_id)?;
+    validate_bounded_text("input.new_statement", &new_statement, 1, 512)?;
+    validate_bounded_text("input.inspiration", &inspiration, 1, 512)?;
+    validate_bounded_text("input.rationale", &rationale, 1, 512)?;
+    let confirmed_by = string_values("input.confirmed_by", object_list(fields, "confirmed_by")?)?;
+    if confirmed_by.is_empty() || confirmed_by.len() > 16 {
+        return Err(invalid(
+            "input.confirmed_by",
+            "expected one to 16 confirming participants",
+        ));
+    }
+    let mut confirmed_by = confirmed_by;
+    confirmed_by.sort();
+    confirmed_by.dedup();
+    if confirmed_by.len() != object_list(fields, "confirmed_by")?.len() {
+        return Err(invalid(
+            "input.confirmed_by",
+            "duplicate confirming participant",
+        ));
+    }
+    for participant in &confirmed_by {
+        validate_global_identifier("input.confirmed_by", participant)?;
+    }
+    let definition_fields = value_object("definition", definition)?;
+    let definition_beliefs = object_map(definition_fields, "beliefs")?;
+    let definition_belief = value_object(
+        "definition.beliefs",
+        object_field(definition_beliefs, &belief_id)?,
+    )?;
+    let definition_statement = object_string(definition_belief, "statement")?.to_owned();
+    let state_fields = value_object("state", state)?;
+    let beliefs = object_map(state_fields, "beliefs")?;
+    let belief_state = value_object("state.beliefs", object_field(beliefs, &belief_id)?)?;
+    let status = match object_symbol(belief_state, "status")? {
+        "confirmed" => SparkBeliefStatus::Confirmed,
+        "held" => SparkBeliefStatus::Held,
+        "refuted" => SparkBeliefStatus::Refuted,
+        _ => {
+            return Err(invalid("state.beliefs.status", "unknown Belief status"));
+        }
+    };
+    let replacements = object_map(state_fields, "belief_replacements")?;
+    if replacements.contains_key(&replacement_id) {
+        return Err(invalid(
+            "input.replacement_id",
+            "replacement identity already exists",
+        ));
+    }
+    let mut latest_sequence = 0_u32;
+    let mut old_statement = definition_statement;
+    for value in replacements.values() {
+        let record = value_object("state.belief_replacements", value)?;
+        if object_string(record, "belief_id")? == belief_id {
+            let sequence = object_u32(record, "sequence")?;
+            if sequence > latest_sequence {
+                latest_sequence = sequence;
+                old_statement = object_string(record, "new_statement")?.to_owned();
+            }
+        }
+    }
+    let sequence = latest_sequence
+        .checked_add(1)
+        .ok_or_else(|| invalid("input.replacement_id", "replacement sequence overflow"))?;
+    if sequence > 64 {
+        return Err(invalid(
+            "state.belief_replacements",
+            "replacement lineage exceeds the reviewed domain",
+        ));
+    }
+    let growth_awarded = status == SparkBeliefStatus::Refuted;
+    let growth_before = object_u32(state_fields, "growth")?;
+    let growth_after = if growth_awarded {
+        growth_before
+            .checked_add(1)
+            .ok_or_else(|| invalid("state.growth", "Growth overflow"))?
+    } else {
+        growth_before
+    };
+    if growth_after > 99 {
+        return Err(invalid(
+            "state.growth",
+            "Growth exceeds the reviewed domain",
+        ));
+    }
+    let mut next = state.clone();
+    let state_fields = value_object_mut("state", &mut next)?;
+    let replacements = object_map_mut(state_fields, "belief_replacements")?;
+    replacements.insert(
+        replacement_id.clone(),
+        object([
+            ("belief_id", DomainValue::String(belief_id.clone())),
+            ("confirmed_by", string_list_value(&confirmed_by)),
+            ("growth_awarded", DomainValue::Bool(growth_awarded)),
+            ("inspiration", DomainValue::String(inspiration.clone())),
+            ("new_statement", DomainValue::String(new_statement.clone())),
+            ("old_statement", DomainValue::String(old_statement.clone())),
+            ("rationale", DomainValue::String(rationale.clone())),
+            (
+                "replacement_id",
+                DomainValue::String(replacement_id.clone()),
+            ),
+            ("sequence", DomainValue::Number(f64::from(sequence))),
+        ]),
+    );
+    let beliefs = object_map_mut(state_fields, "beliefs")?;
+    let belief_state = beliefs
+        .get_mut(&belief_id)
+        .ok_or_else(|| invalid("state.beliefs", "Belief state disappeared"))?;
+    let belief_state = value_object_mut("state.beliefs", belief_state)?;
+    belief_state.insert(
+        "status".to_owned(),
+        DomainValue::Symbol(SparkBeliefStatus::Held.symbol().to_owned()),
+    );
+    belief_state.insert(
+        "rationale".to_owned(),
+        DomainValue::String(rationale.clone()),
+    );
+    if growth_awarded {
+        set_u32(state_fields, "growth", growth_after);
+    }
+    let mut events = vec![public_event(
+        "belief_replaced",
+        object([
+            ("belief_id", DomainValue::String(belief_id)),
+            ("canonical_write_back", DomainValue::Bool(false)),
+            ("confirmed_by", string_list_value(&confirmed_by)),
+            ("growth_awarded", DomainValue::Bool(growth_awarded)),
+            ("inspiration", DomainValue::String(inspiration)),
+            ("new_statement", DomainValue::String(new_statement)),
+            ("old_statement", DomainValue::String(old_statement)),
+            ("rationale", DomainValue::String(rationale)),
+            ("replacement_id", DomainValue::String(replacement_id)),
+        ]),
+    )];
+    if growth_awarded {
+        events.push(public_event(
+            "growth_changed",
+            object([
+                ("after", DomainValue::Number(f64::from(growth_after))),
+                ("before", DomainValue::Number(f64::from(growth_before))),
+                ("delta", DomainValue::Number(1.0)),
+                (
+                    "reason",
+                    DomainValue::String(
+                        "A confirmed Belief replacement followed a refuted Belief.".to_owned(),
+                    ),
+                ),
+            ]),
+        ));
+    }
+    Ok((next, events))
+}
+
+/// Read the complete retained replacement lineage for one Belief.
+pub fn spark_belief_lineage(
+    definition: &DomainValue,
+    state: &DomainValue,
+    belief_id: &str,
+) -> Result<Vec<SparkBeliefLineage>, TabletopError> {
+    validate_local_identifier("belief_id", belief_id)?;
+    let definition_fields = value_object("definition", definition)?;
+    let definition_beliefs = object_map(definition_fields, "beliefs")?;
+    if !definition_beliefs.contains_key(belief_id) {
+        return Err(invalid("belief_id", "Belief is absent from the definition"));
+    }
+    let state_fields = value_object("state", state)?;
+    let replacements = object_map(state_fields, "belief_replacements")?;
+    let mut lineage = Vec::new();
+    for value in replacements.values() {
+        let record = value_object("state.belief_replacements", value)?;
+        if object_string(record, "belief_id")? != belief_id {
+            continue;
+        }
+        lineage.push(SparkBeliefLineage {
+            replacement_id: object_string(record, "replacement_id")?.to_owned(),
+            belief_id: belief_id.to_owned(),
+            old_statement: object_string(record, "old_statement")?.to_owned(),
+            new_statement: object_string(record, "new_statement")?.to_owned(),
+            inspiration: object_string(record, "inspiration")?.to_owned(),
+            confirmed_by: string_values(
+                "state.belief_replacements.confirmed_by",
+                object_list(record, "confirmed_by")?,
+            )?,
+            growth_awarded: object_bool(record, "growth_awarded")?,
+            rationale: object_string(record, "rationale")?.to_owned(),
+            sequence: object_u32(record, "sequence")?,
+        });
+    }
+    lineage.sort_by_key(|entry| entry.sequence);
+    Ok(lineage)
+}
+
+/// Read the effective Belief statement after every retained replacement.
+pub fn spark_effective_belief_statement(
+    definition: &DomainValue,
+    state: &DomainValue,
+    belief_id: &str,
+) -> Result<String, TabletopError> {
+    let definition_fields = value_object("definition", definition)?;
+    let definition_beliefs = object_map(definition_fields, "beliefs")?;
+    let belief = value_object(
+        "definition.beliefs",
+        object_field(definition_beliefs, belief_id)?,
+    )?;
+    let mut statement = object_string(belief, "statement")?.to_owned();
+    for entry in spark_belief_lineage(definition, state, belief_id)? {
+        statement = entry.new_statement;
+    }
+    Ok(statement)
+}
+
+/// One condition that must hold before setting Evolution may apply.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
+pub enum SparkEvolutionCondition {
+    BeliefRefuted { belief_id: String },
+    GrowthAtLeast { amount: u32 },
+    FactionExists { faction_id: String },
+    SceneClosed { scene_id: String },
+}
+
+impl SparkEvolutionCondition {
+    /// Stable condition identifier used in diagnostics and review records.
+    #[must_use]
+    pub fn id(&self) -> String {
+        match self {
+            Self::BeliefRefuted { belief_id } => format!("belief_refuted.{belief_id}"),
+            Self::GrowthAtLeast { amount } => format!("growth_at_least.{amount}"),
+            Self::FactionExists { faction_id } => format!("faction_exists.{faction_id}"),
+            Self::SceneClosed { scene_id } => format!("scene_closed.{scene_id}"),
+        }
+    }
+
+    fn satisfied(&self, context: &SparkEvolutionContext) -> bool {
+        match self {
+            Self::BeliefRefuted { belief_id } => context.refuted_beliefs.contains(belief_id),
+            Self::GrowthAtLeast { amount } => context.growth >= *amount,
+            Self::FactionExists { faction_id } => context.faction_ids.contains(faction_id),
+            Self::SceneClosed { scene_id } => context.closed_scenes.contains(scene_id),
+        }
+    }
+}
+
+/// Facts available to setting Evolution conditions.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkEvolutionContext {
+    pub refuted_beliefs: BTreeSet<String>,
+    pub growth: u32,
+    pub faction_ids: BTreeSet<String>,
+    pub closed_scenes: BTreeSet<String>,
+}
+
+/// One reviewable change proposed by setting Evolution.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
+pub enum SparkEvolutionChange {
+    SetSettingBelief {
+        belief_id: String,
+        statement: String,
+    },
+    SetGmAttribute {
+        attribute_id: String,
+        value: u32,
+    },
+    SetFactionName {
+        faction_id: String,
+        name: String,
+    },
+    SetFactionDescription {
+        faction_id: String,
+        description: String,
+    },
+}
+
+impl SparkEvolutionChange {
+    /// Stable path used in the review record.
+    #[must_use]
+    pub fn path(&self) -> String {
+        match self {
+            Self::SetSettingBelief { belief_id, .. } => {
+                format!("setting_beliefs.{belief_id}")
+            }
+            Self::SetGmAttribute { attribute_id, .. } => {
+                format!("gm_attributes.{attribute_id}")
+            }
+            Self::SetFactionName { faction_id, .. } => {
+                format!("factions.{faction_id}.name")
+            }
+            Self::SetFactionDescription { faction_id, .. } => {
+                format!("factions.{faction_id}.description")
+            }
+        }
+    }
+}
+
+/// Explicit, reviewable setting Evolution request.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkEvolutionRequest {
+    pub format_version: u32,
+    pub evolution_id: String,
+    pub setting_id: String,
+    pub conditions: Vec<SparkEvolutionCondition>,
+    pub changes: Vec<SparkEvolutionChange>,
+    pub rationale: String,
+    pub accepted: bool,
+    pub accepted_by: Vec<String>,
+}
+
+/// One before/after change retained in the Evolution review record.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkEvolutionChangeRecord {
+    pub path: String,
+    pub before: String,
+    pub after: String,
+    pub rationale: String,
+}
+
+/// Reviewable Evolution outcome. It never mutates the supplied setting.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SparkEvolutionResult {
+    pub format_version: u32,
+    pub evolution_id: String,
+    pub applied: bool,
+    pub failed_conditions: Vec<String>,
+    pub accepted: bool,
+    pub canonical_write_back: bool,
+    pub setting: Option<SparkSetting>,
+    pub changes: Vec<SparkEvolutionChangeRecord>,
+}
+
+impl_spark_io!(SparkEvolutionRequest);
+impl_spark_io!(SparkEvolutionResult);
+
+/// Versioned setting Evolution format.
+pub const SPARK_EVOLUTION_FORMAT_VERSION: u32 = 1;
+
+/// Apply explicit Evolution changes when every condition holds and the proposal is accepted.
+///
+/// The supplied setting is never mutated. The result carries a complete replacement setting and
+/// one review record per change; `canonical_write_back` is always false.
+pub fn evolve_spark_setting(
+    setting: &SparkSetting,
+    request: &SparkEvolutionRequest,
+    context: &SparkEvolutionContext,
+) -> Result<SparkEvolutionResult, TabletopError> {
+    if request.format_version != SPARK_EVOLUTION_FORMAT_VERSION {
+        return Err(TabletopError::UnsupportedVersion {
+            path: "format_version",
+        });
+    }
+    validate_local_identifier("evolution_id", &request.evolution_id)?;
+    validate_global_identifier("setting_id", &request.setting_id)?;
+    if request.setting_id != setting.id {
+        return Err(invalid(
+            "setting_id",
+            "Evolution request does not match the supplied setting",
+        ));
+    }
+    validate_bounded_text("rationale", &request.rationale, 1, 512)?;
+    if request.conditions.len() > 64 || request.changes.len() > 64 {
+        return Err(invalid(
+            "evolution",
+            "Evolution request exceeds the reviewed domain",
+        ));
+    }
+    if request.accepted {
+        if request.accepted_by.is_empty() || request.accepted_by.len() > 16 {
+            return Err(invalid(
+                "accepted_by",
+                "accepted Evolution requires one to 16 participants",
+            ));
+        }
+        let mut accepted_by = request.accepted_by.clone();
+        accepted_by.sort();
+        accepted_by.dedup();
+        if accepted_by.len() != request.accepted_by.len() {
+            return Err(invalid("accepted_by", "duplicate accepting participant"));
+        }
+        for participant in &accepted_by {
+            validate_global_identifier("accepted_by", participant)?;
+        }
+    }
+    let mut failed_conditions = Vec::new();
+    for condition in &request.conditions {
+        if !condition.satisfied(context) {
+            failed_conditions.push(condition.id());
+        }
+    }
+    if failed_conditions.len() > 1 {
+        failed_conditions.sort();
+    }
+    if !request.accepted || !failed_conditions.is_empty() {
+        return Ok(SparkEvolutionResult {
+            format_version: SPARK_EVOLUTION_FORMAT_VERSION,
+            evolution_id: request.evolution_id.clone(),
+            applied: false,
+            failed_conditions,
+            accepted: request.accepted,
+            canonical_write_back: false,
+            setting: None,
+            changes: Vec::new(),
+        });
+    }
+    let mut evolved = setting.clone();
+    let mut records = Vec::with_capacity(request.changes.len());
+    for change in &request.changes {
+        let record = match change {
+            SparkEvolutionChange::SetSettingBelief {
+                belief_id,
+                statement,
+            } => {
+                validate_local_identifier("changes.belief_id", belief_id)?;
+                validate_bounded_text("changes.statement", statement, 1, 512)?;
+                let Some(belief) = evolved.setting_beliefs.get_mut(belief_id) else {
+                    return Err(invalid(
+                        "changes.belief_id",
+                        "setting Belief does not exist",
+                    ));
+                };
+                let before = belief.statement.clone();
+                belief.statement = statement.clone();
+                SparkEvolutionChangeRecord {
+                    path: change.path(),
+                    before,
+                    after: statement.clone(),
+                    rationale: request.rationale.clone(),
+                }
+            }
+            SparkEvolutionChange::SetGmAttribute {
+                attribute_id,
+                value,
+            } => {
+                validate_local_identifier("changes.attribute_id", attribute_id)?;
+                if *value > MAX_GM_ATTRIBUTE_VALUE {
+                    return Err(invalid(
+                        "changes.value",
+                        "GM attribute exceeds the reviewed domain",
+                    ));
+                }
+                let Some(attribute) = evolved.gm_attributes.get_mut(attribute_id) else {
+                    return Err(invalid(
+                        "changes.attribute_id",
+                        "GM attribute does not exist",
+                    ));
+                };
+                let before = attribute.value.to_string();
+                attribute.value = *value;
+                SparkEvolutionChangeRecord {
+                    path: change.path(),
+                    before,
+                    after: value.to_string(),
+                    rationale: request.rationale.clone(),
+                }
+            }
+            SparkEvolutionChange::SetFactionName { faction_id, name } => {
+                validate_local_identifier("changes.faction_id", faction_id)?;
+                validate_bounded_text("changes.name", name, 1, 160)?;
+                let Some(faction) = evolved.factions.get_mut(faction_id) else {
+                    return Err(invalid("changes.faction_id", "Faction does not exist"));
+                };
+                let before = faction.name.clone();
+                faction.name = name.clone();
+                SparkEvolutionChangeRecord {
+                    path: change.path(),
+                    before,
+                    after: name.clone(),
+                    rationale: request.rationale.clone(),
+                }
+            }
+            SparkEvolutionChange::SetFactionDescription {
+                faction_id,
+                description,
+            } => {
+                validate_local_identifier("changes.faction_id", faction_id)?;
+                validate_bounded_text("changes.description", description, 0, 512)?;
+                let Some(faction) = evolved.factions.get_mut(faction_id) else {
+                    return Err(invalid("changes.faction_id", "Faction does not exist"));
+                };
+                let before = faction.description.clone();
+                faction.description = description.clone();
+                SparkEvolutionChangeRecord {
+                    path: change.path(),
+                    before,
+                    after: description.clone(),
+                    rationale: request.rationale.clone(),
+                }
+            }
+        };
+        records.push(record);
+    }
+    validate_spark_setting(&evolved)?;
+    Ok(SparkEvolutionResult {
+        format_version: SPARK_EVOLUTION_FORMAT_VERSION,
+        evolution_id: request.evolution_id.clone(),
+        applied: true,
+        failed_conditions: Vec::new(),
+        accepted: true,
+        canonical_write_back: false,
+        setting: Some(evolved),
+        changes: records,
+    })
 }
