@@ -11,6 +11,7 @@ mod freehack;
 mod model;
 mod plug_and_play;
 mod resolver;
+mod spark;
 mod validation;
 
 pub mod conformance;
@@ -34,6 +35,7 @@ pub use resolver::{
     EntropyStream, ResolverRegistry, TabletopResolver, preview_adapter_switch,
     project_receipt_for_audience,
 };
+pub use spark::*;
 pub use validation::{
     canonical_fingerprint, has_capability, resolved_adapter, sha256_bytes,
     validate_adapter_manifest, validate_adapter_selection, validate_character_projection,
