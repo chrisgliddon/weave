@@ -9,6 +9,23 @@
 //! never touches the runtime, the clock, or the frame rate. A transition is
 //! recorded for the next staged operation and can only affect how that
 //! operation is drawn, never which stages are visible or what they show.
+//!
+//! Cue order is deterministic. The runtime emits one cue list per story step in
+//! source order, and [`fold_cues`] applies that list in order. Stages are stored
+//! in first-show order and drawn by [`ordered_stages`], which sorts by paint
+//! layer and then by that stable insertion order.
+//!
+//! A transition that is interrupted before it can settle degrades to a
+//! documented fallback:
+//!
+//! - a later transition replaces an earlier one that has not been applied yet;
+//! - a removal of a visible stage consumes the pending transition and settles
+//!   immediately, because a stage that has left the frame has nothing left to
+//!   animate;
+//! - a cue that changes no frame — a move, swap, or hide that targets a hidden
+//!   stage — leaves the transition pending for the next operation that does;
+//! - a transition left at the end of a cue list changes no staging and is
+//!   exposed on the scene, where a renderer may ignore it or draw it.
 
 use weave_core::ir::{AnchorIr, Fit, Slot, TransitionKind};
 use weave_runtime::{ChoiceView, PresentationEvent};
@@ -280,9 +297,10 @@ pub const fn slot_fraction(slot: Slot) -> f32 {
     }
 }
 
-/// Flat background tones the Play surface uses for declared scenes.
+/// Flat background tones the Play surface uses while a declared scene has no
+/// decoded image.
 ///
-/// The cue carries an asset reference; until the asset lifecycle lands the
+/// The cue carries an asset reference. When the loader has no frame yet, the
 /// surface renders a distinct synthetic tone per scene id, so a cue change is
 /// visible without pretending an image was loaded.
 pub const SCENE_TONES: [u32; 4] = [0x101722, 0x171420, 0x141d1c, 0x1d1814];
@@ -299,12 +317,36 @@ pub fn scene_tone(scene: Option<&str>) -> u32 {
     SCENE_TONES[hash as usize % SCENE_TONES.len()]
 }
 
+/// Keep a focal point inside the image.
+///
+/// The compiler rejects anchors outside `0..=1`, but a compiled story may come
+/// from another producer. Clamping keeps a decoded anchor on the image so the
+/// background still fills the frame. A non-finite component has no meaningful
+/// direction, so it falls back to the centred default.
+#[must_use]
+fn sanitize_anchor(anchor: AnchorIr) -> AnchorIr {
+    fn component(value: f64) -> f64 {
+        if value.is_finite() {
+            value.clamp(0.0, 1.0)
+        } else {
+            AnchorIr::default().x
+        }
+    }
+    AnchorIr {
+        x: component(anchor.x),
+        y: component(anchor.y),
+    }
+}
+
 /// Fold one ordered cue list into presentation state.
 ///
-/// Cues apply in source order. A swap replaces only the named stage's current
-/// image; when the stage does not declare the variant, the previous image is
-/// kept and a note names the stage and the variant. A transition is recorded
-/// for the next staged operation and never changes staging itself.
+/// Cues apply in source order, which is the only ordering input. A swap
+/// replaces only the named stage's current image; when the stage does not
+/// declare the variant, the previous image is kept and a note names the stage
+/// and the variant. A transition is recorded for the next staged operation and
+/// never changes staging itself. A removal of a visible stage consumes the
+/// pending transition and settles immediately; a move, swap, or hide that
+/// changes no frame leaves the transition pending.
 #[must_use]
 pub fn fold_cues(cues: &[PresentationEvent], lookup: &dyn PresentationLookup) -> PresentationState {
     let mut state = PresentationState::default();
@@ -315,7 +357,7 @@ pub fn fold_cues(cues: &[PresentationEvent], lookup: &dyn PresentationLookup) ->
             PresentationEvent::Scene(id) => {
                 state.background = Some(id.clone());
                 state.fit = lookup.scene_fit(id).unwrap_or_default();
-                state.anchor = lookup.scene_anchor(id).unwrap_or_default();
+                state.anchor = sanitize_anchor(lookup.scene_anchor(id).unwrap_or_default());
                 state.background_transition = state.transition.take();
             }
             PresentationEvent::Show(id) => {
@@ -346,7 +388,17 @@ pub fn fold_cues(cues: &[PresentationEvent], lookup: &dyn PresentationLookup) ->
                 }
             }
             PresentationEvent::Hide(id) => {
+                let before = state.stages.len();
                 state.stages.retain(|stage| stage.id != *id);
+                if state.stages.len() != before {
+                    // A visible removal is a staged operation. A stage that has
+                    // left the frame has no visual left to record, so the
+                    // pending transition is consumed rather than leaking onto
+                    // a later cue. Hiding a stage that is not visible changes
+                    // no frame, so it leaves the transition pending like a
+                    // move or swap on a hidden stage.
+                    state.transition = None;
+                }
             }
             PresentationEvent::Speaker(name) => {
                 state.speaker = Some(name.clone());
@@ -1139,5 +1191,211 @@ Mara: The ferry leaves at dusk.
         );
         assert!(state.stages.is_empty());
         assert!(state.notes.is_empty());
+    }
+
+    #[test]
+    fn a_removal_consumes_the_pending_transition() {
+        let lookup = staging_fixture();
+        let state = fold_cues(
+            &[
+                PresentationEvent::Show("mara".to_owned()),
+                PresentationEvent::Transition {
+                    kind: TransitionKind::Fade,
+                    ms: 200,
+                },
+                PresentationEvent::Hide("mara".to_owned()),
+                PresentationEvent::Show("keeper".to_owned()),
+            ],
+            &lookup,
+        );
+
+        assert!(
+            state.stages.iter().all(|stage| stage.id != "mara"),
+            "the removal still takes effect"
+        );
+        assert_eq!(
+            state.transition, None,
+            "the removal consumes the transition instead of leaking it"
+        );
+        let keeper = state
+            .stages
+            .iter()
+            .find(|stage| stage.id == "keeper")
+            .expect("keeper is staged");
+        assert_eq!(
+            keeper.transition, None,
+            "the later show must not inherit the removal's transition"
+        );
+    }
+
+    #[test]
+    fn a_later_transition_replaces_an_unapplied_one() {
+        let lookup = staging_fixture();
+        let state = fold_cues(
+            &[
+                PresentationEvent::Transition {
+                    kind: TransitionKind::Fade,
+                    ms: 200,
+                },
+                PresentationEvent::Transition {
+                    kind: TransitionKind::Wipe,
+                    ms: 50,
+                },
+                PresentationEvent::Show("mara".to_owned()),
+            ],
+            &lookup,
+        );
+
+        let mara = state
+            .stages
+            .iter()
+            .find(|stage| stage.id == "mara")
+            .expect("mara is staged");
+        assert_eq!(
+            mara.transition,
+            Some(PlayTransition::new(TransitionKind::Wipe, 50)),
+            "only the last transition before a staged operation applies"
+        );
+        assert_eq!(state.transition, None);
+    }
+
+    #[test]
+    fn a_cue_on_a_hidden_stage_changes_no_frame_and_keeps_the_transition() {
+        let lookup = staging_fixture();
+        let state = fold_cues(
+            &[
+                PresentationEvent::Transition {
+                    kind: TransitionKind::Fade,
+                    ms: 200,
+                },
+                PresentationEvent::Move {
+                    stage: "keeper".to_owned(),
+                    to: Slot::Center,
+                },
+                PresentationEvent::Swap {
+                    stage: "keeper".to_owned(),
+                    variant: "ghost".to_owned(),
+                },
+                PresentationEvent::Hide("keeper".to_owned()),
+                PresentationEvent::Show("mara".to_owned()),
+            ],
+            &lookup,
+        );
+
+        let mara = state
+            .stages
+            .iter()
+            .find(|stage| stage.id == "mara")
+            .expect("mara is staged");
+        assert_eq!(
+            mara.transition,
+            Some(PlayTransition::new(TransitionKind::Fade, 200)),
+            "a move, swap, or hide of a hidden stage changes no frame"
+        );
+    }
+
+    #[test]
+    fn an_out_of_range_or_non_finite_anchor_lands_on_the_image() {
+        assert_eq!(
+            sanitize_anchor(AnchorIr { x: 2.0, y: -1.0 }),
+            AnchorIr { x: 1.0, y: 0.0 }
+        );
+        assert_eq!(
+            sanitize_anchor(AnchorIr {
+                x: f64::NAN,
+                y: f64::INFINITY
+            }),
+            AnchorIr { x: 0.5, y: 0.5 }
+        );
+
+        let mut lookup = FixtureLookup::default();
+        lookup.scenes.insert(
+            "tilted".to_owned(),
+            (Fit::Cover, AnchorIr { x: 4.0, y: -2.0 }),
+        );
+        let state = fold_cues(&[PresentationEvent::Scene("tilted".to_owned())], &lookup);
+        assert_eq!(state.anchor, AnchorIr { x: 1.0, y: 0.0 });
+    }
+
+    #[test]
+    fn a_show_replaces_a_visible_stage_and_keeps_its_insertion_order() {
+        let lookup = staging_fixture();
+        let state = fold_cues(
+            &[
+                PresentationEvent::Show("keeper".to_owned()),
+                PresentationEvent::Show("mara".to_owned()),
+                PresentationEvent::Swap {
+                    stage: "mara".to_owned(),
+                    variant: "surprised".to_owned(),
+                },
+                PresentationEvent::Show("mara".to_owned()),
+            ],
+            &lookup,
+        );
+
+        let mara = state
+            .stages
+            .iter()
+            .find(|stage| stage.id == "mara")
+            .expect("mara is staged");
+        assert_eq!(mara.order, 1, "a repeat show keeps the first insertion");
+        assert_eq!(
+            mara.image.as_deref(),
+            Some("art/mara_neutral.png"),
+            "a repeat show restores the base image"
+        );
+        assert_eq!(mara.variant, None);
+        assert_eq!(
+            state
+                .stages
+                .iter()
+                .map(|stage| stage.id.as_str())
+                .collect::<Vec<_>>(),
+            ["keeper", "mara"]
+        );
+    }
+
+    #[test]
+    fn cues_at_one_story_step_fold_in_source_order() {
+        let lookup = staging_fixture();
+        let forward = fold_cues(
+            &[
+                PresentationEvent::Show("mara".to_owned()),
+                PresentationEvent::Swap {
+                    stage: "mara".to_owned(),
+                    variant: "surprised".to_owned(),
+                },
+                PresentationEvent::Move {
+                    stage: "mara".to_owned(),
+                    to: Slot::Right,
+                },
+            ],
+            &lookup,
+        );
+        let mara = forward
+            .stages
+            .iter()
+            .find(|stage| stage.id == "mara")
+            .expect("mara is staged");
+        assert_eq!(mara.image.as_deref(), Some("art/mara_surprised.png"));
+        assert_eq!(mara.slot, Slot::Right);
+        assert_eq!(forward.notes, Vec::<String>::new());
+
+        let swap_first = fold_cues(
+            &[
+                PresentationEvent::Swap {
+                    stage: "mara".to_owned(),
+                    variant: "surprised".to_owned(),
+                },
+                PresentationEvent::Show("mara".to_owned()),
+            ],
+            &lookup,
+        );
+        assert_eq!(
+            swap_first.stages[0].image.as_deref(),
+            Some("art/mara_neutral.png"),
+            "a swap before the show has no visible stage to replace"
+        );
+        assert!(swap_first.notes.is_empty());
     }
 }
