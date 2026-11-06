@@ -150,6 +150,21 @@ also clickable. A speaker is read from a short `Name: ` prefix on the line;
 anything else is narrated, so a sentence that merely contains a colon is not
 mistaken for a character name.
 
+`Tab` and `Shift+Tab` move focus, `Enter` or `Space` activates the focused
+control, `1` to `9` choose, `+` and `-` scale the text, `[` and `]` change the
+text reveal speed, `S` reveals the current line at once, `A` toggles bounded
+auto-advance, and `M` turns reduced motion on or off. Reduced motion reveals
+text immediately and drops transitions without changing cue order. `D` opens
+the playtest drawer and `V` the resolved-presentation drawer; `I` opens
+diagnostics. The full hint is shown under the scene.
+
+The playtest drawer captures the current session, exports and imports a record
+as JSON or RON, and replays it, naming the first mismatch when the story, seed,
+or choices changed. Imported records are size- and count-limited. The
+resolved-presentation drawer lists each selector's reference, the scene or
+stage it resolved to, the current value, and any fallback diagnostic; it never
+echoes a rejected value.
+
 When the source stops compiling, the last valid frame stays on screen with a
 banner naming the diagnostic. Play never blanks the scene because a draft is
 temporarily broken.
