@@ -27,8 +27,11 @@
 //! - a transition left at the end of a cue list changes no staging and is
 //!   exposed on the scene, where a renderer may ignore it or draw it.
 
-use weave_core::ir::{AnchorIr, Fit, Slot, TransitionKind};
-use weave_runtime::{ChoiceView, PresentationEvent};
+use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
+use weave_core::ir::{AnchorIr, DomainValueIr, Fit, Slot, StoryIr, TransitionKind};
+use weave_runtime::{ChoiceView, PresentationEvent, Value};
 
 use crate::preview::{PreviewSession, PreviewStatus, PreviewTranscript};
 
@@ -555,6 +558,616 @@ pub fn split_speaker(line: &str) -> (String, String) {
         }
     }
     (NARRATOR.to_owned(), line.trim_start().to_owned())
+}
+
+/// Current version of the resolved presentation plan.
+pub const RESOLVED_PRESENTATION_FORMAT_VERSION: u32 = 1;
+
+/// One typed value a presentation selector reads.
+///
+/// A story variable is read from the optional runtime snapshot. A module value
+/// is read from the compiled story's active exports. The host names the value
+/// once; Play core never assumes a module schema field name.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind")]
+pub enum ValueRef {
+    /// Declared story variable.
+    Variable {
+        /// Variable name.
+        name: String,
+    },
+    /// Namespaced domain-module export path.
+    Module {
+        /// Story-local module alias.
+        alias: String,
+        /// Export name followed by nested field names.
+        path: Vec<String>,
+    },
+}
+
+impl ValueRef {
+    /// Redaction-safe label naming the reference, never its value.
+    #[must_use]
+    pub fn label(&self) -> String {
+        match self {
+            Self::Variable { name } => format!("variable `{name}`"),
+            Self::Module { alias, path } if path.is_empty() => format!("module `{alias}`"),
+            Self::Module { alias, path } => {
+                format!("module `{alias}` export `{}`", path.join("."))
+            }
+        }
+    }
+}
+
+/// World-driven scene selection supplied by the host.
+///
+/// The host chooses which world value selects the background and how each
+/// value maps to a declared scene.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorldPresentation {
+    /// World place or environment value that selects the background.
+    pub selector: ValueRef,
+    /// Selected world value to declared scene id.
+    pub scenes: BTreeMap<String, String>,
+    /// Declared scene used when the selected value is absent or unknown.
+    pub fallback: Option<String>,
+}
+
+/// Typed presentation values for one character.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterProjection {
+    /// Author-facing display name.
+    pub display_name: Option<String>,
+    /// Stage identity declared by the projection.
+    pub stage: Option<String>,
+    /// Expression identity declared by the projection.
+    pub expression: Option<String>,
+    /// Portrait asset path declared by the projection.
+    pub portrait: Option<String>,
+}
+
+/// Character-driven stage selection supplied by the host.
+///
+/// Projections, stage identities, and expression identities come from typed
+/// character data. The host supplies the explicit identity-to-declaration
+/// maps, so Play core stays independent of any character schema.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPresentation {
+    /// Value that names the current character's stable id.
+    pub selector: ValueRef,
+    /// Typed projections keyed by stable character id.
+    pub projections: BTreeMap<String, CharacterProjection>,
+    /// Projection stage identity to declared stage id.
+    pub stage_ids: BTreeMap<String, String>,
+    /// Projection expression identity to declared stage variant.
+    pub expressions: BTreeMap<String, String>,
+    /// Declared stage used when no projection resolves.
+    pub fallback_stage: Option<String>,
+}
+
+/// Category of one resolution diagnostic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PresentationDiagnosticKind {
+    /// The module alias is not active in the compiled story.
+    UnknownModule,
+    /// The module does not export the named value.
+    UnknownExport,
+    /// The module value has no such nested field.
+    UnknownPath,
+    /// No current value is available for the reference.
+    UnavailableValue,
+    /// The value is not text, or an intermediate value is not an object.
+    IncompatibleType,
+    /// The selected world value has no host scene mapping.
+    UnmappedValue,
+    /// The story does not declare the selected or fallback scene.
+    UnknownScene,
+    /// No character projection is supplied for the selected character.
+    UnavailableProjection,
+    /// The projected stage identity has no host stage mapping.
+    UnmappedStage,
+    /// The story does not declare the selected or fallback stage.
+    UnknownStage,
+    /// The projected expression has no host variant mapping.
+    UnmappedExpression,
+    /// The resolved stage does not declare the mapped variant.
+    UnknownVariant,
+    /// A documented fallback supplied the current selection.
+    Fallback,
+}
+
+/// One precise, redaction-safe resolution diagnostic.
+///
+/// `source` names the reference and `detail` explains the failure. Neither
+/// field echoes a selected value, so a variable or module value that contains
+/// sensitive text never reaches a diagnostic or the serialized plan.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PresentationDiagnostic {
+    /// Diagnostic category.
+    pub kind: PresentationDiagnosticKind,
+    /// Redaction-safe reference label.
+    pub source: String,
+    /// Redaction-safe explanation.
+    pub detail: String,
+}
+
+/// Selected background scene.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedScene {
+    /// Declared scene id.
+    pub id: String,
+    /// Reference that selected it.
+    pub source: ValueRef,
+    /// Whether a documented fallback supplied it.
+    pub fallback: bool,
+}
+
+/// Selected character stage after projection resolution.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedStage {
+    /// Declared stage id.
+    pub id: String,
+    /// Author-facing display name.
+    pub name: String,
+    /// Image after variant or portrait resolution.
+    pub image: Option<String>,
+    /// Variant that supplied the image.
+    pub variant: Option<String>,
+    /// Reference that selected the character.
+    pub source: ValueRef,
+    /// Whether a documented fallback supplied the stage.
+    pub fallback: bool,
+}
+
+/// Complete resolved presentation plan for one frame.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResolvedPresentation {
+    /// Serialized plan version.
+    pub format_version: u32,
+    /// Selected background scene.
+    pub scene: Option<ResolvedScene>,
+    /// Selected character stage.
+    pub stage: Option<ResolvedStage>,
+    /// Diagnostics in deterministic resolution order.
+    pub diagnostics: Vec<PresentationDiagnostic>,
+}
+
+impl ResolvedPresentation {
+    /// Empty plan at the current format version.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            format_version: RESOLVED_PRESENTATION_FORMAT_VERSION,
+            scene: None,
+            stage: None,
+            diagnostics: Vec::new(),
+        }
+    }
+
+    /// Encode as stable, pretty JSON.
+    pub fn to_json(&self) -> Result<String, PresentationFormatError> {
+        let mut output = serde_json::to_string_pretty(self)
+            .map_err(|error| PresentationFormatError::JsonEncode(error.to_string()))?;
+        output.push('\n');
+        Ok(output)
+    }
+
+    /// Decode stable JSON and reject an unsupported format version.
+    pub fn from_json(source: &str) -> Result<Self, PresentationFormatError> {
+        let plan = serde_json::from_str::<Self>(source)
+            .map_err(|error| PresentationFormatError::JsonDecode(error.to_string()))?;
+        plan.validate_version()?;
+        Ok(plan)
+    }
+
+    /// Encode as stable, pretty RON.
+    pub fn to_ron(&self) -> Result<String, PresentationFormatError> {
+        let config = ron::ser::PrettyConfig::new()
+            .new_line("\n")
+            .indentor("    ")
+            .struct_names(false)
+            .enumerate_arrays(false)
+            .compact_arrays(false)
+            .compact_maps(false);
+        let mut output = ron::ser::to_string_pretty(self, config)
+            .map_err(|error| PresentationFormatError::RonEncode(error.to_string()))?;
+        output.push('\n');
+        Ok(output)
+    }
+
+    /// Decode stable RON and reject an unsupported format version.
+    pub fn from_ron(source: &str) -> Result<Self, PresentationFormatError> {
+        let plan = ron::from_str::<Self>(source)
+            .map_err(|error| PresentationFormatError::RonDecode(error.to_string()))?;
+        plan.validate_version()?;
+        Ok(plan)
+    }
+
+    fn validate_version(&self) -> Result<(), PresentationFormatError> {
+        if self.format_version == RESOLVED_PRESENTATION_FORMAT_VERSION {
+            Ok(())
+        } else {
+            Err(PresentationFormatError::UnsupportedVersion {
+                found: self.format_version,
+                expected: RESOLVED_PRESENTATION_FORMAT_VERSION,
+            })
+        }
+    }
+}
+
+/// Failure while encoding or decoding a resolved presentation plan.
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum PresentationFormatError {
+    /// JSON encoding failed.
+    #[error("presentation JSON could not be encoded: {0}")]
+    JsonEncode(String),
+    /// JSON decoding failed.
+    #[error("presentation JSON could not be decoded: {0}")]
+    JsonDecode(String),
+    /// RON encoding failed.
+    #[error("presentation RON could not be encoded: {0}")]
+    RonEncode(String),
+    /// RON decoding failed.
+    #[error("presentation RON could not be decoded: {0}")]
+    RonDecode(String),
+    /// The plan format version is not supported.
+    #[error("unsupported presentation format version {found}; expected {expected}")]
+    UnsupportedVersion {
+        /// Version found in the encoded plan.
+        found: u32,
+        /// Version this build supports.
+        expected: u32,
+    },
+}
+
+/// Resolve presentation from a compiled story and optional host inputs.
+///
+/// Resolution is pure and deterministic. World selection resolves before
+/// character selection, and every collection is ordered. Optional inputs that
+/// are absent produce no diagnostics and leave that part of the plan empty, so
+/// a project with no World or Character module still runs Play mode with
+/// explicit or fallback presentation.
+#[must_use]
+pub fn resolve_presentation(
+    story: &StoryIr,
+    world: Option<&WorldPresentation>,
+    character: Option<&CharacterPresentation>,
+    variables: Option<&BTreeMap<String, Value>>,
+) -> ResolvedPresentation {
+    let mut plan = ResolvedPresentation::empty();
+    if let Some(world) = world {
+        resolve_world(story, world, variables, &mut plan);
+    }
+    if let Some(character) = character {
+        resolve_character(story, character, variables, &mut plan);
+    }
+    plan
+}
+
+fn resolve_world(
+    story: &StoryIr,
+    world: &WorldPresentation,
+    variables: Option<&BTreeMap<String, Value>>,
+    plan: &mut ResolvedPresentation,
+) {
+    let selected = resolve_text(&world.selector, story, variables, &mut plan.diagnostics);
+    let scene = selected.and_then(|value| world.scenes.get(value).cloned());
+    match scene {
+        Some(id) if story.presentation.scenes.contains_key(&id) => {
+            plan.scene = Some(ResolvedScene {
+                id,
+                source: world.selector.clone(),
+                fallback: false,
+            });
+        }
+        Some(id) => {
+            plan.diagnostics.push(diagnostic(
+                PresentationDiagnosticKind::UnknownScene,
+                &world.selector,
+                format!("scene `{id}` is not declared by the story"),
+            ));
+            apply_scene_fallback(story, world, plan);
+        }
+        None => {
+            if selected.is_some() {
+                plan.diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnmappedValue,
+                    &world.selector,
+                    "the selected value has no host scene mapping",
+                ));
+            }
+            apply_scene_fallback(story, world, plan);
+        }
+    }
+}
+
+fn apply_scene_fallback(
+    story: &StoryIr,
+    world: &WorldPresentation,
+    plan: &mut ResolvedPresentation,
+) {
+    let Some(id) = world.fallback.as_deref() else {
+        return;
+    };
+    if !story.presentation.scenes.contains_key(id) {
+        plan.diagnostics.push(diagnostic(
+            PresentationDiagnosticKind::UnknownScene,
+            &world.selector,
+            format!("configured fallback scene `{id}` is not declared by the story"),
+        ));
+        return;
+    }
+    plan.scene = Some(ResolvedScene {
+        id: id.to_owned(),
+        source: world.selector.clone(),
+        fallback: true,
+    });
+    plan.diagnostics.push(diagnostic(
+        PresentationDiagnosticKind::Fallback,
+        &world.selector,
+        format!("using fallback scene `{id}`"),
+    ));
+}
+
+fn resolve_character(
+    story: &StoryIr,
+    character: &CharacterPresentation,
+    variables: Option<&BTreeMap<String, Value>>,
+    plan: &mut ResolvedPresentation,
+) {
+    let Some(character_id) =
+        resolve_text(&character.selector, story, variables, &mut plan.diagnostics)
+    else {
+        apply_stage_fallback(story, character, None, plan);
+        return;
+    };
+    let Some(projection) = character.projections.get(character_id) else {
+        plan.diagnostics.push(diagnostic(
+            PresentationDiagnosticKind::UnavailableProjection,
+            &character.selector,
+            "no character projection is supplied for the selected character",
+        ));
+        apply_stage_fallback(story, character, None, plan);
+        return;
+    };
+
+    let mapped = projection
+        .stage
+        .as_deref()
+        .and_then(|identity| character.stage_ids.get(identity).cloned());
+    if projection.stage.is_some() && mapped.is_none() {
+        let identity = projection.stage.as_deref().unwrap_or_default();
+        plan.diagnostics.push(diagnostic(
+            PresentationDiagnosticKind::UnmappedStage,
+            &character.selector,
+            format!("projected stage identity `{identity}` has no host stage mapping"),
+        ));
+    }
+    let stage_id = match mapped {
+        Some(id) if story.presentation.stages.contains_key(&id) => id,
+        Some(id) => {
+            plan.diagnostics.push(diagnostic(
+                PresentationDiagnosticKind::UnknownStage,
+                &character.selector,
+                format!("stage `{id}` is not declared by the story"),
+            ));
+            apply_stage_fallback(story, character, Some(projection), plan);
+            return;
+        }
+        None => {
+            apply_stage_fallback(story, character, Some(projection), plan);
+            return;
+        }
+    };
+
+    let stage = &story.presentation.stages[&stage_id];
+    let name = projection
+        .display_name
+        .clone()
+        .or_else(|| stage.name.clone())
+        .unwrap_or_else(|| stage_id.clone());
+    let (image, variant) = resolve_image(story, character, projection, &stage_id, plan);
+    plan.stage = Some(ResolvedStage {
+        id: stage_id,
+        name,
+        image,
+        variant,
+        source: character.selector.clone(),
+        fallback: false,
+    });
+}
+
+fn apply_stage_fallback(
+    story: &StoryIr,
+    character: &CharacterPresentation,
+    projection: Option<&CharacterProjection>,
+    plan: &mut ResolvedPresentation,
+) {
+    let Some(id) = character.fallback_stage.as_deref() else {
+        return;
+    };
+    let Some(stage) = story.presentation.stages.get(id) else {
+        plan.diagnostics.push(diagnostic(
+            PresentationDiagnosticKind::UnknownStage,
+            &character.selector,
+            format!("configured fallback stage `{id}` is not declared by the story"),
+        ));
+        return;
+    };
+    let name = projection
+        .and_then(|projection| projection.display_name.clone())
+        .or_else(|| stage.name.clone())
+        .unwrap_or_else(|| id.to_owned());
+    let (image, variant) = projection.map_or_else(
+        || (stage.image.clone(), None),
+        |projection| resolve_image(story, character, projection, id, plan),
+    );
+    plan.stage = Some(ResolvedStage {
+        id: id.to_owned(),
+        name,
+        image,
+        variant,
+        source: character.selector.clone(),
+        fallback: true,
+    });
+    plan.diagnostics.push(diagnostic(
+        PresentationDiagnosticKind::Fallback,
+        &character.selector,
+        format!("using fallback stage `{id}`"),
+    ));
+}
+
+fn resolve_image(
+    story: &StoryIr,
+    character: &CharacterPresentation,
+    projection: &CharacterProjection,
+    stage_id: &str,
+    plan: &mut ResolvedPresentation,
+) -> (Option<String>, Option<String>) {
+    let Some(stage) = story.presentation.stages.get(stage_id) else {
+        return (projection.portrait.clone(), None);
+    };
+    if let Some(expression) = projection.expression.as_deref() {
+        match character.expressions.get(expression) {
+            Some(variant) => {
+                if let Some(path) = stage.variants.get(variant) {
+                    return (Some(path.clone()), Some(variant.clone()));
+                }
+                plan.diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnknownVariant,
+                    &character.selector,
+                    format!(
+                        "stage `{stage_id}` does not declare variant `{variant}` mapped from expression `{expression}`"
+                    ),
+                ));
+            }
+            None => plan.diagnostics.push(diagnostic(
+                PresentationDiagnosticKind::UnmappedExpression,
+                &character.selector,
+                format!("expression `{expression}` has no host variant mapping"),
+            )),
+        }
+    }
+    if let Some(portrait) = &projection.portrait {
+        return (Some(portrait.clone()), None);
+    }
+    (stage.image.clone(), None)
+}
+
+fn resolve_text<'a>(
+    reference: &ValueRef,
+    story: &'a StoryIr,
+    variables: Option<&'a BTreeMap<String, Value>>,
+    diagnostics: &mut Vec<PresentationDiagnostic>,
+) -> Option<&'a str> {
+    match reference {
+        ValueRef::Variable { name } => {
+            let Some(values) = variables else {
+                diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnavailableValue,
+                    reference,
+                    "no variable snapshot was supplied",
+                ));
+                return None;
+            };
+            match values.get(name) {
+                Some(Value::String(text) | Value::Symbol(text)) => Some(text),
+                Some(_) => {
+                    diagnostics.push(diagnostic(
+                        PresentationDiagnosticKind::IncompatibleType,
+                        reference,
+                        "the variable is not text; expected a string or symbol",
+                    ));
+                    None
+                }
+                None => {
+                    diagnostics.push(diagnostic(
+                        PresentationDiagnosticKind::UnavailableValue,
+                        reference,
+                        "the variable is not present in the current snapshot",
+                    ));
+                    None
+                }
+            }
+        }
+        ValueRef::Module { alias, path } => {
+            let Some(module) = story.modules.get(alias) else {
+                diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnknownModule,
+                    reference,
+                    "the module alias is not active in the compiled story",
+                ));
+                return None;
+            };
+            let Some((export, fields)) = path.split_first() else {
+                diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnknownExport,
+                    reference,
+                    "the module path names no export",
+                ));
+                return None;
+            };
+            let Some(entry) = module.exports.get(export) else {
+                diagnostics.push(diagnostic(
+                    PresentationDiagnosticKind::UnknownExport,
+                    reference,
+                    format!("the module does not export `{export}`"),
+                ));
+                return None;
+            };
+            let mut current = &entry.value;
+            for field in fields {
+                let DomainValueIr::Object(object) = current else {
+                    diagnostics.push(diagnostic(
+                        PresentationDiagnosticKind::IncompatibleType,
+                        reference,
+                        format!("the module value is not an object before field `{field}`"),
+                    ));
+                    return None;
+                };
+                let Some(next) = object.get(field) else {
+                    diagnostics.push(diagnostic(
+                        PresentationDiagnosticKind::UnknownPath,
+                        reference,
+                        format!("the module value has no field `{field}`"),
+                    ));
+                    return None;
+                };
+                current = next;
+            }
+            match current {
+                DomainValueIr::String(text) | DomainValueIr::Symbol(text) => Some(text),
+                _ => {
+                    diagnostics.push(diagnostic(
+                        PresentationDiagnosticKind::IncompatibleType,
+                        reference,
+                        "the module value is not text; expected a string or symbol",
+                    ));
+                    None
+                }
+            }
+        }
+    }
+}
+
+fn diagnostic(
+    kind: PresentationDiagnosticKind,
+    reference: &ValueRef,
+    detail: impl Into<String>,
+) -> PresentationDiagnostic {
+    PresentationDiagnostic {
+        kind,
+        source: reference.label(),
+        detail: detail.into(),
+    }
 }
 
 #[cfg(test)]
