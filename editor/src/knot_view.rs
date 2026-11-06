@@ -166,29 +166,27 @@ impl KnotView {
             }
             "enter" => self.commit_draft(cx),
             "backspace" => {
-                if let Some(draft) = &mut self.draft {
-                    if let Some((index, _)) = draft.text[..draft.cursor].char_indices().next_back()
-                    {
-                        draft.text.remove(index);
-                        draft.cursor = index;
-                    }
+                if let Some(draft) = &mut self.draft
+                    && let Some((index, _)) = draft.text[..draft.cursor].char_indices().next_back()
+                {
+                    draft.text.remove(index);
+                    draft.cursor = index;
                 }
                 cx.notify();
             }
             "left" => {
-                if let Some(draft) = &mut self.draft {
-                    if let Some((index, _)) = draft.text[..draft.cursor].char_indices().next_back()
-                    {
-                        draft.cursor = index;
-                    }
+                if let Some(draft) = &mut self.draft
+                    && let Some((index, _)) = draft.text[..draft.cursor].char_indices().next_back()
+                {
+                    draft.cursor = index;
                 }
                 cx.notify();
             }
             "right" => {
-                if let Some(draft) = &mut self.draft {
-                    if let Some(character) = draft.text[draft.cursor..].chars().next() {
-                        draft.cursor += character.len_utf8();
-                    }
+                if let Some(draft) = &mut self.draft
+                    && let Some(character) = draft.text[draft.cursor..].chars().next()
+                {
+                    draft.cursor += character.len_utf8();
                 }
                 cx.notify();
             }

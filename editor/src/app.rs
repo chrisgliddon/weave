@@ -602,7 +602,7 @@ impl EditorShell {
 
     fn handle_knot_event(&mut self, event: &KnotViewEvent, cx: &mut Context<Self>) {
         match event {
-            KnotViewEvent::Edit(edit) => self.apply_semantic_edit(&edit, cx),
+            KnotViewEvent::Edit(edit) => self.apply_semantic_edit(edit, cx),
             KnotViewEvent::ModeChanged { .. } => self.save_knot_preferences(cx),
             KnotViewEvent::OpenSource(knot) => {
                 self.state.layout.center = CenterView::Text;
@@ -865,6 +865,15 @@ impl EditorShell {
         let Some(path) = self.knot_preferences_path() else {
             return;
         };
+        // The sidecar is project-local data, not a trusted input: refuse a symlink or a
+        // non-regular file, and bound the read so a large file cannot stall the editor.
+        const MAX_PREFERENCES_BYTES: u64 = 64 * 1024;
+        let Ok(metadata) = std::fs::symlink_metadata(&path) else {
+            return;
+        };
+        if !metadata.file_type().is_file() || metadata.len() > MAX_PREFERENCES_BYTES {
+            return;
+        }
         let Ok(text) = std::fs::read_to_string(&path) else {
             return;
         };
@@ -885,7 +894,8 @@ impl EditorShell {
         };
         let preferences = self.knot.read(cx).preferences().clone();
         if let Ok(text) = preferences.to_json() {
-            let _ = std::fs::write(&path, text);
+            // Atomic replace: a rename does not follow a symlink at the target path.
+            let _ = crate::project::atomic_write(&path, text.as_bytes());
         }
     }
 
