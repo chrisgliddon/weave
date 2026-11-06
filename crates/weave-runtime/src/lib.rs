@@ -25,6 +25,8 @@ use weave_patterns::{
 pub const RUNTIME_VERSION: u32 = IR_VERSION;
 const MAX_GRAMMAR_DEPTH: usize = 64;
 const MAX_THREAD_DEPTH: usize = 256;
+/// Maximum instructions one `advance` call may execute before reporting a control-flow cycle.
+const MAX_ADVANCE_INSTRUCTIONS: usize = 100_000;
 
 /// A dynamically typed story value.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -285,6 +287,9 @@ pub enum RuntimeErrorKind {
     /// Thread execution exceeded the call-frame limit.
     #[error("thread execution exceeded {MAX_THREAD_DEPTH} frames")]
     ThreadDepth,
+    /// One step executed more instructions than the limit, which indicates a control-flow cycle.
+    #[error("execution exceeded {MAX_ADVANCE_INSTRUCTIONS} instructions in one step; check for a divert cycle")]
+    InstructionLimit,
     /// The host selected an unavailable choice.
     #[error("choice index {index} is unavailable; {available} choices are pending")]
     InvalidChoice { index: usize, available: usize },
@@ -487,7 +492,12 @@ impl Story {
             return Ok(StoryEvent::Choices(self.choices()));
         }
 
+        let mut executed = 0usize;
         loop {
+            executed = executed.saturating_add(1);
+            if executed > MAX_ADVANCE_INSTRUCTIONS {
+                return Err(RuntimeError::new(RuntimeErrorKind::InstructionLimit));
+            }
             let Some((block, index)) = self.next_position()? else {
                 return Ok(StoryEvent::Ended);
             };
@@ -1757,6 +1767,13 @@ mod tests {
     fn compile_story(source: &str, seed: u64) -> Story {
         let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
         Story::with_seed(compiled.story, seed).expect("story should start")
+    }
+
+    #[test]
+    fn a_divert_cycle_reports_an_instruction_limit_instead_of_hanging() {
+        let mut story = compile_story("=== first ===\n-> second\n=== second ===\n-> first\n", 1);
+        let error = story.advance().expect_err("a cycle has no boundary");
+        assert_eq!(error.kind, RuntimeErrorKind::InstructionLimit);
     }
 
     #[test]
