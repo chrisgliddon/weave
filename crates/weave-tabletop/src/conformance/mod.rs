@@ -539,6 +539,14 @@ impl ConformanceSuite {
                     first.definition.definition_sha256, second.definition.definition_sha256
                 ));
             }
+            if first.definition != second.definition
+                || first.initial_state != second.initial_state
+                || first.adapter != second.adapter
+            {
+                return Err(format!(
+                    "creation from seed {CONFORMANCE_SEED} produced a different definition, state, or coordinate between runs"
+                ));
+            }
             Ok(())
         });
 
@@ -726,12 +734,33 @@ fn namespace_isolation(
         ));
     }
 
-    let foreign = ResolvedAdapter {
+    let foreign_namespace = ResolvedAdapter {
         id: "org.weave.tabletop.foreign_fixture".to_owned(),
         version: "1.0.0".to_owned(),
         schema_version: 1,
         content_sha256: "0".repeat(64),
     };
+    let sibling_identity = ResolvedAdapter {
+        id: format!("{}.sibling_probe", manifest.namespace),
+        version: "1.0.0".to_owned(),
+        schema_version: 1,
+        content_sha256: "0".repeat(64),
+    };
+    let installed = resolved_adapter(manifest).map_err(failure_detail)?;
+    for foreign in [&foreign_namespace, &sibling_identity] {
+        if foreign == &installed {
+            continue;
+        }
+        reject_foreign_projection(manifest, foreign)?;
+        reject_foreign_state(manifest, foreign)?;
+    }
+    Ok(())
+}
+
+fn reject_foreign_projection(
+    manifest: &AdapterManifest,
+    foreign: &ResolvedAdapter,
+) -> Result<(), String> {
     let foreign_value = DomainValue::Object(BTreeMap::new());
     let foreign_definition = AdapterCharacterDefinition {
         definition_sha256: digest(&foreign_value)?,
@@ -749,20 +778,21 @@ fn namespace_isolation(
         suggestions: Vec::new(),
     };
     match validate_character_projection(&projection, std::slice::from_ref(manifest)) {
-        Err(TabletopError::AdapterNotInstalled) => {}
-        Err(other) => {
-            return Err(format!(
-                "foreign definition was rejected with `{other}` instead of AdapterNotInstalled"
-            ));
-        }
-        Ok(()) => {
-            return Err(format!(
-                "foreign definition for adapter `{}` was accepted by namespace `{}`",
-                foreign.id, manifest.namespace
-            ));
-        }
+        Err(TabletopError::AdapterNotInstalled) => Ok(()),
+        Err(other) => Err(format!(
+            "foreign definition was rejected with `{other}` instead of AdapterNotInstalled"
+        )),
+        Ok(()) => Err(format!(
+            "foreign definition for adapter `{}` was accepted by namespace `{}`",
+            foreign.id, manifest.namespace
+        )),
     }
+}
 
+fn reject_foreign_state(
+    manifest: &AdapterManifest,
+    foreign: &ResolvedAdapter,
+) -> Result<(), String> {
     let state = TabletopState {
         state_format_version: ADAPTER_STATE_FORMAT_VERSION,
         adapter: foreign.clone(),
@@ -910,7 +940,7 @@ fn forbidden_file(manifest: &AdapterManifest, entry: &AdapterSourcePolicy) -> Re
         if entry
             .forbidden_files
             .iter()
-            .any(|forbidden| *forbidden == artifact.exact_artifact)
+            .any(|forbidden| forbidden.eq_ignore_ascii_case(&artifact.exact_artifact))
         {
             return Err(format!(
                 "forbidden file `{}` is marked as redistributed",
@@ -1459,8 +1489,15 @@ fn deterministic_output(
     }
     let reparsed = AdapterManifest::from_json(&first_json).map_err(failure_detail)?;
     let replayed = reparsed.to_json().map_err(failure_detail)?;
-    if reparsed.to_json().map_err(failure_detail)? != replayed {
-        return Err("parsed manifest JSON did not serialize deterministically".to_owned());
+    if replayed != first_json {
+        return Err(format!(
+            "manifest JSON did not round-trip byte-for-byte: before=`{}` after=`{}`",
+            short_hash(&first_json),
+            short_hash(&replayed)
+        ));
+    }
+    if AdapterManifest::from_json(&replayed).map_err(failure_detail)? != reparsed {
+        return Err("manifest JSON parsed to a different value on the second parse".to_owned());
     }
     let ron = manifest.to_ron().map_err(failure_detail)?;
     if AdapterManifest::from_ron(&ron).map_err(failure_detail)? != *manifest {
@@ -1475,6 +1512,10 @@ fn deterministic_output(
             short_hash(&first_state),
             short_hash(&second_state)
         ));
+    }
+    let reparsed_state = TabletopState::from_json(&first_state).map_err(failure_detail)?;
+    if reparsed_state.to_json().map_err(failure_detail)? != first_state {
+        return Err("state JSON did not round-trip byte-for-byte".to_owned());
     }
 
     if creation.canonical.is_empty() {

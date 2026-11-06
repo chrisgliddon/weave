@@ -112,6 +112,14 @@ pub enum SyncConflict {
     KnotInUse { knot: String, references: usize },
     #[error("a story needs at least one knot")]
     LastKnot,
+    #[error("`{0}` is reserved for ending a story; choose another knot name")]
+    ReservedName(String),
+    #[error(
+        "the edit cannot be stored as story prose because Weave would read it as structure; reword it or use the graph controls"
+    )]
+    NotRepresentable,
+    #[error("the edited source could not be re-parsed; nothing was changed")]
+    UnparsableEdit,
 }
 
 #[derive(Debug, Clone)]
@@ -231,17 +239,18 @@ impl CanonicalProjectModel {
     ) -> Result<GraphSync, SyncConflict> {
         self.ensure_revision(expected_revision)?;
         let mut document = self.document.clone().ok_or(SyncConflict::InvalidText)?;
-        let mut layout_before_rename = None;
-        if let GraphEdit::RenameKnot { knot, name } = edit {
-            layout_before_rename = Some((knot.clone(), name.clone()));
-        }
         let (focus_node, summary) = mutate_document(&mut document, edit)?;
-        if let Some((old, new)) = layout_before_rename {
-            self.remap_knot_layout(&old, &new);
-        }
         let source = weave_fmt::format_document(&document);
-        let reparsed = parse_document(&source)
-            .expect("formatter output from a parsed and locally-mutated document remains valid");
+        // Reject any edit the parser would read differently from the mutation. Prose that
+        // happens to look like a choice, divert, or knot header would otherwise be written
+        // verbatim and reparse as structure.
+        let reparsed = parse_document(&source).map_err(|_| SyncConflict::UnparsableEdit)?;
+        if !same_structure(&reparsed, &document) {
+            return Err(SyncConflict::NotRepresentable);
+        }
+        if let GraphEdit::RenameKnot { knot, name } = edit {
+            self.remap_knot_layout(knot, name);
+        }
         self.push_undo();
         self.source = source.clone();
         self.document = Some(reparsed.clone());
@@ -476,6 +485,9 @@ fn mutate_document(
             Ok((Some(format!("knot:{knot}")), format!("Edited knot {knot}")))
         }
         GraphEdit::RenameKnot { knot, name } => {
+            if name == "END" {
+                return Err(SyncConflict::ReservedName(name.clone()));
+            }
             if !is_valid_identifier(name) {
                 return Err(SyncConflict::InvalidIdentifier(name.clone()));
             }
@@ -558,6 +570,38 @@ fn mutate_document(
 
 fn single_line(text: &str) -> String {
     text.replace(['\n', '\r'], " ").trim().to_owned()
+}
+
+/// Compare two parsed documents without their source locations.
+///
+/// A graph edit mutates the AST directly and then writes canonical source. If the parser reads
+/// that source differently, the edit would silently change story structure, so it is rejected.
+fn same_structure(left: &Document, right: &Document) -> bool {
+    match (serde_json::to_value(left), serde_json::to_value(right)) {
+        (Ok(mut left), Ok(mut right)) => {
+            strip_spans(&mut left);
+            strip_spans(&mut right);
+            left == right
+        }
+        _ => false,
+    }
+}
+
+fn strip_spans(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Object(map) => {
+            map.remove("span");
+            for child in map.values_mut() {
+                strip_spans(child);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                strip_spans(item);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn choice_focus(knot: &str, path: &[usize]) -> String {
@@ -901,6 +945,53 @@ The shore.
             .expect("remove prose");
         assert!(!removed.source.contains("Back to the beginning."));
         assert!(removed.source.contains("=== loop ===\n-> start"));
+    }
+
+    #[test]
+    fn prose_that_parses_as_structure_is_rejected_without_a_change() {
+        for hostile in [
+            "* [Sneaky] -> shore",
+            "+ [Always] -> shore",
+            "-> shore",
+            "<- shore",
+            "=== hijack ===",
+            "VAR score = 1",
+            "@ scene dusk",
+        ] {
+            let mut model = CanonicalProjectModel::new(LINKED);
+            let before = model.source().to_owned();
+            let revision = model.revision();
+            let conflict = model
+                .apply_graph_edit(
+                    &GraphEdit::SetKnotText {
+                        knot: "start".to_owned(),
+                        text: hostile.to_owned(),
+                    },
+                    revision,
+                )
+                .expect_err("structure injection");
+            assert!(
+                matches!(
+                    conflict,
+                    SyncConflict::NotRepresentable | SyncConflict::UnparsableEdit
+                ),
+                "text `{hostile}` must not become structure, got {conflict:?}"
+            );
+            assert_eq!(model.source(), before);
+            assert_eq!(model.revision(), revision);
+        }
+        assert_eq!(
+            CanonicalProjectModel::new(LINKED)
+                .apply_graph_edit(
+                    &GraphEdit::RenameKnot {
+                        knot: "start".to_owned(),
+                        name: "END".to_owned(),
+                    },
+                    0,
+                )
+                .expect_err("reserved name"),
+            SyncConflict::ReservedName("END".to_owned())
+        );
     }
 
     #[test]

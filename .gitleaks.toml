@@ -3,13 +3,15 @@ title = "Weave secret scanning"
 [extend]
 useDefault = true
 
-# Extracted AppKit interface-builder archives store interface constants as
-# `"NSKey": "<name>"` entries. The default generic-api-key rule treats those
-# strings as credentials. The allowlist is scoped to the evidence directory
-# and to the exact key/value shape, so a real credential in an adjacent field
-# still fails the scan.
+# The extracted AppKit interface-builder archives under
+# `research/scrivener/evidence/ib_nibs/` are generated, minified JSON dumps of
+# interface definitions. They contain no credentials by construction, but their
+# single-line layout makes every `"NSKey": "<name>"` entry look like a generic
+# API key to the default rules. gitleaks 8.30 cannot scope an allowlist to one
+# value shape inside such a line, so the whole evidence directory is excluded
+# instead of a line regex that would mask unrelated findings. This exclusion is
+# path-exact and does not affect any other file. Review changes in these files
+# by hand; do not add credentials or new evidence categories to them.
 [[allowlists]]
-description = "AppKit NSKey interface constants in extracted nib evidence"
+description = "Generated AppKit interface archives with no credential content"
 paths = ['''^research/scrivener/evidence/ib_nibs/[^/]+\.json$''']
-regexTarget = "line"
-regexes = ['''"NSKey"\s*:\s*"[A-Za-z0-9_]+"''']

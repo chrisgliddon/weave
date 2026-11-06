@@ -34,18 +34,20 @@ Install it once:
 brew install gitleaks
 ```
 
-`scripts/install-git-hooks.sh` sets `core.hooksPath` to `.githooks/`, so every commit scans its
-staged changes and stops on a detected credential. Run the full-history scan before a release or a
-branch promotion:
+`scripts/install-git-hooks.sh` copies the tracked hooks from `.githooks/` into your clone's own
+`.git/hooks/` directory, so every commit scans its staged changes and stops on a detected
+credential. Re-run the installer after changing a hook. The staged scan reads `.gitleaks.toml` from
+`HEAD`, not from the commit under test. Run the full-history scan before a release or a branch
+promotion:
 
 ```bash
 ./scripts/check-secrets.sh history
 ./scripts/check-secrets.sh staged   # the same check the hook runs
 ```
 
-`.gitleaks.toml` extends the default rules. Its only allowlist covers AppKit `NSKey` interface
-constants inside extracted nib evidence. Add an allowlist entry only for a proven false positive,
-scope it to one path and one value shape, and explain it in a comment.
+`.gitleaks.toml` extends the default rules. Its only allowlist excludes the generated AppKit
+interface archives, whose minified `NSKey` entries are false positives. Add an allowlist entry only
+for proven false positives, keep it path-exact, and explain it in a comment.
 
 ## Writing issues
 
