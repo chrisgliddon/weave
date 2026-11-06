@@ -13,11 +13,6 @@
 //! Both formats serialize deterministically to strict JSON and RON. Identifiers, versions, and
 //! references are validated; unsupported versions fail closed with an actionable diagnostic.
 
-// The module refers to the crate by name. This keeps one source file valid both as a library
-// module and as the `#[path]`-included module used by `tests/pack.rs` until the crate root
-// declares it.
-extern crate self as weave_character;
-
 use std::collections::{BTreeMap, BTreeSet};
 
 use schemars::JsonSchema;
@@ -28,24 +23,26 @@ use weave_domain::{
     to_pretty_ron, validate_provenance,
 };
 
-use weave_character::{
-    ALIGNMENT_EXTENSION_NAMESPACE, AlignmentPublicDecision, AssistanceReceipt, Attributed,
-    BirthDate, CHARACTER_COLLECTION_FORMAT_VERSION, CHARACTER_FINAL_REVIEW_FORMAT_VERSION,
-    CharacterCollection, CharacterCorpusError, CharacterDiagnostic, CharacterDiagnosticCode,
-    CharacterError, CharacterExtension, CharacterFinalReview, CharacterHealthDiagnostic,
-    CharacterHealthDiagnosticScope, CharacterOverlay, CharacterProfile, CharacterTemplate,
-    CharacterTemplateRef, DATE_CONTEXT_EXTENSION_NAMESPACE, DateContextCueKind,
-    DateContextUncertainty, DiagnosticSeverity, EXPRESSION_EXTENSION_NAMESPACE,
-    ExpressionApplicability, ExpressionConstraintEffect, ExpressionContextPredicate,
-    ExpressionData, ExpressionDialogueTemplate, ExpressionError, ExpressionMedium, ExpressionPack,
+use crate::{
+    ALIGNMENT_EXTENSION_NAMESPACE, AlignmentPublicDecision, AlignmentView, AssistanceReceipt,
+    Attributed, BirthDate, CHARACTER_COLLECTION_FORMAT_VERSION,
+    CHARACTER_FINAL_REVIEW_FORMAT_VERSION, CharacterCollection, CharacterCorpusError,
+    CharacterDiagnostic, CharacterDiagnosticCode, CharacterError, CharacterExtension,
+    CharacterFinalReview, CharacterHealthDiagnostic, CharacterHealthDiagnosticScope,
+    CharacterOverlay, CharacterProfile, CharacterTemplate, CharacterTemplateRef,
+    DATE_CONTEXT_EXTENSION_NAMESPACE, DateContext, DateContextCueKind, DateContextUncertainty,
+    DiagnosticSeverity, EXPRESSION_EXTENSION_NAMESPACE, ExpressionApplicability,
+    ExpressionConstraintEffect, ExpressionContextPredicate, ExpressionData,
+    ExpressionDialogueTemplate, ExpressionError, ExpressionMedium, ExpressionPack,
     ExpressionPackRef, ExpressionPlaceholderValue, ExpressionSpeakerRequirement,
-    ExpressionTermKind, ExpressionTextAuthority, Freshness, HexacoProfile, HexacoTrait,
-    IDENTITY_PRESENTATION_EXTENSION_NAMESPACE, IdentityContextKind, IdentityPresentation,
-    InnerLifeCategory, PreferencePolarity, PresentationAssetReference, PresentationCatalogValue,
-    ProjectionKind, ProjectionPublicDecision, PronounSet, RELATIONSHIP_EXTENSION_NAMESPACE,
-    ROLE_PROJECTION_EXTENSION_NAMESPACE, RelationshipEdgeOrigin, RelationshipEdges, ReviewState,
-    RoleProjections, TraitMeasurement, ValueState, VersionedExtension, VoiceCategory,
-    expression_pack_ref, synthesize_character, template_fingerprint, validate_assistance_receipt,
+    ExpressionTemplateAssignment, ExpressionTermKind, ExpressionTextAuthority, ExtensionHeader,
+    Freshness, HexacoProfile, HexacoTrait, IDENTITY_PRESENTATION_EXTENSION_NAMESPACE,
+    IdentityContextKind, IdentityPresentation, InnerLifeCategory, PreferencePolarity,
+    PresentationAssetReference, PresentationCatalogValue, ProjectionKind, ProjectionPublicDecision,
+    PronounSet, RELATIONSHIP_EXTENSION_NAMESPACE, ROLE_PROJECTION_EXTENSION_NAMESPACE,
+    RelationshipEdge, RelationshipEdgeOrigin, RelationshipEdges, ReviewState, RoleProjections,
+    TraitMeasurement, ValueState, VersionedExtension, VoiceCategory, expression_pack_ref,
+    synthesize_character, template_fingerprint, validate_assistance_receipt,
     validate_character_collection, validate_expression_pack, validate_overlay, validate_profile,
     validate_template,
 };
@@ -56,8 +53,11 @@ pub const CHARACTER_PACK_FORMAT_VERSION: u32 = 1;
 /// Versioned portable Character-pack format. Version 1 is the only supported value.
 pub type PackFormatVersion = u32;
 
+/// Maximum number of records in any one pack collection.
+pub const CHARACTER_PACK_MAX_RECORDS: usize = 4_096;
+
 /// Maximum number of character documents in one pack.
-pub const CHARACTER_PACK_MAX_CHARACTERS: usize = 4_096;
+pub const CHARACTER_PACK_MAX_CHARACTERS: usize = CHARACTER_PACK_MAX_RECORDS;
 
 const AUTHORING_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-authoring-pack:1";
 const RUNTIME_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-runtime-pack:1";
@@ -122,6 +122,337 @@ fn from_corpus_error(error: CharacterCorpusError) -> CharacterPackError {
     CharacterPackError {
         diagnostic: error.diagnostic().clone(),
     }
+}
+
+fn ensure_record_capacity(path: &str, count: usize) -> Result<(), CharacterPackError> {
+    if count > CHARACTER_PACK_MAX_RECORDS {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            path,
+            "pack collection exceeds the 4096-record limit; split the pack or raise the version",
+        ));
+    }
+    Ok(())
+}
+
+fn duplicate_ron_key_error() -> CharacterPackError {
+    pack_error(
+        CharacterDiagnosticCode::InvalidEncoding,
+        "document",
+        "Character pack RON contains a duplicate map key",
+    )
+}
+
+struct RonFrame {
+    is_map: bool,
+    expecting_key: bool,
+    keys: BTreeSet<String>,
+}
+
+impl RonFrame {
+    fn map() -> Self {
+        Self {
+            is_map: true,
+            expecting_key: true,
+            keys: BTreeSet::new(),
+        }
+    }
+
+    fn opaque() -> Self {
+        Self {
+            is_map: false,
+            expecting_key: false,
+            keys: BTreeSet::new(),
+        }
+    }
+}
+
+/// Reject duplicate keys in RON map literals before serde collapses them into one entry.
+///
+/// Duplicate struct fields are already rejected by the RON deserializer. Map literals keep the
+/// last value silently, so this scanner tracks `{ ... }` frames and compares decoded keys.
+fn reject_duplicate_ron_map_keys(source: &str) -> Result<(), CharacterPackError> {
+    let bytes = source.as_bytes();
+    let mut index = 0;
+    let mut stack: Vec<RonFrame> = Vec::new();
+    while index < bytes.len() {
+        skip_ron_trivia(bytes, &mut index)?;
+        let Some(&byte) = bytes.get(index) else {
+            break;
+        };
+        match byte {
+            b'{' => {
+                stack.push(RonFrame::map());
+                index += 1;
+            }
+            b'(' | b'[' => {
+                stack.push(RonFrame::opaque());
+                index += 1;
+            }
+            b'}' | b')' | b']' => {
+                stack.pop();
+                index += 1;
+            }
+            b',' => {
+                if let Some(frame) = stack.last_mut()
+                    && frame.is_map
+                {
+                    frame.expecting_key = true;
+                }
+                index += 1;
+            }
+            b':' => {
+                if let Some(frame) = stack.last_mut()
+                    && frame.is_map
+                {
+                    frame.expecting_key = false;
+                }
+                index += 1;
+            }
+            b'"' => {
+                let (key, next) = read_ron_string(bytes, index)?;
+                index = next;
+                record_ron_map_key(&mut stack, format!("s:{key}"))?;
+            }
+            b'\'' => {
+                let (key, next) = read_ron_char(bytes, index)?;
+                index = next;
+                record_ron_map_key(&mut stack, format!("c:{key}"))?;
+            }
+            b'r' => {
+                if let Some((hashes, quote)) = ron_raw_string_start(bytes, index) {
+                    let (key, next) = read_ron_raw_string(bytes, quote, hashes)?;
+                    index = next;
+                    record_ron_map_key(&mut stack, format!("s:{key}"))?;
+                } else {
+                    let (key, next) = read_ron_identifier(bytes, index);
+                    index = next;
+                    record_ron_map_key(&mut stack, format!("i:{key}"))?;
+                }
+            }
+            _ if is_ron_identifier_start(byte) => {
+                let (key, next) = read_ron_identifier(bytes, index);
+                index = next;
+                record_ron_map_key(&mut stack, format!("i:{key}"))?;
+            }
+            _ if byte.is_ascii_digit() || byte == b'-' || byte == b'+' => {
+                let (key, next) = read_ron_number(bytes, index);
+                index = next;
+                record_ron_map_key(&mut stack, format!("n:{key}"))?;
+            }
+            _ => index += 1,
+        }
+    }
+    Ok(())
+}
+
+fn record_ron_map_key(stack: &mut [RonFrame], key: String) -> Result<(), CharacterPackError> {
+    let Some(frame) = stack.last_mut() else {
+        return Ok(());
+    };
+    if !frame.is_map || !frame.expecting_key {
+        return Ok(());
+    }
+    frame.expecting_key = false;
+    if !frame.keys.insert(key) {
+        return Err(duplicate_ron_key_error());
+    }
+    Ok(())
+}
+
+fn skip_ron_trivia(bytes: &[u8], index: &mut usize) -> Result<(), CharacterPackError> {
+    loop {
+        while *index < bytes.len() && bytes[*index].is_ascii_whitespace() {
+            *index += 1;
+        }
+        if bytes.get(*index..*index + 2) == Some(b"//") {
+            *index += 2;
+            while *index < bytes.len() && bytes[*index] != b'\n' {
+                *index += 1;
+            }
+        } else if bytes.get(*index..*index + 2) == Some(b"/*") {
+            *index += 2;
+            let mut depth = 1usize;
+            while *index < bytes.len() && depth > 0 {
+                if bytes.get(*index..*index + 2) == Some(b"/*") {
+                    depth += 1;
+                    *index += 2;
+                } else if bytes.get(*index..*index + 2) == Some(b"*/") {
+                    depth -= 1;
+                    *index += 2;
+                } else {
+                    *index += 1;
+                }
+            }
+            if depth != 0 {
+                return Err(encoding_error());
+            }
+        } else {
+            return Ok(());
+        }
+    }
+}
+
+fn is_ron_identifier_start(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_'
+}
+
+fn read_ron_identifier(bytes: &[u8], start: usize) -> (String, usize) {
+    let mut end = start;
+    while end < bytes.len() && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_') {
+        end += 1;
+    }
+    (
+        String::from_utf8_lossy(&bytes[start..end]).into_owned(),
+        end,
+    )
+}
+
+fn read_ron_number(bytes: &[u8], start: usize) -> (String, usize) {
+    let mut end = start;
+    while end < bytes.len() && !is_ron_token_end(bytes[end]) {
+        end += 1;
+    }
+    (
+        String::from_utf8_lossy(&bytes[start..end]).into_owned(),
+        end,
+    )
+}
+
+fn is_ron_token_end(byte: u8) -> bool {
+    byte.is_ascii_whitespace()
+        || matches!(
+            byte,
+            b',' | b':' | b'{' | b'}' | b'(' | b')' | b'[' | b']' | b'/' | b'#'
+        )
+}
+
+fn read_ron_string(bytes: &[u8], start: usize) -> Result<(String, usize), CharacterPackError> {
+    let mut value = String::new();
+    let mut index = start + 1;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'"' => return Ok((value, index + 1)),
+            b'\\' => {
+                index += 1;
+                let (character, next) = read_ron_escape(bytes, index)?;
+                value.push(character);
+                index = next;
+            }
+            _ => {
+                let (character, next) = read_ron_utf8_char(bytes, index)?;
+                value.push(character);
+                index = next;
+            }
+        }
+    }
+    Err(encoding_error())
+}
+
+fn read_ron_char(bytes: &[u8], start: usize) -> Result<(String, usize), CharacterPackError> {
+    let mut index = start + 1;
+    let (character, next) = if bytes.get(index) == Some(&b'\\') {
+        read_ron_escape(bytes, index + 1)?
+    } else {
+        read_ron_utf8_char(bytes, index)?
+    };
+    index = next;
+    if bytes.get(index) != Some(&b'\'') {
+        return Err(encoding_error());
+    }
+    Ok((character.to_string(), index + 1))
+}
+
+fn read_ron_utf8_char(bytes: &[u8], index: usize) -> Result<(char, usize), CharacterPackError> {
+    let remaining = std::str::from_utf8(&bytes[index..]).map_err(|_| encoding_error())?;
+    let character = remaining.chars().next().ok_or_else(encoding_error)?;
+    Ok((character, index + character.len_utf8()))
+}
+
+fn read_ron_escape(bytes: &[u8], index: usize) -> Result<(char, usize), CharacterPackError> {
+    let Some(&byte) = bytes.get(index) else {
+        return Err(encoding_error());
+    };
+    match byte {
+        b'n' => Ok(('\n', index + 1)),
+        b'r' => Ok(('\r', index + 1)),
+        b't' => Ok(('\t', index + 1)),
+        b'0' => Ok(('\0', index + 1)),
+        b'\\' => Ok(('\\', index + 1)),
+        b'"' => Ok(('"', index + 1)),
+        b'\'' => Ok(('\'', index + 1)),
+        b'/' => Ok(('/', index + 1)),
+        b'x' => {
+            let value = read_ron_hex(bytes, index + 1, 2)?;
+            let character = char::from_u32(value).ok_or_else(encoding_error)?;
+            Ok((character, index + 3))
+        }
+        b'u' => {
+            if bytes.get(index + 1) != Some(&b'{') {
+                return Err(encoding_error());
+            }
+            let mut end = index + 2;
+            while end < bytes.len() && bytes[end] != b'}' {
+                end += 1;
+            }
+            if end == bytes.len() {
+                return Err(encoding_error());
+            }
+            let digits =
+                std::str::from_utf8(&bytes[index + 2..end]).map_err(|_| encoding_error())?;
+            let value = u32::from_str_radix(digits, 16).map_err(|_| encoding_error())?;
+            let character = char::from_u32(value).ok_or_else(encoding_error)?;
+            Ok((character, end + 1))
+        }
+        other => Ok((other as char, index + 1)),
+    }
+}
+
+fn read_ron_hex(bytes: &[u8], start: usize, length: usize) -> Result<u32, CharacterPackError> {
+    let end = start + length;
+    let digits = bytes.get(start..end).ok_or_else(encoding_error)?;
+    let text = std::str::from_utf8(digits).map_err(|_| encoding_error())?;
+    u32::from_str_radix(text, 16).map_err(|_| encoding_error())
+}
+
+fn ron_raw_string_start(bytes: &[u8], index: usize) -> Option<(usize, usize)> {
+    if bytes.get(index) != Some(&b'r') {
+        return None;
+    }
+    let mut hashes = 0;
+    let mut cursor = index + 1;
+    while bytes.get(cursor) == Some(&b'#') {
+        hashes += 1;
+        cursor += 1;
+    }
+    if bytes.get(cursor) == Some(&b'"') {
+        Some((hashes, cursor))
+    } else {
+        None
+    }
+}
+
+fn read_ron_raw_string(
+    bytes: &[u8],
+    quote: usize,
+    hashes: usize,
+) -> Result<(String, usize), CharacterPackError> {
+    let mut index = quote + 1;
+    while index < bytes.len() {
+        if bytes[index] == b'"' {
+            let close_end = index + 1 + hashes;
+            if bytes
+                .get(index + 1..close_end)
+                .is_some_and(|suffix| suffix.iter().all(|byte| *byte == b'#'))
+            {
+                let text =
+                    std::str::from_utf8(&bytes[quote + 1..index]).map_err(|_| encoding_error())?;
+                return Ok((text.to_owned(), close_end));
+            }
+        }
+        index += 1;
+    }
+    Err(encoding_error())
 }
 
 fn from_expression_error(error: ExpressionError) -> CharacterPackError {
@@ -322,6 +653,7 @@ impl CharacterAuthoringPack {
 
     /// Parse and validate authoring-pack RON.
     pub fn from_ron(source: &str) -> Result<Self, CharacterPackError> {
+        reject_duplicate_ron_map_keys(source)?;
         let value = ron::from_str(source).map_err(|_| encoding_error())?;
         validate_authoring_pack(&value)?;
         Ok(value)
@@ -419,6 +751,7 @@ impl CharacterRuntimePack {
 
     /// Parse and validate runtime-pack RON.
     pub fn from_ron(source: &str) -> Result<Self, CharacterPackError> {
+        reject_duplicate_ron_map_keys(source)?;
         let value = ron::from_str(source).map_err(|_| encoding_error())?;
         validate_runtime_pack(&value)?;
         Ok(value)
@@ -810,27 +1143,27 @@ pub fn validate_authoring_pack(pack: &CharacterAuthoringPack) -> Result<(), Char
         )
     })?;
 
-    if pack.characters.is_empty() || pack.characters.len() > CHARACTER_PACK_MAX_CHARACTERS {
+    if pack.characters.is_empty() {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidValue,
             "characters",
-            "a pack requires between one and 4096 character entries",
+            "a pack requires at least one character entry",
         ));
     }
+    ensure_record_capacity("characters", pack.characters.len())?;
+    ensure_record_capacity("templates", pack.templates.len())?;
+    ensure_record_capacity("overrides", pack.overrides.len())?;
+    ensure_record_capacity("expression_packs", pack.expression_packs.len())?;
+    ensure_record_capacity("assistance_receipts", pack.assistance_receipts.len())?;
+    ensure_record_capacity("health_diagnostics", pack.health_diagnostics.len())?;
     ensure_strict_order("characters", &pack.characters, |entry| {
         entry.profile.id.clone()
     })?;
     let mut character_ids = BTreeSet::new();
-    let mut relationship_ids = BTreeSet::new();
+    let mut character_profiles = BTreeMap::new();
     for entry in &pack.characters {
         character_ids.insert(entry.profile.id.as_str());
-        if let Some(CharacterExtension::Relationships(record)) = entry
-            .profile
-            .extensions
-            .get(RELATIONSHIP_EXTENSION_NAMESPACE)
-        {
-            relationship_ids.extend(record.value.edges.keys().cloned());
-        }
+        character_profiles.insert(entry.profile.id.as_str(), &entry.profile);
     }
 
     ensure_strict_order("templates", &pack.templates, template_coordinate)?;
@@ -882,21 +1215,6 @@ pub fn validate_authoring_pack(pack: &CharacterAuthoringPack) -> Result<(), Char
         validate_health_diagnostic(diagnostic, &character_ids)?;
     }
 
-    for entry in &pack.characters {
-        let path = format!("characters.{}", entry.profile.id);
-        validate_profile(&entry.profile).map_err(from_character_error)?;
-        validate_authoring_lineage(&path, entry, pack)?;
-        validate_authoring_relationships(&path, &entry.profile, &character_ids, &relationship_ids)?;
-    }
-
-    Ok(())
-}
-
-fn validate_authoring_lineage(
-    path: &str,
-    entry: &CharacterAuthoringEntry,
-    pack: &CharacterAuthoringPack,
-) -> Result<(), CharacterPackError> {
     let template_ids = pack
         .templates
         .iter()
@@ -912,6 +1230,32 @@ fn validate_authoring_lineage(
         .iter()
         .map(|receipt| receipt.id.clone())
         .collect::<BTreeSet<_>>();
+
+    for entry in &pack.characters {
+        let path = format!("characters.{}", entry.profile.id);
+        validate_profile(&entry.profile).map_err(from_character_error)?;
+        validate_authoring_lineage(
+            &path,
+            entry,
+            pack,
+            &template_ids,
+            &override_ids,
+            &receipt_ids,
+        )?;
+        validate_authoring_relationships(&path, &entry.profile, &character_profiles)?;
+    }
+
+    Ok(())
+}
+
+fn validate_authoring_lineage(
+    path: &str,
+    entry: &CharacterAuthoringEntry,
+    pack: &CharacterAuthoringPack,
+    template_ids: &BTreeSet<String>,
+    override_ids: &BTreeSet<String>,
+    receipt_ids: &BTreeSet<String>,
+) -> Result<(), CharacterPackError> {
     let templates = pack.templates.as_slice();
     let overrides = pack.overrides.as_slice();
     let expression_packs = pack.expression_packs.as_slice();
@@ -1066,8 +1410,7 @@ fn validate_authoring_lineage(
 fn validate_authoring_relationships(
     path: &str,
     profile: &CharacterProfile,
-    character_ids: &BTreeSet<&str>,
-    relationship_ids: &BTreeSet<String>,
+    character_profiles: &BTreeMap<&str, &CharacterProfile>,
 ) -> Result<(), CharacterPackError> {
     let Some(CharacterExtension::Relationships(record)) =
         profile.extensions.get(RELATIONSHIP_EXTENSION_NAMESPACE)
@@ -1075,24 +1418,50 @@ fn validate_authoring_relationships(
         return Ok(());
     };
     for (id, edge) in &record.value.edges {
-        if !character_ids.contains(edge.target_character_id.as_str()) {
+        let Some(target) = character_profiles.get(edge.target_character_id.as_str()) else {
             return Err(pack_error(
                 CharacterDiagnosticCode::InvalidReference,
                 format!("{path}.relationships.{id}.target_character_id"),
                 "relationship target is absent from the pack",
             ));
-        }
-        if let Some(inverse) = &edge.inverse_edge_id
-            && !relationship_ids.contains(inverse)
+        };
+        if let Some(inverse_id) = &edge.inverse_edge_id
+            && !reciprocal_authoring_edge(&record.value, target, edge, inverse_id)
         {
             return Err(pack_error(
                 CharacterDiagnosticCode::InvalidReference,
                 format!("{path}.relationships.{id}.inverse_edge_id"),
-                "inverse relationship edge is absent from the owner profile",
+                "inverse relationship must be an exact reciprocal edge in this profile or the target profile",
             ));
         }
     }
     Ok(())
+}
+
+fn reciprocal_authoring_edge(
+    owner_edges: &RelationshipEdges,
+    target: &CharacterProfile,
+    edge: &RelationshipEdge,
+    inverse_id: &str,
+) -> bool {
+    let owner_inverse = owner_edges.edges.get(inverse_id);
+    let target_inverse =
+        authoring_relationship_edges(target).and_then(|edges| edges.edges.get(inverse_id));
+    owner_inverse
+        .into_iter()
+        .chain(target_inverse)
+        .any(|inverse| {
+            inverse.source_character_id == edge.target_character_id
+                && inverse.target_character_id == edge.source_character_id
+                && inverse.inverse_edge_id.as_deref() == Some(edge.id.as_str())
+        })
+}
+
+fn authoring_relationship_edges(profile: &CharacterProfile) -> Option<&RelationshipEdges> {
+    match profile.extensions.get(RELATIONSHIP_EXTENSION_NAMESPACE) {
+        Some(CharacterExtension::Relationships(record)) => Some(&record.value),
+        _ => None,
+    }
 }
 
 fn validate_expression_references(
@@ -1171,13 +1540,14 @@ pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), Characte
     .validate()?;
     validate_pack_license("license", &pack.license, &empty_provenance())?;
 
-    if pack.characters.is_empty() || pack.characters.len() > CHARACTER_PACK_MAX_CHARACTERS {
+    if pack.characters.is_empty() {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidValue,
             "characters",
-            "a pack requires between one and 4096 character entries",
+            "a pack requires at least one character entry",
         ));
     }
+    ensure_record_capacity("characters", pack.characters.len())?;
     ensure_strict_order("characters", &pack.characters, |profile| profile.id.clone())?;
 
     let ids = pack
@@ -1185,15 +1555,14 @@ pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), Characte
         .iter()
         .map(|profile| profile.id.clone())
         .collect::<BTreeSet<_>>();
-    let mut relationship_ids = BTreeSet::new();
-    for profile in &pack.characters {
-        for id in profile.relationships.keys() {
-            relationship_ids.insert(id.clone());
-        }
-    }
+    let profiles = pack
+        .characters
+        .iter()
+        .map(|profile| (profile.id.as_str(), profile))
+        .collect::<BTreeMap<_, _>>();
 
     for profile in &pack.characters {
-        validate_runtime_profile(profile, &ids, &relationship_ids)?;
+        validate_runtime_profile(profile, &ids, &profiles)?;
     }
     Ok(())
 }
@@ -1201,7 +1570,7 @@ pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), Characte
 fn validate_runtime_profile(
     profile: &CharacterRuntimeProfile,
     ids: &BTreeSet<String>,
-    relationship_ids: &BTreeSet<String>,
+    profiles: &BTreeMap<&str, &CharacterRuntimeProfile>,
 ) -> Result<(), CharacterPackError> {
     let path = format!("characters.{}", profile.id);
     validate_namespaced_id(&format!("{path}.id"), &profile.id)?;
@@ -1297,21 +1666,31 @@ fn validate_runtime_profile(
                 "relationship source must equal its owning character",
             ));
         }
-        if !ids.contains(&relationship.target_character_id) {
+        let Some(target) = profiles.get(relationship.target_character_id.as_str()) else {
             return Err(pack_error(
                 CharacterDiagnosticCode::InvalidReference,
                 format!("{relationship_path}.target_character_id"),
                 "relationship target is absent from the pack",
             ));
-        }
+        };
         validate_namespaced_id(&format!("{relationship_path}.kind"), &relationship.kind)?;
-        if let Some(inverse) = &relationship.inverse_edge_id {
-            validate_local_id(&format!("{relationship_path}.inverse_edge_id"), inverse)?;
-            if !relationship_ids.contains(inverse) {
+        if let Some(inverse_id) = &relationship.inverse_edge_id {
+            validate_local_id(&format!("{relationship_path}.inverse_edge_id"), inverse_id)?;
+            let owner_inverse = profile.relationships.get(inverse_id);
+            let peer_inverse = target.relationships.get(inverse_id);
+            let valid = owner_inverse
+                .into_iter()
+                .chain(peer_inverse)
+                .any(|inverse| {
+                    inverse.source_character_id == relationship.target_character_id
+                        && inverse.target_character_id == relationship.source_character_id
+                        && inverse.inverse_edge_id.as_deref() == Some(id.as_str())
+                });
+            if !valid {
                 return Err(pack_error(
                     CharacterDiagnosticCode::InvalidReference,
                     format!("{relationship_path}.inverse_edge_id"),
-                    "inverse relationship edge is absent from the pack",
+                    "inverse relationship must be an exact reciprocal edge in this profile or the target profile",
                 ));
             }
         }
@@ -2084,7 +2463,7 @@ fn runtime_dialogue_template(
     })
 }
 
-fn runtime_relationship_ready(edge: &weave_character::RelationshipEdge) -> bool {
+fn runtime_relationship_ready(edge: &RelationshipEdge) -> bool {
     edge.freshness == Freshness::Current
         && approved_review(edge.review)
         && matches!(
@@ -2095,7 +2474,7 @@ fn runtime_relationship_ready(edge: &weave_character::RelationshipEdge) -> bool 
         )
 }
 
-fn runtime_assignment_ready(assignment: &weave_character::ExpressionTemplateAssignment) -> bool {
+fn runtime_assignment_ready(assignment: &ExpressionTemplateAssignment) -> bool {
     approved_review(assignment.review)
         && matches!(
             assignment.state,
@@ -2110,7 +2489,7 @@ fn approved_review(review: ReviewState) -> bool {
     matches!(review, ReviewState::NotRequired | ReviewState::Accepted)
 }
 
-fn extension_is_runtime_ready(header: &weave_character::ExtensionHeader) -> bool {
+fn extension_is_runtime_ready(header: &ExtensionHeader) -> bool {
     header.freshness == Freshness::Current && approved_review(header.review)
 }
 
@@ -2140,9 +2519,7 @@ fn role_extension(profile: &CharacterProfile) -> Option<&VersionedExtension<Role
     }
 }
 
-fn alignment_extension(
-    profile: &CharacterProfile,
-) -> Option<&VersionedExtension<weave_character::AlignmentView>> {
+fn alignment_extension(profile: &CharacterProfile) -> Option<&VersionedExtension<AlignmentView>> {
     match profile.extensions.get(ALIGNMENT_EXTENSION_NAMESPACE) {
         Some(CharacterExtension::AlignmentView(record)) => Some(record),
         _ => None,
@@ -2158,9 +2535,7 @@ fn relationship_extension(
     }
 }
 
-fn date_context_extension(
-    profile: &CharacterProfile,
-) -> Option<&VersionedExtension<weave_character::DateContext>> {
+fn date_context_extension(profile: &CharacterProfile) -> Option<&VersionedExtension<DateContext>> {
     match profile.extensions.get(DATE_CONTEXT_EXTENSION_NAMESPACE) {
         Some(CharacterExtension::DateContext(record)) => Some(record),
         _ => None,
@@ -2597,6 +2972,8 @@ fn validate_relative_path(path: &str, value: &str) -> Result<(), CharacterPackEr
     if value.is_empty()
         || value.starts_with('/')
         || value.contains('\\')
+        || value.contains(':')
+        || value.chars().any(char::is_control)
         || value
             .split('/')
             .any(|segment| segment.is_empty() || segment == "." || segment == "..")
@@ -2604,7 +2981,7 @@ fn validate_relative_path(path: &str, value: &str) -> Result<(), CharacterPackEr
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidReference,
             path,
-            "presentation references must be safe project-relative paths",
+            "presentation references must be safe project-relative paths without drive letters, schemes, or control characters",
         ));
     }
     Ok(())

@@ -4,24 +4,15 @@
 //! module aliases the crate root as `weave_character`, so this inclusion compiles it exactly as
 //! a library module while exercising the public contract from an integration test.
 
-use ::weave_character::*;
-
-#[allow(dead_code)]
-#[path = "../src/pack.rs"]
-mod pack;
-
-use pack::{
-    CHARACTER_PACK_FORMAT_VERSION, CharacterAuthoringPack, CharacterPackLicense,
-    CharacterPackLicenseNotice, CharacterPackMetadata, CharacterRuntimePack,
-    character_authoring_pack_schema, character_runtime_pack_schema,
-};
 use weave_character::{
+    CHARACTER_PACK_FORMAT_VERSION, CHARACTER_PACK_MAX_RECORDS, CharacterAuthoringPack,
     CharacterCollection, CharacterDiagnosticCode, CharacterExtension, CharacterHealthDiagnostic,
     CharacterHealthDiagnosticCode, CharacterHealthDiagnosticScope, CharacterHealthSeverity,
-    CharacterOverlay, CharacterTemplate, CharacterTemplateRef, EXPRESSION_EXTENSION_NAMESPACE,
-    ExpressionPack, ExpressionTextAuthority, Freshness, HexacoTrait,
-    RELATIONSHIP_EXTENSION_NAMESPACE, ReviewState, expression_pack_ref, synthesize_character,
-    template_fingerprint,
+    CharacterOverlay, CharacterPackLicense, CharacterPackLicenseNotice, CharacterPackMetadata,
+    CharacterRuntimePack, CharacterRuntimeProfile, CharacterTemplate, CharacterTemplateRef,
+    EXPRESSION_EXTENSION_NAMESPACE, ExpressionPack, ExpressionTextAuthority, Freshness,
+    HexacoTrait, RELATIONSHIP_EXTENSION_NAMESPACE, ReviewState, character_authoring_pack_schema,
+    character_runtime_pack_schema, expression_pack_ref, synthesize_character, template_fingerprint,
 };
 use weave_domain::{ProvenanceKind, ProvenanceSource};
 
@@ -131,7 +122,7 @@ fn json_contains_key(value: &serde_json::Value, needle: &str) -> bool {
     }
 }
 
-fn profile<'a>(pack: &'a CharacterRuntimePack, id: &str) -> &'a pack::CharacterRuntimeProfile {
+fn profile<'a>(pack: &'a CharacterRuntimePack, id: &str) -> &'a CharacterRuntimeProfile {
     pack.characters
         .iter()
         .find(|profile| profile.id == id)
@@ -696,4 +687,242 @@ fn template_and_override_lineage_is_independently_reproduced() {
         .validate()
         .expect_err("template fingerprint is stale");
     assert_eq!(error.diagnostic().code, CharacterDiagnosticCode::StaleInput);
+}
+
+fn duplicate_first_map_entry(ron: &str, marker: &str) -> String {
+    let start = ron
+        .find(marker)
+        .unwrap_or_else(|| panic!("map marker is present: {marker}"));
+    let content_start = start + marker.len();
+    let length = ron[content_start..]
+        .find('\n')
+        .expect("map entry line is present");
+    let line_end = content_start + length + 1;
+    let line = &ron[content_start..line_end];
+    format!("{}{}{}", &ron[..line_end], line, &ron[line_end..])
+}
+
+fn set_inverse(
+    pack: &mut CharacterAuthoringPack,
+    character_id: &str,
+    edge_id: &str,
+    inverse: Option<&str>,
+) {
+    for entry in &mut pack.characters {
+        if entry.profile.id != character_id {
+            continue;
+        }
+        if let Some(CharacterExtension::Relationships(record)) = entry
+            .profile
+            .extensions
+            .get_mut(RELATIONSHIP_EXTENSION_NAMESPACE)
+            && let Some(edge) = record.value.edges.get_mut(edge_id)
+        {
+            edge.inverse_edge_id = inverse.map(str::to_owned);
+        }
+    }
+}
+
+fn install_target_reciprocal_edges(pack: &mut CharacterAuthoringPack) {
+    for entry in &mut pack.characters {
+        let character_id = entry.profile.id.clone();
+        if let Some(CharacterExtension::Relationships(record)) = entry
+            .profile
+            .extensions
+            .get_mut(RELATIONSHIP_EXTENSION_NAMESPACE)
+        {
+            match character_id.as_str() {
+                ARI_VALE => {
+                    if let Some(edge) = record.value.edges.get_mut("mentor_sable") {
+                        edge.inverse_edge_id = Some("mentor_ari".to_owned());
+                    }
+                }
+                SABLE_REED => {
+                    let mut edge = record
+                        .value
+                        .edges
+                        .remove("mentor_sable")
+                        .expect("fixture edge");
+                    edge.id = "mentor_ari".to_owned();
+                    edge.inverse_edge_id = Some("mentor_sable".to_owned());
+                    record.value.edges.insert("mentor_ari".to_owned(), edge);
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
+fn install_owner_reciprocal_edges(pack: &mut CharacterAuthoringPack) {
+    for entry in &mut pack.characters {
+        if entry.profile.id != ARI_VALE {
+            continue;
+        }
+        if let Some(CharacterExtension::Relationships(record)) = entry
+            .profile
+            .extensions
+            .get_mut(RELATIONSHIP_EXTENSION_NAMESPACE)
+        {
+            let mut first = record
+                .value
+                .edges
+                .get("mentor_sable")
+                .expect("fixture edge")
+                .clone();
+            first.id = "self_a".to_owned();
+            first.target_character_id = ARI_VALE.to_owned();
+            first.inverse_edge_id = Some("self_b".to_owned());
+            let mut second = first.clone();
+            second.id = "self_b".to_owned();
+            second.inverse_edge_id = Some("self_a".to_owned());
+            record.value.edges.insert("self_a".to_owned(), first);
+            record.value.edges.insert("self_b".to_owned(), second);
+        }
+    }
+}
+
+#[test]
+fn ron_duplicate_map_keys_fail_closed() {
+    let authoring = authoring_pack();
+    let duplicated =
+        duplicate_first_map_entry(&authoring.to_ron().expect("authoring RON"), "colors: {\n");
+    let error = CharacterAuthoringPack::from_ron(&duplicated).expect_err("duplicate authoring key");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidEncoding
+    );
+    assert!(
+        error.to_string().contains("duplicate map key"),
+        "unexpected authoring error: {error}"
+    );
+
+    let runtime = authoring.to_runtime_pack().expect("runtime export");
+    let duplicated =
+        duplicate_first_map_entry(&runtime.to_ron().expect("runtime RON"), "palette: {\n");
+    let error = CharacterRuntimePack::from_ron(&duplicated).expect_err("duplicate runtime key");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidEncoding
+    );
+    assert!(error.to_string().contains("duplicate map key"));
+}
+
+#[test]
+fn inverse_relationship_edges_must_be_reciprocal_and_local() {
+    let mut authoring = authoring_pack();
+    install_target_reciprocal_edges(&mut authoring);
+    authoring
+        .validate()
+        .expect("target-profile reciprocal edges are accepted");
+    let runtime = authoring.to_runtime_pack().expect("runtime export");
+    runtime
+        .validate()
+        .expect("runtime target-profile reciprocal edges are accepted");
+
+    let mut owner = authoring_pack();
+    install_owner_reciprocal_edges(&mut owner);
+    owner
+        .validate()
+        .expect("owner-profile reciprocal edges are accepted");
+    owner
+        .to_runtime_pack()
+        .expect("runtime export")
+        .validate()
+        .expect("runtime owner-profile reciprocal edges are accepted");
+
+    let mut missing = authoring_pack();
+    set_inverse(
+        &mut missing,
+        ARI_VALE,
+        "mentor_sable",
+        Some("missing_inverse"),
+    );
+    let error = missing.validate().expect_err("missing inverse edge");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+
+    let mut unpaired = authoring_pack();
+    set_inverse(&mut unpaired, ARI_VALE, "mentor_sable", None);
+    unpaired
+        .validate()
+        .expect("an absent inverse id asserts no pairing");
+
+    let mut broken = authoring_pack();
+    install_target_reciprocal_edges(&mut broken);
+    let mut runtime_broken = broken.to_runtime_pack().expect("runtime export");
+    let sable = runtime_broken
+        .characters
+        .iter_mut()
+        .find(|character| character.id == SABLE_REED)
+        .expect("fixture character");
+    let edge = sable
+        .relationships
+        .get_mut("mentor_ari")
+        .expect("reciprocal runtime edge");
+    edge.inverse_edge_id = Some("different_edge".to_owned());
+    let error = runtime_broken
+        .validate()
+        .expect_err("non-reciprocal runtime edge");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+}
+
+#[test]
+fn relative_paths_reject_drive_schemes_and_control_characters() {
+    for invalid in ["C:/x", "C:x", "a:b", "a\u{0}b", "a\nb"] {
+        let mut runtime = authoring_pack().to_runtime_pack().expect("runtime export");
+        let ari = runtime
+            .characters
+            .iter_mut()
+            .find(|character| character.id == ARI_VALE)
+            .expect("fixture character");
+        let asset = ari
+            .presentation
+            .as_mut()
+            .expect("fixture presentation")
+            .assets
+            .first_mut()
+            .expect("fixture asset");
+        asset.path = invalid.to_owned();
+        let error = runtime.validate().expect_err("unsafe relative path");
+        assert_eq!(
+            error.diagnostic().code,
+            CharacterDiagnosticCode::InvalidReference,
+            "{invalid:?}"
+        );
+    }
+
+    authoring_pack()
+        .to_runtime_pack()
+        .expect("runtime export")
+        .validate()
+        .expect("fixture paths remain valid");
+}
+
+#[test]
+fn pack_record_caps_fail_closed() {
+    let mut over_health = authoring_pack();
+    over_health.health_diagnostics = (0..=CHARACTER_PACK_MAX_RECORDS)
+        .map(|index| diagnostic(&format!("pack_{index:05}")))
+        .collect();
+    let error = over_health.validate().expect_err("health diagnostic cap");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("4096"));
+
+    let overlay = CharacterOverlay::from_json(OVERLAY_JSON).expect("checked overlay");
+    let mut over_overrides = authoring_pack();
+    over_overrides.overrides = vec![overlay; CHARACTER_PACK_MAX_RECORDS + 1];
+    let error = over_overrides.validate().expect_err("override cap");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("4096"));
 }
