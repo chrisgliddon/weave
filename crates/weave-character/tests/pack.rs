@@ -926,3 +926,59 @@ fn pack_record_caps_fail_closed() {
     );
     assert!(error.to_string().contains("4096"));
 }
+
+#[test]
+fn ron_duplicate_keys_compare_decoded_spellings() {
+    let mixed = r#"(personality: { openness: 0, "openness": 1 })"#;
+    let error = CharacterRuntimePack::from_ron(mixed).expect_err("mixed spelling duplicate");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidEncoding
+    );
+    assert!(error.to_string().contains("duplicate map key"));
+
+    let escaped = r#"(personality: { openness: 0, "open\u{6e}ess": 1 })"#;
+    let error = CharacterRuntimePack::from_ron(escaped).expect_err("escaped duplicate");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidEncoding
+    );
+    assert!(error.to_string().contains("duplicate map key"));
+
+    let distinct = r#"(personality: { openness: 0, conscientiousness: 1 })"#;
+    let error = CharacterRuntimePack::from_ron(distinct).expect_err("incomplete pack");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidEncoding
+    );
+    assert!(!error.to_string().contains("duplicate map key"));
+}
+
+#[test]
+fn large_ron_map_scans_in_linear_time() {
+    let mut pack = authoring_pack();
+    let source_id = pack
+        .provenance
+        .sources
+        .first()
+        .expect("fixture provenance source")
+        .id
+        .clone();
+    for index in 0..20_000 {
+        pack.provenance.claims.insert(
+            format!("bulk.claim.{index:05}.presentation.reference"),
+            vec![source_id.clone()],
+        );
+    }
+    let ron = pack.to_ron().expect("large canonical RON");
+    assert!(ron.len() >= 1_000_000, "large fixture is at least 1 MiB");
+
+    let started = std::time::Instant::now();
+    let parsed = CharacterAuthoringPack::from_ron(&ron).expect("large RON parses");
+    let elapsed = started.elapsed();
+    assert_eq!(parsed, pack);
+    assert!(
+        elapsed < std::time::Duration::from_secs(30),
+        "large RON scan took {elapsed:?}"
+    );
+}

@@ -212,7 +212,7 @@ fn reject_duplicate_ron_map_keys(source: &str) -> Result<(), CharacterPackError>
             b'"' => {
                 let (key, next) = read_ron_string(bytes, index)?;
                 index = next;
-                record_ron_map_key(&mut stack, format!("s:{key}"))?;
+                record_ron_map_key(&mut stack, format!("k:{key}"))?;
             }
             b'\'' => {
                 let (key, next) = read_ron_char(bytes, index)?;
@@ -223,17 +223,17 @@ fn reject_duplicate_ron_map_keys(source: &str) -> Result<(), CharacterPackError>
                 if let Some((hashes, quote)) = ron_raw_string_start(bytes, index) {
                     let (key, next) = read_ron_raw_string(bytes, quote, hashes)?;
                     index = next;
-                    record_ron_map_key(&mut stack, format!("s:{key}"))?;
+                    record_ron_map_key(&mut stack, format!("k:{key}"))?;
                 } else {
                     let (key, next) = read_ron_identifier(bytes, index);
                     index = next;
-                    record_ron_map_key(&mut stack, format!("i:{key}"))?;
+                    record_ron_map_key(&mut stack, format!("k:{key}"))?;
                 }
             }
             _ if is_ron_identifier_start(byte) => {
                 let (key, next) = read_ron_identifier(bytes, index);
                 index = next;
-                record_ron_map_key(&mut stack, format!("i:{key}"))?;
+                record_ron_map_key(&mut stack, format!("k:{key}"))?;
             }
             _ if byte.is_ascii_digit() || byte == b'-' || byte == b'+' => {
                 let (key, next) = read_ron_number(bytes, index);
@@ -339,6 +339,10 @@ fn read_ron_string(bytes: &[u8], start: usize) -> Result<(String, usize), Charac
                 value.push(character);
                 index = next;
             }
+            byte if byte.is_ascii() => {
+                value.push(char::from(byte));
+                index += 1;
+            }
             _ => {
                 let (character, next) = read_ron_utf8_char(bytes, index)?;
                 value.push(character);
@@ -364,9 +368,21 @@ fn read_ron_char(bytes: &[u8], start: usize) -> Result<(String, usize), Characte
 }
 
 fn read_ron_utf8_char(bytes: &[u8], index: usize) -> Result<(char, usize), CharacterPackError> {
-    let remaining = std::str::from_utf8(&bytes[index..]).map_err(|_| encoding_error())?;
-    let character = remaining.chars().next().ok_or_else(encoding_error)?;
-    Ok((character, index + character.len_utf8()))
+    // The source is valid UTF-8, so the lead byte determines a bounded slice. Do not revalidate
+    // the entire remaining buffer per character.
+    let first = *bytes.get(index).ok_or_else(encoding_error)?;
+    let length = match first {
+        0x00..=0x7F => 1,
+        0xC2..=0xDF => 2,
+        0xE0..=0xEF => 3,
+        0xF0..=0xF4 => 4,
+        _ => return Err(encoding_error()),
+    };
+    let end = index + length;
+    let window = bytes.get(index..end).ok_or_else(encoding_error)?;
+    let text = std::str::from_utf8(window).map_err(|_| encoding_error())?;
+    let character = text.chars().next().ok_or_else(encoding_error)?;
+    Ok((character, end))
 }
 
 fn read_ron_escape(bytes: &[u8], index: usize) -> Result<(char, usize), CharacterPackError> {
