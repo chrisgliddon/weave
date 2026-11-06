@@ -43,6 +43,10 @@ Prose typed into a beat card becomes the knot's first prose line. A branch label
 
 Text that Weave would read as a command, such as a line starting with `*`, `->`, or `===`, is refused with a message instead of being written into source. Use the card controls for those constructs.
 
+### Outline
+
+The **Outline** tab lists beats in story order with their branches nested underneath. Arrow keys move the selection, `Enter` selects the graph card and opens the knot, and a click does the same. `Alt+Up` and `Alt+Down` move the selected beat in story order; on a branch row they swap it with its neighbour. Moves stop at the ends and take one undo entry. Moving a beat to the front changes the story entry, and the status line says so.
+
 ### Rich and source knot editing
 
 Selecting a beat or branch opens that knot in the right-hand panel. **Rich** mode lists its blocks — prose, choices, diverts, threads, cues, declarations, and end — with an **Edit** control on prose and choices, a **Remove** control where removal is safe, and buttons to add prose or a choice.
