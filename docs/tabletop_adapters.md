@@ -469,6 +469,153 @@ must fail exactly one check each — changed source hash, missing source hash, n
 non-deterministic creation, missing notice, permissive resolver, policy licence mismatch, and
 redistributed forbidden file — so the harness itself cannot silently stop detecting regressions.
 
+## Portable adapter catalog
+
+`examples/tabletop-adapters/catalog/catalog.json` is the machine-readable index of every adapter
+shipped in this build. For each adapter it records:
+
+- the exact id, version, state-schema version, namespace, title, and factual compatibility label;
+- the licence expression, licence URL, source class, source URL, exact artifact, revision, retrieval
+  date, and SHA-256;
+- covered sections, exclusions, attribution, retained licence text, notices, and forbidden files;
+- declared capabilities, ordered creation steps, and resolver operations; and
+- conformance status and the standard checks that apply.
+
+The file is derived data. `crates/weave-tabletop/tests/catalog.rs` rebuilds it from the live
+`*_manifest()` functions, `standard_source_policy()`, and `standard_suite()`, then fails when the
+checked-in file differs. A changed capability, operation, licence, source digest, or conformance
+registration therefore cannot enter a release silently.
+
+`conformance.status` is `standard_suite_registered` when the adapter appears in
+`conformance::standard_suite()`, and `not_registered` otherwise. Unregistered adapters still appear
+in the catalog with an empty `checks` list, so the shipped surface stays visible.
+
+Regenerate the catalog only after the manifest and policy change is reviewed:
+
+```bash
+WEAVE_WRITE_ADAPTER_CATALOG=1 cargo test -p weave-tabletop --test catalog -- --ignored
+cargo test -p weave-tabletop --test catalog
+```
+
+## Adding an adapter
+
+An adapter is inert declarative data plus an optional trusted resolver. You do not change the
+conformance checks, compiler, editor, or runtime to add one. Work through these steps in order.
+
+### 1. Manifest
+
+Add a `<name>_manifest()` function that returns an `AdapterManifest` in the adapter module. It must
+declare format 1, a globally namespaced id such as `org.weave.tabletop.<name>`, a semantic version,
+a positive `schema_version`, and a `namespace` that is a segment of the id. It also declares:
+
+- `title`, a factual `compatibility_label`, `summary`, `weave_version`, and
+  `character_contract_version`;
+- `declarative_data_with_registered_resolver` with resolver contract version 1;
+- a sorted subset of the closed capability vocabulary;
+- bounded reusable types plus the immutable definition and mutable state types;
+- ordered creation steps whose fields are adapter-owned or optional canonical suggestions;
+- named operations with one required capability, a request type, typed event kinds, and an exact
+  `consumes_entropy` declaration;
+- the fixed v1 visibility matrix, optional reviewed migrations, and the complete provenance record.
+
+Call `validate_adapter_manifest` in a test. Unknown fields, unbounded types, duplicate symbols,
+undeclared capabilities, and secret-shaped text must fail.
+
+### 2. Resolver
+
+Implement `TabletopResolver` only when a rule procedure cannot be declarative. Register it with
+`ResolverRegistry::register` for one exact adapter id and version. The resolver must:
+
+- accept only the operation ids, request types, payload types, and event kinds declared by the
+  manifest;
+- consume entropy exactly when the operation declares it, using the supplied `EntropyStream`;
+- return typed events and complete next state, or an error that leaves prior state unchanged; and
+- never receive an editor, filesystem, network client, clock, Bevy world, PixiJS application, or
+  Character write-back handle.
+
+Registration is explicit host code. Opening a pack never loads or runs code.
+
+### 3. Source-policy row
+
+Add a `pub const <NAME>_SOURCE_POLICY: AdapterSourcePolicy` row in
+`crates/weave-tabletop/src/conformance/policy.rs` and include it in `standard_source_policy()`.
+The row repeats the exact namespace, licence, source class, source digest, required licence text
+file and digest, required notices, required notice files, and forbidden file names.
+
+The only accepted source-class and licence pairs are:
+
+| Source class | Exact licence |
+|---|---|
+| `original` | `MIT` |
+| `verified_cc0` | `CC0-1.0` |
+| `separately_licensed_apache2` | `Apache-2.0` |
+
+An Apache-2.0 pack must retain the full licence text and required notices, mark its
+modifications, and never be described as MIT-only.
+
+### 4. Conformance descriptor
+
+Implement `ConformanceAdapter` for the adapter and register one descriptor in
+`conformance::standard_suite()`. The descriptor supplies:
+
+- `adapter_id`, which must equal the manifest id;
+- `manifest()` and a fresh trusted `resolver()`;
+- `create(seed)`, which must produce byte-identical canonical output for the same seed;
+- `scenario(creation)`, which must exercise declared operations and consume entropy where
+  declared; and
+- `source_bundle()`, which declares exact bytes or digests for every primary artifact, companion,
+  retained licence, and notice.
+
+The suite owns every check. Adding an adapter changes no check logic.
+
+### 5. Fixtures
+
+Add `examples/tabletop-adapters/<name>/` with a README, `SOURCE.lock.json`, the manifest as JSON
+and RON, a deterministic creation request and preview, state, request and receipt, selection,
+Character projection, runtime artifacts, and the retained licence text. Add
+`crates/weave-tabletop/tests/<name>.rs`.
+
+All names, prose, settings, adventures, factions, UI copy, and expected outputs must be original
+or synthetic. Never copy upstream prose, art, layout, or community material into a fixture.
+
+### 6. Provenance rules
+
+Every adapter, including an independently authored one, records:
+
+- a public HTTPS source URL;
+- exact primary and companion artifact names, with revision, release, tag, commit, or authored
+  revision;
+- the retrieval date and SHA-256 of the exact covered bytes;
+- the source class, exact SPDX licence expression, and public licence URL;
+- covered files or sections, exclusions, attribution, retained licence text and digest, notices,
+  and a factual compatibility and non-endorsement statement.
+
+Exclude community supplements, logos, trade dress, artwork, layout, fonts, and unverified assets.
+System names may appear only as courteous factual compatibility labels. They never imply
+affiliation, sponsorship, or endorsement.
+
+The validator is offline. Acquiring or updating an upstream artifact is a separate reviewed
+process, and a changed hash or missing exclusion must fail the gate.
+
+### 7. Catalog
+
+Add the manifest function to `live_manifests()` in `crates/weave-tabletop/tests/catalog.rs`, then
+regenerate and verify the catalog as shown above. A source-policy row without a listed manifest
+also fails the catalog test.
+
+### 8. Verification commands
+
+Run these from a local checkout:
+
+```bash
+cargo test -p weave-tabletop --test <name>
+cargo test -p weave-tabletop --test conformance
+cargo test -p weave-tabletop --test catalog
+cargo test -p weave-tabletop
+cargo clippy -p weave-tabletop --all-targets -- -D warnings
+rustfmt --edition 2024 --check crates/weave-tabletop/tests/catalog.rs
+```
+
 ## Applied switches, archives, and audit
 
 `preview_adapter_switch` remains the manifest-only, non-mutating check. Hosts that hold installed

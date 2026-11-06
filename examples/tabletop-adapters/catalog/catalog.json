@@ -1,0 +1,1922 @@
+{
+  "catalog_format_version": 1,
+  "adapters": [
+    {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "plug_and_play",
+      "title": "Plug-And-Play compatible adapter",
+      "compatibility_label": "Compatible with the CC0 Plug-And-Play rules; not endorsed by its creator",
+      "summary": "An independently implemented, deterministic adapter for quick d6 character creation, checks, Fortune, combat, group action, card initiative, and bounded chases.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "derived_values",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "equipment_and_abilities",
+          "version": 1
+        },
+        {
+          "id": "encounters",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "identity",
+          "title": "Character identity",
+          "required_capability": "character_creation",
+          "fields": [
+            "name",
+            "age"
+          ]
+        },
+        {
+          "id": "ratings",
+          "title": "Ratings",
+          "required_capability": "character_creation",
+          "fields": [
+            "creation_mode",
+            "seed",
+            "agility",
+            "brains",
+            "brawn",
+            "wits",
+            "fortune"
+          ]
+        },
+        {
+          "id": "survivability",
+          "title": "Survivability",
+          "required_capability": "derived_values",
+          "fields": [
+            "survivability_body",
+            "survivability_mind"
+          ]
+        },
+        {
+          "id": "details",
+          "title": "Balanced modifiers and inventory",
+          "required_capability": "character_creation",
+          "fields": [
+            "modifiers",
+            "inventory"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "attack",
+          "title": "Resolve an attack",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "attack_resolved",
+            "entropy_trace",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "chase",
+          "title": "Resolve a bounded chase",
+          "required_capability": "encounters",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "chase_resolved",
+            "entropy_trace"
+          ]
+        },
+        {
+          "id": "check",
+          "title": "Resolve a check",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "check_resolved",
+            "entropy_trace",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "fortune_test",
+          "title": "Resolve a Fortune test",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "fortune_test_resolved"
+          ]
+        },
+        {
+          "id": "group_check",
+          "title": "Resolve a group check",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "group_check_resolved"
+          ]
+        },
+        {
+          "id": "initiative",
+          "title": "Draw card initiative",
+          "required_capability": "encounters",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "initiative_ordered"
+          ]
+        },
+        {
+          "id": "take_damage",
+          "title": "Apply damage",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "damage_applied",
+            "resource_changed"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://distilledproductions.itch.io/plug-and-play",
+        "exact_artifact": "Plug-And-Play Rules.pdf",
+        "revision": "PDF metadata 2024-11-27; official release files retrieved 2026-08-24",
+        "retrieved_on": "2026-08-24",
+        "sha256": "4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e",
+        "attribution": "Compatibility implementation for Plug-And-Play by Olav Jakobson Digranes, distributed under CC0-1.0 by Distilled Productions Limited. Adapter code, fixtures, prose, and scenarios are independently authored for Weave.",
+        "covered_files_or_sections": [
+          "d6, d3, and d2 terminology",
+          "checks, difficulty, criticals, fumbles, advantage, and disadvantage",
+          "combat hit, damage, healing boundary, and wounds",
+          "character ratings, Fortune, Survivability, balanced modifiers, and inventory",
+          "group checks, card initiative, and bounded chases"
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [
+          {
+            "source_url": "https://distilledproductions.itch.io/plug-and-play",
+            "exact_artifact": "Plug-And-Play Character Sheet.pdf",
+            "revision": "PDF metadata 2024-11-27; official release file retrieved 2026-08-24",
+            "retrieved_on": "2026-08-24",
+            "sha256": "dfaf6f01a25773aa311f3662dff2c975096544b675c11dac5f4bf0ac42938d8b",
+            "media_type": "application/pdf",
+            "purpose": "Verify the official field inventory: name, age, four regular attributes, Fortune, Survivability, two modifiers, inventory, and notes.",
+            "redistributed": false
+          }
+        ],
+        "notices": [
+          "The official PDFs are hash-pinned inputs and are not redistributed with Weave.",
+          "Factual compatibility naming does not imply sponsorship or endorsement."
+        ],
+        "compatibility_statement": "This adapter is an independent compatibility implementation for the CC0 Plug-And-Play rules. It does not bundle the official PDFs, branding, artwork, or layout and is not endorsed by the original creator.",
+        "policy": {
+          "namespace": "plug_and_play",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "The official PDFs are hash-pinned inputs and are not redistributed with Weave.",
+            "Factual compatibility naming does not imply sponsorship or endorsement."
+          ],
+          "forbidden_files": [
+            "Plug-And-Play Rules.pdf",
+            "Plug-And-Play Character Sheet.pdf"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "dungeonpunk",
+      "title": "Dungeonpunk compatible adapter",
+      "compatibility_label": "Compatible with the CC0 Dungeonpunk core rules; not endorsed by its creators",
+      "summary": "An independently implemented d6-pool adapter for creation, Struggle outcomes, Stress and HP, gear load and Brace, impairment, growth, clocks, threats, and structured GM moves.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "derived_values",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "equipment_and_abilities",
+          "version": 1
+        },
+        {
+          "id": "advancement",
+          "version": 1
+        },
+        {
+          "id": "encounters",
+          "version": 1
+        },
+        {
+          "id": "clocks",
+          "version": 1
+        },
+        {
+          "id": "campaign_state",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "identity",
+          "title": "Character identity",
+          "required_capability": "character_creation",
+          "fields": [
+            "name"
+          ]
+        },
+        {
+          "id": "attributes",
+          "title": "Allocate attributes",
+          "required_capability": "character_creation",
+          "fields": [
+            "attributes",
+            "seed"
+          ]
+        },
+        {
+          "id": "moves",
+          "title": "Choose special moves",
+          "required_capability": "equipment_and_abilities",
+          "fields": [
+            "special_moves"
+          ]
+        },
+        {
+          "id": "gear_and_bonds",
+          "title": "Gear, load, and bonds",
+          "required_capability": "character_creation",
+          "fields": [
+            "gear",
+            "bonds"
+          ]
+        },
+        {
+          "id": "campaign",
+          "title": "Campaign clocks and threats",
+          "required_capability": "campaign_state",
+          "fields": [
+            "clocks",
+            "threats"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "damage",
+          "title": "Roll and apply damage",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "damage_applied",
+            "death_resolved",
+            "entropy_trace",
+            "equipment_changed",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "death_check",
+          "title": "Resolve a FATE death check",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "death_resolved",
+            "entropy_trace",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "gm_move",
+          "title": "Select a structured GM move",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "gm_move_selected"
+          ]
+        },
+        {
+          "id": "grow",
+          "title": "Spend XP on growth",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "advancement_applied",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "harm_threat",
+          "title": "Roll harm against a threat",
+          "required_capability": "encounters",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "threat_changed"
+          ]
+        },
+        {
+          "id": "harm_threat_minor",
+          "title": "Apply minor harm to a threat",
+          "required_capability": "encounters",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "threat_changed"
+          ]
+        },
+        {
+          "id": "impairment",
+          "title": "Set or resolve an impairment",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "impairment_changed"
+          ]
+        },
+        {
+          "id": "minor_damage",
+          "title": "Apply minor damage",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "damage_applied",
+            "death_resolved",
+            "equipment_changed",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "rest",
+          "title": "Rest and recover",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "resource_changed",
+            "rest_resolved"
+          ]
+        },
+        {
+          "id": "struggle",
+          "title": "Resolve Struggle",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "gm_move_prompt",
+            "help_applied",
+            "resource_changed",
+            "roll_resolved",
+            "struggle_resolved"
+          ]
+        },
+        {
+          "id": "survival_decision",
+          "title": "Resolve a survival offer",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "death_resolved",
+            "resource_changed"
+          ]
+        },
+        {
+          "id": "tick_clock",
+          "title": "Tick a campaign clock",
+          "required_capability": "clocks",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "clock_changed",
+            "clock_triggered"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+        "exact_artifact": "dungeonpunk-google-doc.pdf",
+        "revision": "google-doc-revision-15499",
+        "retrieved_on": "2026-08-25",
+        "sha256": "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209",
+        "attribution": "Compatibility implementation for Dungeonpunk by Ash McAllan, with the official core document released under CC0-1.0. Adapter code, fixture prose, scenarios, and UI summaries are independently authored for Weave.",
+        "covered_files_or_sections": [
+          "six attributes, fixed FATE and NONE ratings, creation points, HP, Stress, XP, gear, and bonds",
+          "positive and non-positive d6 pools, outcome bands, help, push, advantage, disadvantage, and Struggle choices",
+          "encumbrance, rest, damage tiers, impairment, collapse, death, Brace, and growth",
+          "core archetype move inventory, campaign clocks, threats, foes, armor, and GM move categories"
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [
+          {
+            "source_url": "https://docs.google.com/document/d/1hzbh6dLCUvYBhDJZzk4qlPOZLPlYZmSxZigGrw29EZE/edit?usp=sharing",
+            "exact_artifact": "dungeonpunk-google-doc.txt",
+            "revision": "google-doc-revision-15499",
+            "retrieved_on": "2026-08-25",
+            "sha256": "85832950a335d4f8a4217e69fcefb88fc88a6a125cd663ea905d32e20bdebe2f",
+            "media_type": "text/plain",
+            "purpose": "Pin the stable textual content independently from the Google PDF renderer and confirm the reviewed revision's semantic rules surface.",
+            "redistributed": false
+          }
+        ],
+        "notices": [
+          "The official release page is https://acegiak.itch.io/dungeonpunk.",
+          "The official PDF and text exports are audit inputs and are not redistributed with Weave.",
+          "The community wiki and every third-party supplement remain outside this adapter's reviewed source boundary."
+        ],
+        "compatibility_statement": "This adapter is an independent compatibility implementation for the CC0 Dungeonpunk core rules. It does not bundle the official document, branding, artwork, layout, community wiki, or supplements and is not endorsed by the original creators.",
+        "policy": {
+          "namespace": "dungeonpunk",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "The official release page is https://acegiak.itch.io/dungeonpunk.",
+            "The official PDF and text exports are audit inputs and are not redistributed with Weave.",
+            "The community wiki and every third-party supplement remain outside this adapter's reviewed source boundary."
+          ],
+          "forbidden_files": [
+            "dungeonpunk-google-doc.pdf",
+            "dungeonpunk-google-doc.txt"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "freehack",
+      "title": "Freehack 2.1 adapter",
+      "compatibility_label": "Compatible with Freehack 2.1",
+      "summary": "Setting-neutral campaign-defined characters, exact host resolution, generic tracks, memory, and simultaneous sections with explicit authority/public boundaries.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "scenes",
+          "version": 1
+        },
+        {
+          "id": "campaign_state",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "campaign",
+          "title": "Campaign procedure",
+          "required_capability": "character_creation",
+          "fields": [
+            "campaign_schema"
+          ]
+        },
+        {
+          "id": "identity_and_modifiers",
+          "title": "Identity and modifiers",
+          "required_capability": "character_creation",
+          "fields": [
+            "name",
+            "archetype",
+            "modifiers"
+          ]
+        },
+        {
+          "id": "features_and_inventory",
+          "title": "Features, inventory, and memories",
+          "required_capability": "character_creation",
+          "fields": [
+            "features",
+            "inventory",
+            "memories"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "advance_track",
+          "title": "Advance a generic track",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "track_advanced",
+            "track_advanced_authority",
+            "track_completed",
+            "track_completed_authority"
+          ]
+        },
+        {
+          "id": "cancel_submission",
+          "title": "Cancel a pending action",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "submission_cancelled",
+            "submission_cancelled_authority"
+          ]
+        },
+        {
+          "id": "create_track",
+          "title": "Create a generic track",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "track_created",
+            "track_created_authority"
+          ]
+        },
+        {
+          "id": "open_section",
+          "title": "Open a section turn",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "section_opened"
+          ]
+        },
+        {
+          "id": "preview_probability",
+          "title": "Preview exact success probability",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "probability_previewed",
+            "probability_previewed_authority"
+          ]
+        },
+        {
+          "id": "recall_memory",
+          "title": "Resolve prior experience",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "memory_resolved",
+            "memory_resolved_authority"
+          ]
+        },
+        {
+          "id": "resolve_check",
+          "title": "Resolve a host-authoritative check",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "check_resolved",
+            "check_resolved_authority",
+            "entropy_trace"
+          ]
+        },
+        {
+          "id": "resolve_section",
+          "title": "Resolve simultaneous submissions",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "section_resolved",
+            "section_resolved_authority"
+          ]
+        },
+        {
+          "id": "submit_action",
+          "title": "Submit one simultaneous action",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "submission_recorded",
+            "submission_recorded_authority"
+          ]
+        },
+        {
+          "id": "timeout_section",
+          "title": "Time out a section turn",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "section_timed_out",
+            "section_timed_out_authority"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://amini-allight.itch.io/freehack",
+        "exact_artifact": "freehack.pdf",
+        "revision": "2.1 (released 2026-07-13)",
+        "retrieved_on": "2026-08-25",
+        "sha256": "ca5c0420ec05884c1b0182f2a5857a4991e23573e10b9e28ecb009157e8ad393",
+        "attribution": "Freehack was created by Amini Allight and released under CC0-1.0; Weave's adapter implementation, fixtures, schemas, and explanatory copy are independently authored.",
+        "covered_files_or_sections": [
+          "Freehack 2.1 core mechanics: modifiers, rolls, tracks, sections, creation, and memory.",
+          "Exact integer behavior cross-checked against the official roll tool."
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [
+          {
+            "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.md",
+            "exact_artifact": "src/freehack.md",
+            "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+            "retrieved_on": "2026-08-25",
+            "sha256": "cfb7910f9dfe73335bb575df107712735a7c806a4a392599958f8f4298be2c64",
+            "media_type": "text/markdown",
+            "purpose": "Exact source text reviewed for the core behavior boundary.",
+            "redistributed": false
+          },
+          {
+            "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/src/freehack.yml",
+            "exact_artifact": "src/freehack.yml",
+            "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+            "retrieved_on": "2026-08-25",
+            "sha256": "a4b2d8bbe45b4d2f96e8ac161999d35fec5f27d4908f004bbfed871e1f1655f0",
+            "media_type": "application/yaml",
+            "purpose": "Publication metadata reviewed with the source revision.",
+            "redistributed": false
+          },
+          {
+            "source_url": "https://gitlab.com/amini-allight/freehack/-/raw/c98ac40f6b0bee2504c5c436dea2841a5d511ad9/tools/roll.py",
+            "exact_artifact": "tools/roll.py",
+            "revision": "c98ac40f6b0bee2504c5c436dea2841a5d511ad9",
+            "retrieved_on": "2026-08-25",
+            "sha256": "838ee10829d00fce8a66416f85401de48fc3927fa9a0b3536137e6007b9aed19",
+            "media_type": "text/x-python",
+            "purpose": "Official executable reference used to cross-check result bands.",
+            "redistributed": false
+          }
+        ],
+        "notices": [
+          "Only hashes and independently authored behavior are bundled; the upstream PDF, icon, stylesheet, and page layout are excluded.",
+          "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport."
+        ],
+        "compatibility_statement": "Freehack is named only to describe rules compatibility. This project is independent and does not imply endorsement by the original creator.",
+        "policy": {
+          "namespace": "freehack",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "ca5c0420ec05884c1b0182f2a5857a4991e23573e10b9e28ecb009157e8ad393",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "Only hashes and independently authored behavior are bundled; the upstream PDF, icon, stylesheet, and page layout are excluded.",
+            "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport."
+          ],
+          "forbidden_files": [
+            "freehack.pdf",
+            "src/freehack.md",
+            "src/freehack.yml",
+            "tools/roll.py"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.wicked_ones",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "wicked_ones",
+      "title": "Wicked Ones v1.4 adapter",
+      "compatibility_label": "Compatible with Wicked Ones v1.4",
+      "summary": "CC0 Wicked Ones characters with Callings, grouped action ratings, dark impulses, Stress, dark hearts, action rolls, resistance, teamwork, flashbacks, and explicit condition transitions.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "equipment_and_abilities",
+          "version": 1
+        },
+        {
+          "id": "advancement",
+          "version": 1
+        },
+        {
+          "id": "clocks",
+          "version": 1
+        },
+        {
+          "id": "factions",
+          "version": 1
+        },
+        {
+          "id": "world_state",
+          "version": 1
+        },
+        {
+          "id": "campaign_state",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "core_identity",
+          "title": "Identity and Calling",
+          "required_capability": "character_creation",
+          "fields": [
+            "name",
+            "race",
+            "look",
+            "calling"
+          ]
+        },
+        {
+          "id": "actions",
+          "title": "Actions, impulse, and revelry",
+          "required_capability": "character_creation",
+          "fields": [
+            "actions",
+            "dark_impulse",
+            "revelry"
+          ]
+        },
+        {
+          "id": "abilities_and_friend",
+          "title": "Abilities and vile friend",
+          "required_capability": "character_creation",
+          "fields": [
+            "abilities",
+            "vile_friend"
+          ]
+        },
+        {
+          "id": "gear_and_resources",
+          "title": "Gear and resources",
+          "required_capability": "character_creation",
+          "fields": [
+            "gear",
+            "resources"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "adjust_faction_clock",
+          "title": "Adjust a faction clock",
+          "required_capability": "factions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "faction_clock_changed"
+          ]
+        },
+        {
+          "id": "advance_campaign_phase",
+          "title": "Advance the campaign phase",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "campaign_phase_changed"
+          ]
+        },
+        {
+          "id": "advance_master_plan",
+          "title": "Advance the master plan",
+          "required_capability": "factions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "master_plan_advanced"
+          ]
+        },
+        {
+          "id": "apply_shock",
+          "title": "Apply Shock",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "condition_changed",
+            "shock_applied"
+          ]
+        },
+        {
+          "id": "death_knell",
+          "title": "Record the final death knell",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "condition_changed",
+            "death_knell_recorded"
+          ]
+        },
+        {
+          "id": "engage_raid",
+          "title": "Engage a planned raid",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "raid_engagement_ready"
+          ]
+        },
+        {
+          "id": "flashback",
+          "title": "Declare a flashback",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "flashback_recorded"
+          ]
+        },
+        {
+          "id": "gain_dark_heart",
+          "title": "Gain a dark heart",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "dark_heart_gained"
+          ]
+        },
+        {
+          "id": "go_feral",
+          "title": "Go feral",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "condition_changed"
+          ]
+        },
+        {
+          "id": "pause_campaign",
+          "title": "Pause the campaign",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "campaign_paused"
+          ]
+        },
+        {
+          "id": "perform_downtime_action",
+          "title": "Perform a downtime action",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "downtime_action_resolved"
+          ]
+        },
+        {
+          "id": "perform_recovery",
+          "title": "Recover during the recovery phase",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "recovery_performed"
+          ]
+        },
+        {
+          "id": "plan_raid",
+          "title": "Plan and review a raid",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "raid_planned"
+          ]
+        },
+        {
+          "id": "purchase_upgrade",
+          "title": "Purchase a dungeon upgrade",
+          "required_capability": "equipment_and_abilities",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "upgrade_purchased"
+          ]
+        },
+        {
+          "id": "resolve_action",
+          "title": "Resolve an action roll",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "action_resolved",
+            "condition_changed"
+          ]
+        },
+        {
+          "id": "resolve_calamity",
+          "title": "Resolve a calamity",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "calamity_resolved"
+          ]
+        },
+        {
+          "id": "resolve_dungeon_event",
+          "title": "Resolve a dungeon event",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "dungeon_event_resolved"
+          ]
+        },
+        {
+          "id": "resolve_raid_outcome",
+          "title": "Resolve a raid outcome",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "raid_blowback",
+            "raid_loot_resolved"
+          ]
+        },
+        {
+          "id": "resume_campaign",
+          "title": "Resume the campaign",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "campaign_resumed"
+          ]
+        },
+        {
+          "id": "set_campaign",
+          "title": "Replace campaign state",
+          "required_capability": "campaign_state",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "campaign_initialized"
+          ]
+        },
+        {
+          "id": "spend_reckless_advancement",
+          "title": "Spend a reckless advancement",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "reckless_advancement_spent"
+          ]
+        },
+        {
+          "id": "spend_wicked_advancement",
+          "title": "Spend a Wicked advancement",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "wicked_advancement_spent"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://www.kickstarter.com/projects/banditcamp/wo-ua-hardcover",
+        "exact_artifact": "SOURCE_RECORD.txt",
+        "revision": "v1.4",
+        "retrieved_on": "2026-11-06",
+        "sha256": "c3d2ca581eacb12afca452d75eae83e925d5be46662f08a04f383584fde276b0",
+        "attribution": "Wicked Ones was created by Ben Nielson and published by Bandit Camp; the core game was released under CC0-1.0 in January 2024. Weave's adapter implementation, fixtures, schemas, and explanatory copy are independently authored.",
+        "covered_files_or_sections": [
+          "Wicked Ones v1.4 core game text released under CC0-1.0.",
+          "Character creation, Callings, action ratings grouped by Brains, Muscles, and Guts, dark impulse, revelry, gear, abilities, vile friend, and resources.",
+          "Action rolls with intention, approach, position and effect, teamwork, going hard, resistance, and outcomes.",
+          "Stress, dark hearts, flashbacks, shock, bloodied, feral, death, and the final death knell."
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [],
+        "notices": [
+          "War for the Overworld and Undead Awakening content remains owned by its author and is denied by this adapter; no such material appears in this module or its fixtures.",
+          "The primary digest covers the checked-in SOURCE_RECORD.txt text record, not a downloaded rulebook. The record states the canonical URL, CC0-1.0 licence, and v1.4 edition."
+        ],
+        "compatibility_statement": "Wicked Ones is named only to describe rules compatibility. This project is independent and does not imply endorsement by the original creator or publisher.",
+        "policy": {
+          "namespace": "wicked_ones",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "c3d2ca581eacb12afca452d75eae83e925d5be46662f08a04f383584fde276b0",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "War for the Overworld and Undead Awakening content remains owned by its author and is denied by this adapter; no such material appears in this module or its fixtures.",
+            "The primary digest covers the checked-in SOURCE_RECORD.txt text record, not a downloaded rulebook. The record states the canonical URL, CC0-1.0 licence, and v1.4 edition."
+          ],
+          "forbidden_files": [
+            "War for the Overworld",
+            "Undead Awakening"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.spark",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "spark",
+      "title": "Spark adapter",
+      "compatibility_label": "Compatible with The Spark Roleplaying Game core rules",
+      "summary": "Independently authored Spark core mechanics: Beliefs, relationships, step-die attributes, tiered Talents, declarations, supporters, Influence, Harm, competitive conflicts, escalation, victory costs, and scene review.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "advancement",
+          "version": 1
+        },
+        {
+          "id": "scenes",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "identity",
+          "title": "Identity and concept",
+          "required_capability": "character_creation",
+          "fields": [
+            "name",
+            "concept"
+          ]
+        },
+        {
+          "id": "beliefs",
+          "title": "Beliefs",
+          "required_capability": "character_creation",
+          "fields": [
+            "beliefs"
+          ]
+        },
+        {
+          "id": "relationships",
+          "title": "Relationships",
+          "required_capability": "character_creation",
+          "fields": [
+            "relationships"
+          ]
+        },
+        {
+          "id": "attributes",
+          "title": "Attributes",
+          "required_capability": "character_creation",
+          "fields": [
+            "attributes"
+          ]
+        },
+        {
+          "id": "talents",
+          "title": "Talents",
+          "required_capability": "character_creation",
+          "fields": [
+            "talents"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "add_supporter",
+          "title": "Add a supporter",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "supporter_added"
+          ]
+        },
+        {
+          "id": "boost_roll",
+          "title": "Boost a rolled declaration",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "boost_applied",
+            "harm_changed",
+            "influence_changed"
+          ]
+        },
+        {
+          "id": "close_scene",
+          "title": "Close a scene",
+          "required_capability": "scenes",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "belief_reviewed",
+            "harm_changed",
+            "influence_changed",
+            "scene_closed"
+          ]
+        },
+        {
+          "id": "declare_action",
+          "title": "Declare an action",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "declaration_registered"
+          ]
+        },
+        {
+          "id": "open_conflict",
+          "title": "Open a competitive conflict",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "conflict_opened"
+          ]
+        },
+        {
+          "id": "replace_belief",
+          "title": "Replace a Belief through Inspiration",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "belief_replaced",
+            "growth_changed"
+          ]
+        },
+        {
+          "id": "resolve_conflict",
+          "title": "Resolve a rolled conflict",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "conflict_escalated",
+            "conflict_resolved",
+            "harm_changed",
+            "influence_changed",
+            "victory_cost_paid"
+          ]
+        },
+        {
+          "id": "roll_conflict",
+          "title": "Roll a conflict",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "entropy_trace",
+            "roll_recorded"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://www.genesisoflegend.com/the-spark-rpg/",
+        "exact_artifact": "spark-source-record.txt",
+        "revision": "Spark Roleplaying Game core rules source record",
+        "retrieved_on": "2026-11-06",
+        "sha256": "3eacf5d0eb87873af6e5974bcc0d863c641c35ecbe1fef2d810315000fa3ec46",
+        "attribution": "The Spark Roleplaying Game was created by Jason Pitre and published by Genesis of Legend Publishing; its game text is released under CC0-1.0. Weave's adapter, fixtures, schemas, and explanatory copy are independently authored.",
+        "covered_files_or_sections": [
+          "Checked-in source record in spark.rs: canonical URL, creator, publisher, edition, and CC0-1.0 licence.",
+          "Spark core mechanics: identity, concept, Beliefs, relationships, step-die attributes, tiered Talents, declarations, supporters, Influence, Harm, conflicts, escalation, victory costs, scene review, and recovery."
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [],
+        "notices": [
+          "Only independently authored core-mechanics behavior and the in-module source record are bundled; no downloaded upstream file is redistributed.",
+          "Spark example settings, logos, artwork, fonts, and presentation layout are excluded.",
+          "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download."
+        ],
+        "compatibility_statement": "The Spark Roleplaying Game is named only to describe rules compatibility. This project is independent and does not imply endorsement by Jason Pitre or Genesis of Legend Publishing.",
+        "policy": {
+          "namespace": "spark",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "3eacf5d0eb87873af6e5974bcc0d863c641c35ecbe1fef2d810315000fa3ec46",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "Only independently authored core-mechanics behavior and the in-module source record are bundled; no downloaded upstream file is redistributed.",
+            "Spark example settings, logos, artwork, fonts, and presentation layout are excluded.",
+            "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download."
+          ],
+          "forbidden_files": [
+            "Spark RPG core rules.pdf",
+            "spark-artwork.png",
+            "spark-display-font.otf"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.open_adventure",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "open_adventure",
+      "title": "Open Adventure: Fantasy adapter",
+      "compatibility_label": "Compatible with Open Adventure: Fantasy Community-Owned Content",
+      "summary": "Authored Open Adventure characters, derived defenses and point tracks, exploding action dice, Benefits and Drawbacks, and environmental or NPC challenge completion.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "derived_values",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "advancement",
+          "version": 1
+        },
+        {
+          "id": "encounters",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "attributes",
+          "title": "Attributes and specializations",
+          "required_capability": "character_creation",
+          "fields": [
+            "attributes",
+            "specializations"
+          ]
+        },
+        {
+          "id": "details",
+          "title": "Advantages and equipment",
+          "required_capability": "character_creation",
+          "fields": [
+            "benefits",
+            "drawbacks",
+            "equipment",
+            "favored_actions"
+          ]
+        },
+        {
+          "id": "identity",
+          "title": "Identity and origins",
+          "required_capability": "character_creation",
+          "fields": [
+            "background",
+            "culture",
+            "lineage",
+            "modus_operandi",
+            "name"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "advance_encounter_participant",
+          "title": "Advance an encounter participant",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "advancement_recorded",
+            "advancement_recorded_authority"
+          ]
+        },
+        {
+          "id": "begin_challenge",
+          "title": "Begin a challenge",
+          "required_capability": "encounters",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "challenge_begun",
+            "challenge_begun_authority"
+          ]
+        },
+        {
+          "id": "end_encounter",
+          "title": "End an encounter",
+          "required_capability": "encounters",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "encounter_ended",
+            "encounter_ended_authority",
+            "encounter_reward_granted",
+            "encounter_reward_granted_authority"
+          ]
+        },
+        {
+          "id": "heal_encounter_participant",
+          "title": "Heal an encounter participant",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "encounter_condition_changed",
+            "encounter_condition_changed_authority",
+            "participant_healed",
+            "participant_healed_authority"
+          ]
+        },
+        {
+          "id": "resolve_challenge_action",
+          "title": "Resolve a challenge action",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "action_resolved",
+            "action_resolved_authority",
+            "challenge_completed",
+            "challenge_completed_authority",
+            "character_defeated",
+            "character_defeated_authority",
+            "entropy_trace"
+          ]
+        },
+        {
+          "id": "resolve_encounter_action",
+          "title": "Resolve an encounter action",
+          "required_capability": "encounters",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "encounter_action_resolved",
+            "encounter_action_resolved_authority",
+            "encounter_condition_changed",
+            "encounter_condition_changed_authority",
+            "encounter_ended",
+            "encounter_ended_authority",
+            "encounter_reward_granted",
+            "encounter_reward_granted_authority",
+            "entropy_trace"
+          ]
+        },
+        {
+          "id": "start_encounter",
+          "title": "Start an encounter",
+          "required_capability": "encounters",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "encounter_started",
+            "encounter_started_authority"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "verified_cc0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+        "source_url": "https://openadventurerpg.com/",
+        "exact_artifact": "open-adventure-fantasy-community-owned-content-source-record",
+        "revision": "Open Adventure: Fantasy core rules (Community-Owned Content)",
+        "retrieved_on": "2026-11-06",
+        "sha256": "caebd872fa0340b543737f55bf21581316e4cfa74ebc1cbf153b997c3ca8f450",
+        "attribution": "Open Adventure: Fantasy was created by Marc Tassin and is published by Mechanical Muse. The CC0 Community-Owned Content licence is recorded without a version because the publisher does not state one. Weave's adapter implementation, fixtures, schemas, and explanatory copy are independently authored.",
+        "covered_files_or_sections": [
+          "Open Adventure: Fantasy Community-Owned Content core rules: character creation, nine attributes, derived values, Benefits, Drawbacks, action dice, and challenge resolution.",
+          "Official publisher project at https://openadventurerpg.com/ (Mechanical Muse), identified by canonical URL and reviewed edition only."
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "LICENSE-CC0-1.0.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        "additional_artifacts": [],
+        "notices": [
+          "The provenance digest is the SHA-256 of the in-repository OPEN_ADVENTURE_SOURCE_RECORD string, not of a downloaded upstream file.",
+          "Masterwork Edition layout, third-party products, unmarked content, community additions, logos, artwork, and trade dress are excluded from the reviewed boundary."
+        ],
+        "compatibility_statement": "Open Adventure is named only to describe rules compatibility. This project is independent and does not imply endorsement by Marc Tassin or Mechanical Muse.",
+        "policy": {
+          "namespace": "open_adventure",
+          "license": "CC0-1.0",
+          "source_class": "verified_cc0",
+          "source_sha256": "caebd872fa0340b543737f55bf21581316e4cfa74ebc1cbf153b997c3ca8f450",
+          "required_license_text": {
+            "artifact": "LICENSE-CC0-1.0.txt",
+            "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "The provenance digest is the SHA-256 of the in-repository OPEN_ADVENTURE_SOURCE_RECORD string, not of a downloaded upstream file.",
+            "Masterwork Edition layout, third-party products, unmarked content, community additions, logos, artwork, and trade dress are excluded from the reviewed boundary."
+          ],
+          "forbidden_files": [
+            "open-adventure-masterwork-layout",
+            "open-adventure-artwork",
+            "open-adventure-display-font"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    },
+    {
+      "id": "org.weave.tabletop.open_tale",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "open_tale",
+      "title": "Open Tale adapter",
+      "compatibility_label": "Compatible with the Open Tale public rules reference",
+      "summary": "Point-budget characters, nine attributes, five derived qualities, active and passive skills, wealth, deterministic two-d6 checks, challenges, combat, recovery, and advancement.",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        {
+          "id": "character_creation",
+          "version": 1
+        },
+        {
+          "id": "derived_values",
+          "version": 1
+        },
+        {
+          "id": "checks_and_conflicts",
+          "version": 1
+        },
+        {
+          "id": "resources_and_conditions",
+          "version": 1
+        },
+        {
+          "id": "equipment_and_abilities",
+          "version": 1
+        },
+        {
+          "id": "advancement",
+          "version": 1
+        },
+        {
+          "id": "encounters",
+          "version": 1
+        }
+      ],
+      "creation_steps": [
+        {
+          "id": "attributes",
+          "title": "Attributes",
+          "required_capability": "character_creation",
+          "fields": [
+            "attributes"
+          ]
+        },
+        {
+          "id": "identity",
+          "title": "Identity",
+          "required_capability": "character_creation",
+          "fields": [
+            "character_id",
+            "name",
+            "level",
+            "starting_wealth",
+            "heroic_badges"
+          ]
+        },
+        {
+          "id": "skills_and_wealth",
+          "title": "Skills and wealth",
+          "required_capability": "character_creation",
+          "fields": [
+            "skills",
+            "items"
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "advance_character",
+          "title": "Advance a character",
+          "required_capability": "advancement",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "advancement_applied"
+          ]
+        },
+        {
+          "id": "apply_recovery",
+          "title": "Apply recovery",
+          "required_capability": "resources_and_conditions",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "recovery_applied"
+          ]
+        },
+        {
+          "id": "inspect_character",
+          "title": "Inspect the character",
+          "required_capability": "derived_values",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "character_inspected"
+          ]
+        },
+        {
+          "id": "move_combat",
+          "title": "Move during combat",
+          "required_capability": "encounters",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "combat_moved"
+          ]
+        },
+        {
+          "id": "purchase_item",
+          "title": "Purchase an item",
+          "required_capability": "equipment_and_abilities",
+          "consumes_entropy": false,
+          "event_kinds": [
+            "item_acquired",
+            "wealth_spent"
+          ]
+        },
+        {
+          "id": "resolve_challenge",
+          "title": "Resolve a challenge",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "challenge_resolved",
+            "challenge_updated",
+            "mark_applied",
+            "roll_recorded"
+          ]
+        },
+        {
+          "id": "resolve_combat_turn",
+          "title": "Resolve a combat turn",
+          "required_capability": "checks_and_conflicts",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "combat_concluded",
+            "combat_updated",
+            "damage_applied",
+            "mark_applied",
+            "roll_recorded"
+          ]
+        },
+        {
+          "id": "start_combat",
+          "title": "Start a combat",
+          "required_capability": "encounters",
+          "consumes_entropy": true,
+          "event_kinds": [
+            "combat_started",
+            "initiative_recorded"
+          ]
+        }
+      ],
+      "source": {
+        "source_class": "separately_licensed_apache2",
+        "license": "Apache-2.0",
+        "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "source_url": "https://open-tale.github.io/",
+        "exact_artifact": "open-tale-public-rules-reference",
+        "revision": "public rules reference retrieved 2026-11-06",
+        "retrieved_on": "2026-11-06",
+        "sha256": "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270",
+        "attribution": "Open Tale is published at https://open-tale.github.io/ under the Apache License 2.0. This adapter is an independent implementation by the Weave project and is not endorsed by the Open Tale project. Weave integration code remains MIT; this adapter declares the upstream rules reference separately under Apache-2.0.",
+        "covered_files_or_sections": [
+          "Public Open Tale rules reference: attributes, derived qualities, skills, wealth, checks, challenges, combat, recovery, and advancement.",
+          "Adapter behavior is independently specified from the public rules reference."
+        ],
+        "exclusions": [
+          "community_supplements",
+          "logos",
+          "trade_dress",
+          "artwork",
+          "layout",
+          "unverified_assets"
+        ],
+        "required_license_text": {
+          "artifact": "examples/tabletop-adapters/open-tale/LICENSE-APACHE-2.0.txt",
+          "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+        },
+        "additional_artifacts": [],
+        "notices": [
+          "The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt and in OPEN_TALE_LICENSE_TEXT.",
+          "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled.",
+          "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead."
+        ],
+        "compatibility_statement": "Open Tale is named only to describe rules compatibility. This project is independent and does not imply endorsement, sponsorship, or affiliation.",
+        "policy": {
+          "namespace": "open_tale",
+          "license": "Apache-2.0",
+          "source_class": "separately_licensed_apache2",
+          "source_sha256": "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270",
+          "required_license_text": {
+            "artifact": "examples/tabletop-adapters/open-tale/LICENSE-APACHE-2.0.txt",
+            "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+          },
+          "required_notice_files": [],
+          "required_notices": [
+            "The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt and in OPEN_TALE_LICENSE_TEXT.",
+            "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled.",
+            "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead."
+          ],
+          "forbidden_files": [
+            "open-tale-website-theme",
+            "open-tale-artwork",
+            "open-tale-font"
+          ]
+        }
+      },
+      "conformance": {
+        "status": "standard_suite_registered",
+        "checks": [
+          "manifest_validation",
+          "namespace_isolation",
+          "deterministic_creation",
+          "deterministic_resolution",
+          "entropy_replay",
+          "save_restore",
+          "projection_boundary",
+          "event_shape",
+          "unknown_capability",
+          "unsupported_version",
+          "malformed_state",
+          "source_hash",
+          "source_bundle",
+          "license_policy",
+          "license_text",
+          "license_notice",
+          "forbidden_file",
+          "namespace_collision",
+          "deterministic_output"
+        ]
+      }
+    }
+  ]
+}
