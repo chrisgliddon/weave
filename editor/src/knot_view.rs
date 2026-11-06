@@ -3,7 +3,9 @@
 use gpui::{App, Context, EventEmitter, KeyDownEvent, Window, div, prelude::*, px, rgb};
 use weave_core::ast::Document;
 
-use crate::knot_editor::{KnotBlock, KnotBlockKind, KnotViewMode, KnotViewPreferences, blocks};
+use crate::knot_editor::{
+    KnotBlock, KnotBlockKind, KnotViewMode, KnotViewPreferences, blocks, knot_source,
+};
 use crate::sync::GraphEdit;
 use crate::theme::DARK_THEME;
 
@@ -33,6 +35,95 @@ enum DraftTarget {
     NewProse,
 }
 
+/// Multi-line editor over one knot body.
+#[derive(Debug, Clone)]
+struct SourceDraft {
+    knot: String,
+    text: String,
+    cursor: usize,
+}
+
+impl SourceDraft {
+    fn new(knot: &str, text: String) -> Self {
+        let cursor = text.len();
+        Self {
+            knot: knot.to_owned(),
+            text,
+            cursor,
+        }
+    }
+
+    fn insert(&mut self, value: &str) {
+        self.text.insert_str(self.cursor, value);
+        self.cursor += value.len();
+    }
+
+    fn backspace(&mut self) {
+        if let Some((index, _)) = self.text[..self.cursor].char_indices().next_back() {
+            self.text.remove(index);
+            self.cursor = index;
+        }
+    }
+
+    fn move_left(&mut self) {
+        if let Some((index, _)) = self.text[..self.cursor].char_indices().next_back() {
+            self.cursor = index;
+        }
+    }
+
+    fn move_right(&mut self) {
+        if let Some(character) = self.text[self.cursor..].chars().next() {
+            self.cursor += character.len_utf8();
+        }
+    }
+
+    fn move_vertical(&mut self, down: bool) {
+        let line_start = self.text[..self.cursor]
+            .rfind('\n')
+            .map_or(0, |index| index + 1);
+        let column = self.text[line_start..self.cursor].chars().count();
+        let target_start = if down {
+            self.text[self.cursor..]
+                .find('\n')
+                .map(|index| self.cursor + index + 1)
+        } else if line_start == 0 {
+            None
+        } else {
+            let previous_end = line_start - 1;
+            Some(
+                self.text[..previous_end]
+                    .rfind('\n')
+                    .map_or(0, |index| index + 1),
+            )
+        };
+        let Some(target_start) = target_start else {
+            return;
+        };
+        let target_end = self.text[target_start..]
+            .find('\n')
+            .map_or(self.text.len(), |index| target_start + index);
+        let mut index = target_start;
+        for (seen, (offset, character)) in self.text[target_start..target_end]
+            .char_indices()
+            .enumerate()
+        {
+            if seen >= column {
+                break;
+            }
+            index = target_start + offset + character.len_utf8();
+        }
+        self.cursor = index;
+    }
+
+    fn rendered(&self) -> String {
+        format!(
+            "{}▏{}",
+            &self.text[..self.cursor],
+            &self.text[self.cursor..]
+        )
+    }
+}
+
 /// One knot rendered as labelled blocks or as a link to its source.
 pub struct KnotView {
     document: Document,
@@ -41,6 +132,7 @@ pub struct KnotView {
     preferences: KnotViewPreferences,
     mode: KnotViewMode,
     draft: Option<Draft>,
+    source: Option<SourceDraft>,
 }
 
 impl KnotView {
@@ -53,6 +145,7 @@ impl KnotView {
             preferences,
             mode: KnotViewMode::Rich,
             draft: None,
+            source: None,
         }
     }
 
@@ -69,6 +162,8 @@ impl KnotView {
             .unwrap_or_default();
         self.mode = knot.map_or(KnotViewMode::Rich, |name| self.preferences.mode_for(name));
         self.draft = None;
+        self.source = None;
+        self.prefill_source();
         cx.notify();
     }
 
@@ -104,7 +199,21 @@ impl KnotView {
             cx.emit(KnotViewEvent::ModeChanged { knot, mode });
         }
         self.draft = None;
+        self.source = None;
+        self.prefill_source();
         cx.notify();
+    }
+
+    fn prefill_source(&mut self) {
+        if self.mode != KnotViewMode::Source {
+            return;
+        }
+        let Some(knot) = self.knot.clone() else {
+            return;
+        };
+        if let Some(source) = knot_source(&self.document, &knot) {
+            self.source = Some(SourceDraft::new(&knot, source));
+        }
     }
 
     fn begin_prose(&mut self, path: Vec<usize>, text: String, cx: &mut Context<Self>) {
@@ -232,6 +341,82 @@ impl KnotView {
         cx.emit(KnotViewEvent::Edit(edit));
         cx.notify();
     }
+
+    fn source_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
+        cx.stop_propagation();
+        let key = event.keystroke.key.as_ref();
+        let command = event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
+        if command && key == "enter" {
+            self.commit_source(cx);
+            return;
+        }
+        match key {
+            "escape" => {
+                self.source = None;
+                self.prefill_source();
+            }
+            "enter" => {
+                if let Some(source) = &mut self.source {
+                    source.insert("\n");
+                }
+            }
+            "tab" => {
+                if let Some(source) = &mut self.source {
+                    source.insert("    ");
+                }
+            }
+            "backspace" => {
+                if let Some(source) = &mut self.source {
+                    source.backspace();
+                }
+            }
+            "left" => {
+                if let Some(source) = &mut self.source {
+                    source.move_left();
+                }
+            }
+            "right" => {
+                if let Some(source) = &mut self.source {
+                    source.move_right();
+                }
+            }
+            "up" => {
+                if let Some(source) = &mut self.source {
+                    source.move_vertical(false);
+                }
+            }
+            "down" => {
+                if let Some(source) = &mut self.source {
+                    source.move_vertical(true);
+                }
+            }
+            _ => {
+                if command || event.keystroke.modifiers.alt {
+                    return;
+                }
+                if let Some(input) = &event.keystroke.key_char
+                    && let Some(source) = &mut self.source
+                {
+                    for character in input.chars().filter(|value| !value.is_control()) {
+                        let mut buffer = [0_u8; 4];
+                        source.insert(character.encode_utf8(&mut buffer));
+                    }
+                }
+            }
+        }
+        cx.notify();
+    }
+
+    fn commit_source(&mut self, cx: &mut Context<Self>) {
+        let Some(source) = self.source.take() else {
+            return;
+        };
+        cx.emit(KnotViewEvent::Edit(GraphEdit::ReplaceKnotSource {
+            knot: source.knot,
+            source: source.text,
+        }));
+        cx.notify();
+    }
 }
 
 impl EventEmitter<KnotViewEvent> for KnotView {}
@@ -249,7 +434,9 @@ impl gpui::Render for KnotView {
             .bg(rgb(DARK_THEME.workspace))
             .text_color(rgb(DARK_THEME.text))
             .on_key_down(cx.listener(|this, event: &KeyDownEvent, _, cx| {
-                if this.draft.is_some() {
+                if this.source.is_some() {
+                    this.source_key(event, cx);
+                } else if this.draft.is_some() {
                     this.draft_key(event, cx);
                 }
             }));
@@ -299,31 +486,87 @@ impl gpui::Render for KnotView {
         );
 
         if self.mode == KnotViewMode::Source {
+            let rendered = self
+                .source
+                .as_ref()
+                .map(SourceDraft::rendered)
+                .unwrap_or_default();
             return panel
                 .child(
                     div()
-                        .text_sm()
+                        .text_xs()
                         .text_color(rgb(DARK_THEME.muted_text))
-                        .child("Raw Weave syntax for this knot."),
+                        .child("Raw Weave body, without the knot header. Cmd/Ctrl+Enter saves."),
                 )
                 .child(
                     div()
-                        .id("open-source")
-                        .px_3()
-                        .py_1p5()
+                        .id("knot-source-text")
+                        .flex_1()
+                        .min_h_0()
+                        .overflow_hidden()
+                        .p_3()
                         .rounded_md()
                         .border_1()
                         .border_color(rgb(DARK_THEME.border))
-                        .bg(rgb(DARK_THEME.chrome))
+                        .bg(rgb(DARK_THEME.panel))
                         .text_sm()
-                        .cursor_pointer()
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            if let Some(knot) = this.knot.clone() {
-                                cx.emit(KnotViewEvent::OpenSource(knot));
-                            }
-                            cx.notify();
-                        }))
-                        .child("Open in Text view"),
+                        .child(rendered),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .gap_2()
+                        .child(
+                            div()
+                                .id("save-knot-source")
+                                .px_3()
+                                .py_1p5()
+                                .rounded_md()
+                                .border_1()
+                                .border_color(rgb(DARK_THEME.border))
+                                .bg(rgb(DARK_THEME.chrome))
+                                .text_sm()
+                                .cursor_pointer()
+                                .on_click(cx.listener(|this, _, _, cx| this.commit_source(cx)))
+                                .child("Save"),
+                        )
+                        .child(
+                            div()
+                                .id("revert-knot-source")
+                                .px_3()
+                                .py_1p5()
+                                .rounded_md()
+                                .border_1()
+                                .border_color(rgb(DARK_THEME.border))
+                                .bg(rgb(DARK_THEME.chrome))
+                                .text_sm()
+                                .cursor_pointer()
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.source = None;
+                                    this.prefill_source();
+                                    cx.notify();
+                                }))
+                                .child("Revert"),
+                        )
+                        .child(
+                            div()
+                                .id("open-source")
+                                .px_3()
+                                .py_1p5()
+                                .rounded_md()
+                                .border_1()
+                                .border_color(rgb(DARK_THEME.border))
+                                .bg(rgb(DARK_THEME.chrome))
+                                .text_sm()
+                                .cursor_pointer()
+                                .on_click(cx.listener(move |this, _, _, cx| {
+                                    if let Some(knot) = this.knot.clone() {
+                                        cx.emit(KnotViewEvent::OpenSource(knot));
+                                    }
+                                    cx.notify();
+                                }))
+                                .child("Open in Text view"),
+                        ),
                 );
         }
 
@@ -521,4 +764,33 @@ fn mode_button(
         .child(label)
         .on_click(listener)
         .into_any_element()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_draft_edits_and_moves_across_lines() {
+        let mut draft = SourceDraft::new("start", "one\ntwo".to_owned());
+        assert_eq!(draft.cursor, 7);
+        draft.move_vertical(false);
+        draft.insert("!");
+        assert_eq!(draft.text, "one!\ntwo");
+        assert_eq!(draft.cursor, 4);
+        draft.move_vertical(true);
+        assert_eq!(draft.cursor, 8);
+        draft.insert("\nthree");
+        assert_eq!(draft.text, "one!\ntwo\nthree");
+    }
+
+    #[test]
+    fn source_draft_handles_unicode_boundaries() {
+        let mut draft = SourceDraft::new("start", "héllo".to_owned());
+        draft.move_left();
+        draft.backspace();
+        assert_eq!(draft.text, "hélo");
+        draft.move_right();
+        assert_eq!(draft.rendered(), "hélo▏");
+    }
 }

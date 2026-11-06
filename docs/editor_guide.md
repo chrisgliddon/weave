@@ -45,7 +45,9 @@ Text that Weave would read as a command, such as a line starting with `*`, `->`,
 
 ### Rich and source knot editing
 
-Selecting a beat or branch opens that knot in the right-hand panel. **Rich** mode lists its blocks — prose, choices, diverts, threads, cues, declarations, and end — with an **Edit** control on prose and choices, a **Remove** control where removal is safe, and buttons to add prose or a choice. **Source** mode links to the same knot in the raw text view.
+Selecting a beat or branch opens that knot in the right-hand panel. **Rich** mode lists its blocks — prose, choices, diverts, threads, cues, declarations, and end — with an **Edit** control on prose and choices, a **Remove** control where removal is safe, and buttons to add prose or a choice.
+
+**Source** mode edits the knot body in place as raw Weave syntax, without the `=== name ===` header. `Cmd/Ctrl+Enter` or **Save** applies the edit; **Revert** restores the formatted body; **Open in Text view** reveals the knot in the full source editor. Saving replaces only that knot, takes one undo entry, and rejects a fragment that does not parse or that adds a second knot. Rich mode shows the new content after a save.
 
 Each knot remembers the mode you last used. **Use as default** stores the current mode for knots with no remembered choice. The per-knot choices and the default are saved beside the project as `<name>.editor.json`, so they survive a restart. An unreadable or invalid preferences file is reported and ignored; knots then use the built-in default, Rich.
 

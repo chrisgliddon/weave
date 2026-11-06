@@ -216,6 +216,22 @@ pub fn blocks(document: &Document, knot: &str) -> Option<Vec<KnotBlock>> {
     )
 }
 
+/// The knot body exactly as the formatter writes it, without the knot header.
+///
+/// Source mode edits this text. Formatting a single-knot document is syntactic, so declarations
+/// the knot references are not required here.
+#[must_use]
+pub fn knot_source(document: &Document, knot: &str) -> Option<String> {
+    let item = document.items.iter().find_map(|item| match &item.node {
+        weave_core::ast::Item::Knot(owner) if owner.node.name == knot => Some(item.clone()),
+        _ => None,
+    })?;
+    let single = Document { items: vec![item] };
+    let formatted = weave_fmt::format_document(&single);
+    let body = formatted.split_once('\n').map_or("", |(_, rest)| rest);
+    Some(body.trim_end_matches('\n').to_owned())
+}
+
 fn block_kind(statement: &Statement) -> KnotBlockKind {
     match statement {
         Statement::Text(text) => KnotBlockKind::Prose { text: text.clone() },
@@ -306,6 +322,17 @@ The far bank.
         assert!(projected[3].kind.removable());
         assert!(!projected[3].kind.editable());
         assert!(blocks(&document(), "missing").is_none());
+    }
+
+    #[test]
+    fn knot_source_is_the_formatted_body_without_the_header() {
+        let document = document();
+        let source = knot_source(&document, "start").expect("knot exists");
+        assert!(!source.contains("=== start ==="));
+        assert!(source.contains("The ferry leaves at dusk."));
+        assert!(source.contains("* [Board] -> shore"));
+        assert!(source.contains("@speaker Mara"));
+        assert!(knot_source(&document, "missing").is_none());
     }
 
     #[test]

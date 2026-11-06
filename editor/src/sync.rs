@@ -58,6 +58,8 @@ pub enum GraphEdit {
     RemoveStatement { knot: String, path: Vec<usize> },
     /// Append a prose line to the knot body.
     AppendProse { knot: String, text: String },
+    /// Replace the knot body with a raw source fragment that excludes the header.
+    ReplaceKnotSource { knot: String, source: String },
 }
 
 /// Result of accepting source from the text view.
@@ -620,6 +622,24 @@ fn mutate_document(
             }
             owner.node.body.remove(index);
             Ok((None, format!("Removed a statement from {knot}")))
+        }
+        GraphEdit::ReplaceKnotSource { knot, source } => {
+            let fragment = format!("=== {knot} ===\n{source}\n");
+            let parsed = parse_document(&fragment).map_err(|_| SyncConflict::UnparsableEdit)?;
+            let mut knots = parsed.knots();
+            let Some(owner) = knots.next() else {
+                return Err(SyncConflict::UnparsableEdit);
+            };
+            if owner.node.name != *knot || knots.next().is_some() {
+                return Err(SyncConflict::NotRepresentable);
+            }
+            let body = owner.node.body.clone();
+            let target = find_knot_mut(document, knot)?;
+            target.node.body = body;
+            Ok((
+                Some(format!("knot:{knot}")),
+                format!("Edited the source of {knot}"),
+            ))
         }
         GraphEdit::AppendProse { knot, text } => {
             let text = single_line(text);
@@ -1257,6 +1277,54 @@ The shore.
             .expect("remove choice");
         assert!(!removed.source.contains("[Flee]"));
         assert_eq!(model.undo().as_deref(), Some(before_removal.as_str()));
+    }
+
+    #[test]
+    fn raw_knot_source_replaces_only_that_knot() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let edited = model
+            .apply_graph_edit(
+                &GraphEdit::ReplaceKnotSource {
+                    knot: "shore".to_owned(),
+                    source: "A new shore.\n@speaker Mara\n* [Return] -> loop".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("replace knot source");
+        assert!(edited.source.contains("A new shore."));
+        assert!(edited.source.contains("@speaker Mara"));
+        assert!(edited.source.contains("* [Return] -> loop"));
+        assert!(edited.source.contains("=== start ==="));
+        assert_eq!(edited.focus_node.as_deref(), Some("knot:shore"));
+        assert_eq!(model.undo().as_deref(), Some(LINKED));
+    }
+
+    #[test]
+    fn raw_knot_source_rejections_leave_the_project_untouched() {
+        for (source, expected) in [
+            ("=== start ===".to_owned(), SyncConflict::NotRepresentable),
+            (
+                "A line.\n=== hijack ===\nOther.".to_owned(),
+                SyncConflict::NotRepresentable,
+            ),
+            ("* [unterminated".to_owned(), SyncConflict::UnparsableEdit),
+        ] {
+            let mut model = CanonicalProjectModel::new(LINKED);
+            let before = model.source().to_owned();
+            let revision = model.revision();
+            let conflict = model
+                .apply_graph_edit(
+                    &GraphEdit::ReplaceKnotSource {
+                        knot: "shore".to_owned(),
+                        source,
+                    },
+                    revision,
+                )
+                .expect_err("rejected source");
+            assert_eq!(conflict, expected);
+            assert_eq!(model.source(), before);
+            assert_eq!(model.revision(), revision);
+        }
     }
 
     proptest! {
