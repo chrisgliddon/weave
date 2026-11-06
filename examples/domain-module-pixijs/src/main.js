@@ -1,4 +1,4 @@
-import { Application, Text } from "pixi.js";
+import { Application, Graphics, Text } from "pixi.js";
 import tracerStory from "../../domain-modules/contract/tracer.story.json";
 import britishColumbiaStory from "../../domain-modules/weave-world/corpus/stories/british-columbia-temperate-forest.story.json";
 import hokkaidoStory from "../../domain-modules/weave-world/corpus/stories/hokkaido-japan.story.json";
@@ -22,6 +22,8 @@ import {
   projectionCharacterPresentation,
   temporalCharacterPresentation,
 } from "./character-presentation.js";
+import characterPackSource from "../../character-pack-bevy/fixtures/runtime-pack.character-pack.json";
+import { characterPackPresentation } from "./character-pack.js";
 import { readModuleExport } from "./domain-values.js";
 import { composedWorldPresentation } from "./world-presentation.js";
 import {
@@ -46,6 +48,7 @@ try {
     },
   );
   const composedWorld = composedWorldPresentation(composedWorldStory);
+  const characterPack = characterPackPresentation(characterPackSource);
   const character = characterPresentation(characterStory);
   const expressionCharacter = expressionCharacterPresentation(characterStory);
   const identityPresentation = identityCharacterPresentation(characterStory);
@@ -59,7 +62,7 @@ try {
   const app = new Application();
   await app.init({
     width: 720,
-    height: 640,
+    height: 760,
     background: composedWorld.background,
     antialias: true,
     autoDensity: true,
@@ -79,10 +82,33 @@ try {
     },
   });
   reading.anchor.set(0.5);
-  reading.position.set(app.screen.width / 2, app.screen.height / 2);
+  reading.position.set(app.screen.width / 2, app.screen.height / 2 - 70);
   app.stage.addChild(reading);
+
+  const swatch = new Graphics()
+    .rect(20, 20, 48, 48)
+    .fill(characterPack.accentColor);
+  app.stage.addChild(swatch);
+
+  const packCard = new Text({
+    text: `${characterPack.displayName} · ${characterPack.alignmentLabel} · openness ${characterPack.opennessBand}\n"${characterPack.greeting}"\nborn ${characterPack.birthDate} · ${characterPack.innerLife}\nvoice: ${characterPack.voice}\ncontext: ${characterPack.dateContext}`,
+    style: {
+      align: "center",
+      fill: characterPack.accentColor,
+      fontFamily: "ui-rounded, system-ui, sans-serif",
+      fontSize: 16,
+      fontWeight: "600",
+      lineHeight: 22,
+      wordWrap: true,
+      wordWrapWidth: 660,
+    },
+  });
+  packCard.anchor.set(0.5);
+  packCard.position.set(app.screen.width / 2, app.screen.height - 110);
+  app.stage.addChild(packCard);
+
   status.textContent =
-    "PixiJS read portable World, Character, Plug-And-Play, Dungeonpunk, and Freehack exports; Freehack uses only its explicit public story/receipt schema, tabletop play retains exact adapter hashes and redacted audit boundaries, projection labels retain review lineage and no write-back authority, and temporal fact/cue lineage stays separate.";
+    "PixiJS read portable World, Character, Plug-And-Play, Dungeonpunk, Freehack, and compact Character-pack exports; Freehack uses only its explicit public story/receipt schema, tabletop play retains exact adapter hashes and redacted audit boundaries, projection labels retain review lineage and no write-back authority, temporal fact/cue lineage stays separate, and the Character runtime pack renders the same approved identity, colour, personality, alignment, birth, voice, inner-life, and date-context values as the Bevy consumer.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

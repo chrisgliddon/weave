@@ -8756,6 +8756,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-example-character-pack-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "serde_json",
+ "weave-character",
+]
+
+[[package]]
 name = "weave-example-domain-module-bevy"
 version = "0.1.0"
 dependencies = [

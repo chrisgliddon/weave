@@ -919,3 +919,102 @@ cargo run -p weave-compiler -- \
 ```
 
 Canonical JSON and RON pairs are semantically equal and byte-stable. The fixture generators rebuild all valid, invalid, schema, template, overlay, synthesis, assistance, health, projection, expression, presentation, alignment, temporal, module-manifest, and domain-pack artifacts without network access. The documentation gate additionally checks health manifests/reports and all six CI outcomes, assistance templates/requests/previews/approvals/provider responses/candidate sets/reviews/jobs/receipts/comparisons, projection packs/configs/proposals/reviews/receipts/locks/rebalance, expression normalization/assignment/lint/coverage/resolution, and presentation/alignment/temporal review artifacts; checks dry-run, stale, redaction, and lock boundaries; verifies approved-only Story IR; recompiles both locked stories; and tests both engine consumers.
+
+## Character packs
+
+A Character pack is a portable, data-only export that a game can read without the Weave editor,
+network access, or executable package code. The same contract has two projections:
+
+| Pack | Contains | Intended reader |
+|---|---|---|
+| `CharacterAuthoringPack` | Effective profiles, templates, sparse overrides, expression packs, assistance receipts, health diagnostics, provenance, and licence notices | Authors, reviewers, and import tools |
+| `CharacterRuntimePack` | Approved identity, personality, presentation, expression, relationship, role, alignment, and date-context values plus the references needed to render them | Game runtimes |
+
+The runtime export omits suggestions, rejected and pending records, editor locks, review hashes,
+explanations, provenance, and other authoring metadata. Both formats use `pack_format_version` 1
+and serialize deterministically to strict JSON or RON.
+
+### Export an authoring pack
+
+Build the pack through the `weave_character` API so the profile validator and provenance merge run
+before anything is written. `from_profile` and `from_collection` produce the same deterministic
+contract; `expression_packs` must contain every pack referenced by an included profile.
+
+```rust
+use weave_character::{
+    CharacterAuthoringPack, CharacterPackLicense, CharacterPackMetadata,
+};
+
+let pack = CharacterAuthoringPack::from_profile(
+    CharacterPackMetadata {
+        id: "org.example.character_pack.thistlewood".to_owned(),
+        version: "1.0.0".to_owned(),
+        title: "Thistlewood Portable Character Pack".to_owned(),
+        description: "Original synthetic example pack.".to_owned(),
+        license: CharacterPackLicense {
+            license: "MIT".to_owned(),
+            license_url: "https://opensource.org/license/mit".to_owned(),
+            license_text: "MIT License text retained with the pack.".to_owned(),
+            notices: Vec::new(),
+        },
+    },
+    profile,
+    expression_packs,
+)?;
+std::fs::write("authoring-pack.character-pack.json", pack.to_json()?)?;
+```
+
+Use `from_collection` for a deterministic corpus. Characters, templates, overrides, expression
+packs, assistance receipts, and diagnostics are sorted before serialization, so repeated exports
+are byte-stable. Authors can also emit RON with `to_ron`.
+
+### Compact to a runtime pack
+
+`to_runtime_pack` validates the authoring pack, copies pack metadata and licence unchanged, and
+retains only current values whose review state is approved.
+
+```rust
+let runtime = pack.to_runtime_pack()?;
+std::fs::write("runtime-pack.character-pack.json", runtime.to_json()?)?;
+```
+
+Approved identity, presentation, personality, birth date, inner life, voice, alignment, roles,
+relationships, expression, and date-context values survive. Authoring-only lineage does not.
+
+### Consume without the editor
+
+Strict parsing validates the version, identifiers, ordering, and every required reference before a
+consumer sees a value. The checked examples are:
+
+- `examples/character-pack-bevy` loads the authoring and runtime fixtures, re-derives the runtime
+  pack, requires it to match the fixture, and reports selected identity, colour, greeting,
+  personality, alignment, birth, inner-life, voice, and date-context values from a Bevy `Startup`
+  schedule.
+- `examples/domain-module-pixijs` loads the same runtime JSON file and renders the same values with
+  PixiJS. Its pure reader and tests run in Node without a GPU.
+
+```bash
+cargo run -p weave-example-character-pack-bevy
+cargo run -p weave-example-character-pack-bevy --example generate_fixtures
+
+cd examples/domain-module-pixijs
+npm test
+npm run build
+```
+
+Both commands and the fixture generator run offline. The Bevy example rejects an unsupported pack
+version with `unsupported character pack format version`, and rejects a missing override reference
+with `override id is absent from the pack`.
+
+### Versioning and licences
+
+- Version 1 is the only supported `pack_format_version`. Any other value fails closed before
+  values are applied. `migrate()` returns a normalized current-version pack and rejects a version
+  it cannot interpret; re-export older material rather than assuming a silent upgrade.
+- A pack's `license` block carries an SPDX expression, a public HTTPS licence URL, the full licence
+  text, and sorted notices for separately licensed components. MIT sources need no notice; every
+  other source must have its own notice entry with matching component and full text. A pack never
+  represents separately licensed material as MIT-only.
+- Provenance records every source and transformation. Profiles, including the checked synthetic
+  fixture, are original MIT material with no external art. Consumers should retain the licence
+  block with any redistributed pack.

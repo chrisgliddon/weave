@@ -1,0 +1,542 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.example.character_pack.thistlewood",
+  "version": "1.0.0",
+  "title": "Thistlewood Portable Character Pack",
+  "description": "Original synthetic authoring and runtime Character pack used by the offline Bevy and PixiJS examples.",
+  "license": {
+    "license": "MIT",
+    "license_url": "https://opensource.org/license/mit",
+    "license_text": "MIT License\n\nCopyright (c) 2026 Weave contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "character_pack_calendar_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "character-pack-example-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic calendar context authored for this example.",
+        "modified": false
+      },
+      {
+        "id": "character_pack_original",
+        "kind": "original",
+        "url": "https://github.com/chrisgliddon/weave",
+        "revision": "character-pack-example-v1",
+        "license": "MIT",
+        "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+        "attribution": "Original synthetic character, presentation, and alignment data authored for this example.",
+        "modified": false
+      }
+    ],
+    "transformations": [
+      {
+        "id": "alignment_apply_c3c3c3c3c3c3c3c3",
+        "inputs": [
+          "character_pack_original"
+        ],
+        "description": "Apply the reviewed original alignment view to the synthetic character."
+      },
+      {
+        "id": "temporal_review_e5e5e5e5e5e5e5e5",
+        "inputs": [
+          "character_pack_calendar_original"
+        ],
+        "description": "Review and accept one original synthetic date-context cue."
+      }
+    ],
+    "claims": {
+      "pack": [
+        "alignment_apply_c3c3c3c3c3c3c3c3",
+        "character_pack_calendar_original",
+        "character_pack_original",
+        "temporal_review_e5e5e5e5e5e5e5e5"
+      ]
+    }
+  },
+  "characters": [
+    {
+      "profile": {
+        "profile_format_version": 1,
+        "id": "org.weave.example.character.mira_thistlewood",
+        "canon": {
+          "identity": {
+            "display_name": {
+              "value": "Mira Thistlewood",
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_pack_original"
+              ]
+            },
+            "aliases": {
+              "value": [
+                "Mira"
+              ],
+              "state": "authored",
+              "confidence": "high",
+              "review": "not_required",
+              "lock": "unlocked",
+              "freshness": "current",
+              "lineage": [
+                "character_pack_original"
+              ]
+            }
+          },
+          "birth_date": {
+            "value": {
+              "precision": "full",
+              "calendar": "proleptic_gregorian",
+              "year": 2001,
+              "month": 6,
+              "day": 21
+            },
+            "state": "authored",
+            "confidence": "high",
+            "review": "not_required",
+            "lock": "unlocked",
+            "freshness": "current",
+            "lineage": [
+              "character_pack_original"
+            ]
+          },
+          "personality": {
+            "honesty_humility": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.68
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              },
+              "sincerity": {
+                "value": {
+                  "form": "score",
+                  "score": 0.72
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            },
+            "emotionality": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.44
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            },
+            "extraversion": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.61
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            },
+            "agreeableness": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.77
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            },
+            "conscientiousness": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.55
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            },
+            "openness": {
+              "factor": {
+                "value": {
+                  "form": "score",
+                  "score": 0.82
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              },
+              "creativity": {
+                "value": {
+                  "form": "score",
+                  "score": 0.88
+                },
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            }
+          },
+          "inner_life": {
+            "steady_hope": {
+              "id": "steady_hope",
+              "category": "value",
+              "content": {
+                "value": "Keeps a small garden because patient work makes a place feel shared.",
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            }
+          },
+          "voice": {
+            "gentle_directness": {
+              "id": "gentle_directness",
+              "category": "tone",
+              "content": {
+                "value": "Speaks plainly, then leaves room for the other person to decide.",
+                "state": "authored",
+                "confidence": "high",
+                "review": "not_required",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ]
+              }
+            }
+          }
+        },
+        "extensions": {
+          "org.weave.character.alignment": {
+            "kind": "alignment_view",
+            "record": {
+              "header": {
+                "namespace": "org.weave.character.alignment",
+                "extension_version": 1,
+                "authority": "org.weave.example.character_pack_reviewer",
+                "rationale": "Original synthetic value authored for the portable Character pack example.",
+                "state": "reviewed",
+                "review": "accepted",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "alignment_apply_c3c3c3c3c3c3c3c3",
+                  "character_pack_original"
+                ],
+                "canonical_personality_write_back": "forbidden"
+              },
+              "value": {
+                "view_id": "org.weave.example.alignment.harbor_compass",
+                "pack": {
+                  "id": "org.weave.example.alignment.harbor_compass",
+                  "version": "1.0.0",
+                  "sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+                },
+                "values": {
+                  "horizon": {
+                    "id": "horizon",
+                    "label_id": "seeking",
+                    "label": "Seeking",
+                    "decision": "reviewed",
+                    "score_micros": 640000,
+                    "coverage_micros": 1000000,
+                    "explanation": "A fictional shorthand for how this character meets unfamiliar paths. It is not a diagnosis.",
+                    "input_paths": [
+                      "canon.personality.openness.factor"
+                    ]
+                  }
+                },
+                "input_paths": [
+                  "canon.personality.openness.factor"
+                ],
+                "review_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+                "applied_sha256": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"
+              }
+            }
+          },
+          "org.weave.character.date_context": {
+            "kind": "date_context",
+            "record": {
+              "header": {
+                "namespace": "org.weave.character.date_context",
+                "extension_version": 1,
+                "authority": "org.weave.example.character_pack_reviewer",
+                "rationale": "Original synthetic value authored for the portable Character pack example.",
+                "state": "reviewed",
+                "review": "accepted",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_calendar_original",
+                  "character_pack_original",
+                  "temporal_review_e5e5e5e5e5e5e5e5"
+                ],
+                "canonical_personality_write_back": "forbidden"
+              },
+              "value": {
+                "context_pack": "org.weave.example.context.midsummer",
+                "context_version": "1.0.0",
+                "context_hash": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+                "accepted_record_ids": [
+                  "long_summer_evening"
+                ],
+                "accepted_cues": {
+                  "cue_000000000000000000000001": {
+                    "id": "cue_000000000000000000000001",
+                    "record_id": "long_summer_evening",
+                    "pack": {
+                      "id": "org.weave.example.context.midsummer",
+                      "version": "1.0.0",
+                      "sha256": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4"
+                    },
+                    "kind": "memory",
+                    "content": "Midsummer evenings stretched late enough to finish a long walk before dusk.",
+                    "relevance": 0.75,
+                    "uncertainty": "exact",
+                    "sensitivity": "low",
+                    "decision": "accepted",
+                    "fact_source_ids": [
+                      "character_pack_calendar_original"
+                    ],
+                    "cue_source_ids": [
+                      "character_pack_original"
+                    ],
+                    "source_ids": [
+                      "character_pack_calendar_original",
+                      "character_pack_original"
+                    ],
+                    "review_sha256": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5"
+                  }
+                }
+              }
+            }
+          },
+          "org.weave.character.identity_presentation": {
+            "kind": "identity_presentation",
+            "record": {
+              "header": {
+                "namespace": "org.weave.character.identity_presentation",
+                "extension_version": 1,
+                "authority": "org.weave.example.character_pack_reviewer",
+                "rationale": "Original synthetic value authored for the portable Character pack example.",
+                "state": "reviewed",
+                "review": "accepted",
+                "lock": "unlocked",
+                "freshness": "current",
+                "lineage": [
+                  "character_pack_original"
+                ],
+                "canonical_personality_write_back": "forbidden"
+              },
+              "value": {
+                "identity_refs": [],
+                "presentation_refs": [],
+                "pronouns": {
+                  "value": {
+                    "subject": "they",
+                    "object": "them",
+                    "possessive_determiner": "their",
+                    "possessive_pronoun": "theirs",
+                    "reflexive": "themself"
+                  },
+                  "state": "authored",
+                  "confidence": "high",
+                  "review": "not_required",
+                  "lock": "unlocked",
+                  "freshness": "current",
+                  "lineage": [
+                    "character_pack_original"
+                  ]
+                },
+                "palette": {
+                  "value": {
+                    "colors": {
+                      "accent": "#7BC96F",
+                      "background": "#1B2A24",
+                      "foreground": "#E8F5E9"
+                    }
+                  },
+                  "state": "authored",
+                  "confidence": "high",
+                  "review": "not_required",
+                  "lock": "unlocked",
+                  "freshness": "current",
+                  "lineage": [
+                    "character_pack_original"
+                  ]
+                },
+                "style_tags": {
+                  "value": [
+                    "earth_tone",
+                    "practical"
+                  ],
+                  "state": "authored",
+                  "confidence": "high",
+                  "review": "not_required",
+                  "lock": "unlocked",
+                  "freshness": "current",
+                  "lineage": [
+                    "character_pack_original"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "derived": {
+          "ocean": {
+            "algorithm": "weave_hexaco_to_ocean_compatibility",
+            "algorithm_version": 1,
+            "lossy": true,
+            "independent_evidence": false,
+            "openness": {
+              "score": 0.82,
+              "confidence": "high",
+              "input_paths": [
+                "canon.personality.openness.factor"
+              ]
+            },
+            "conscientiousness": {
+              "score": 0.55,
+              "confidence": "high",
+              "input_paths": [
+                "canon.personality.conscientiousness.factor"
+              ]
+            },
+            "extraversion": {
+              "score": 0.61,
+              "confidence": "high",
+              "input_paths": [
+                "canon.personality.extraversion.factor"
+              ]
+            },
+            "agreeableness": {
+              "score": 0.77,
+              "confidence": "high",
+              "input_paths": [
+                "canon.personality.agreeableness.factor"
+              ]
+            },
+            "neuroticism": {
+              "score": 0.44,
+              "confidence": "high",
+              "input_paths": [
+                "canon.personality.emotionality.factor"
+              ]
+            },
+            "omitted_factor": "honesty_humility"
+          }
+        },
+        "provenance": {
+          "sources": [
+            {
+              "id": "character_pack_calendar_original",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "character-pack-example-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original synthetic calendar context authored for this example.",
+              "modified": false
+            },
+            {
+              "id": "character_pack_original",
+              "kind": "original",
+              "url": "https://github.com/chrisgliddon/weave",
+              "revision": "character-pack-example-v1",
+              "license": "MIT",
+              "license_url": "https://github.com/chrisgliddon/weave/blob/main/LICENSE",
+              "attribution": "Original synthetic character, presentation, and alignment data authored for this example.",
+              "modified": false
+            }
+          ],
+          "transformations": [
+            {
+              "id": "alignment_apply_c3c3c3c3c3c3c3c3",
+              "inputs": [
+                "character_pack_original"
+              ],
+              "description": "Apply the reviewed original alignment view to the synthetic character."
+            },
+            {
+              "id": "temporal_review_e5e5e5e5e5e5e5e5",
+              "inputs": [
+                "character_pack_calendar_original"
+              ],
+              "description": "Review and accept one original synthetic date-context cue."
+            }
+          ],
+          "claims": {
+            "pack": [
+              "alignment_apply_c3c3c3c3c3c3c3c3",
+              "character_pack_calendar_original",
+              "character_pack_original",
+              "temporal_review_e5e5e5e5e5e5e5e5"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -15,6 +15,14 @@ template/scenario, and pinned pack coordinate. It keeps fact lineage separate fr
 fictional-cue lineage, verifies expression, presentation, alignment, and temporal personality
 write-back are false, and has no dependency on the Weave Editor.
 
+The scene also consumes the compact Character runtime pack from
+`examples/character-pack-bevy/fixtures/runtime-pack.character-pack.json`. The pure
+`character-pack.js` reader validates the pack version and references, then selects the same display
+name, accent colour, greeting line, personality band, alignment label, birth date, inner-life,
+voice, and date-context values that the Bevy consumer reports. `character-pack.test.js` covers
+successful selection and rejection of an unsupported version, a missing relationship reference, and
+a noncanonical colour.
+
 The scene also consumes the checked Plug-And-Play, Dungeonpunk, and Freehack domain packs. Pure
 readers validate exact adapter coordinates and public consequences. Freehack uses a dedicated
 public-only story/receipt schema and rejects authority event kinds, entropy, request hashes, hidden

@@ -1,0 +1,110 @@
+{
+  "pack_format_version": 1,
+  "id": "org.weave.example.character_pack.thistlewood",
+  "version": "1.0.0",
+  "title": "Thistlewood Portable Character Pack",
+  "description": "Original synthetic authoring and runtime Character pack used by the offline Bevy and PixiJS examples.",
+  "license": {
+    "license": "MIT",
+    "license_url": "https://opensource.org/license/mit",
+    "license_text": "MIT License\n\nCopyright (c) 2026 Weave contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  },
+  "characters": [
+    {
+      "id": "org.weave.example.character.mira_thistlewood",
+      "display_name": "Mira Thistlewood",
+      "aliases": [
+        "Mira"
+      ],
+      "personality": {
+        "honesty_humility": {
+          "form": "score",
+          "score": 0.68
+        },
+        "sincerity": {
+          "form": "score",
+          "score": 0.72
+        },
+        "emotionality": {
+          "form": "score",
+          "score": 0.44
+        },
+        "extraversion": {
+          "form": "score",
+          "score": 0.61
+        },
+        "agreeableness": {
+          "form": "score",
+          "score": 0.77
+        },
+        "conscientiousness": {
+          "form": "score",
+          "score": 0.55
+        },
+        "openness": {
+          "form": "score",
+          "score": 0.82
+        },
+        "creativity": {
+          "form": "score",
+          "score": 0.88
+        }
+      },
+      "birth_date": {
+        "precision": "full",
+        "calendar": "proleptic_gregorian",
+        "year": 2001,
+        "month": 6,
+        "day": 21
+      },
+      "inner_life": {
+        "steady_hope": {
+          "category": "value",
+          "content": "Keeps a small garden because patient work makes a place feel shared."
+        }
+      },
+      "voice": {
+        "gentle_directness": {
+          "category": "tone",
+          "content": "Speaks plainly, then leaves room for the other person to decide."
+        }
+      },
+      "presentation": {
+        "pronouns": {
+          "subject": "they",
+          "object": "them",
+          "possessive_determiner": "their",
+          "possessive_pronoun": "theirs",
+          "reflexive": "themself"
+        },
+        "palette": {
+          "accent": "#7BC96F",
+          "background": "#1B2A24",
+          "foreground": "#E8F5E9"
+        },
+        "style_tags": [
+          "earth_tone",
+          "practical"
+        ]
+      },
+      "alignment": {
+        "horizon": {
+          "label_id": "seeking",
+          "label": "Seeking",
+          "decision": "reviewed",
+          "score_micros": 640000,
+          "coverage_micros": 1000000
+        }
+      },
+      "date_context": {
+        "cue_000000000000000000000001": {
+          "record_id": "long_summer_evening",
+          "kind": "memory",
+          "content": "Midsummer evenings stretched late enough to finish a long walk before dusk.",
+          "relevance": 0.75,
+          "uncertainty": "exact"
+        }
+      }
+    }
+  ]
+}
