@@ -680,6 +680,28 @@ pub enum PresentationDiagnosticKind {
     Fallback,
 }
 
+impl PresentationDiagnosticKind {
+    /// Short author-facing name for the diagnostic category.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::UnknownModule => "unknown_module",
+            Self::UnknownExport => "unknown_export",
+            Self::UnknownPath => "unknown_path",
+            Self::UnavailableValue => "unavailable_value",
+            Self::IncompatibleType => "incompatible_type",
+            Self::UnmappedValue => "unmapped_value",
+            Self::UnknownScene => "unknown_scene",
+            Self::UnavailableProjection => "unavailable_projection",
+            Self::UnmappedStage => "unmapped_stage",
+            Self::UnknownStage => "unknown_stage",
+            Self::UnmappedExpression => "unmapped_expression",
+            Self::UnknownVariant => "unknown_variant",
+            Self::Fallback => "fallback",
+        }
+    }
+}
+
 /// One precise, redaction-safe resolution diagnostic.
 ///
 /// `source` names the reference and `detail` explains the failure. Neither
@@ -1170,6 +1192,143 @@ fn diagnostic(
     }
 }
 
+/// What one resolved selector produced.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResolvedTarget {
+    /// A background scene.
+    Scene,
+    /// A character stage.
+    Stage,
+}
+
+impl ResolvedTarget {
+    /// Author-facing target name.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Scene => "scene",
+            Self::Stage => "stage",
+        }
+    }
+}
+
+/// One resolved selector row for the author-facing Play drawer.
+///
+/// The reference is a redaction-safe label. `value` is present only when a
+/// successful selection exposes the text that selected it; a fallback never
+/// echoes the value it rejected.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedReferenceRow {
+    /// Redaction-safe label naming the selector.
+    pub reference: String,
+    /// What the selector resolved.
+    pub target: ResolvedTarget,
+    /// Declared scene or stage id.
+    pub id: String,
+    /// Current text value, when a successful selection exposes one.
+    pub value: Option<String>,
+    /// Whether a documented fallback supplied the selection.
+    pub fallback: bool,
+}
+
+impl ResolvedReferenceRow {
+    /// One-line author-facing summary of the row.
+    #[must_use]
+    pub fn summary(&self) -> String {
+        let mut summary = format!("{} → {} `{}`", self.reference, self.target.label(), self.id);
+        if let Some(value) = &self.value {
+            summary.push_str(" = ");
+            summary.push_str(value);
+        }
+        if self.fallback {
+            summary.push_str(" (fallback)");
+        }
+        summary
+    }
+}
+
+/// Resolved references and diagnostics shown by the Play drawer.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PresentationDrawerRows {
+    /// One row per resolved scene or stage, in resolution order.
+    pub references: Vec<ResolvedReferenceRow>,
+    /// Redaction-safe diagnostics in deterministic resolution order.
+    pub diagnostics: Vec<PresentationDiagnostic>,
+}
+
+/// Build the drawer rows for one resolved plan.
+///
+/// Only a successful selection exposes its current value. A fallback reports
+/// the declared fallback id and its diagnostic, but never repeats the value
+/// that failed to map.
+#[must_use]
+pub fn presentation_drawer_rows(
+    plan: &ResolvedPresentation,
+    story: &StoryIr,
+    variables: Option<&BTreeMap<String, Value>>,
+) -> PresentationDrawerRows {
+    let mut rows = PresentationDrawerRows {
+        references: Vec::new(),
+        diagnostics: plan.diagnostics.clone(),
+    };
+    if let Some(scene) = &plan.scene {
+        rows.references.push(ResolvedReferenceRow {
+            reference: scene.source.label(),
+            target: ResolvedTarget::Scene,
+            id: scene.id.clone(),
+            value: if scene.fallback {
+                None
+            } else {
+                current_text(&scene.source, story, variables)
+            },
+            fallback: scene.fallback,
+        });
+    }
+    if let Some(stage) = &plan.stage {
+        rows.references.push(ResolvedReferenceRow {
+            reference: stage.source.label(),
+            target: ResolvedTarget::Stage,
+            id: stage.id.clone(),
+            value: if stage.fallback {
+                None
+            } else {
+                current_text(&stage.source, story, variables)
+            },
+            fallback: stage.fallback,
+        });
+    }
+    rows
+}
+
+/// Current text a resolved reference reads, without raising diagnostics.
+fn current_text(
+    reference: &ValueRef,
+    story: &StoryIr,
+    variables: Option<&BTreeMap<String, Value>>,
+) -> Option<String> {
+    match reference {
+        ValueRef::Variable { name } => match variables?.get(name)? {
+            Value::String(text) | Value::Symbol(text) => Some(text.clone()),
+            _ => None,
+        },
+        ValueRef::Module { alias, path } => {
+            let module = story.modules.get(alias)?;
+            let (export, fields) = path.split_first()?;
+            let mut current = &module.exports.get(export)?.value;
+            for field in fields {
+                let DomainValueIr::Object(object) = current else {
+                    return None;
+                };
+                current = object.get(field)?;
+            }
+            match current {
+                DomainValueIr::String(text) | DomainValueIr::Symbol(text) => Some(text.clone()),
+                _ => None,
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
@@ -1177,7 +1336,10 @@ mod tests {
     use super::*;
     use crate::preview::PreviewSession;
     use weave_core::Span;
-    use weave_core::ir::{CueIr, Instruction, InstructionKind, KnotIr, StageIr, StoryIr, Template};
+    use weave_core::ir::{
+        CueIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainValueIr, Instruction,
+        InstructionKind, KnotIr, SceneIr, StageIr, StoryIr, Template,
+    };
 
     fn branching_story() -> StoryIr {
         let source = r#"
@@ -2010,5 +2172,198 @@ Mara: The ferry leaves at dusk.
             "a swap before the show has no visible stage to replace"
         );
         assert!(swap_first.notes.is_empty());
+    }
+
+    fn presentation_story() -> StoryIr {
+        let mut story = StoryIr::new("start");
+        story.presentation.scenes.insert(
+            "harbour".to_owned(),
+            SceneIr {
+                background: Some("art/harbour.png".to_owned()),
+                fit: Fit::Cover,
+                anchor: AnchorIr::default(),
+            },
+        );
+        story.presentation.scenes.insert(
+            "cabin".to_owned(),
+            SceneIr {
+                background: Some("art/cabin.png".to_owned()),
+                fit: Fit::Contain,
+                anchor: AnchorIr::default(),
+            },
+        );
+        story.presentation.stages.insert(
+            "mara".to_owned(),
+            StageIr {
+                image: Some("art/mara_neutral.png".to_owned()),
+                name: Some("Mara".to_owned()),
+                slot: Slot::Left,
+                layer: 1,
+                variants: BTreeMap::new(),
+            },
+        );
+        story.presentation.stages.insert(
+            "keeper".to_owned(),
+            StageIr {
+                image: Some("art/keeper_neutral.png".to_owned()),
+                name: Some("The Keeper".to_owned()),
+                slot: Slot::Right,
+                layer: 2,
+                variants: BTreeMap::new(),
+            },
+        );
+        story.modules.insert(
+            "world".to_owned(),
+            DomainModuleIr {
+                id: "org.weave.world".to_owned(),
+                version: "1.0.0".to_owned(),
+                pack_id: "example.world".to_owned(),
+                pack_version: "1.0.0".to_owned(),
+                exports: BTreeMap::from([(
+                    "seed".to_owned(),
+                    DomainExportIr {
+                        source: DomainExportSourceIr::Pack,
+                        value: DomainValueIr::Object(BTreeMap::from([(
+                            "terrain".to_owned(),
+                            DomainValueIr::Symbol("harbour".to_owned()),
+                        )])),
+                    },
+                )]),
+                authored_overrides: Vec::new(),
+            },
+        );
+        story
+    }
+
+    fn presentation_snapshot() -> BTreeMap<String, Value> {
+        BTreeMap::from([("speaker".to_owned(), Value::String("mara".to_owned()))])
+    }
+
+    #[test]
+    fn drawer_rows_show_world_and_character_references_with_values() {
+        let story = presentation_story();
+        let variables = presentation_snapshot();
+        let world = WorldPresentation {
+            selector: ValueRef::Module {
+                alias: "world".to_owned(),
+                path: vec!["seed".to_owned(), "terrain".to_owned()],
+            },
+            scenes: BTreeMap::from([("harbour".to_owned(), "harbour".to_owned())]),
+            fallback: Some("cabin".to_owned()),
+        };
+        let character = CharacterPresentation {
+            selector: ValueRef::Variable {
+                name: "speaker".to_owned(),
+            },
+            projections: BTreeMap::from([(
+                "mara".to_owned(),
+                CharacterProjection {
+                    display_name: Some("Mara Vale".to_owned()),
+                    stage: Some("mara".to_owned()),
+                    expression: None,
+                    portrait: None,
+                },
+            )]),
+            stage_ids: BTreeMap::from([("mara".to_owned(), "mara".to_owned())]),
+            expressions: BTreeMap::new(),
+            fallback_stage: Some("keeper".to_owned()),
+        };
+
+        let plan = resolve_presentation(&story, Some(&world), Some(&character), Some(&variables));
+        let rows = presentation_drawer_rows(&plan, &story, Some(&variables));
+        assert!(rows.diagnostics.is_empty());
+
+        let scene = rows
+            .references
+            .iter()
+            .find(|row| row.target == ResolvedTarget::Scene)
+            .expect("world selection row");
+        assert_eq!(scene.reference, "module `world` export `seed.terrain`");
+        assert_eq!(scene.id, "harbour");
+        assert_eq!(scene.value.as_deref(), Some("harbour"));
+        assert!(!scene.fallback);
+        assert_eq!(
+            scene.summary(),
+            "module `world` export `seed.terrain` → scene `harbour` = harbour"
+        );
+
+        let stage = rows
+            .references
+            .iter()
+            .find(|row| row.target == ResolvedTarget::Stage)
+            .expect("character selection row");
+        assert_eq!(stage.reference, "variable `speaker`");
+        assert_eq!(stage.id, "mara");
+        assert_eq!(stage.value.as_deref(), Some("mara"));
+        assert!(!stage.fallback);
+    }
+
+    #[test]
+    fn drawer_rows_show_a_fallback_and_never_echo_the_rejected_value() {
+        let story = presentation_story();
+        let secret = "never-print-this-token";
+        let variables = BTreeMap::from([("place".to_owned(), Value::String(secret.to_owned()))]);
+        let world = WorldPresentation {
+            selector: ValueRef::Variable {
+                name: "place".to_owned(),
+            },
+            scenes: BTreeMap::new(),
+            fallback: Some("cabin".to_owned()),
+        };
+
+        let plan = resolve_presentation(&story, Some(&world), None, Some(&variables));
+        let rows = presentation_drawer_rows(&plan, &story, Some(&variables));
+
+        let scene = &rows.references[0];
+        assert_eq!(scene.id, "cabin");
+        assert!(scene.fallback);
+        assert_eq!(scene.value, None, "a rejected value is never repeated");
+        assert!(scene.summary().ends_with("(fallback)"));
+        assert_eq!(
+            rows.diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.kind)
+                .collect::<Vec<_>>(),
+            [
+                PresentationDiagnosticKind::UnmappedValue,
+                PresentationDiagnosticKind::Fallback
+            ]
+        );
+        assert_eq!(rows.diagnostics[0].kind.label(), "unmapped_value");
+        assert_eq!(rows.diagnostics[0].source, "variable `place`");
+        for diagnostic in &rows.diagnostics {
+            assert!(!diagnostic.source.contains(secret));
+            assert!(!diagnostic.detail.contains(secret));
+        }
+        assert!(!format!("{rows:?}").contains(secret));
+    }
+
+    #[test]
+    fn a_missing_reference_reports_its_diagnostic_kind_and_label() {
+        let story = presentation_story();
+        let world = WorldPresentation {
+            selector: ValueRef::Variable {
+                name: "absent".to_owned(),
+            },
+            scenes: BTreeMap::new(),
+            fallback: Some("cabin".to_owned()),
+        };
+
+        let plan = resolve_presentation(&story, Some(&world), None, None);
+        let rows = presentation_drawer_rows(&plan, &story, None);
+
+        assert_eq!(
+            rows.diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.kind.label(), diagnostic.source.as_str()))
+                .collect::<Vec<_>>(),
+            [
+                ("unavailable_value", "variable `absent`"),
+                ("fallback", "variable `absent`")
+            ]
+        );
+        assert_eq!(rows.references[0].id, "cabin");
+        assert!(rows.references[0].fallback);
+        assert_eq!(rows.references[0].value, None);
     }
 }

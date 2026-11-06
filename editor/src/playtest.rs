@@ -134,6 +134,22 @@ pub enum PlaytestOutcome {
     },
 }
 
+impl PlaytestOutcome {
+    /// Short author-facing description of where the playthrough stopped.
+    #[must_use]
+    pub fn summary(&self) -> String {
+        match self {
+            Self::Ended => "ended".to_owned(),
+            Self::WaitingForChoice { choices } if choices.is_empty() => {
+                "waiting for choice".to_owned()
+            }
+            Self::WaitingForChoice { choices } => {
+                format!("waiting for choice: {}", choices.join(", "))
+            }
+        }
+    }
+}
+
 /// One complete, portable author playtest.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

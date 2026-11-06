@@ -1,13 +1,13 @@
 //! Debounced compiler integration and isolated live story playback panel.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use gpui::{
-    AnyElement, Context, EventEmitter, FocusHandle, ImageSource, KeyDownEvent, ObjectFit,
-    RenderImage, Window, div, img, prelude::*, px, relative, rgb,
+    AnyElement, ClipboardItem, Context, EventEmitter, FocusHandle, ImageSource, KeyDownEvent,
+    ObjectFit, RenderImage, Window, div, img, prelude::*, px, relative, rgb,
 };
 use weave_compiler::{CompileOptions, compile_with_modules};
 use weave_core::ir::{AnchorIr, Fit, Slot, StoryIr};
@@ -17,8 +17,11 @@ use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
 use crate::play_view::{
-    NARRATOR, PlayMode, PlayScene, SLOT_ORDER, StagedCharacter, scene_from_session, scene_tone,
+    CharacterPresentation, NARRATOR, PlayMode, PlayScene, PresentationDrawerRows, SLOT_ORDER,
+    StagedCharacter, WorldPresentation, presentation_drawer_rows, resolve_presentation,
+    scene_from_session, scene_tone,
 };
+use crate::playtest::{PlaytestOutcome, PlaytestRecord};
 use crate::presentation_assets::PresentationAssets;
 use crate::theme::DARK_THEME;
 
@@ -123,6 +126,10 @@ pub struct PreviewSession {
     presentation: Vec<PresentationEvent>,
     issue: Option<PreviewIssue>,
     domain_catalog: DomainCatalog,
+    /// Knot playback began at after a jump; the story entry when unset.
+    start_knot: Option<String>,
+    /// Selected choice indices in order, for author playtest capture.
+    selected_choices: Vec<usize>,
 }
 
 impl PreviewSession {
@@ -140,6 +147,8 @@ impl PreviewSession {
             presentation: Vec::new(),
             issue: None,
             domain_catalog: DomainCatalog::new(),
+            start_knot: None,
+            selected_choices: Vec::new(),
         }
     }
 
@@ -172,6 +181,37 @@ impl PreviewSession {
     #[must_use]
     pub const fn compiled_revision(&self) -> Option<u64> {
         self.compiled_revision
+    }
+
+    /// Last valid compiled story, when the session has one.
+    #[must_use]
+    pub fn story(&self) -> Option<&StoryIr> {
+        self.last_valid_story.as_ref()
+    }
+
+    /// Knot playback began at after a jump; `None` means the story entry.
+    #[must_use]
+    pub fn start_knot(&self) -> Option<&str> {
+        self.start_knot.as_deref()
+    }
+
+    /// Selected choice indices in the order the author chose them.
+    #[must_use]
+    pub fn selected_choices(&self) -> &[usize] {
+        &self.selected_choices
+    }
+
+    /// Current variable snapshot, read from the live runtime state.
+    #[must_use]
+    pub fn variable_snapshot(&self) -> BTreeMap<String, Value> {
+        self.runtime.as_ref().map_or_else(BTreeMap::new, |runtime| {
+            runtime
+                .state()
+                .variables()
+                .iter()
+                .map(|(name, state)| (name.clone(), state.value.clone()))
+                .collect()
+        })
     }
 
     #[must_use]
@@ -430,6 +470,7 @@ impl PreviewSession {
                 if let Some(choice) = choice {
                     self.transcript.push(PreviewTranscript::Choice(choice.text));
                 }
+                self.selected_choices.push(index);
                 self.status = PreviewStatus::Ready;
                 self.run()
             }
@@ -480,6 +521,8 @@ impl PreviewSession {
         self.transcript.clear();
         self.transcript
             .push(PreviewTranscript::Jump(knot.to_owned()));
+        self.start_knot = Some(knot.to_owned());
+        self.selected_choices.clear();
         self.pattern_draws = runtime.take_pattern_draws();
         self.runtime = Some(runtime);
         self.status = PreviewStatus::Ready;
@@ -509,6 +552,8 @@ impl PreviewSession {
                 self.status = PreviewStatus::Ready;
                 self.transcript.clear();
                 self.issue = None;
+                self.start_knot = None;
+                self.selected_choices.clear();
                 true
             }
             Err(error) => {
@@ -526,6 +571,284 @@ impl PreviewSession {
             span,
         });
         self.status = PreviewStatus::Error;
+    }
+}
+
+/// Collapsible author playtest drawer state.
+///
+/// The drawer holds UI state only. Capturing and replaying build records from
+/// the compiled story and the supplied seed, so opening, exporting, importing,
+/// or replaying never advances the live session or changes its cue order.
+#[derive(Debug, Clone, Default)]
+pub struct PlaytestDrawer {
+    expanded: bool,
+    record: Option<PlaytestRecord>,
+    json: String,
+    ron: String,
+    message: Option<String>,
+    mismatch: Option<String>,
+    replay_outcome: Option<PlaytestOutcome>,
+}
+
+impl PlaytestDrawer {
+    /// Whether the drawer body is visible.
+    #[must_use]
+    pub const fn is_expanded(&self) -> bool {
+        self.expanded
+    }
+
+    /// Show or hide the drawer body.
+    pub fn toggle(&mut self) {
+        self.expanded = !self.expanded;
+    }
+
+    /// Captured or imported record.
+    #[must_use]
+    pub fn record(&self) -> Option<&PlaytestRecord> {
+        self.record.as_ref()
+    }
+
+    /// Last exported JSON document.
+    #[must_use]
+    pub fn json(&self) -> &str {
+        &self.json
+    }
+
+    /// Last exported RON document.
+    #[must_use]
+    pub fn ron(&self) -> &str {
+        &self.ron
+    }
+
+    /// Last action result or failure shown by the drawer.
+    #[must_use]
+    pub fn message(&self) -> Option<&str> {
+        self.message.as_deref()
+    }
+
+    /// First replay mismatch, when the record did not reproduce.
+    #[must_use]
+    pub fn mismatch(&self) -> Option<&str> {
+        self.mismatch.as_deref()
+    }
+
+    /// Outcome reproduced by the last successful replay.
+    #[must_use]
+    pub fn replay_outcome(&self) -> Option<&PlaytestOutcome> {
+        self.replay_outcome.as_ref()
+    }
+
+    /// Record a note shown by the drawer.
+    pub fn note(&mut self, message: impl Into<String>) {
+        self.message = Some(message.into());
+    }
+
+    /// Capture the current session playthrough.
+    pub fn capture(&mut self, session: &PreviewSession) -> bool {
+        let Some(story) = session.story() else {
+            self.message = Some("No compiled story is available to capture".to_owned());
+            return false;
+        };
+        let start_knot = session.start_knot().unwrap_or(story.entry.as_str());
+        match PlaytestRecord::capture_from(
+            story,
+            session.seed(),
+            start_knot,
+            session.selected_choices(),
+        ) {
+            Ok(record) => {
+                self.message = Some(format!(
+                    "Captured {} events and {} checkpoints",
+                    record.events.len(),
+                    record.checkpoints.len()
+                ));
+                self.record = Some(record);
+                self.mismatch = None;
+                self.replay_outcome = None;
+                true
+            }
+            Err(error) => {
+                self.message = Some(error.to_string());
+                false
+            }
+        }
+    }
+
+    /// Export the current record as JSON.
+    pub fn export_json(&mut self) -> bool {
+        let Some(record) = self.record.as_ref() else {
+            self.message = Some("Capture or import a playtest before exporting".to_owned());
+            return false;
+        };
+        match record.to_json() {
+            Ok(encoded) => {
+                self.json = encoded;
+                self.message = Some("Exported JSON to the clipboard".to_owned());
+                true
+            }
+            Err(error) => {
+                self.message = Some(error.to_string());
+                false
+            }
+        }
+    }
+
+    /// Export the current record as RON.
+    pub fn export_ron(&mut self) -> bool {
+        let Some(record) = self.record.as_ref() else {
+            self.message = Some("Capture or import a playtest before exporting".to_owned());
+            return false;
+        };
+        match record.to_ron() {
+            Ok(encoded) => {
+                self.ron = encoded;
+                self.message = Some("Exported RON to the clipboard".to_owned());
+                true
+            }
+            Err(error) => {
+                self.message = Some(error.to_string());
+                false
+            }
+        }
+    }
+
+    /// Import a JSON record document.
+    pub fn import_json(&mut self, source: &str) -> bool {
+        match PlaytestRecord::from_json(source) {
+            Ok(record) => {
+                self.record = Some(record);
+                self.json = source.to_owned();
+                self.mismatch = None;
+                self.replay_outcome = None;
+                self.message = Some("Imported a JSON playtest".to_owned());
+                true
+            }
+            Err(error) => {
+                self.message = Some(error.to_string());
+                false
+            }
+        }
+    }
+
+    /// Import a RON record document.
+    pub fn import_ron(&mut self, source: &str) -> bool {
+        match PlaytestRecord::from_ron(source) {
+            Ok(record) => {
+                self.record = Some(record);
+                self.ron = source.to_owned();
+                self.mismatch = None;
+                self.replay_outcome = None;
+                self.message = Some("Imported a RON playtest".to_owned());
+                true
+            }
+            Err(error) => {
+                self.message = Some(error.to_string());
+                false
+            }
+        }
+    }
+
+    /// Replay the current record against the session's compiled story.
+    pub fn replay(&mut self, session: &PreviewSession) -> bool {
+        let Some(story) = session.story() else {
+            self.message = Some("No compiled story is available to replay".to_owned());
+            return false;
+        };
+        self.replay_against(story)
+    }
+
+    /// Replay the current record against an explicit compiled story.
+    pub fn replay_against(&mut self, story: &StoryIr) -> bool {
+        let Some(record) = self.record.as_ref() else {
+            self.message = Some("Capture or import a playtest before replaying".to_owned());
+            return false;
+        };
+        match record.replay(story) {
+            Ok(report) => {
+                self.replay_outcome = Some(report.outcome.clone());
+                self.mismatch = None;
+                self.message = Some("Replayed the record against this story".to_owned());
+                true
+            }
+            Err(error) => {
+                self.replay_outcome = None;
+                self.mismatch = Some(error.to_string());
+                false
+            }
+        }
+    }
+}
+
+/// Collapsible resolved-presentation drawer state.
+///
+/// The optional World and Character inputs are host configuration. Resolution
+/// reads only the compiled story and the live variable snapshot, so the drawer
+/// never changes story state or cue order.
+#[derive(Debug, Clone, Default)]
+pub struct PresentationDrawer {
+    expanded: bool,
+    world: Option<WorldPresentation>,
+    character: Option<CharacterPresentation>,
+}
+
+impl PresentationDrawer {
+    /// Whether the drawer body is visible.
+    #[must_use]
+    pub const fn is_expanded(&self) -> bool {
+        self.expanded
+    }
+
+    /// Show or hide the drawer body.
+    pub fn toggle(&mut self) {
+        self.expanded = !self.expanded;
+    }
+
+    /// World-driven presentation configuration.
+    #[must_use]
+    pub fn world(&self) -> Option<&WorldPresentation> {
+        self.world.as_ref()
+    }
+
+    /// Character-driven presentation configuration.
+    #[must_use]
+    pub fn character(&self) -> Option<&CharacterPresentation> {
+        self.character.as_ref()
+    }
+
+    /// Replace the world-driven presentation configuration.
+    pub fn set_world(&mut self, world: Option<WorldPresentation>) {
+        self.world = world;
+    }
+
+    /// Replace the character-driven presentation configuration.
+    pub fn set_character(&mut self, character: Option<CharacterPresentation>) {
+        self.character = character;
+    }
+
+    /// Resolve this drawer's inputs against one preview session.
+    #[must_use]
+    pub fn view(&self, session: &PreviewSession) -> PresentationDrawerRows {
+        let Some(story) = session.story() else {
+            return PresentationDrawerRows::default();
+        };
+        let snapshot = session.variable_snapshot();
+        self.view_with(story, Some(&snapshot))
+    }
+
+    /// Resolve this drawer's inputs against a story and optional snapshot.
+    #[must_use]
+    pub fn view_with(
+        &self,
+        story: &StoryIr,
+        variables: Option<&BTreeMap<String, Value>>,
+    ) -> PresentationDrawerRows {
+        let plan = resolve_presentation(
+            story,
+            self.world.as_ref(),
+            self.character.as_ref(),
+            variables,
+        );
+        presentation_drawer_rows(&plan, story, variables)
     }
 }
 
@@ -549,6 +872,8 @@ pub struct PreviewSurface {
     /// Last decoded figure for each stage, kept for the same reason.
     last_stages: HashMap<String, Arc<RenderImage>>,
     mode: PlayMode,
+    playtest_drawer: PlaytestDrawer,
+    presentation_drawer: PresentationDrawer,
     focus: FocusHandle,
 }
 
@@ -565,6 +890,8 @@ impl PreviewSurface {
             last_background: None,
             last_stages: HashMap::new(),
             mode: PlayMode::Debug,
+            playtest_drawer: PlaytestDrawer::default(),
+            presentation_drawer: PresentationDrawer::default(),
             focus: cx.focus_handle(),
         }
     }
@@ -625,6 +952,38 @@ impl PreviewSurface {
     #[must_use]
     pub const fn session(&self) -> &PreviewSession {
         &self.session
+    }
+
+    /// Author playtest drawer state.
+    #[must_use]
+    pub const fn playtest_drawer(&self) -> &PlaytestDrawer {
+        &self.playtest_drawer
+    }
+
+    /// Resolved-presentation drawer state.
+    #[must_use]
+    pub const fn presentation_drawer(&self) -> &PresentationDrawer {
+        &self.presentation_drawer
+    }
+
+    /// Replace the world-driven presentation configuration shown by the drawer.
+    pub fn set_world_presentation(
+        &mut self,
+        world: Option<WorldPresentation>,
+        cx: &mut Context<Self>,
+    ) {
+        self.presentation_drawer.set_world(world);
+        cx.notify();
+    }
+
+    /// Replace the character-driven presentation configuration shown by the drawer.
+    pub fn set_character_presentation(
+        &mut self,
+        character: Option<CharacterPresentation>,
+        cx: &mut Context<Self>,
+    ) {
+        self.presentation_drawer.set_character(character);
+        cx.notify();
     }
 
     pub fn set_domain_catalog(&mut self, domain_catalog: DomainCatalog, cx: &mut Context<Self>) {
@@ -757,7 +1116,9 @@ impl PreviewSurface {
                 .ml_auto()
                 .text_xs()
                 .text_color(rgb(DARK_THEME.muted_text))
-                .child("Space to advance · 1-9 to choose · R to restart"),
+                .child(
+                    "Space to advance · 1-9 to choose · R to restart · D playtest · V references",
+                ),
         )
         .into_any_element()
     }
@@ -1031,7 +1392,308 @@ impl PreviewSurface {
             }
         }
 
-        frame.child(stage_area).child(dialogue).into_any_element()
+        frame
+            .child(stage_area)
+            .child(dialogue)
+            .child(self.playtest_drawer_panel(cx))
+            .child(self.presentation_drawer_panel(cx))
+            .into_any_element()
+    }
+
+    fn playtest_drawer_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+        let expanded = self.playtest_drawer.is_expanded();
+        let panel = div()
+            .id("playtest-drawer")
+            .flex_none()
+            .border_t_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .child(
+                div()
+                    .id("playtest-drawer-toggle")
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .px_3()
+                    .py_1()
+                    .cursor_pointer()
+                    .text_xs()
+                    .text_color(rgb(if expanded {
+                        DARK_THEME.text
+                    } else {
+                        DARK_THEME.muted_text
+                    }))
+                    .child(format!(
+                        "{} Playtest drawer · D",
+                        if expanded { "▾" } else { "▸" }
+                    ))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.playtest_drawer.toggle();
+                        cx.notify();
+                    })),
+            );
+        if !expanded {
+            return panel.into_any_element();
+        }
+
+        let controls = div()
+            .flex()
+            .flex_wrap()
+            .gap_1()
+            .px_3()
+            .pb_1()
+            .child(preview_button(
+                "Capture",
+                "playtest-capture",
+                cx,
+                |this, _cx| {
+                    let session = &this.session;
+                    this.playtest_drawer.capture(session);
+                },
+            ))
+            .child(preview_button(
+                "Export JSON",
+                "playtest-export-json",
+                cx,
+                |this, cx| {
+                    if this.playtest_drawer.export_json() {
+                        let encoded = this.playtest_drawer.json().to_owned();
+                        cx.write_to_clipboard(ClipboardItem::new_string(encoded));
+                    }
+                },
+            ))
+            .child(preview_button(
+                "Export RON",
+                "playtest-export-ron",
+                cx,
+                |this, cx| {
+                    if this.playtest_drawer.export_ron() {
+                        let encoded = this.playtest_drawer.ron().to_owned();
+                        cx.write_to_clipboard(ClipboardItem::new_string(encoded));
+                    }
+                },
+            ))
+            .child(preview_button(
+                "Import JSON",
+                "playtest-import-json",
+                cx,
+                |this, cx| match cx.read_from_clipboard().and_then(|item| item.text()) {
+                    Some(source) => {
+                        this.playtest_drawer.import_json(&source);
+                    }
+                    None => this
+                        .playtest_drawer
+                        .note("The clipboard has no text to import"),
+                },
+            ))
+            .child(preview_button(
+                "Import RON",
+                "playtest-import-ron",
+                cx,
+                |this, cx| match cx.read_from_clipboard().and_then(|item| item.text()) {
+                    Some(source) => {
+                        this.playtest_drawer.import_ron(&source);
+                    }
+                    None => this
+                        .playtest_drawer
+                        .note("The clipboard has no text to import"),
+                },
+            ))
+            .child(preview_button(
+                "Replay",
+                "playtest-replay",
+                cx,
+                |this, _cx| {
+                    let session = &this.session;
+                    this.playtest_drawer.replay(session);
+                },
+            ));
+
+        let mut body = div()
+            .id("playtest-drawer-body")
+            .px_3()
+            .pb_2()
+            .max_h(px(260.0))
+            .overflow_y_scroll()
+            .flex()
+            .flex_col()
+            .gap_1();
+
+        if let Some(mismatch) = self.playtest_drawer.mismatch() {
+            body = body.child(
+                div()
+                    .id("playtest-mismatch")
+                    .p_2()
+                    .rounded_md()
+                    .bg(rgb(DARK_THEME.error))
+                    .text_xs()
+                    .text_color(rgb(DARK_THEME.text))
+                    .child(format!("Replay mismatch: {mismatch}")),
+            );
+        }
+        if let Some(message) = self.playtest_drawer.message() {
+            body = body.child(drawer_note(message.to_owned()));
+        }
+
+        body = body.child(drawer_section("CURRENT SESSION"));
+        body = body.child(drawer_text(format!(
+            "{} · seed {}",
+            self.session.status().label(),
+            self.session.seed()
+        )));
+        body = body.child(drawer_section("CURRENT HISTORY"));
+        if self.session.transcript().is_empty() {
+            body = body.child(drawer_note("No transcript yet".to_owned()));
+        }
+        for entry in self.session.transcript() {
+            let text = match entry {
+                PreviewTranscript::Line(line) => line.clone(),
+                PreviewTranscript::Choice(choice) => format!("› {choice}"),
+                PreviewTranscript::Jump(knot) => format!("↪ {knot}"),
+            };
+            body = body.child(drawer_text(text));
+        }
+
+        if let Some(record) = self.playtest_drawer.record() {
+            body = body.child(drawer_section("OUTCOME"));
+            body = body.child(drawer_text(format!(
+                "{} · seed {} · start `{}`",
+                record.outcome.summary(),
+                record.seed,
+                record.start_knot
+            )));
+            if let Some(outcome) = self.playtest_drawer.replay_outcome() {
+                body = body.child(drawer_text(format!(
+                    "Replay reproduced: {}",
+                    outcome.summary()
+                )));
+            }
+
+            body = body.child(drawer_section("CHECKPOINTS"));
+            for (index, checkpoint) in record.checkpoints.iter().enumerate() {
+                body = body.child(drawer_text(format!(
+                    "#{index} · event {} · choice {} · `{}`",
+                    checkpoint.event, checkpoint.choice, checkpoint.knot
+                )));
+            }
+
+            body = body.child(drawer_section("HISTORY"));
+            for event in &record.events {
+                body = body.child(drawer_text(format!("{} · {}", event.kind, event.knot)));
+            }
+
+            body = body.child(drawer_section("CUES"));
+            for cue in &record.cues {
+                body = body.child(drawer_text(format!("{:?} · {}", cue.cue, cue.knot)));
+            }
+        } else {
+            body = body.child(drawer_note(
+                "Capture the current playthrough, or import JSON or RON from the clipboard."
+                    .to_owned(),
+            ));
+        }
+
+        body = body.child(drawer_section("VARIABLES"));
+        let variables = self.session.variables();
+        if variables.is_empty() {
+            body = body.child(drawer_note("No variables".to_owned()));
+        }
+        for (name, value) in variables {
+            body = body.child(drawer_text(format!("{name} = {value}")));
+        }
+
+        panel.child(controls).child(body).into_any_element()
+    }
+
+    fn presentation_drawer_panel(&self, cx: &mut Context<Self>) -> AnyElement {
+        let expanded = self.presentation_drawer.is_expanded();
+        let panel = div()
+            .id("presentation-drawer")
+            .flex_none()
+            .border_t_1()
+            .border_color(rgb(DARK_THEME.border))
+            .bg(rgb(DARK_THEME.panel))
+            .child(
+                div()
+                    .id("presentation-drawer-toggle")
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .px_3()
+                    .py_1()
+                    .cursor_pointer()
+                    .text_xs()
+                    .text_color(rgb(if expanded {
+                        DARK_THEME.text
+                    } else {
+                        DARK_THEME.muted_text
+                    }))
+                    .child(format!(
+                        "{} Resolved presentation · V",
+                        if expanded { "▾" } else { "▸" }
+                    ))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.presentation_drawer.toggle();
+                        cx.notify();
+                    })),
+            );
+        if !expanded {
+            return panel.into_any_element();
+        }
+
+        let rows = self.presentation_drawer.view(&self.session);
+        let configured = self.presentation_drawer.world().is_some()
+            || self.presentation_drawer.character().is_some();
+        let mut body = div()
+            .id("presentation-drawer-body")
+            .px_3()
+            .pb_2()
+            .max_h(px(220.0))
+            .overflow_y_scroll()
+            .flex()
+            .flex_col()
+            .gap_1();
+
+        body = body.child(drawer_section("REFERENCES"));
+        if rows.references.is_empty() {
+            body = body.child(drawer_note(if configured {
+                "No scene or stage resolved from the configured references.".to_owned()
+            } else {
+                "No World or Character presentation is configured; Play uses explicit or fallback presentation.".to_owned()
+            }));
+        }
+        for reference in &rows.references {
+            let mut text = format!(
+                "{} → {} `{}`",
+                reference.reference,
+                reference.target.label(),
+                reference.id
+            );
+            if let Some(value) = &reference.value {
+                text.push_str(" = ");
+                text.push_str(value);
+            }
+            if reference.fallback {
+                text.push_str(" (fallback)");
+            }
+            body = body.child(drawer_text(text));
+        }
+
+        if !rows.diagnostics.is_empty() {
+            body = body.child(drawer_section("DIAGNOSTICS"));
+            for diagnostic in &rows.diagnostics {
+                body = body.child(div().text_xs().text_color(rgb(DARK_THEME.warning)).child(
+                    format!(
+                        "{} · {} — {}",
+                        diagnostic.kind.label(),
+                        diagnostic.source,
+                        diagnostic.detail
+                    ),
+                ));
+            }
+        }
+
+        panel.child(body).into_any_element()
     }
 
     fn preview_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
@@ -1049,6 +1711,12 @@ impl PreviewSurface {
             "r" => {
                 self.session.restart();
                 self.session.run();
+            }
+            "d" => {
+                self.playtest_drawer.toggle();
+            }
+            "v" => {
+                self.presentation_drawer.toggle();
             }
             _ => {
                 if let Some(character) = &event.keystroke.key_char
@@ -1309,6 +1977,31 @@ impl gpui::Render for PreviewSurface {
     }
 }
 
+fn drawer_section(label: &str) -> AnyElement {
+    div()
+        .mt_1()
+        .text_xs()
+        .text_color(rgb(DARK_THEME.muted_text))
+        .child(label.to_owned())
+        .into_any_element()
+}
+
+fn drawer_text(text: String) -> AnyElement {
+    div()
+        .text_xs()
+        .text_color(rgb(DARK_THEME.text))
+        .child(text)
+        .into_any_element()
+}
+
+fn drawer_note(text: String) -> AnyElement {
+    div()
+        .text_xs()
+        .text_color(rgb(DARK_THEME.muted_text))
+        .child(text)
+        .into_any_element()
+}
+
 fn preview_button(
     label: &str,
     id: &'static str,
@@ -1451,6 +2144,10 @@ fn issue_from_diagnostics(diagnostics: &[Diagnostic]) -> PreviewIssue {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::play_view::{
+        CharacterProjection, PresentationDiagnosticKind, ResolvedTarget, ValueRef,
+    };
+    use weave_core::ir::{Instruction, InstructionKind};
 
     const STORY: &str = r#"grammar names {
     value: ["Mira", "Aldric"]
@@ -1588,5 +2285,239 @@ Done.
         push_note(&mut notes, Some("stage \"mara\" — the file was not found"));
         push_note(&mut notes, None);
         assert_eq!(notes.len(), 1);
+    }
+
+    const DRAWER_STORY: &str = r#"
+scene harbour {
+    background: "art/harbour.png"
+}
+
+stage mara {
+    name: "Mara"
+}
+
+VAR place = "harbour"
+VAR speaker = "mara"
+
+=== start ===
+Mara: The ferry leaves at dusk.
+* [Board the ferry]
+    SET place = "cabin"
+    Mara: Then we cross together.
+    -> END
+* [Wait for morning]
+    -> start
+"#;
+
+    const SECRET_STORY: &str = r#"
+scene harbour {
+    background: "art/harbour.png"
+}
+
+VAR place = "never-print-this-token"
+
+=== start ===
+The harbour is quiet.
+-> END
+"#;
+
+    fn drawer_session(source: &str) -> PreviewSession {
+        let compiled =
+            weave_compiler::compile(source, &CompileOptions::default()).expect("drawer story");
+        let mut session = PreviewSession::from_story(compiled.story, 7, 1);
+        session.run();
+        session
+    }
+
+    #[test]
+    fn playtest_drawer_captures_and_round_trips_json_and_ron() {
+        let preview = drawer_session(DRAWER_STORY);
+        let mut drawer = PlaytestDrawer::default();
+        assert!(!drawer.is_expanded());
+        drawer.toggle();
+        assert!(drawer.is_expanded());
+
+        let transcript = preview.transcript().to_vec();
+        let cues = preview.presentation().to_vec();
+        let choices = preview.choices();
+        let variables = preview.variables();
+
+        assert!(drawer.capture(&preview));
+        let record = drawer.record().cloned().expect("captured record");
+        assert_eq!(record.seed, 7);
+        assert_eq!(record.start_knot, "start");
+        assert!(record.outcome.summary().contains("waiting for choice"));
+
+        assert!(drawer.export_json());
+        let json = drawer.json().to_owned();
+        assert!(json.contains("\"format_version\": 1"));
+        assert!(drawer.export_ron());
+        let ron = drawer.ron().to_owned();
+        assert!(ron.contains("format_version: 1"));
+
+        let mut imported = PlaytestDrawer::default();
+        assert!(imported.import_json(&json));
+        assert_eq!(imported.record(), Some(&record));
+        assert!(imported.import_ron(&ron));
+        assert_eq!(imported.record(), Some(&record));
+
+        assert_eq!(preview.transcript(), transcript);
+        assert_eq!(preview.presentation(), cues);
+        assert_eq!(preview.choices(), choices);
+        assert_eq!(preview.variables(), variables);
+    }
+
+    #[test]
+    fn playtest_drawer_surfaces_the_first_replay_mismatch() {
+        let preview = drawer_session(DRAWER_STORY);
+        let mut drawer = PlaytestDrawer::default();
+        assert!(drawer.capture(&preview));
+
+        let mut changed = preview.story().cloned().expect("compiled story");
+        changed
+            .knots
+            .get_mut("start")
+            .expect("start knot")
+            .content
+            .push(Instruction {
+                span: Span::new(0, 0, 1, 1),
+                kind: InstructionKind::End,
+            });
+
+        assert!(!drawer.replay_against(&changed));
+        assert!(
+            drawer
+                .mismatch()
+                .is_some_and(|mismatch| mismatch.contains("story content changed"))
+        );
+        assert!(drawer.replay_outcome().is_none());
+
+        assert!(drawer.replay(&preview));
+        assert!(drawer.mismatch().is_none());
+        assert!(drawer.replay_outcome().is_some());
+    }
+
+    #[test]
+    fn presentation_drawer_shows_world_and_character_references() {
+        let preview = drawer_session(DRAWER_STORY);
+        let mut drawer = PresentationDrawer::default();
+        assert!(!drawer.is_expanded());
+        drawer.toggle();
+        assert!(drawer.is_expanded());
+
+        drawer.set_world(Some(WorldPresentation {
+            selector: ValueRef::Variable {
+                name: "place".to_owned(),
+            },
+            scenes: BTreeMap::from([("harbour".to_owned(), "harbour".to_owned())]),
+            fallback: Some("harbour".to_owned()),
+        }));
+        drawer.set_character(Some(CharacterPresentation {
+            selector: ValueRef::Variable {
+                name: "speaker".to_owned(),
+            },
+            projections: BTreeMap::from([(
+                "mara".to_owned(),
+                CharacterProjection {
+                    display_name: Some("Mara Vale".to_owned()),
+                    stage: Some("mara".to_owned()),
+                    expression: None,
+                    portrait: None,
+                },
+            )]),
+            stage_ids: BTreeMap::from([("mara".to_owned(), "mara".to_owned())]),
+            expressions: BTreeMap::new(),
+            fallback_stage: Some("mara".to_owned()),
+        }));
+
+        let rows = drawer.view(&preview);
+        assert!(rows.diagnostics.is_empty());
+        assert_eq!(rows.references.len(), 2);
+
+        let scene = rows
+            .references
+            .iter()
+            .find(|row| row.target == ResolvedTarget::Scene)
+            .expect("world-driven scene row");
+        assert_eq!(scene.reference, "variable `place`");
+        assert_eq!(scene.id, "harbour");
+        assert_eq!(scene.value.as_deref(), Some("harbour"));
+        assert!(!scene.fallback);
+
+        let stage = rows
+            .references
+            .iter()
+            .find(|row| row.target == ResolvedTarget::Stage)
+            .expect("character-driven stage row");
+        assert_eq!(stage.reference, "variable `speaker`");
+        assert_eq!(stage.id, "mara");
+        assert_eq!(stage.value.as_deref(), Some("mara"));
+        assert!(!stage.fallback);
+    }
+
+    #[test]
+    fn presentation_drawer_shows_a_missing_reference_fallback_with_its_diagnostic() {
+        let preview = drawer_session(DRAWER_STORY);
+        let mut drawer = PresentationDrawer::default();
+        drawer.set_world(Some(WorldPresentation {
+            selector: ValueRef::Variable {
+                name: "absent".to_owned(),
+            },
+            scenes: BTreeMap::new(),
+            fallback: Some("harbour".to_owned()),
+        }));
+
+        let rows = drawer.view(&preview);
+        let reference = &rows.references[0];
+        assert_eq!(reference.id, "harbour");
+        assert!(reference.fallback);
+        assert_eq!(reference.value, None);
+        assert_eq!(
+            rows.diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.kind)
+                .collect::<Vec<_>>(),
+            [
+                PresentationDiagnosticKind::UnavailableValue,
+                PresentationDiagnosticKind::Fallback
+            ]
+        );
+        assert_eq!(rows.diagnostics[0].kind.label(), "unavailable_value");
+        assert_eq!(rows.diagnostics[0].source, "variable `absent`");
+        assert_eq!(rows.diagnostics[1].source, "variable `absent`");
+    }
+
+    #[test]
+    fn presentation_drawer_never_echoes_a_rejected_value() {
+        let preview = drawer_session(SECRET_STORY);
+        let mut drawer = PresentationDrawer::default();
+        drawer.set_world(Some(WorldPresentation {
+            selector: ValueRef::Variable {
+                name: "place".to_owned(),
+            },
+            scenes: BTreeMap::new(),
+            fallback: Some("harbour".to_owned()),
+        }));
+
+        let rows = drawer.view(&preview);
+        let reference = &rows.references[0];
+        assert_eq!(reference.id, "harbour");
+        assert!(reference.fallback);
+        assert_eq!(reference.value, None);
+        assert_eq!(
+            rows.diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.kind)
+                .collect::<Vec<_>>(),
+            [
+                PresentationDiagnosticKind::UnmappedValue,
+                PresentationDiagnosticKind::Fallback
+            ]
+        );
+        assert!(!format!("{rows:?}").contains("never-print-this-token"));
+        for diagnostic in &rows.diagnostics {
+            assert!(!diagnostic.source.contains("never-print-this-token"));
+            assert!(!diagnostic.detail.contains("never-print-this-token"));
+        }
     }
 }
