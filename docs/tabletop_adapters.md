@@ -554,3 +554,70 @@ Run the adapter suite from a local checkout:
 ```bash
 cargo test -p weave-tabletop --test open_tale
 ```
+
+## Spark adapter
+
+Spark uses step-die Body, Heart, Mind, and Spark attributes, tiered Broad, Common, and Deep Talents,
+relationships, and three authored Beliefs. Creation validates the exact point budget, the three
+Beliefs, and every relationship reference. The resolver gathers the owning step die and talent
+bonus, applies declared supporters, resolves competing declarations, handles ties and escalation,
+accepts explicit post-roll Influence or Harm boosts, and charges the winner's cost. Closing a scene
+records confirmed or refuted Beliefs, changes Influence through an explicit review, recovers
+permitted Harm, and keeps the rationale as authoring lineage.
+
+Settings add factions, ties, faces, agendas, and optional world references under the adapter
+namespace. Collaborative setting creation merges contributions in a deterministic order and keeps
+every revision, incomplete work is resumable, and scene framing opens the same conflict loop.
+Belief replacement records the old and new statement, requires explicit confirmation, and grants
+Growth only when the replaced Belief was refuted. Setting Evolution requires satisfied conditions
+and returns reviewable before and after changes without writing back to canonical character data.
+
+The manifest pins the public source record, edition, CC0-1.0, and the SHA-256 of that checked-in
+record. Example settings, logos, artwork, and presentation are excluded even where the upstream
+guide places them under CC0.
+
+```bash
+cargo test -p weave-tabletop --test spark
+```
+
+## Wicked Ones adapter
+
+Wicked Ones creation covers calling, action ratings grouped by Brains, Muscles, and Guts, dark
+impulse, revelry, gear, abilities, a vile friend, Stress, and dark hearts. The action loop validates
+intention, approach, action, position, and effect, applies declared bonuses and teamwork, returns
+failure, mixed, success, and critical bands with structured consequences, and resolves resistance
+and Stress deterministically. Flashbacks, shock, bloodied and feral states, death, and the final
+death knell mutate serializable state through explicit operations.
+
+The campaign model adds the dungeon, rooms, structures, creatures, minion packs, factions with
+clocks, and raids. The campaign cycle has explicit phases with downtime actions, dungeon events,
+calamity, raid planning and engagement into the action loop, blowback, recovery, and advancement.
+A deterministic golden cycle and editor-facing views cover the full loop.
+
+The manifest pins the public CC0-1.0 v1.4 source record and denies the two upstream properties that
+are not covered by that release; no upstream prose, layouts, or artwork appear in fixtures.
+
+```bash
+cargo test -p weave-tabletop --test wicked_ones
+```
+
+## Open Adventure adapter
+
+Open Adventure creation derives nine named attributes, lineage, culture, background,
+specializations, favored actions, equipment references, Benefits and Drawbacks, and the defense,
+reaction, Body, Mind, Spirit, action-score, and action-die values. Challenges and encounters use
+exploding action dice with the seven-step progression, Effect, challenge-point pools, and
+deterministic success, withdrawal, defeat, or host-decision endings. Wounds, magic, Story Points,
+rewards, and advancement are explicit operations with structured public and authority events.
+
+Optional modules declare a version, namespace, order, and CC0 provenance, apply add or replace
+capability rules, and never change the core when inactive. A golden adventure replays across JSON
+and RON after every step, and the adapter exposes its scope, exclusions, factual compatibility
+naming, and contributor steps for hosts.
+
+The manifest pins the public CC0 source record and digest. The Masterwork Edition layout, artwork,
+and fonts are excluded.
+
+```bash
+cargo test -p weave-tabletop --test open_adventure
+```
