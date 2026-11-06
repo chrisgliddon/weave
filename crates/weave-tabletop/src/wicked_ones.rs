@@ -4563,11 +4563,16 @@ fn resolve_action(
                 "stored resistance action rating is outside the reviewed range",
             ));
         }
-        let resistance_pool = resistance_rating
-            .saturating_add(resistance_bonus)
-            .clamp(1, MAX_ACTION_POOL);
-        resistance_dice = roll_dice(entropy, resistance_pool)?;
-        let (resistance_best, resistance_sixes) = effective_best(&resistance_dice, false);
+        let resistance_declared_pool = resistance_rating.saturating_add(resistance_bonus);
+        let resistance_pool = resistance_declared_pool.min(MAX_ACTION_POOL);
+        let resistance_dice_count = if resistance_pool == 0 {
+            2
+        } else {
+            resistance_pool
+        };
+        resistance_dice = roll_dice(entropy, resistance_dice_count)?;
+        let (resistance_best, resistance_sixes) =
+            effective_best(&resistance_dice, resistance_pool == 0);
         resistance_outcome = outcome_band(resistance_best, resistance_sixes);
         match resistance_outcome {
             "critical" | "success" => {

@@ -239,6 +239,36 @@ fn payload_list_len(payload: &DomainValue, field: &str) -> usize {
     }
 }
 
+fn payload_numbers(payload: &DomainValue, field: &str) -> Vec<u32> {
+    let DomainValue::Object(fields) = payload else {
+        panic!("payload is not an object");
+    };
+    let DomainValue::List(values) = &fields[field] else {
+        panic!("field is not a list");
+    };
+    values
+        .iter()
+        .map(|value| match value {
+            DomainValue::Number(number) => *number as u32,
+            _ => panic!("list item is not a number"),
+        })
+        .collect()
+}
+
+fn dice_band(dice: &[u32]) -> &'static str {
+    let sixes = dice.iter().filter(|value| **value == 6).count();
+    let best = dice.iter().copied().min().unwrap_or(1);
+    if sixes >= 2 {
+        "critical"
+    } else if best == 6 {
+        "success"
+    } else if best >= 4 {
+        "mixed"
+    } else {
+        "failure"
+    }
+}
+
 #[test]
 fn manifest_pins_the_checked_in_public_source_record() {
     let manifest = wicked_ones_manifest();
@@ -1433,5 +1463,57 @@ fn downtime_upgrades_revelry_and_both_advancement_kinds() {
     assert_eq!(
         payload_list_len(payload(&action, "action_resolved"), "dice"),
         3
+    );
+}
+
+#[test]
+fn zero_pool_action_and_resistance_use_two_dice_and_the_lowest() {
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    let mut found = false;
+    for seed in 0..128 {
+        let preview = preview_with_seed(seed);
+        let (_, receipt) = execute(
+            &registry,
+            &preview,
+            &preview.initial_state,
+            "zero_pool_resistance",
+            "resolve_action",
+            TabletopCapability::ChecksAndConflicts,
+            action_input(
+                "force",
+                "demolish",
+                "desperate",
+                "standard",
+                &[],
+                false,
+                Some(("endure", 0)),
+            ),
+        );
+        let resolved = payload(&receipt, "action_resolved");
+        let outcome = payload_text(resolved, "outcome");
+        if outcome != "mixed" && outcome != "failure" {
+            continue;
+        }
+        let dice = payload_numbers(resolved, "dice");
+        let resistance_dice = payload_numbers(resolved, "resistance_dice");
+        assert_eq!(payload_u32(resolved, "pool"), 2, "seed {seed}");
+        assert_eq!(dice.len(), 2, "seed {seed}");
+        assert_eq!(resistance_dice.len(), 2, "seed {seed}");
+        assert_eq!(dice_band(&dice), outcome, "seed {seed}");
+        assert_eq!(
+            dice_band(&resistance_dice),
+            payload_text(resolved, "resistance_outcome"),
+            "seed {seed}"
+        );
+        assert!(payload_bool(resolved, "resisted"), "seed {seed}");
+        found = true;
+        break;
+    }
+    assert!(
+        found,
+        "a bounded seed scan must find a zero-pool consequence"
     );
 }
