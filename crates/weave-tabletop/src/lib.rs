@@ -9,6 +9,8 @@ mod domain;
 mod dungeonpunk;
 mod freehack;
 mod model;
+mod open_adventure;
+mod open_tale;
 mod plug_and_play;
 mod resolver;
 mod spark;
@@ -31,6 +33,8 @@ pub use domain::{tabletop_domain_manifest, tabletop_domain_pack};
 pub use dungeonpunk::*;
 pub use freehack::*;
 pub use model::*;
+pub use open_adventure::*;
+pub use open_tale::*;
 pub use plug_and_play::*;
 pub use resolver::{
     EntropyStream, ResolverRegistry, TabletopResolver, preview_adapter_switch,

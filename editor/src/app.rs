@@ -2,6 +2,7 @@
 
 use std::cell::RefCell;
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
@@ -893,15 +894,26 @@ impl EditorShell {
         // The sidecar is project-local data, not a trusted input: refuse a symlink or a
         // non-regular file, and bound the read so a large file cannot stall the editor.
         const MAX_PREFERENCES_BYTES: u64 = 64 * 1024;
-        let Ok(metadata) = std::fs::symlink_metadata(&path) else {
+        // Validate the opened handle, not the path, so the type and size cannot change
+        // between the check and the read.
+        let Ok(file) = std::fs::File::open(&path) else {
+            return;
+        };
+        let Ok(metadata) = file.metadata() else {
             return;
         };
         if !metadata.file_type().is_file() || metadata.len() > MAX_PREFERENCES_BYTES {
             return;
         }
-        let Ok(text) = std::fs::read_to_string(&path) else {
+        let mut text = String::new();
+        if file
+            .take(MAX_PREFERENCES_BYTES + 1)
+            .read_to_string(&mut text)
+            .is_err()
+            || text.len() as u64 > MAX_PREFERENCES_BYTES
+        {
             return;
-        };
+        }
         match KnotViewPreferences::from_json(&text) {
             Ok(preferences) => self
                 .knot
