@@ -17,6 +17,7 @@ use weave_character::{
     character_pack_adapter_manifest_fingerprint, character_pack_adapter_namespace_key,
     character_pack_profile_fingerprint, character_pack_value_fingerprint,
     character_runtime_pack_schema, expression_pack_ref, synthesize_character, template_fingerprint,
+    validate_runtime_pack_with_canonical_profile,
 };
 use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, TypeExpression};
 
@@ -1183,26 +1184,43 @@ fn tabletop_projection_round_trips_in_json_and_ron() {
     assert!(!json_contains_key(&value, "inactive"));
 }
 
-#[test]
-fn inactive_tabletop_projections_are_authoring_only() {
-    let mut pack = authoring_pack_with_tabletop();
-    let projection = ari_tabletop_mut(&mut pack);
-    let mut inactive_adapter = projection.manifest.coordinate.clone();
-    inactive_adapter.version = "0.9.0".to_owned();
-    inactive_adapter.content_sha256 = "c".repeat(64);
-    let definition = DomainValue::String("Prior Wayfinder".to_owned());
-    let key = character_pack_adapter_namespace_key(&inactive_adapter);
-    projection.inactive.insert(
-        key.clone(),
+fn inactive_tabletop(
+    definition_type: TypeExpression,
+    definition: DomainValue,
+) -> (String, CharacterPackInactiveTabletop) {
+    let mut manifest = adapter_manifest();
+    manifest.coordinate.version = "0.9.0".to_owned();
+    manifest.definition_type = definition_type;
+    manifest.coordinate.content_sha256 =
+        character_pack_adapter_manifest_fingerprint(&manifest).expect("manifest fingerprint");
+    let key = character_pack_adapter_namespace_key(&manifest.coordinate);
+    let definition_sha256 =
+        character_pack_value_fingerprint(&definition).expect("definition fingerprint");
+    (
+        key,
         CharacterPackInactiveTabletop {
-            adapter: inactive_adapter,
-            definition: definition.clone(),
-            definition_sha256: character_pack_value_fingerprint(&definition)
-                .expect("definition fingerprint"),
+            manifest,
+            definition,
+            definition_sha256,
             completed_creation_steps: vec!["origin".to_owned()],
             reason: "Superseded synthetic archive.".to_owned(),
         },
+    )
+}
+
+#[test]
+fn inactive_tabletop_projections_are_authoring_only() {
+    let mut pack = authoring_pack_with_tabletop();
+    let (key, inactive) = inactive_tabletop(
+        TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        DomainValue::String("Prior Wayfinder".to_owned()),
     );
+    ari_tabletop_mut(&mut pack)
+        .inactive
+        .insert(key.clone(), inactive);
     pack.normalize();
     pack.validate().expect("authoring archive is valid");
     assert!(pack.to_json().expect("authoring JSON").contains("0.9.0"));
@@ -1366,4 +1384,93 @@ fn adapter_manifest_fingerprint_is_order_invariant() {
     authoring
         .validate()
         .expect("normalizing an unordered manifest preserves the pinned hash");
+}
+
+#[test]
+fn tabletop_type_contract_is_validated() {
+    let mut pack = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut pack);
+        projection.manifest.types.insert(
+            "node".to_owned(),
+            TypeExpression::Named {
+                name: "node".to_owned(),
+            },
+        );
+        projection.manifest.definition_type = TypeExpression::Named {
+            name: "node".to_owned(),
+        };
+        repin_adapter_projection(projection);
+    }
+    let error = pack.validate().expect_err("recursive adapter type");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("recursive"));
+
+    let mut pack = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut pack);
+        projection.manifest.definition_type = TypeExpression::String {
+            min_length: 0,
+            max_length: 70_000,
+        };
+        repin_adapter_projection(projection);
+    }
+    let error = pack.validate().expect_err("unbounded adapter type");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
+    assert!(error.to_string().contains("bounds"));
+}
+
+#[test]
+fn runtime_tabletop_requires_the_exact_canonical_profile() {
+    let authoring = authoring_pack_with_tabletop();
+    let canonical = authoring
+        .characters
+        .iter()
+        .find(|entry| entry.profile.id == ARI_VALE)
+        .expect("fixture character")
+        .profile
+        .clone();
+    let runtime = authoring.to_runtime_pack().expect("runtime export");
+    validate_runtime_pack_with_canonical_profile(&runtime, &canonical)
+        .expect("exact canonical profile");
+
+    let mut changed = canonical.clone();
+    changed.canon.identity.display_name.value = "Changed Display Name".to_owned();
+    let error = validate_runtime_pack_with_canonical_profile(&runtime, &changed)
+        .expect_err("stale canonical profile");
+    assert_eq!(error.diagnostic().code, CharacterDiagnosticCode::StaleInput);
+}
+
+#[test]
+fn inactive_archives_use_their_own_manifest_contract() {
+    let archived_type = TypeExpression::Number {
+        integer: true,
+        minimum: Some(0.0),
+        maximum: Some(100.0),
+    };
+    let (key, inactive) = inactive_tabletop(archived_type.clone(), DomainValue::Number(7.0));
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).inactive.insert(key, inactive);
+    pack.normalize();
+    pack.validate()
+        .expect("archived Number contract validates against its own manifest");
+
+    let (key, mut forged) = inactive_tabletop(archived_type, DomainValue::Number(7.0));
+    forged.definition = DomainValue::String("Wayfinder".to_owned());
+    forged.definition_sha256 =
+        character_pack_value_fingerprint(&forged.definition).expect("definition fingerprint");
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).inactive.insert(key, forged);
+    pack.normalize();
+    let error = pack.validate().expect_err("forged archived definition");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidValue
+    );
 }

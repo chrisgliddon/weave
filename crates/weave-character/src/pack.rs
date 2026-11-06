@@ -640,7 +640,8 @@ pub struct CharacterPackTabletopState {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CharacterPackInactiveTabletop {
-    pub adapter: CharacterPackAdapterCoordinate,
+    /// Exact archived adapter manifest; its coordinate types are validated for this entry.
+    pub manifest: CharacterPackAdapterManifest,
     pub definition: DomainValue,
     pub definition_sha256: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -674,6 +675,9 @@ pub struct CharacterPackTabletopProjection {
 pub struct CharacterPackActiveTabletop {
     pub projection_format_version: u32,
     pub character_id: String,
+    /// Reference to the exact canonical profile. Plain runtime validation checks only the hash
+    /// format; hosts should compare it with their canonical store or call
+    /// [`validate_runtime_pack_with_canonical_profile`].
     pub canonical_profile_sha256: String,
     /// Always false; tabletop projections cannot write canonical Character evidence.
     pub canonical_character_write_back: bool,
@@ -1785,6 +1789,10 @@ fn resolve_expression_pack<'a>(
 }
 
 /// Validate a complete runtime pack and every required reference.
+///
+/// Tabletop `canonical_profile_sha256` values are format-checked only because the runtime profile
+/// is intentionally lossy. Call [`validate_runtime_pack_with_canonical_profile`] to compare one
+/// against the exact canonical profile held by the importer.
 pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), CharacterPackError> {
     validate_pack_format_version(pack.pack_format_version)?;
     CharacterPackMetadata {
@@ -1822,6 +1830,40 @@ pub fn validate_runtime_pack(pack: &CharacterRuntimePack) -> Result<(), Characte
         validate_runtime_profile(profile, &ids, &profiles)?;
     }
     Ok(())
+}
+
+/// Validate a runtime pack and verify one active tabletop projection against the exact canonical
+/// profile held by the importer.
+pub fn validate_runtime_pack_with_canonical_profile(
+    pack: &CharacterRuntimePack,
+    profile: &CharacterProfile,
+) -> Result<(), CharacterPackError> {
+    validate_runtime_pack(pack)?;
+    let Some(runtime_profile) = pack
+        .characters
+        .iter()
+        .find(|character| character.id == profile.id)
+    else {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            "characters",
+            "canonical profile is absent from the runtime pack",
+        ));
+    };
+    let Some(tabletop) = &runtime_profile.tabletop else {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("characters.{}.tabletop", profile.id),
+            "runtime character has no active tabletop projection to verify",
+        ));
+    };
+    let fingerprint = character_pack_profile_fingerprint(profile)?;
+    validate_runtime_tabletop(
+        &format!("characters.{}", profile.id),
+        runtime_profile,
+        tabletop,
+        Some(&fingerprint),
+    )
 }
 
 fn validate_runtime_profile(
@@ -1966,7 +2008,7 @@ fn validate_runtime_profile(
         validate_runtime_expression(&format!("{path}.expression"), expression, ids)?;
     }
     if let Some(tabletop) = &profile.tabletop {
-        validate_runtime_tabletop(&path, profile, tabletop)?;
+        validate_runtime_tabletop(&path, profile, tabletop, None)?;
     }
     for (id, cue) in &profile.date_context {
         let cue_path = format!("{path}.date_context.{id}");
@@ -2519,6 +2561,7 @@ fn normalize_tabletop_projection(projection: &mut CharacterPackTabletopProjectio
     projection.active.completed_creation_steps.sort();
     projection.active.completed_creation_steps.dedup();
     for inactive in projection.inactive.values_mut() {
+        normalize_adapter_manifest(&mut inactive.manifest);
         inactive.completed_creation_steps.sort();
         inactive.completed_creation_steps.dedup();
     }
@@ -2999,6 +3042,7 @@ fn validate_runtime_tabletop(
     path: &str,
     profile: &CharacterRuntimeProfile,
     projection: &CharacterPackActiveTabletop,
+    expected_profile_sha256: Option<&str>,
 ) -> Result<(), CharacterPackError> {
     let root = format!("{path}.tabletop");
     if projection.projection_format_version != CHARACTER_PACK_TABLETOP_PROJECTION_FORMAT_VERSION {
@@ -3019,6 +3063,15 @@ fn validate_runtime_tabletop(
         &format!("{root}.canonical_profile_sha256"),
         &projection.canonical_profile_sha256,
     )?;
+    if let Some(expected) = expected_profile_sha256
+        && projection.canonical_profile_sha256 != expected
+    {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{root}.canonical_profile_sha256"),
+            "runtime tabletop projection does not reference the canonical profile held by the importer",
+        ));
+    }
     if projection.canonical_character_write_back {
         return Err(pack_error(
             CharacterDiagnosticCode::ForbiddenWriteBack,
@@ -3097,9 +3150,7 @@ fn validate_tabletop_manifest(
             "an adapter manifest declares too many named types",
         ));
     }
-    for key in manifest.types.keys() {
-        validate_local_id(&format!("{path}.types"), key)?;
-    }
+    validate_adapter_type_contract(path, manifest)?;
     let empty = empty_provenance();
     validate_pack_license(
         &format!("{path}.license"),
@@ -3122,6 +3173,160 @@ fn validate_tabletop_manifest(
         ));
     }
     Ok(())
+}
+
+fn validate_adapter_type_contract(
+    path: &str,
+    manifest: &CharacterPackAdapterManifest,
+) -> Result<(), CharacterPackError> {
+    for name in manifest.types.keys() {
+        validate_local_id(&format!("{path}.types"), name)?;
+    }
+    let mut stack = BTreeSet::new();
+    validate_adapter_type_expression(
+        &format!("{path}.definition_type"),
+        &manifest.definition_type,
+        &manifest.types,
+        &mut stack,
+        0,
+    )?;
+    validate_adapter_type_expression(
+        &format!("{path}.state_type"),
+        &manifest.state_type,
+        &manifest.types,
+        &mut stack,
+        0,
+    )?;
+    for (name, value_type) in &manifest.types {
+        validate_adapter_type_expression(
+            &format!("{path}.types.{name}"),
+            value_type,
+            &manifest.types,
+            &mut stack,
+            0,
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_adapter_type_expression(
+    path: &str,
+    value_type: &TypeExpression,
+    types: &BTreeMap<String, TypeExpression>,
+    stack: &mut BTreeSet<String>,
+    depth: usize,
+) -> Result<(), CharacterPackError> {
+    if depth > 32 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            path,
+            "adapter type exceeds the nesting limit",
+        ));
+    }
+    match value_type {
+        TypeExpression::String {
+            min_length,
+            max_length,
+        } if min_length > max_length || *max_length > 65_536 => Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            path,
+            "adapter string bounds are invalid",
+        )),
+        TypeExpression::Symbol { values } => {
+            if values.is_empty() || values.len() > 4_096 || !strictly_ordered(values) {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidValue,
+                    path,
+                    "adapter symbols must be unique and sorted",
+                ));
+            }
+            for value in values {
+                validate_local_id(path, value)?;
+            }
+            Ok(())
+        }
+        TypeExpression::List {
+            items,
+            min_items,
+            max_items,
+        } if min_items > max_items || *max_items > 65_536 => {
+            let _ = items;
+            Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                path,
+                "adapter list bounds are invalid",
+            ))
+        }
+        TypeExpression::List { items, .. } => {
+            validate_adapter_type_expression(path, items, types, stack, depth + 1)
+        }
+        TypeExpression::Map {
+            values,
+            min_entries,
+            max_entries,
+        } if min_entries > max_entries || *max_entries > 65_536 => {
+            let _ = values;
+            Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                path,
+                "adapter map bounds are invalid",
+            ))
+        }
+        TypeExpression::Map { values, .. } => {
+            validate_adapter_type_expression(path, values, types, stack, depth + 1)
+        }
+        TypeExpression::Object { fields } => {
+            if fields.len() > 4_096 {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidValue,
+                    path,
+                    "adapter object type declares too many fields",
+                ));
+            }
+            for (name, field) in fields {
+                validate_local_id(path, name)?;
+                validate_adapter_type_expression(path, &field.value_type, types, stack, depth + 1)?;
+            }
+            Ok(())
+        }
+        TypeExpression::Named { name } => {
+            let Some(value_type) = types.get(name) else {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidReference,
+                    path,
+                    "adapter type references an unknown named type",
+                ));
+            };
+            if !stack.insert(name.clone()) {
+                return Err(pack_error(
+                    CharacterDiagnosticCode::InvalidValue,
+                    path,
+                    "recursive adapter named types are forbidden",
+                ));
+            }
+            let result =
+                validate_adapter_type_expression(path, value_type, types, stack, depth + 1);
+            stack.remove(name);
+            result
+        }
+        TypeExpression::Number {
+            minimum, maximum, ..
+        } if minimum.is_some_and(|value| !value.is_finite())
+            || maximum.is_some_and(|value| !value.is_finite())
+            || minimum.zip(*maximum).is_some_and(|(min, max)| min > max) =>
+        {
+            Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                path,
+                "adapter numeric bounds are invalid",
+            ))
+        }
+        _ => Ok(()),
+    }
+}
+
+fn strictly_ordered(values: &[String]) -> bool {
+    values.windows(2).all(|pair| pair[0] < pair[1])
 }
 
 fn validate_adapter_coordinate(
@@ -3153,11 +3358,24 @@ fn validate_adapter_definition(
             "adapter definition coordinate does not match the pinned manifest",
         ));
     }
-    validate_sha256(
-        &format!("{path}.definition_sha256"),
+    validate_definition_value(
+        path,
+        &definition.definition,
         &definition.definition_sha256,
-    )?;
-    if definition.definition_sha256 != character_pack_value_fingerprint(&definition.definition)? {
+        &definition.completed_creation_steps,
+        manifest,
+    )
+}
+
+fn validate_definition_value(
+    path: &str,
+    definition: &DomainValue,
+    definition_sha256: &str,
+    completed_steps: &[String],
+    manifest: &CharacterPackAdapterManifest,
+) -> Result<(), CharacterPackError> {
+    validate_sha256(&format!("{path}.definition_sha256"), definition_sha256)?;
+    if definition_sha256 != character_pack_value_fingerprint(definition)? {
         return Err(pack_error(
             CharacterDiagnosticCode::StaleInput,
             format!("{path}.definition_sha256"),
@@ -3166,7 +3384,7 @@ fn validate_adapter_definition(
     }
     validate_typed_value(
         &format!("{path}.definition"),
-        &definition.definition,
+        definition,
         &manifest.definition_type,
         &manifest.types,
     )
@@ -3179,7 +3397,7 @@ fn validate_adapter_definition(
     })?;
     validate_completed_steps(
         &format!("{path}.completed_creation_steps"),
-        &definition.completed_creation_steps,
+        completed_steps,
         &manifest.creation_step_ids,
     )
 }
@@ -3253,49 +3471,27 @@ fn validate_inactive_tabletop(
     projection: &CharacterPackTabletopProjection,
 ) -> Result<(), CharacterPackError> {
     validate_local_id(path, key)?;
-    validate_adapter_coordinate(&format!("{path}.adapter"), &inactive.adapter)?;
-    if key != character_pack_adapter_namespace_key(&inactive.adapter) {
+    validate_tabletop_manifest(&format!("{path}.manifest"), &inactive.manifest, None)?;
+    if key != character_pack_adapter_namespace_key(&inactive.manifest.coordinate) {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidReference,
             path,
             "inactive adapter key must equal its exact coordinate namespace key",
         ));
     }
-    if inactive.adapter == projection.active.adapter {
+    if inactive.manifest.coordinate == projection.active.adapter {
         return Err(pack_error(
             CharacterDiagnosticCode::InvalidValue,
             path,
             "the active adapter cannot also be archived",
         ));
     }
-    validate_sha256(
-        &format!("{path}.definition_sha256"),
-        &inactive.definition_sha256,
-    )?;
-    if inactive.definition_sha256 != character_pack_value_fingerprint(&inactive.definition)? {
-        return Err(pack_error(
-            CharacterDiagnosticCode::StaleInput,
-            format!("{path}.definition_sha256"),
-            "inactive adapter definition hash does not match its immutable definition",
-        ));
-    }
-    validate_typed_value(
-        &format!("{path}.definition"),
+    validate_definition_value(
+        path,
         &inactive.definition,
-        &projection.manifest.definition_type,
-        &projection.manifest.types,
-    )
-    .map_err(|_| {
-        pack_error(
-            CharacterDiagnosticCode::InvalidValue,
-            format!("{path}.definition"),
-            "inactive adapter definition does not match the pinned definition type",
-        )
-    })?;
-    validate_completed_steps(
-        &format!("{path}.completed_creation_steps"),
+        &inactive.definition_sha256,
         &inactive.completed_creation_steps,
-        &projection.manifest.creation_step_ids,
+        &inactive.manifest,
     )?;
     validate_text(&format!("{path}.reason"), &inactive.reason, 1, 2_048)
 }
