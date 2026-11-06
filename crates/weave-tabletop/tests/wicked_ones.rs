@@ -4,13 +4,16 @@ use weave_domain::DomainValue;
 use weave_tabletop::{
     EntropyStream, RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest, ResolverRegistry,
     SOURCE_RECORD, TabletopCapability, TabletopError, TabletopResolver, TabletopState,
-    WICKED_ONES_CREATION_FORMAT_VERSION, WICKED_ONES_LICENSE, WICKED_ONES_SOURCE_EDITION,
-    WICKED_ONES_SOURCE_RECORD_SHA256, WICKED_ONES_SOURCE_URL, WickedOnesActionGroupTotals,
-    WickedOnesActionRatings, WickedOnesCalling, WickedOnesCreationPreview,
-    WickedOnesCreationRequest, WickedOnesGearItem, WickedOnesResolver, WickedOnesVileFriend,
-    canonical_fingerprint, create_wicked_ones_character, sha256_bytes, validate_adapter_manifest,
+    WICKED_ONES_CREATION_FORMAT_VERSION, WICKED_ONES_DOCUMENTATION, WICKED_ONES_LICENSE,
+    WICKED_ONES_SOURCE_EDITION, WICKED_ONES_SOURCE_RECORD_SHA256, WICKED_ONES_SOURCE_URL,
+    WickedOnesActionGroupTotals, WickedOnesActionRatings, WickedOnesCalling, WickedOnesCampaign,
+    WickedOnesCreationPreview, WickedOnesCreationRequest, WickedOnesGearItem,
+    WickedOnesGoldenCycle, WickedOnesResolver, WickedOnesVileFriend, canonical_fingerprint,
+    create_wicked_ones_character, sha256_bytes, validate_adapter_manifest,
     validate_wicked_ones_creation_preview, validate_wicked_ones_creation_preview_with_request,
-    wicked_ones_manifest,
+    wicked_ones_default_campaign, wicked_ones_editor_views, wicked_ones_forbidden_artifact,
+    wicked_ones_golden_campaign, wicked_ones_golden_cycle, wicked_ones_manifest,
+    wicked_ones_source_url_allowed,
 };
 
 fn creation_request() -> WickedOnesCreationRequest {
@@ -146,6 +149,45 @@ fn execute(
         .execute(&wicked_ones_manifest(), &request, state)
         .unwrap();
     (request, receipt)
+}
+
+fn request_for(
+    preview: &WickedOnesCreationPreview,
+    state: &TabletopState,
+    request_id: &str,
+    operation: &str,
+    capability: TabletopCapability,
+    input: DomainValue,
+) -> ResolutionRequest {
+    ResolutionRequest {
+        resolver_format_version: RESOLVER_FORMAT_VERSION,
+        request_id: request_id.to_owned(),
+        adapter: preview.adapter.clone(),
+        operation: operation.to_owned(),
+        capability,
+        definition_sha256: preview.definition.definition_sha256.clone(),
+        definition: preview.definition.definition.clone(),
+        expected_state_sha256: canonical_fingerprint(state).unwrap(),
+        input,
+    }
+}
+
+fn campaign_input(campaign: &WickedOnesCampaign) -> DomainValue {
+    value_object([("campaign", campaign.to_domain_value())])
+}
+
+fn state_campaign(state: &TabletopState) -> WickedOnesCampaign {
+    let DomainValue::Object(fields) = &state.value else {
+        panic!("state is not an object");
+    };
+    WickedOnesCampaign::from_domain_value(&fields["campaign"]).unwrap()
+}
+
+fn phase_input(next_phase: &str, note: &str) -> DomainValue {
+    value_object([
+        ("next_phase", DomainValue::Symbol(next_phase.to_owned())),
+        ("note", DomainValue::String(note.to_owned())),
+    ])
 }
 
 fn payload<'a>(receipt: &'a ResolutionReceipt, kind: &str) -> &'a DomainValue {
@@ -748,5 +790,648 @@ fn invalid_action_contexts_fail_closed() {
         registry
             .execute(&wicked_ones_manifest(), &request, &preview.initial_state)
             .is_err()
+    );
+}
+
+fn run_phase_cycle(
+    registry: &ResolverRegistry,
+    preview: &WickedOnesCreationPreview,
+    phases: &[&str],
+    pause: bool,
+    save: bool,
+) -> TabletopState {
+    let mut state = preview.initial_state.clone();
+    let (_, seeded) = execute(
+        registry,
+        preview,
+        &state,
+        "cycle_seed",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&wicked_ones_golden_campaign()),
+    );
+    state = seeded.after_state;
+    for (index, phase) in phases.iter().enumerate() {
+        let (_, advanced) = execute(
+            registry,
+            preview,
+            &state,
+            &format!("phase_{index}"),
+            "advance_campaign_phase",
+            TabletopCapability::CampaignState,
+            phase_input(phase, "advance"),
+        );
+        state = advanced.after_state;
+        if pause {
+            let (_, paused) = execute(
+                registry,
+                preview,
+                &state,
+                &format!("pause_{index}"),
+                "pause_campaign",
+                TabletopCapability::CampaignState,
+                value_object([("note", DomainValue::String("hold".to_owned()))]),
+            );
+            let (_, resumed) = execute(
+                registry,
+                preview,
+                &paused.after_state,
+                &format!("resume_{index}"),
+                "resume_campaign",
+                TabletopCapability::CampaignState,
+                value_object([("note", DomainValue::String("continue".to_owned()))]),
+            );
+            state = resumed.after_state;
+        }
+        if save {
+            let json = state.to_json().unwrap();
+            state = TabletopState::from_json(&json).unwrap();
+            let ron = state.to_ron().unwrap();
+            state = TabletopState::from_ron(&ron).unwrap();
+        }
+    }
+    state
+}
+
+fn campaign_with_phase(phase: &str) -> WickedOnesCampaign {
+    let mut campaign = wicked_ones_golden_campaign();
+    campaign.cycle.phase = phase.to_owned();
+    campaign
+}
+
+fn raid_plan_input(plan: &str, goal: &str) -> DomainValue {
+    value_object([
+        (
+            "advantages",
+            DomainValue::List(vec![DomainValue::String("quiet approach".to_owned())]),
+        ),
+        (
+            "disadvantages",
+            DomainValue::List(vec![DomainValue::String("armed patrols".to_owned())]),
+        ),
+        ("goal", DomainValue::String(goal.to_owned())),
+        ("label", DomainValue::String("Salt Run".to_owned())),
+        ("plan", DomainValue::String(plan.to_owned())),
+        ("raid_id", DomainValue::String("salt_run".to_owned())),
+        (
+            "target_id",
+            DomainValue::String("salt_warehouse".to_owned()),
+        ),
+    ])
+}
+
+#[test]
+fn campaign_entities_round_trip_and_validate_references() {
+    let preview = preview_with_seed(31);
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    assert_eq!(
+        state_campaign(&preview.initial_state),
+        wicked_ones_default_campaign()
+    );
+
+    let golden = wicked_ones_golden_campaign();
+    let (_, receipt) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "campaign_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&golden),
+    );
+    assert_eq!(state_campaign(&receipt.after_state), golden);
+
+    let json = receipt.after_state.to_json().unwrap();
+    let ron = receipt.after_state.to_ron().unwrap();
+    assert_eq!(
+        TabletopState::from_json(&json).unwrap(),
+        receipt.after_state
+    );
+    assert_eq!(TabletopState::from_ron(&ron).unwrap(), receipt.after_state);
+
+    let cycle = wicked_ones_golden_cycle();
+    assert_eq!(
+        WickedOnesGoldenCycle::from_json(&cycle.to_json().unwrap()).unwrap(),
+        cycle
+    );
+    assert_eq!(
+        WickedOnesGoldenCycle::from_ron(&cycle.to_ron().unwrap()).unwrap(),
+        cycle
+    );
+
+    let room_ids = golden
+        .dungeon
+        .rooms
+        .iter()
+        .map(|room| room.id.as_str())
+        .collect::<Vec<_>>();
+    let mut sorted = room_ids.clone();
+    sorted.sort_unstable();
+    assert_eq!(room_ids, sorted);
+
+    let mut broken = golden.clone();
+    broken.dungeon.structures[0].room_id = "missing_room".to_owned();
+    let request = request_for(
+        &preview,
+        &preview.initial_state,
+        "broken_reference",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&broken),
+    );
+    let error = registry
+        .execute(&wicked_ones_manifest(), &request, &preview.initial_state)
+        .unwrap_err()
+        .to_string();
+    assert!(
+        error.contains("campaign.dungeon.structures[0].room_id"),
+        "{error}"
+    );
+}
+
+#[test]
+fn campaign_cycle_pauses_resumes_and_saves_at_every_boundary() {
+    let preview = preview_with_seed(41);
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    let (_, seeded) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "cycle_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&wicked_ones_golden_campaign()),
+    );
+    let request = request_for(
+        &preview,
+        &seeded.after_state,
+        "bad_transition",
+        "advance_campaign_phase",
+        TabletopCapability::CampaignState,
+        phase_input("raiding", "skip ahead"),
+    );
+    let error = registry
+        .execute(&wicked_ones_manifest(), &request, &seeded.after_state)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("campaign.cycle.phase.recovery"), "{error}");
+
+    let phases = [
+        "downtime",
+        "dungeon_events",
+        "calamity",
+        "raiding",
+        "blowback",
+        "recovery",
+        "advancement",
+        "complete",
+    ];
+    let uninterrupted = run_phase_cycle(&registry, &preview, &phases, false, false);
+    let paused = run_phase_cycle(&registry, &preview, &phases, true, false);
+    let saved = run_phase_cycle(&registry, &preview, &phases, false, true);
+
+    let mut expected = state_campaign(&uninterrupted);
+    let mut interrupted = state_campaign(&paused);
+    expected.cycle.history.clear();
+    interrupted.cycle.history.clear();
+    assert_eq!(expected, interrupted);
+    assert_eq!(state_campaign(&uninterrupted), state_campaign(&saved));
+    assert_eq!(state_campaign(&uninterrupted).cycle.phase, "complete");
+}
+
+#[test]
+fn raid_engagement_feeds_action_loop_and_blowback_resolves() {
+    let preview = preview_with_seed(51);
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    let (_, seeded) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "raid_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&campaign_with_phase("raiding")),
+    );
+    let before = seeded.after_state;
+
+    for (request_id, plan, goal, needle) in [
+        ("raid_no_plan", "", "Take the ledgers", "declared plan"),
+        (
+            "raid_no_goal",
+            "Enter through the drain",
+            "",
+            "declared goal",
+        ),
+    ] {
+        let request = request_for(
+            &preview,
+            &before,
+            request_id,
+            "plan_raid",
+            TabletopCapability::CampaignState,
+            raid_plan_input(plan, goal),
+        );
+        let error = registry
+            .execute(&wicked_ones_manifest(), &request, &before)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains(needle), "{error}");
+    }
+
+    let (_, planned) = execute(
+        &registry,
+        &preview,
+        &before,
+        "raid_plan",
+        "plan_raid",
+        TabletopCapability::CampaignState,
+        raid_plan_input("Enter through the drain", "Take the salt ledgers"),
+    );
+    let raid_input = value_object([("raid_id", DomainValue::String("salt_run".to_owned()))]);
+    let (_, first_engage) = execute(
+        &registry,
+        &preview,
+        &planned.after_state,
+        "raid_engage",
+        "engage_raid",
+        TabletopCapability::CampaignState,
+        raid_input.clone(),
+    );
+    let (_, second_engage) = execute(
+        &registry,
+        &preview,
+        &planned.after_state,
+        "raid_engage",
+        "engage_raid",
+        TabletopCapability::CampaignState,
+        raid_input,
+    );
+    assert_eq!(first_engage, second_engage);
+    let engagement = payload(&first_engage, "raid_engagement_ready");
+    let position = payload_text(engagement, "position").to_owned();
+    let effect = payload_text(engagement, "effect").to_owned();
+    let bonus = payload_u32(engagement, "bonus");
+    assert_eq!(position, "desperate");
+    assert_eq!(effect, "standard");
+    assert_eq!(bonus, 0);
+
+    let mut action = action_input("guile", "sneak", &position, &effect, &[], false, None);
+    if let DomainValue::Object(fields) = &mut action {
+        fields.insert("bonus".to_owned(), DomainValue::Number(f64::from(bonus)));
+    }
+    let (_, action_receipt) = execute(
+        &registry,
+        &preview,
+        &first_engage.after_state,
+        "raid_action",
+        "resolve_action",
+        TabletopCapability::ChecksAndConflicts,
+        action,
+    );
+    let resolved = payload(&action_receipt, "action_resolved");
+    assert!(
+        ["critical", "failure", "mixed", "success"].contains(&payload_text(resolved, "outcome"))
+    );
+
+    let (_, outcome) = execute(
+        &registry,
+        &preview,
+        &first_engage.after_state,
+        "raid_outcome",
+        "resolve_raid_outcome",
+        TabletopCapability::CampaignState,
+        value_object([
+            ("note", DomainValue::String("A costly escape".to_owned())),
+            ("outcome", DomainValue::Symbol("mixed".to_owned())),
+            ("raid_id", DomainValue::String("salt_run".to_owned())),
+        ]),
+    );
+    let loot = payload(&outcome, "raid_loot_resolved");
+    assert!(payload_u32(loot, "loot") > 0);
+    let blowback = payload(&outcome, "raid_blowback");
+    assert_eq!(payload_u32(blowback, "severity"), 1);
+    assert_eq!(payload_text(blowback, "position"), "risky");
+    let restored = TabletopState::from_json(&outcome.after_state.to_json().unwrap()).unwrap();
+    assert_eq!(restored, outcome.after_state);
+
+    let (_, clock) = execute(
+        &registry,
+        &preview,
+        &restored,
+        "raid_clock",
+        "adjust_faction_clock",
+        TabletopCapability::Factions,
+        value_object([
+            ("clock_id", DomainValue::String("ledger_audit".to_owned())),
+            ("delta", DomainValue::Number(1.0)),
+            ("faction_id", DomainValue::String("salt_guild".to_owned())),
+            ("note", DomainValue::String("Audit begins".to_owned())),
+        ]),
+    );
+    let clock_payload = payload(&clock, "faction_clock_changed");
+    assert_eq!(payload_u32(clock_payload, "from"), 2);
+    assert_eq!(payload_u32(clock_payload, "to"), 3);
+
+    let (_, master) = execute(
+        &registry,
+        &preview,
+        &clock.after_state,
+        "raid_master_plan",
+        "advance_master_plan",
+        TabletopCapability::Factions,
+        value_object([
+            ("delta", DomainValue::Number(2.0)),
+            ("note", DomainValue::String("The gate opens".to_owned())),
+        ]),
+    );
+    let master_payload = payload(&master, "master_plan_advanced");
+    assert_eq!(payload_u32(master_payload, "from"), 2);
+    assert_eq!(payload_u32(master_payload, "to"), 4);
+}
+
+fn run_golden_cycle(
+    registry: &ResolverRegistry,
+    preview: &WickedOnesCreationPreview,
+) -> Vec<ResolutionReceipt> {
+    let cycle = wicked_ones_golden_cycle();
+    let mut state = preview.initial_state.clone();
+    let mut receipts = Vec::new();
+    for (index, step) in cycle.steps.iter().enumerate() {
+        let (request, receipt) = execute(
+            registry,
+            preview,
+            &state,
+            &format!("golden_{index}"),
+            &step.operation,
+            step.capability,
+            step.input.clone(),
+        );
+        registry
+            .replay(&wicked_ones_manifest(), &request, &state, &receipt)
+            .unwrap();
+        state = receipt.after_state.clone();
+        receipts.push(receipt);
+    }
+    receipts
+}
+
+#[test]
+fn editor_views_golden_cycle_and_exclusion_boundary() {
+    let campaign = wicked_ones_golden_campaign();
+    let views = wicked_ones_editor_views(&campaign);
+    let ids = views
+        .iter()
+        .map(|view| view.id.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        ids,
+        [
+            "dungeon_layout",
+            "clocks",
+            "factions",
+            "projects",
+            "minions",
+            "raid_planning",
+            "recovery",
+            "advancement",
+        ]
+    );
+    for view in &views {
+        assert!(!view.lines.is_empty(), "{}", view.id);
+        for line in &view.lines {
+            let lower = line.to_ascii_lowercase();
+            assert!(!lower.contains("war for the over"));
+            assert!(!lower.contains("undead awakening"));
+        }
+    }
+    assert_eq!(
+        WickedOnesCampaign::from_domain_value(&campaign.to_domain_value()).unwrap(),
+        campaign
+    );
+
+    let cycle = wicked_ones_golden_cycle();
+    assert_eq!(
+        WickedOnesGoldenCycle::from_json(&cycle.to_json().unwrap()).unwrap(),
+        cycle
+    );
+    assert_eq!(
+        WickedOnesGoldenCycle::from_ron(&cycle.to_ron().unwrap()).unwrap(),
+        cycle
+    );
+
+    let preview = preview_with_seed(61);
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    let first = run_golden_cycle(&registry, &preview);
+    let second = run_golden_cycle(&registry, &preview);
+    assert_eq!(first, second);
+    let final_state = first.last().unwrap().after_state.clone();
+    assert_eq!(state_campaign(&final_state).cycle.phase, "complete");
+    assert_eq!(
+        TabletopState::from_json(&final_state.to_json().unwrap()).unwrap(),
+        final_state
+    );
+    assert_eq!(
+        TabletopState::from_ron(&final_state.to_ron().unwrap()).unwrap(),
+        final_state
+    );
+
+    assert!(WICKED_ONES_DOCUMENTATION.contains("v1.4"));
+    assert!(WICKED_ONES_DOCUMENTATION.contains("CC0-1.0"));
+    assert!(WICKED_ONES_DOCUMENTATION.contains("War for the Overworld"));
+    assert!(WICKED_ONES_DOCUMENTATION.contains("Undead Awakening"));
+    assert!(WICKED_ONES_DOCUMENTATION.contains("allowlist"));
+    assert!(WICKED_ONES_DOCUMENTATION.contains("Compatibility naming"));
+    assert!(wicked_ones_source_url_allowed(WICKED_ONES_SOURCE_URL));
+    assert!(!wicked_ones_source_url_allowed("https://example.com/rules"));
+    assert!(wicked_ones_forbidden_artifact("Undead Awakening"));
+    assert!(wicked_ones_forbidden_artifact("war-for-the-overworld.pdf"));
+    assert!(!wicked_ones_forbidden_artifact("ember_vault_notes.txt"));
+}
+
+#[test]
+fn downtime_upgrades_revelry_and_both_advancement_kinds() {
+    let preview = preview_with_seed(71);
+    let mut registry = ResolverRegistry::new();
+    registry
+        .register(&wicked_ones_manifest(), WickedOnesResolver)
+        .unwrap();
+    let (_, seeded) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "downtime_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&campaign_with_phase("downtime")),
+    );
+
+    let (_, project) = execute(
+        &registry,
+        &preview,
+        &seeded.after_state,
+        "downtime_project",
+        "perform_downtime_action",
+        TabletopCapability::CampaignState,
+        value_object([
+            ("kind", DomainValue::Symbol("project".to_owned())),
+            ("note", DomainValue::String("Carve the sigil".to_owned())),
+            ("project_id", DomainValue::String("gate_ritual".to_owned())),
+        ]),
+    );
+    assert_eq!(
+        payload_u32(payload(&project, "downtime_action_resolved"), "filled"),
+        2
+    );
+
+    let (_, revel) = execute(
+        &registry,
+        &preview,
+        &project.after_state,
+        "downtime_revel",
+        "perform_downtime_action",
+        TabletopCapability::CampaignState,
+        value_object([
+            ("kind", DomainValue::Symbol("revel".to_owned())),
+            (
+                "note",
+                DomainValue::String("Sing the vault song".to_owned()),
+            ),
+            ("project_id", DomainValue::String(String::new())),
+        ]),
+    );
+    assert_eq!(
+        state_campaign(&revel.after_state).cycle.revelry,
+        "Sing the vault song"
+    );
+
+    let (_, lurk) = execute(
+        &registry,
+        &preview,
+        &revel.after_state,
+        "downtime_lurk",
+        "perform_downtime_action",
+        TabletopCapability::CampaignState,
+        value_object([
+            ("kind", DomainValue::Symbol("lurk".to_owned())),
+            ("note", DomainValue::String("Listen at the well".to_owned())),
+            ("project_id", DomainValue::String(String::new())),
+        ]),
+    );
+    assert_eq!(
+        state_campaign(&lurk.after_state).cycle.lurking,
+        vec!["Listen at the well".to_owned()]
+    );
+
+    let (_, upgrade) = execute(
+        &registry,
+        &preview,
+        &lurk.after_state,
+        "upgrade_buy",
+        "purchase_upgrade",
+        TabletopCapability::EquipmentAndAbilities,
+        value_object([
+            ("note", DomainValue::String("Brace the gate".to_owned())),
+            (
+                "upgrade_id",
+                DomainValue::String("reinforced_gate".to_owned()),
+            ),
+        ]),
+    );
+    let purchased = payload(&upgrade, "upgrade_purchased");
+    assert_eq!(payload_u32(purchased, "cost"), 8);
+    assert_eq!(payload_u32(purchased, "gold_after"), 4);
+    assert!(
+        state_campaign(&upgrade.after_state)
+            .upgrades
+            .iter()
+            .any(|item| item.id == "reinforced_gate" && item.purchased)
+    );
+
+    let mut wicked_campaign = campaign_with_phase("advancement");
+    wicked_campaign.advancement.wicked = 1;
+    let (_, wicked_seeded) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "wicked_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&wicked_campaign),
+    );
+    let (_, wicked) = execute(
+        &registry,
+        &preview,
+        &wicked_seeded.after_state,
+        "wicked_spend",
+        "spend_wicked_advancement",
+        TabletopCapability::Advancement,
+        value_object([
+            ("ability", DomainValue::String("shadow_ledger".to_owned())),
+            ("note", DomainValue::String("A quieter trade".to_owned())),
+        ]),
+    );
+    let wicked_after = state_campaign(&wicked.after_state);
+    assert_eq!(wicked_after.advancement.wicked, 0);
+    assert!(
+        wicked_after
+            .advancement
+            .abilities
+            .iter()
+            .any(|ability| ability == "shadow_ledger")
+    );
+
+    let mut reckless_campaign = campaign_with_phase("advancement");
+    reckless_campaign.advancement.reckless = 1;
+    let (_, reckless_seeded) = execute(
+        &registry,
+        &preview,
+        &preview.initial_state,
+        "reckless_set",
+        "set_campaign",
+        TabletopCapability::CampaignState,
+        campaign_input(&reckless_campaign),
+    );
+    let (_, reckless) = execute(
+        &registry,
+        &preview,
+        &reckless_seeded.after_state,
+        "reckless_spend",
+        "spend_reckless_advancement",
+        TabletopCapability::Advancement,
+        value_object([
+            ("action", DomainValue::Symbol("sneak".to_owned())),
+            ("note", DomainValue::String("Harder lessons".to_owned())),
+            ("to_rating", DomainValue::Number(3.0)),
+        ]),
+    );
+    let reckless_payload = payload(&reckless, "reckless_advancement_spent");
+    assert_eq!(payload_u32(reckless_payload, "from"), 2);
+    assert_eq!(payload_u32(reckless_payload, "to"), 3);
+    assert_eq!(payload_u32(reckless_payload, "stress_after"), 1);
+
+    let (_, action) = execute(
+        &registry,
+        &preview,
+        &reckless.after_state,
+        "advanced_action",
+        "resolve_action",
+        TabletopCapability::ChecksAndConflicts,
+        action_input("guile", "sneak", "risky", "standard", &[], false, None),
+    );
+    assert_eq!(
+        payload_list_len(payload(&action, "action_resolved"), "dice"),
+        3
     );
 }
