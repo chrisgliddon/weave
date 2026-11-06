@@ -17,6 +17,7 @@ pub mod manuscript;
 pub mod manuscript_view;
 pub mod node_renderers;
 pub mod outline;
+pub mod outline_view;
 pub mod pattern_browser;
 pub mod play_view;
 pub mod presentation_assets;

@@ -20,6 +20,7 @@ use crate::knot_editor::KnotViewPreferences;
 use crate::knot_view::{KnotView, KnotViewEvent};
 use crate::manuscript_view::{ManuscriptSurface, MoveVerb, label_display, status_display};
 use crate::node_renderers::{InspectorData, kind_label};
+use crate::outline_view::{OutlineSurface, OutlineViewEvent};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::play_view::PlayMode;
 use crate::preview::{PreviewEvent, PreviewSurface};
@@ -40,6 +41,7 @@ actions!(
         ShowGraph,
         ShowText,
         ShowManuscript,
+        ShowOutline,
         MoveChapterUp,
         MoveChapterDown,
         MoveChapterPromote,
@@ -165,6 +167,7 @@ fn install_commands_and_menus(cx: &mut App) {
         KeyBinding::new("secondary-1", ShowGraph, Some("WeaveEditor")),
         KeyBinding::new("secondary-2", ShowText, Some("WeaveEditor")),
         KeyBinding::new("secondary-3", ShowManuscript, Some("WeaveEditor")),
+        KeyBinding::new("secondary-4", ShowOutline, Some("WeaveEditor")),
         KeyBinding::new("secondary-shift-up", MoveChapterUp, Some("WeaveManuscript")),
         KeyBinding::new(
             "secondary-shift-down",
@@ -211,6 +214,7 @@ fn install_commands_and_menus(cx: &mut App) {
             MenuItem::action("Graph", ShowGraph),
             MenuItem::action("Text", ShowText),
             MenuItem::action("Manuscript", ShowManuscript),
+            MenuItem::action("Outline", ShowOutline),
             MenuItem::separator(),
             MenuItem::action("Project", ToggleProject),
             MenuItem::action("Inspector", ToggleInspector),
@@ -249,6 +253,7 @@ struct EditorShell {
     last_recovery_revision: Option<u64>,
     graph: Entity<GraphSurface>,
     knot: Entity<KnotView>,
+    outline: Entity<OutlineSurface>,
     text: Entity<TextSurface>,
     patterns: Entity<PatternBrowserSurface>,
     preview: Entity<PreviewSurface>,
@@ -281,6 +286,11 @@ impl EditorShell {
         .detach();
         let knot =
             cx.new(|_| KnotView::new(canonical.graph_document(), KnotViewPreferences::default()));
+        let outline = cx.new(|_| OutlineSurface::new(canonical.graph_document()));
+        cx.subscribe(&outline, |this, _, event, cx| {
+            this.handle_outline_event(event, cx);
+        })
+        .detach();
         cx.subscribe(&knot, |this, _, event, cx| {
             this.handle_knot_event(event, cx);
         })
@@ -326,6 +336,7 @@ impl EditorShell {
             last_recovery_revision: None,
             graph,
             knot,
+            outline,
             text,
             patterns,
             preview,
@@ -600,6 +611,20 @@ impl EditorShell {
         cx.notify();
     }
 
+    fn handle_outline_event(&mut self, event: &OutlineViewEvent, cx: &mut Context<Self>) {
+        match event {
+            OutlineViewEvent::SelectNode(node) => {
+                let _ = self
+                    .graph
+                    .update(cx, |graph, cx| graph.select_node(node, cx));
+            }
+            OutlineViewEvent::OpenKnot(_) => {
+                self.state.layout.center = CenterView::Graph;
+            }
+        }
+        cx.notify();
+    }
+
     fn handle_knot_event(&mut self, event: &KnotViewEvent, cx: &mut Context<Self>) {
         match event {
             KnotViewEvent::Edit(edit) => self.apply_semantic_edit(edit, cx),
@@ -692,7 +717,7 @@ impl EditorShell {
                         crate::state::StatusMessage::Info("Undid source edit".to_owned());
                 }
             }
-            CenterView::Graph => {
+            CenterView::Graph | CenterView::Outline => {
                 if let Some(source) = self.canonical.undo() {
                     self.apply_history_source(source, "Undid synchronized graph edit", cx);
                 } else {
@@ -726,7 +751,7 @@ impl EditorShell {
                 self.state.status =
                     crate::state::StatusMessage::Info("The manuscript has no redo yet".to_owned());
             }
-            CenterView::Graph => {
+            CenterView::Graph | CenterView::Outline => {
                 if let Some(source) = self.canonical.redo() {
                     self.apply_history_source(source, "Redid synchronized graph edit", cx);
                 } else {
@@ -1327,11 +1352,13 @@ impl gpui::Render for EditorShell {
             CenterView::Graph => "GPU node graph canvas",
             CenterView::Text => "Unicode source editor",
             CenterView::Manuscript => "Ordered chapter tree and card board",
+            CenterView::Outline => "Indented story outline",
         };
         let center_content = match layout.center {
             CenterView::Graph => self.graph.clone().into_any_element(),
             CenterView::Text => self.text.clone().into_any_element(),
             CenterView::Manuscript => self.manuscript.clone().into_any_element(),
+            CenterView::Outline => self.outline.clone().into_any_element(),
         };
         let center = div()
             .flex()
@@ -1417,6 +1444,9 @@ impl gpui::Render for EditorShell {
             }))
             .on_action(cx.listener(|this, _: &ShowManuscript, _, cx| {
                 this.apply(EditorCommand::ShowManuscript, cx);
+            }))
+            .on_action(cx.listener(|this, _: &ShowOutline, _, cx| {
+                this.apply(EditorCommand::ShowOutline, cx);
             }))
             .on_action(cx.listener(|this, _: &MoveChapterUp, _, cx| {
                 this.manuscript_move(MoveVerb::Up, cx);
@@ -1538,6 +1568,22 @@ impl gpui::Render for EditorShell {
                                     .child("Manuscript")
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.apply(EditorCommand::ShowManuscript, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-outline")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.center == CenterView::Outline, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Outline")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::ShowOutline, cx);
                                     })),
                             )
                             .child(

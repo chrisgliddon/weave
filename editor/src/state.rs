@@ -9,6 +9,8 @@ pub enum CenterView {
     Text,
     /// Ordered manuscript chapters.
     Manuscript,
+    /// Indented story outline.
+    Outline,
 }
 
 impl CenterView {
@@ -19,6 +21,7 @@ impl CenterView {
             Self::Graph => "Graph",
             Self::Text => "Text",
             Self::Manuscript => "Manuscript",
+            Self::Outline => "Outline",
         }
     }
 }
@@ -78,6 +81,8 @@ pub enum EditorCommand {
     ShowText,
     /// Select the manuscript view.
     ShowManuscript,
+    /// Select the outline view.
+    ShowOutline,
     /// Move the selected chapter one place earlier.
     MoveUp,
     /// Move the selected chapter one place later.
@@ -188,6 +193,7 @@ impl EditorState {
             EditorCommand::ShowGraph => self.layout.center = CenterView::Graph,
             EditorCommand::ShowText => self.layout.center = CenterView::Text,
             EditorCommand::ShowManuscript => self.layout.center = CenterView::Manuscript,
+            EditorCommand::ShowOutline => self.layout.center = CenterView::Outline,
             // Structural chapter commands are applied by the manuscript
             // surface, which owns the tree; the reducer only carries intent.
             EditorCommand::MoveUp
@@ -273,6 +279,7 @@ pub fn menu_definitions() -> Vec<MenuDefinition> {
                 MenuEntry::Command("Graph", EditorCommand::ShowGraph),
                 MenuEntry::Command("Text", EditorCommand::ShowText),
                 MenuEntry::Command("Manuscript", EditorCommand::ShowManuscript),
+                MenuEntry::Command("Outline", EditorCommand::ShowOutline),
                 MenuEntry::Separator,
                 MenuEntry::Command("Patterns", EditorCommand::TogglePatterns),
                 MenuEntry::Command("Preview", EditorCommand::TogglePreview),
