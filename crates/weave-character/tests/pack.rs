@@ -1,20 +1,24 @@
 //! Portable Character-pack contract tests.
-//!
-//! The sibling `src/pack.rs` module is included here until the crate root exports it. The
-//! module aliases the crate root as `weave_character`, so this inclusion compiles it exactly as
-//! a library module while exercising the public contract from an integration test.
+
+use std::collections::BTreeMap;
 
 use weave_character::{
     CHARACTER_PACK_FORMAT_VERSION, CHARACTER_PACK_MAX_RECORDS, CharacterAuthoringPack,
     CharacterCollection, CharacterDiagnosticCode, CharacterExtension, CharacterHealthDiagnostic,
     CharacterHealthDiagnosticCode, CharacterHealthDiagnosticScope, CharacterHealthSeverity,
-    CharacterOverlay, CharacterPackLicense, CharacterPackLicenseNotice, CharacterPackMetadata,
+    CharacterOverlay, CharacterPackActiveTabletop, CharacterPackAdapterCapability,
+    CharacterPackAdapterCapabilityDeclaration, CharacterPackAdapterCoordinate,
+    CharacterPackAdapterDefinition, CharacterPackAdapterManifest, CharacterPackInactiveTabletop,
+    CharacterPackLicense, CharacterPackLicenseNotice, CharacterPackMetadata,
+    CharacterPackTabletopProjection, CharacterPackTabletopState, CharacterProfile,
     CharacterRuntimePack, CharacterRuntimeProfile, CharacterTemplate, CharacterTemplateRef,
     EXPRESSION_EXTENSION_NAMESPACE, ExpressionPack, ExpressionTextAuthority, Freshness,
     HexacoTrait, RELATIONSHIP_EXTENSION_NAMESPACE, ReviewState, character_authoring_pack_schema,
+    character_pack_adapter_manifest_fingerprint, character_pack_adapter_namespace_key,
+    character_pack_profile_fingerprint, character_pack_value_fingerprint,
     character_runtime_pack_schema, expression_pack_ref, synthesize_character, template_fingerprint,
 };
-use weave_domain::{ProvenanceKind, ProvenanceSource};
+use weave_domain::{DomainValue, Provenance, ProvenanceKind, ProvenanceSource, TypeExpression};
 
 const COLLECTION_JSON: &str = include_str!(
     "../../../examples/domain-modules/weave-character/operations/collection.character-collection.json"
@@ -981,4 +985,385 @@ fn large_ron_map_scans_in_linear_time() {
         elapsed < std::time::Duration::from_secs(30),
         "large RON scan took {elapsed:?}"
     );
+}
+
+fn adapter_notice(component: &str, license: &str, text: &str) -> CharacterPackLicenseNotice {
+    CharacterPackLicenseNotice {
+        id: "plug_and_play_adapter".to_owned(),
+        component: component.to_owned(),
+        license: license.to_owned(),
+        license_url: "https://creativecommons.org/licenses/by/4.0/".to_owned(),
+        text: text.to_owned(),
+    }
+}
+
+fn adapter_provenance() -> Provenance {
+    Provenance {
+        sources: vec![ProvenanceSource {
+            id: "plug_and_play_adapter".to_owned(),
+            kind: ProvenanceKind::PublicSource,
+            url: "https://example.org/synthetic-adapter".to_owned(),
+            revision: "1.0.0".to_owned(),
+            sha256: Some("b".repeat(64)),
+            license: "CC0-1.0".to_owned(),
+            license_url: "https://creativecommons.org/publicdomain/zero/1.0/".to_owned(),
+            attribution: "Synthetic adapter fixture author.".to_owned(),
+            modified: false,
+        }],
+        transformations: Vec::new(),
+        claims: BTreeMap::from([(
+            "manifest".to_owned(),
+            vec!["plug_and_play_adapter".to_owned()],
+        )]),
+    }
+}
+
+fn adapter_manifest() -> CharacterPackAdapterManifest {
+    let mut manifest = CharacterPackAdapterManifest {
+        manifest_format_version: 1,
+        coordinate: CharacterPackAdapterCoordinate {
+            id: "org.weave.tabletop.plug_and_play".to_owned(),
+            version: "1.0.0".to_owned(),
+            schema_version: 1,
+            content_sha256: String::new(),
+        },
+        namespace: "plug_and_play".to_owned(),
+        title: "Synthetic Plug-And-Play Adapter".to_owned(),
+        capabilities: vec![
+            CharacterPackAdapterCapabilityDeclaration {
+                capability: CharacterPackAdapterCapability::CharacterCreation,
+                version: 1,
+            },
+            CharacterPackAdapterCapabilityDeclaration {
+                capability: CharacterPackAdapterCapability::DerivedValues,
+                version: 1,
+            },
+        ],
+        creation_step_ids: vec!["origin".to_owned(), "training".to_owned()],
+        definition_type: TypeExpression::String {
+            min_length: 1,
+            max_length: 64,
+        },
+        state_type: TypeExpression::Number {
+            integer: true,
+            minimum: Some(0.0),
+            maximum: Some(100.0),
+        },
+        types: BTreeMap::new(),
+        license: CharacterPackLicense {
+            license: "CC0-1.0".to_owned(),
+            license_url: "https://creativecommons.org/publicdomain/zero/1.0/".to_owned(),
+            license_text: "CC0 1.0 synthetic adapter licence text.".to_owned(),
+            notices: vec![adapter_notice(
+                "plug_and_play_adapter",
+                "CC0-1.0",
+                "CC0 1.0 Universal synthetic adapter notice text.",
+            )],
+        },
+    };
+    manifest.coordinate.content_sha256 =
+        character_pack_adapter_manifest_fingerprint(&manifest).expect("manifest fingerprint");
+    manifest
+}
+
+fn tabletop_projection(profile: &CharacterProfile) -> CharacterPackTabletopProjection {
+    let manifest = adapter_manifest();
+    let definition = DomainValue::String("Wayfinder".to_owned());
+    let definition_sha256 =
+        character_pack_value_fingerprint(&definition).expect("definition fingerprint");
+    let active = CharacterPackAdapterDefinition {
+        adapter: manifest.coordinate.clone(),
+        definition,
+        definition_sha256: definition_sha256.clone(),
+        completed_creation_steps: vec!["origin".to_owned()],
+    };
+    let state = CharacterPackTabletopState {
+        state_format_version: 1,
+        adapter: manifest.coordinate.clone(),
+        owner_id: profile.id.clone(),
+        definition_sha256,
+        revision: 3,
+        entropy_algorithm: "sha256_counter_v1".to_owned(),
+        entropy_seed: 42,
+        entropy_cursor: 5,
+        value: DomainValue::Number(12.0),
+    };
+    CharacterPackTabletopProjection {
+        projection_format_version: 1,
+        character_id: profile.id.clone(),
+        canonical_profile_sha256: character_pack_profile_fingerprint(profile)
+            .expect("profile fingerprint"),
+        canonical_character_write_back: false,
+        manifest,
+        provenance: adapter_provenance(),
+        active,
+        state: Some(state),
+        inactive: BTreeMap::new(),
+    }
+}
+
+fn authoring_pack_with_tabletop() -> CharacterAuthoringPack {
+    let mut pack = authoring_pack();
+    let entry = pack
+        .characters
+        .iter_mut()
+        .find(|entry| entry.profile.id == ARI_VALE)
+        .expect("fixture character");
+    entry.tabletop = Some(tabletop_projection(&entry.profile));
+    pack.normalize();
+    pack.validate().expect("valid tabletop projection");
+    pack
+}
+
+fn ari_tabletop_mut(pack: &mut CharacterAuthoringPack) -> &mut CharacterPackTabletopProjection {
+    pack.characters
+        .iter_mut()
+        .find(|entry| entry.profile.id == ARI_VALE)
+        .and_then(|entry| entry.tabletop.as_mut())
+        .expect("fixture tabletop projection")
+}
+
+fn repin_adapter_projection(projection: &mut CharacterPackTabletopProjection) {
+    let fingerprint =
+        character_pack_adapter_manifest_fingerprint(&projection.manifest).expect("fingerprint");
+    projection.manifest.coordinate.content_sha256 = fingerprint;
+    let coordinate = projection.manifest.coordinate.clone();
+    projection.active.adapter = coordinate.clone();
+    if let Some(state) = &mut projection.state {
+        state.adapter = coordinate;
+    }
+}
+
+fn ari_runtime_tabletop_mut(pack: &mut CharacterRuntimePack) -> &mut CharacterPackActiveTabletop {
+    pack.characters
+        .iter_mut()
+        .find(|character| character.id == ARI_VALE)
+        .and_then(|character| character.tabletop.as_mut())
+        .expect("fixture runtime tabletop projection")
+}
+
+#[test]
+fn tabletop_projection_round_trips_in_json_and_ron() {
+    let pack = authoring_pack_with_tabletop();
+    let json = pack.to_json().expect("authoring JSON");
+    let ron = pack.to_ron().expect("authoring RON");
+    assert_eq!(
+        CharacterAuthoringPack::from_json(&json).expect("JSON"),
+        pack
+    );
+    assert_eq!(CharacterAuthoringPack::from_ron(&ron).expect("RON"), pack);
+
+    let runtime = pack.to_runtime_pack().expect("runtime export");
+    let runtime_json = runtime.to_json().expect("runtime JSON");
+    let runtime_ron = runtime.to_ron().expect("runtime RON");
+    assert_eq!(
+        CharacterRuntimePack::from_json(&runtime_json).expect("JSON"),
+        runtime
+    );
+    assert_eq!(
+        CharacterRuntimePack::from_ron(&runtime_ron).expect("RON"),
+        runtime
+    );
+
+    let ari = profile(&runtime, ARI_VALE);
+    let tabletop = ari.tabletop.as_ref().expect("runtime tabletop");
+    assert_eq!(tabletop.active.adapter, tabletop.manifest.coordinate);
+    assert_eq!(
+        tabletop
+            .state
+            .as_ref()
+            .expect("runtime state")
+            .definition_sha256,
+        tabletop.active.definition_sha256
+    );
+    assert_eq!(tabletop.manifest.license.license, "CC0-1.0");
+    assert!(runtime_json.contains("CC0 1.0 synthetic adapter licence text"));
+    let value: serde_json::Value = serde_json::from_str(&runtime_json).expect("JSON value");
+    assert!(!json_contains_key(&value, "provenance"));
+    assert!(!json_contains_key(&value, "inactive"));
+}
+
+#[test]
+fn inactive_tabletop_projections_are_authoring_only() {
+    let mut pack = authoring_pack_with_tabletop();
+    let projection = ari_tabletop_mut(&mut pack);
+    let mut inactive_adapter = projection.manifest.coordinate.clone();
+    inactive_adapter.version = "0.9.0".to_owned();
+    inactive_adapter.content_sha256 = "c".repeat(64);
+    let definition = DomainValue::String("Prior Wayfinder".to_owned());
+    let key = character_pack_adapter_namespace_key(&inactive_adapter);
+    projection.inactive.insert(
+        key.clone(),
+        CharacterPackInactiveTabletop {
+            adapter: inactive_adapter,
+            definition: definition.clone(),
+            definition_sha256: character_pack_value_fingerprint(&definition)
+                .expect("definition fingerprint"),
+            completed_creation_steps: vec!["origin".to_owned()],
+            reason: "Superseded synthetic archive.".to_owned(),
+        },
+    );
+    pack.normalize();
+    pack.validate().expect("authoring archive is valid");
+    assert!(pack.to_json().expect("authoring JSON").contains("0.9.0"));
+
+    let runtime = pack.to_runtime_pack().expect("runtime export");
+    let runtime_json = runtime.to_json().expect("runtime JSON");
+    assert!(profile(&runtime, ARI_VALE).tabletop.is_some());
+    assert!(!runtime_json.contains("0.9.0"));
+    assert!(!runtime_json.contains(&key));
+    let value: serde_json::Value = serde_json::from_str(&runtime_json).expect("JSON value");
+    assert!(!json_contains_key(&value, "inactive"));
+}
+
+#[test]
+fn tabletop_coordinate_mismatch_is_rejected() {
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).active.adapter.version = "9.9.9".to_owned();
+    let error = pack.validate().expect_err("active coordinate mismatch");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack)
+        .manifest
+        .coordinate
+        .content_sha256 = "0".repeat(64);
+    let error = pack.validate().expect_err("content hash mismatch");
+    assert_eq!(error.diagnostic().code, CharacterDiagnosticCode::StaleInput);
+
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).character_id = SABLE_REED.to_owned();
+    let error = pack.validate().expect_err("character mismatch");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidReference
+    );
+}
+
+#[test]
+fn tabletop_unsupported_schema_version_is_rejected() {
+    let mut pack = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut pack);
+        projection.manifest.coordinate.schema_version = 2;
+        projection.active.adapter.schema_version = 2;
+        repin_adapter_projection(projection);
+    }
+    let error = pack.validate().expect_err("unsupported schema version");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::UnsupportedVersion
+    );
+    assert!(error.to_string().contains("schema version 1"));
+
+    let mut pack = authoring_pack_with_tabletop();
+    if let Some(state) = ari_tabletop_mut(&mut pack).state.as_mut() {
+        state.state_format_version = 2;
+    }
+    let error = pack.validate().expect_err("unsupported state version");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::UnsupportedVersion
+    );
+}
+
+#[test]
+fn tabletop_canonical_write_back_is_rejected() {
+    let mut pack = authoring_pack_with_tabletop();
+    ari_tabletop_mut(&mut pack).canonical_character_write_back = true;
+    let error = pack.validate().expect_err("authoring write-back");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::ForbiddenWriteBack
+    );
+
+    let mut runtime = authoring_pack_with_tabletop()
+        .to_runtime_pack()
+        .expect("runtime export");
+    ari_runtime_tabletop_mut(&mut runtime).canonical_character_write_back = true;
+    let error = runtime.validate().expect_err("runtime write-back");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::ForbiddenWriteBack
+    );
+}
+
+#[test]
+fn separately_licensed_adapter_requires_its_own_notice() {
+    let mut pack = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut pack);
+        projection.provenance.sources[0].license = "CC-BY-4.0".to_owned();
+        projection.provenance.sources[0].license_url =
+            "https://creativecommons.org/licenses/by/4.0/".to_owned();
+        projection.manifest.license = CharacterPackLicense {
+            license: "CC-BY-4.0".to_owned(),
+            license_url: "https://creativecommons.org/licenses/by/4.0/".to_owned(),
+            license_text: "Creative Commons Attribution 4.0 adapter licence text.".to_owned(),
+            notices: Vec::new(),
+        };
+        repin_adapter_projection(projection);
+    }
+    let error = pack.validate().expect_err("missing adapter notice");
+    assert_eq!(
+        error.diagnostic().code,
+        CharacterDiagnosticCode::InvalidLineage
+    );
+
+    let mut pack = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut pack);
+        projection.provenance.sources[0].license = "CC-BY-4.0".to_owned();
+        projection.provenance.sources[0].license_url =
+            "https://creativecommons.org/licenses/by/4.0/".to_owned();
+        projection.manifest.license = CharacterPackLicense {
+            license: "CC-BY-4.0".to_owned(),
+            license_url: "https://creativecommons.org/licenses/by/4.0/".to_owned(),
+            license_text: "Creative Commons Attribution 4.0 adapter licence text.".to_owned(),
+            notices: vec![adapter_notice(
+                "plug_and_play_adapter",
+                "CC-BY-4.0",
+                "Creative Commons Attribution 4.0 adapter notice text.",
+            )],
+        };
+        repin_adapter_projection(projection);
+    }
+    pack.validate()
+        .expect("separately licensed adapter is valid");
+    let runtime = pack.to_runtime_pack().expect("runtime export");
+    let ari = profile(&runtime, ARI_VALE);
+    let tabletop = ari.tabletop.as_ref().expect("runtime tabletop");
+    assert_eq!(tabletop.manifest.license.license, "CC-BY-4.0");
+    assert!(
+        runtime
+            .to_json()
+            .expect("runtime JSON")
+            .contains("Attribution 4.0 adapter notice text")
+    );
+}
+
+#[test]
+fn adapter_manifest_fingerprint_is_order_invariant() {
+    let manifest = adapter_manifest();
+    let mut reversed = manifest.clone();
+    reversed.capabilities.reverse();
+    reversed.creation_step_ids.reverse();
+    assert_eq!(
+        character_pack_adapter_manifest_fingerprint(&manifest).expect("fingerprint"),
+        character_pack_adapter_manifest_fingerprint(&reversed).expect("fingerprint")
+    );
+
+    let mut authoring = authoring_pack_with_tabletop();
+    {
+        let projection = ari_tabletop_mut(&mut authoring);
+        projection.manifest.capabilities.reverse();
+        projection.manifest.creation_step_ids.reverse();
+    }
+    authoring.normalize();
+    authoring
+        .validate()
+        .expect("normalizing an unordered manifest preserves the pinned hash");
 }

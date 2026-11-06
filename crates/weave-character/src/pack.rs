@@ -18,9 +18,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use schemars::JsonSchema;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use weave_domain::{
-    Provenance, ProvenanceSource, ProvenanceTransformation, parse_strict_json, to_pretty_json,
-    to_pretty_ron, validate_provenance,
+    DomainValue, Provenance, ProvenanceSource, ProvenanceTransformation, TypeExpression,
+    parse_strict_json, to_pretty_json, to_pretty_ron, validate_provenance, validate_typed_value,
 };
 
 use crate::{
@@ -58,6 +59,15 @@ pub const CHARACTER_PACK_MAX_RECORDS: usize = 4_096;
 
 /// Maximum number of character documents in one pack.
 pub const CHARACTER_PACK_MAX_CHARACTERS: usize = CHARACTER_PACK_MAX_RECORDS;
+
+/// Current packed tabletop projection format version.
+pub const CHARACTER_PACK_TABLETOP_PROJECTION_FORMAT_VERSION: u32 = 1;
+/// Current packed adapter manifest format version.
+pub const CHARACTER_PACK_ADAPTER_MANIFEST_FORMAT_VERSION: u32 = 1;
+/// Current packed tabletop mutable-state format version.
+pub const CHARACTER_PACK_TABLETOP_STATE_FORMAT_VERSION: u32 = 1;
+/// Entropy algorithm supported by packed tabletop state.
+pub const CHARACTER_PACK_TABLETOP_ENTROPY_ALGORITHM: &str = "sha256_counter_v1";
 
 const AUTHORING_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-authoring-pack:1";
 const RUNTIME_PACK_SCHEMA_ID: &str = "urn:weave:schema:character-runtime-pack:1";
@@ -540,6 +550,139 @@ pub struct CharacterPackLicenseNotice {
     pub text: String,
 }
 
+/// Exact tabletop adapter identity and release pinned by a pack.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackAdapterCoordinate {
+    pub id: String,
+    pub version: String,
+    pub schema_version: u32,
+    pub content_sha256: String,
+}
+
+/// Closed tabletop capability vocabulary supported by v1 projections.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum CharacterPackAdapterCapability {
+    CharacterCreation,
+    DerivedValues,
+    ChecksAndConflicts,
+    ResourcesAndConditions,
+    EquipmentAndAbilities,
+    Advancement,
+    Encounters,
+    Clocks,
+    Scenes,
+    Factions,
+    WorldState,
+    CampaignState,
+}
+
+/// One declared capability contract version.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackAdapterCapabilityDeclaration {
+    pub capability: CharacterPackAdapterCapability,
+    pub version: u32,
+}
+
+/// Pinned, portable adapter manifest summary carried by a pack.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackAdapterManifest {
+    pub manifest_format_version: u32,
+    pub coordinate: CharacterPackAdapterCoordinate,
+    pub namespace: String,
+    pub title: String,
+    /// Declared capabilities in stable capability order.
+    pub capabilities: Vec<CharacterPackAdapterCapabilityDeclaration>,
+    /// Declared creation-step ids in stable order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub creation_step_ids: Vec<String>,
+    pub definition_type: TypeExpression,
+    pub state_type: TypeExpression,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub types: BTreeMap<String, TypeExpression>,
+    /// Adapter licence boundary and notices.
+    pub license: CharacterPackLicense,
+}
+
+/// One immutable adapter-owned character definition.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackAdapterDefinition {
+    pub adapter: CharacterPackAdapterCoordinate,
+    pub definition: DomainValue,
+    pub definition_sha256: String,
+    /// Completed creation-step ids in stable order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub completed_creation_steps: Vec<String>,
+}
+
+/// Compact mutable adapter state required to run without the editor.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackTabletopState {
+    pub state_format_version: u32,
+    pub adapter: CharacterPackAdapterCoordinate,
+    pub owner_id: String,
+    pub definition_sha256: String,
+    pub revision: u64,
+    pub entropy_algorithm: String,
+    pub entropy_seed: u64,
+    pub entropy_cursor: u64,
+    pub value: DomainValue,
+}
+
+/// One inactive adapter projection retained only in authoring exports.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackInactiveTabletop {
+    pub adapter: CharacterPackAdapterCoordinate,
+    pub definition: DomainValue,
+    pub definition_sha256: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub completed_creation_steps: Vec<String>,
+    pub reason: String,
+}
+
+/// Active adapter projection with authoring provenance and archived projections.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackTabletopProjection {
+    pub projection_format_version: u32,
+    pub character_id: String,
+    pub canonical_profile_sha256: String,
+    /// Always false; tabletop projections cannot write canonical Character evidence.
+    pub canonical_character_write_back: bool,
+    pub manifest: CharacterPackAdapterManifest,
+    /// Adapter provenance retained only in authoring exports.
+    pub provenance: Provenance,
+    pub active: CharacterPackAdapterDefinition,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<CharacterPackTabletopState>,
+    /// Archived adapter projections keyed by their exact adapter namespace key.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub inactive: BTreeMap<String, CharacterPackInactiveTabletop>,
+}
+
+/// Approved runtime adapter view without provenance or archived projections.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterPackActiveTabletop {
+    pub projection_format_version: u32,
+    pub character_id: String,
+    pub canonical_profile_sha256: String,
+    /// Always false; tabletop projections cannot write canonical Character evidence.
+    pub canonical_character_write_back: bool,
+    pub manifest: CharacterPackAdapterManifest,
+    pub active: CharacterPackAdapterDefinition,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<CharacterPackTabletopState>,
+}
+
 /// One effective profile together with its authoring lineage.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -558,6 +701,9 @@ pub struct CharacterAuthoringEntry {
     /// Accepted or needs-changes final authoring review.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub final_review: Option<CharacterFinalReview>,
+    /// Active tabletop adapter projection plus authoring-only archives.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tabletop: Option<CharacterPackTabletopProjection>,
 }
 
 impl CharacterAuthoringEntry {
@@ -570,6 +716,7 @@ impl CharacterAuthoringEntry {
             override_id: None,
             assistance_receipt_ids: Vec::new(),
             final_review: None,
+            tabletop: None,
         }
     }
 }
@@ -706,6 +853,9 @@ impl CharacterAuthoringPack {
         for entry in &mut self.characters {
             entry.assistance_receipt_ids.sort();
             entry.assistance_receipt_ids.dedup();
+            if let Some(tabletop) = &mut entry.tabletop {
+                normalize_tabletop_projection(tabletop);
+            }
         }
     }
 
@@ -816,6 +966,9 @@ impl CharacterRuntimePack {
                     pool.term_ids.dedup();
                 }
             }
+            if let Some(tabletop) = &mut character.tabletop {
+                normalize_tabletop_active(tabletop);
+            }
         }
     }
 
@@ -858,6 +1011,9 @@ pub struct CharacterRuntimeProfile {
     pub expression: Option<RuntimeExpression>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub date_context: BTreeMap<String, RuntimeDateCue>,
+    /// Approved active adapter view; inactive projections remain authoring-only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tabletop: Option<CharacterPackActiveTabletop>,
 }
 
 /// One approved inner-life record without attribution metadata.
@@ -1122,6 +1278,90 @@ fn pack_schema<T: JsonSchema>(id: &str, title: &str) -> Result<String, Character
     to_pretty_json(&value).map_err(|_| encoding_error())
 }
 
+/// Deterministic SHA-256 of one packed portable value.
+///
+/// This matches the tabletop contract's canonical fingerprint: compact JSON bytes hashed with
+/// SHA-256.
+pub fn character_pack_value_fingerprint(value: &DomainValue) -> Result<String, CharacterPackError> {
+    canonical_serialized_sha256(value)
+}
+
+/// Deterministic SHA-256 of one canonical Character profile.
+pub fn character_pack_profile_fingerprint(
+    profile: &CharacterProfile,
+) -> Result<String, CharacterPackError> {
+    canonical_serialized_sha256(profile)
+}
+
+/// Deterministic SHA-256 of one packed adapter manifest.
+///
+/// The coordinate's own `content_sha256` is excluded so the hash can be recomputed before the
+/// coordinate is pinned.
+pub fn character_pack_adapter_manifest_fingerprint(
+    manifest: &CharacterPackAdapterManifest,
+) -> Result<String, CharacterPackError> {
+    let mut value = serde_json::to_value(manifest).map_err(|_| encoding_error())?;
+    if let Some(object) = value.as_object_mut() {
+        if let Some(coordinate) = object
+            .get_mut("coordinate")
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            coordinate.remove("content_sha256");
+        }
+        // Sort the two ordered vectors so the fingerprint is invariant to input order. Pack
+        // validation still requires the canonical order in the stored manifest.
+        if let Some(capabilities) = object
+            .get_mut("capabilities")
+            .and_then(serde_json::Value::as_array_mut)
+        {
+            capabilities.sort_by(|left, right| {
+                left.get("capability")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or_default()
+                    .cmp(
+                        right
+                            .get("capability")
+                            .and_then(serde_json::Value::as_str)
+                            .unwrap_or_default(),
+                    )
+            });
+        }
+        if let Some(steps) = object
+            .get_mut("creation_step_ids")
+            .and_then(serde_json::Value::as_array_mut)
+        {
+            steps.sort_by(|left, right| {
+                left.as_str()
+                    .unwrap_or_default()
+                    .cmp(right.as_str().unwrap_or_default())
+            });
+        }
+    }
+    let bytes = serde_json::to_vec(&value).map_err(|_| encoding_error())?;
+    Ok(sha256_hex(&bytes))
+}
+
+/// Stable archive key for one packed adapter identity and release.
+#[must_use]
+pub fn character_pack_adapter_namespace_key(adapter: &CharacterPackAdapterCoordinate) -> String {
+    format!(
+        "{}_v{}",
+        adapter.id.replace('.', "_"),
+        adapter.version.replace('.', "_")
+    )
+}
+
+fn canonical_serialized_sha256(value: &impl Serialize) -> Result<String, CharacterPackError> {
+    let bytes = serde_json::to_vec(value).map_err(|_| encoding_error())?;
+    Ok(sha256_hex(&bytes))
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    format!("{:x}", hasher.finalize())
+}
+
 fn sort_json_keys(value: &mut serde_json::Value) {
     match value {
         serde_json::Value::Array(values) => {
@@ -1259,6 +1499,7 @@ pub fn validate_authoring_pack(pack: &CharacterAuthoringPack) -> Result<(), Char
             &receipt_ids,
         )?;
         validate_authoring_relationships(&path, &entry.profile, &character_profiles)?;
+        validate_authoring_tabletop(&path, &entry.profile, entry.tabletop.as_ref())?;
     }
 
     Ok(())
@@ -1723,6 +1964,9 @@ fn validate_runtime_profile(
 
     if let Some(expression) = &profile.expression {
         validate_runtime_expression(&format!("{path}.expression"), expression, ids)?;
+    }
+    if let Some(tabletop) = &profile.tabletop {
+        validate_runtime_tabletop(&path, profile, tabletop)?;
     }
     for (id, cue) in &profile.date_context {
         let cue_path = format!("{path}.date_context.{id}");
@@ -2258,7 +2502,44 @@ fn runtime_profile(
         relationships,
         expression,
         date_context,
+        tabletop: entry.tabletop.as_ref().map(runtime_tabletop),
     })
+}
+
+fn normalize_adapter_manifest(manifest: &mut CharacterPackAdapterManifest) {
+    manifest
+        .capabilities
+        .sort_by_key(|declaration| declaration.capability);
+    manifest.creation_step_ids.sort();
+    manifest.creation_step_ids.dedup();
+}
+
+fn normalize_tabletop_projection(projection: &mut CharacterPackTabletopProjection) {
+    normalize_adapter_manifest(&mut projection.manifest);
+    projection.active.completed_creation_steps.sort();
+    projection.active.completed_creation_steps.dedup();
+    for inactive in projection.inactive.values_mut() {
+        inactive.completed_creation_steps.sort();
+        inactive.completed_creation_steps.dedup();
+    }
+}
+
+fn normalize_tabletop_active(active_view: &mut CharacterPackActiveTabletop) {
+    normalize_adapter_manifest(&mut active_view.manifest);
+    active_view.active.completed_creation_steps.sort();
+    active_view.active.completed_creation_steps.dedup();
+}
+
+fn runtime_tabletop(projection: &CharacterPackTabletopProjection) -> CharacterPackActiveTabletop {
+    CharacterPackActiveTabletop {
+        projection_format_version: projection.projection_format_version,
+        character_id: projection.character_id.clone(),
+        canonical_profile_sha256: projection.canonical_profile_sha256.clone(),
+        canonical_character_write_back: projection.canonical_character_write_back,
+        manifest: projection.manifest.clone(),
+        active: projection.active.clone(),
+        state: projection.state.clone(),
+    }
 }
 
 fn runtime_presentation(value: &IdentityPresentation) -> RuntimePresentation {
@@ -2629,6 +2910,408 @@ fn validate_health_diagnostic(
             CharacterDiagnosticCode::InvalidReference,
             format!("health_diagnostics.{}.scope", diagnostic.id),
             "health diagnostic references a character that is absent from the pack",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_authoring_tabletop(
+    path: &str,
+    profile: &CharacterProfile,
+    projection: Option<&CharacterPackTabletopProjection>,
+) -> Result<(), CharacterPackError> {
+    let Some(projection) = projection else {
+        return Ok(());
+    };
+    let root = format!("{path}.tabletop");
+    if projection.projection_format_version != CHARACTER_PACK_TABLETOP_PROJECTION_FORMAT_VERSION {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{root}.projection_format_version"),
+            "unsupported tabletop projection format version; re-export as version 1",
+        ));
+    }
+    if projection.character_id != profile.id {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{root}.character_id"),
+            "tabletop projection targets a different character",
+        ));
+    }
+    validate_sha256(
+        &format!("{root}.canonical_profile_sha256"),
+        &projection.canonical_profile_sha256,
+    )?;
+    if projection.canonical_profile_sha256 != character_pack_profile_fingerprint(profile)? {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{root}.canonical_profile_sha256"),
+            "tabletop projection does not reference the exact canonical profile",
+        ));
+    }
+    if projection.canonical_character_write_back {
+        return Err(pack_error(
+            CharacterDiagnosticCode::ForbiddenWriteBack,
+            format!("{root}.canonical_character_write_back"),
+            "tabletop projections cannot write canonical Character evidence",
+        ));
+    }
+    validate_provenance(&projection.provenance).map_err(|_| {
+        pack_error(
+            CharacterDiagnosticCode::InvalidLineage,
+            format!("{root}.provenance"),
+            "adapter provenance is malformed or incomplete",
+        )
+    })?;
+    validate_tabletop_manifest(
+        &format!("{root}.manifest"),
+        &projection.manifest,
+        Some(&projection.provenance),
+    )?;
+    validate_adapter_definition(
+        &format!("{root}.active"),
+        &projection.active,
+        &projection.manifest,
+    )?;
+    if let Some(state) = &projection.state {
+        validate_adapter_state(
+            &format!("{root}.state"),
+            state,
+            &projection.manifest,
+            &projection.active,
+            &profile.id,
+        )?;
+    }
+    if projection.inactive.len() > CHARACTER_PACK_MAX_RECORDS {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{root}.inactive"),
+            "inactive adapter projections exceed the 4096-record limit",
+        ));
+    }
+    for (key, inactive) in &projection.inactive {
+        validate_inactive_tabletop(&format!("{root}.inactive.{key}"), key, inactive, projection)?;
+    }
+    Ok(())
+}
+
+fn validate_runtime_tabletop(
+    path: &str,
+    profile: &CharacterRuntimeProfile,
+    projection: &CharacterPackActiveTabletop,
+) -> Result<(), CharacterPackError> {
+    let root = format!("{path}.tabletop");
+    if projection.projection_format_version != CHARACTER_PACK_TABLETOP_PROJECTION_FORMAT_VERSION {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{root}.projection_format_version"),
+            "unsupported tabletop projection format version; re-export as version 1",
+        ));
+    }
+    if projection.character_id != profile.id {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{root}.character_id"),
+            "runtime tabletop projection targets a different character",
+        ));
+    }
+    validate_sha256(
+        &format!("{root}.canonical_profile_sha256"),
+        &projection.canonical_profile_sha256,
+    )?;
+    if projection.canonical_character_write_back {
+        return Err(pack_error(
+            CharacterDiagnosticCode::ForbiddenWriteBack,
+            format!("{root}.canonical_character_write_back"),
+            "tabletop projections cannot write canonical Character evidence",
+        ));
+    }
+    validate_tabletop_manifest(&format!("{root}.manifest"), &projection.manifest, None)?;
+    validate_adapter_definition(
+        &format!("{root}.active"),
+        &projection.active,
+        &projection.manifest,
+    )?;
+    if let Some(state) = &projection.state {
+        validate_adapter_state(
+            &format!("{root}.state"),
+            state,
+            &projection.manifest,
+            &projection.active,
+            &profile.id,
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_tabletop_manifest(
+    path: &str,
+    manifest: &CharacterPackAdapterManifest,
+    provenance: Option<&Provenance>,
+) -> Result<(), CharacterPackError> {
+    if manifest.manifest_format_version != CHARACTER_PACK_ADAPTER_MANIFEST_FORMAT_VERSION {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{path}.manifest_format_version"),
+            "unsupported tabletop adapter manifest format version; re-export as version 1",
+        ));
+    }
+    validate_adapter_coordinate(&format!("{path}.coordinate"), &manifest.coordinate)?;
+    validate_local_id(&format!("{path}.namespace"), &manifest.namespace)?;
+    validate_text(&format!("{path}.title"), &manifest.title, 1, 160)?;
+    if manifest.capabilities.is_empty() || manifest.capabilities.len() > 64 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{path}.capabilities"),
+            "an adapter manifest requires between one and 64 capabilities",
+        ));
+    }
+    let mut prior = None;
+    for (index, declaration) in manifest.capabilities.iter().enumerate() {
+        if declaration.version != 1 {
+            return Err(pack_error(
+                CharacterDiagnosticCode::UnsupportedVersion,
+                format!("{path}.capabilities[{index}].version"),
+                "unsupported tabletop capability version; re-export as version 1",
+            ));
+        }
+        if prior.is_some_and(|prior| prior >= declaration.capability) {
+            return Err(pack_error(
+                CharacterDiagnosticCode::InvalidValue,
+                format!("{path}.capabilities"),
+                "capabilities must be unique and sorted",
+            ));
+        }
+        prior = Some(declaration.capability);
+    }
+    validate_sorted_texts(
+        &format!("{path}.creation_step_ids"),
+        &manifest.creation_step_ids,
+        1,
+        128,
+    )?;
+    if manifest.types.len() > 256 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{path}.types"),
+            "an adapter manifest declares too many named types",
+        ));
+    }
+    for key in manifest.types.keys() {
+        validate_local_id(&format!("{path}.types"), key)?;
+    }
+    let empty = empty_provenance();
+    validate_pack_license(
+        &format!("{path}.license"),
+        &manifest.license,
+        provenance.unwrap_or(&empty),
+    )?;
+    if manifest.license.license != "MIT" && manifest.license.notices.is_empty() {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidLineage,
+            format!("{path}.license.notices"),
+            "separately licensed adapter requires its own licence notice and text",
+        ));
+    }
+    if character_pack_adapter_manifest_fingerprint(manifest)? != manifest.coordinate.content_sha256
+    {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{path}.coordinate.content_sha256"),
+            "adapter manifest content hash does not match the pinned coordinate",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_adapter_coordinate(
+    path: &str,
+    adapter: &CharacterPackAdapterCoordinate,
+) -> Result<(), CharacterPackError> {
+    validate_namespaced_id(&format!("{path}.id"), &adapter.id)?;
+    validate_semver(&format!("{path}.version"), &adapter.version)?;
+    if adapter.schema_version != 1 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{path}.schema_version"),
+            "unsupported tabletop adapter schema version; migrate the adapter projection to schema version 1",
+        ));
+    }
+    validate_sha256(&format!("{path}.content_sha256"), &adapter.content_sha256)
+}
+
+fn validate_adapter_definition(
+    path: &str,
+    definition: &CharacterPackAdapterDefinition,
+    manifest: &CharacterPackAdapterManifest,
+) -> Result<(), CharacterPackError> {
+    validate_adapter_coordinate(&format!("{path}.adapter"), &definition.adapter)?;
+    if definition.adapter != manifest.coordinate {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.adapter"),
+            "adapter definition coordinate does not match the pinned manifest",
+        ));
+    }
+    validate_sha256(
+        &format!("{path}.definition_sha256"),
+        &definition.definition_sha256,
+    )?;
+    if definition.definition_sha256 != character_pack_value_fingerprint(&definition.definition)? {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{path}.definition_sha256"),
+            "adapter definition hash does not match its immutable definition",
+        ));
+    }
+    validate_typed_value(
+        &format!("{path}.definition"),
+        &definition.definition,
+        &manifest.definition_type,
+        &manifest.types,
+    )
+    .map_err(|_| {
+        pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{path}.definition"),
+            "adapter definition does not match the pinned definition type",
+        )
+    })?;
+    validate_completed_steps(
+        &format!("{path}.completed_creation_steps"),
+        &definition.completed_creation_steps,
+        &manifest.creation_step_ids,
+    )
+}
+
+fn validate_adapter_state(
+    path: &str,
+    state: &CharacterPackTabletopState,
+    manifest: &CharacterPackAdapterManifest,
+    active: &CharacterPackAdapterDefinition,
+    character_id: &str,
+) -> Result<(), CharacterPackError> {
+    if state.state_format_version != CHARACTER_PACK_TABLETOP_STATE_FORMAT_VERSION {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{path}.state_format_version"),
+            "unsupported tabletop state format version; re-export as version 1",
+        ));
+    }
+    validate_adapter_coordinate(&format!("{path}.adapter"), &state.adapter)?;
+    if state.adapter != manifest.coordinate {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.adapter"),
+            "tabletop state coordinate does not match the pinned manifest",
+        ));
+    }
+    if state.owner_id != character_id {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.owner_id"),
+            "tabletop state owner does not match the character",
+        ));
+    }
+    validate_sha256(
+        &format!("{path}.definition_sha256"),
+        &state.definition_sha256,
+    )?;
+    if state.definition_sha256 != active.definition_sha256 {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            format!("{path}.definition_sha256"),
+            "tabletop state does not reference the active definition",
+        ));
+    }
+    if state.entropy_algorithm != CHARACTER_PACK_TABLETOP_ENTROPY_ALGORITHM {
+        return Err(pack_error(
+            CharacterDiagnosticCode::UnsupportedVersion,
+            format!("{path}.entropy_algorithm"),
+            "unsupported tabletop entropy algorithm",
+        ));
+    }
+    validate_typed_value(
+        &format!("{path}.value"),
+        &state.value,
+        &manifest.state_type,
+        &manifest.types,
+    )
+    .map_err(|_| {
+        pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{path}.value"),
+            "tabletop state does not match the pinned state type",
+        )
+    })
+}
+
+fn validate_inactive_tabletop(
+    path: &str,
+    key: &str,
+    inactive: &CharacterPackInactiveTabletop,
+    projection: &CharacterPackTabletopProjection,
+) -> Result<(), CharacterPackError> {
+    validate_local_id(path, key)?;
+    validate_adapter_coordinate(&format!("{path}.adapter"), &inactive.adapter)?;
+    if key != character_pack_adapter_namespace_key(&inactive.adapter) {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            path,
+            "inactive adapter key must equal its exact coordinate namespace key",
+        ));
+    }
+    if inactive.adapter == projection.active.adapter {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            path,
+            "the active adapter cannot also be archived",
+        ));
+    }
+    validate_sha256(
+        &format!("{path}.definition_sha256"),
+        &inactive.definition_sha256,
+    )?;
+    if inactive.definition_sha256 != character_pack_value_fingerprint(&inactive.definition)? {
+        return Err(pack_error(
+            CharacterDiagnosticCode::StaleInput,
+            format!("{path}.definition_sha256"),
+            "inactive adapter definition hash does not match its immutable definition",
+        ));
+    }
+    validate_typed_value(
+        &format!("{path}.definition"),
+        &inactive.definition,
+        &projection.manifest.definition_type,
+        &projection.manifest.types,
+    )
+    .map_err(|_| {
+        pack_error(
+            CharacterDiagnosticCode::InvalidValue,
+            format!("{path}.definition"),
+            "inactive adapter definition does not match the pinned definition type",
+        )
+    })?;
+    validate_completed_steps(
+        &format!("{path}.completed_creation_steps"),
+        &inactive.completed_creation_steps,
+        &projection.manifest.creation_step_ids,
+    )?;
+    validate_text(&format!("{path}.reason"), &inactive.reason, 1, 2_048)
+}
+
+fn validate_completed_steps(
+    path: &str,
+    steps: &[String],
+    declared: &[String],
+) -> Result<(), CharacterPackError> {
+    validate_sorted_texts(path, steps, 1, 128)?;
+    let declared = declared.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    if steps.iter().any(|step| !declared.contains(step.as_str())) {
+        return Err(pack_error(
+            CharacterDiagnosticCode::InvalidReference,
+            path,
+            "completed creation step is not declared by the adapter manifest",
         ));
     }
     Ok(())
