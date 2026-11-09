@@ -10,6 +10,16 @@ use weave_core::Span;
 use crate::graph::{GraphDocument, GraphEdgeKind, GraphNodeKind, GraphPoint};
 use crate::theme::DARK_THEME;
 
+/// Exact rendered size of a beat, branch, or declaration card, in logical pixels.
+///
+/// The graph declares the same size on its flow nodes so handles and edges land on the visible
+/// card edge even before gpui-flow measures the custom renderer.
+pub const KNOT_NODE_SIZE: (f32, f32) = (220.0, 92.0);
+/// Exact rendered size of a branch card.
+pub const CHOICE_NODE_SIZE: (f32, f32) = (220.0, 78.0);
+/// Exact rendered size of a variable pill.
+pub const VARIABLE_NODE_SIZE: (f32, f32) = (176.0, 54.0);
+
 /// Shape language used by source construct cards.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NodeShape {
@@ -244,9 +254,9 @@ fn render_weave_node(
     // Fixed sizes match the flow node's declared size so handles and edges land on the
     // visible card edge. Content that overflows is clipped rather than growing the card.
     let (width, height) = match kind {
-        GraphNodeKind::Variable => (176.0, 54.0),
-        GraphNodeKind::Choice => (220.0, 78.0),
-        GraphNodeKind::Knot | GraphNodeKind::Grammar | GraphNodeKind::Pattern => (220.0, 92.0),
+        GraphNodeKind::Variable => VARIABLE_NODE_SIZE,
+        GraphNodeKind::Choice => CHOICE_NODE_SIZE,
+        GraphNodeKind::Knot | GraphNodeKind::Grammar | GraphNodeKind::Pattern => KNOT_NODE_SIZE,
     };
     let mut card = div()
         .w(px(width))

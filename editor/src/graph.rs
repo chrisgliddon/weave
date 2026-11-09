@@ -606,10 +606,10 @@ impl GraphDocument {
                 // renderers when the wrapper reports bounds, so a declared size that differs
                 // from the card leaves connectors short of, or past, the visible edge.
                 let (width, height) = match node.kind {
-                    GraphNodeKind::Variable => (176.0, 54.0),
-                    GraphNodeKind::Choice => (220.0, 78.0),
+                    GraphNodeKind::Variable => crate::node_renderers::VARIABLE_NODE_SIZE,
+                    GraphNodeKind::Choice => crate::node_renderers::CHOICE_NODE_SIZE,
                     GraphNodeKind::Knot | GraphNodeKind::Grammar | GraphNodeKind::Pattern => {
-                        (220.0, 92.0)
+                        crate::node_renderers::KNOT_NODE_SIZE
                     }
                 };
                 let mut flow = FlowNode::new(&node.id, node.position.x, node.position.y)
@@ -1158,6 +1158,27 @@ Aside.
                 .connect(GraphEdgeKind::Divert, "knot:next", "knot:start")
                 .is_ok()
         );
+    }
+
+    #[test]
+    fn flow_node_sizes_match_the_rendered_card_sizes() {
+        let graph = graph();
+        for node in graph.flow_parts().0 {
+            let expected = match node.node_type.as_ref().map(ToString::to_string).as_deref() {
+                Some("variable") => crate::node_renderers::VARIABLE_NODE_SIZE,
+                Some("choice") => crate::node_renderers::CHOICE_NODE_SIZE,
+                _ => crate::node_renderers::KNOT_NODE_SIZE,
+            };
+            assert_eq!(
+                (
+                    node.measured_width.map(|w| w.as_f32()),
+                    node.measured_height.map(|h| h.as_f32())
+                ),
+                (Some(expected.0), Some(expected.1)),
+                "node {} size drifted from its renderer",
+                node.id
+            );
+        }
     }
 
     #[test]
