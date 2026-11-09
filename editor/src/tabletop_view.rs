@@ -393,7 +393,39 @@ impl FieldDraft {
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Notice {
     Success(String),
+    Warning(String),
     Error(String),
+}
+
+fn adapter_matches_session(
+    adapter: &dyn TabletopPanelAdapter,
+    session: &TabletopPanelSession,
+) -> bool {
+    adapter.adapter_id() == session.manifest().id
+        && adapter.adapter_version() == session.manifest().version
+}
+
+/// Explain why accepting the current creation would use stale data, if it would.
+fn acceptance_blocker(
+    creation_dirty: bool,
+    preview_present: bool,
+    first_error: Option<(&str, &str)>,
+) -> Option<String> {
+    if let Some((path, reason)) = first_error {
+        return Some(format!(
+            "{path}: {reason}. Fix the field before accepting the preview."
+        ));
+    }
+    if creation_dirty {
+        return Some(
+            "The creation form has unapplied edits. Build a fresh preview before accepting."
+                .to_owned(),
+        );
+    }
+    if !preview_present {
+        return Some("editor.acceptance: build a preview before accepting".to_owned());
+    }
+    None
 }
 
 /// Manifest-gated tabletop authoring and play surface.
@@ -456,8 +488,12 @@ impl TabletopView {
         adapter: Arc<dyn TabletopPanelAdapter>,
         session: TabletopPanelSession,
         cx: &mut Context<Self>,
-    ) {
+    ) -> Result<(), TabletopError> {
+        if !adapter_matches_session(adapter.as_ref(), &session) {
+            return Err(TabletopError::ResolverMismatch);
+        }
         self.install(adapter, session, cx);
+        Ok(())
     }
 
     /// Current session, if one is installed.
@@ -813,6 +849,7 @@ impl TabletopView {
             FieldTarget::Creation(field) => {
                 self.creation_dirty = true;
                 if let Err(error) = self.creation.edit(&field, &draft.text) {
+                    self.preview = None;
                     self.notice = Some(Notice::Error(error.to_string()));
                 } else {
                     self.preview = None;
@@ -892,10 +929,12 @@ impl TabletopView {
         let Some(session) = self.session.as_mut() else {
             return;
         };
-        if self.preview.is_none() {
-            self.notice = Some(Notice::Error(
-                "editor.acceptance: build a preview before accepting".to_owned(),
-            ));
+        if let Some(message) = acceptance_blocker(
+            self.creation_dirty,
+            self.preview.is_some(),
+            self.creation.first_error(),
+        ) {
+            self.notice = Some(Notice::Error(message));
             self.changed(cx);
             return;
         }
@@ -984,9 +1023,15 @@ impl TabletopView {
                 let enabled = outcome.enabled_modules.len();
                 let diagnostics = outcome.diagnostics.len();
                 self.module_outcome = Some(outcome);
-                self.notice = Some(Notice::Success(format!(
-                    "Module review complete: {enabled} enabled, {diagnostics} diagnostic(s)."
-                )));
+                self.notice = Some(if diagnostics == 0 {
+                    Notice::Success(format!(
+                        "Module review complete: {enabled} module(s) enabled."
+                    ))
+                } else {
+                    Notice::Warning(format!(
+                        "Module review found {diagnostics} diagnostic(s); no module was enabled."
+                    ))
+                });
             }
             Err(error) => self.notice = Some(Notice::Error(error.to_string())),
         }
@@ -1350,6 +1395,7 @@ impl TabletopView {
         };
         let panel = match session.module_panel() {
             Ok(panel) => panel,
+            Err(TabletopError::UndeclaredCapability { .. }) => return div().into_any_element(),
             Err(error) => return banner("Module review unavailable", &error.to_string(), true),
         };
         let mut section = div()
@@ -1582,6 +1628,7 @@ fn banner(title: &str, message: &str, error: bool) -> AnyElement {
 fn notice_banner(notice: &Notice) -> AnyElement {
     match notice {
         Notice::Success(message) => banner("Ready", message, false),
+        Notice::Warning(message) => banner("Module diagnostics", message, false),
         Notice::Error(message) => banner("Tabletop error", message, true),
     }
 }
@@ -1664,6 +1711,7 @@ fn module_outcome(outcome: &ModulePanelOutcome) -> AnyElement {
         .map(|capability| capability_label(*capability))
         .collect::<Vec<_>>()
         .join(", ");
+    let rejected = !outcome.diagnostics.is_empty();
     let mut panel = div()
         .flex()
         .flex_col()
@@ -1671,9 +1719,17 @@ fn module_outcome(outcome: &ModulePanelOutcome) -> AnyElement {
         .p_2()
         .rounded_md()
         .border_1()
-        .border_color(rgb(DARK_THEME.success))
+        .border_color(rgb(if rejected {
+            DARK_THEME.warning
+        } else {
+            DARK_THEME.success
+        }))
         .bg(rgb(DARK_THEME.chrome))
-        .child(div().text_sm().child("Module review"))
+        .child(div().text_sm().child(if rejected {
+            "Module review rejected"
+        } else {
+            "Module review"
+        }))
         .child(div().text_xs().child(format!(
             "Enabled: {} · Effective capabilities: {}",
             if outcome.enabled_modules.is_empty() {
@@ -1966,6 +2022,32 @@ mod tests {
         );
         let error = session.panel(TabletopCapability::Encounters).unwrap_err();
         assert!(error.to_string().starts_with("TT106"));
+    }
+
+    #[test]
+    fn accept_refuses_dirty_or_invalid_creation() {
+        assert_eq!(acceptance_blocker(false, true, None), None);
+        let dirty = acceptance_blocker(true, true, None).unwrap();
+        assert!(dirty.contains("fresh preview"));
+        let invalid = acceptance_blocker(
+            true,
+            true,
+            Some(("attributes.body", "expected one of: d4, d6")),
+        )
+        .unwrap();
+        assert!(invalid.contains("attributes.body"));
+        assert!(invalid.contains("expected one of"));
+        let no_preview = acceptance_blocker(false, false, None).unwrap();
+        assert!(no_preview.contains("build a preview"));
+    }
+
+    #[test]
+    fn session_requires_the_matching_adapter_coordinate() {
+        let (spark_adapter, session) = spark_session();
+        assert!(adapter_matches_session(spark_adapter.as_ref(), &session));
+
+        let other: Arc<dyn TabletopPanelAdapter> = Arc::new(open_adventure::OpenAdventurePanels);
+        assert!(!adapter_matches_session(other.as_ref(), &session));
     }
 
     #[test]

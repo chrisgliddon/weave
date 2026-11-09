@@ -576,16 +576,19 @@ impl TabletopPanelSession {
         )
     }
 
-    /// Optional-module review panel, or `TT106` when the adapter has none or lacks the capability.
+    /// Optional-module review panel, or `TT106` when the adapter has none or lacks its capability.
     pub fn module_panel(&self) -> Result<ModulePanelView, TabletopError> {
-        let capability = TabletopCapability::DerivedValues;
-        if !has_capability(&self.manifest, capability) {
-            return Err(TabletopError::UndeclaredCapability { capability });
-        }
         let panel = self
             .adapter
             .module_panel()
-            .ok_or(TabletopError::UndeclaredCapability { capability })?;
+            .ok_or(TabletopError::UndeclaredCapability {
+                capability: TabletopCapability::DerivedValues,
+            })?;
+        if !has_capability(&self.manifest, panel.capability) {
+            return Err(TabletopError::UndeclaredCapability {
+                capability: panel.capability,
+            });
+        }
         Ok(ModulePanelView {
             capability: panel.capability,
             title: panel.title,
@@ -596,14 +599,17 @@ impl TabletopPanelSession {
 
     /// Review one optional-module activation; diagnostics keep unverified modules inactive.
     pub fn apply_modules(&self, form: &PanelForm) -> Result<ModulePanelOutcome, TabletopError> {
-        let capability = TabletopCapability::DerivedValues;
-        if !has_capability(&self.manifest, capability) {
-            return Err(TabletopError::UndeclaredCapability { capability });
-        }
         let panel = self
             .adapter
             .module_panel()
-            .ok_or(TabletopError::UndeclaredCapability { capability })?;
+            .ok_or(TabletopError::UndeclaredCapability {
+                capability: TabletopCapability::DerivedValues,
+            })?;
+        if !has_capability(&self.manifest, panel.capability) {
+            return Err(TabletopError::UndeclaredCapability {
+                capability: panel.capability,
+            });
+        }
         form.validate(&panel.fields)?;
         (panel.apply)(form)
     }
@@ -2774,13 +2780,14 @@ pub mod open_adventure {
         OPEN_ADVENTURE_MODULE_FORMAT_VERSION, OPEN_ADVENTURE_MODULE_SELECTION_FORMAT_VERSION,
         OPEN_ADVENTURE_NAMESPACE, OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_BYTES,
         OPEN_ADVENTURE_REPLACEMENT_ARTIFACT_SHA256, OPEN_ADVENTURE_SOURCE_URL,
-        OpenAdventureAttribute, OpenAdventureAttributes, OpenAdventureCreationRequest,
-        OpenAdventureEquipment, OpenAdventureEquipmentKind, OpenAdventureFavoredAction,
-        OpenAdventureModifierTarget, OpenAdventureModuleArtifact, OpenAdventureModuleContentClass,
-        OpenAdventureModuleDescriptor, OpenAdventureModuleExperience, OpenAdventureModuleSelection,
-        OpenAdventureModusOperandi, OpenAdventureOrigin, OpenAdventureSpecialization,
-        OpenAdventureTraitModifier, create_open_adventure_character, open_adventure_manifest,
-        open_adventure_module_options, validate_open_adventure_creation_preview,
+        OPEN_ADVENTURE_VERIFIED_MODULES, OpenAdventureAttribute, OpenAdventureAttributes,
+        OpenAdventureCreationRequest, OpenAdventureEquipment, OpenAdventureEquipmentKind,
+        OpenAdventureFavoredAction, OpenAdventureModifierTarget, OpenAdventureModuleArtifact,
+        OpenAdventureModuleContentClass, OpenAdventureModuleDescriptor,
+        OpenAdventureModuleExperience, OpenAdventureModuleSelection, OpenAdventureModusOperandi,
+        OpenAdventureOrigin, OpenAdventureSpecialization, OpenAdventureTraitModifier,
+        create_open_adventure_character, open_adventure_manifest, open_adventure_module_options,
+        validate_open_adventure_creation_preview,
     };
 
     const ATTRIBUTES: &[&str] = &[
@@ -3389,24 +3396,27 @@ pub mod open_adventure {
     }
 
     fn module_entries() -> Vec<ModulePanelEntry> {
-        vec![
-            ModulePanelEntry {
-                id: "org.weave.tabletop.open_adventure.tide_clocks".to_owned(),
-                version: "1.0.0".to_owned(),
-                title: "Tide Clocks".to_owned(),
-                verified: true,
-                provides: vec![TabletopCapability::Clocks],
+        available_modules()
+            .into_iter()
+            .map(|module| ModulePanelEntry {
+                verified: allowlist_entry(&module.id, &module.version, &module.sha256).is_some(),
+                id: module.id,
+                version: module.version,
+                title: module.title,
+                provides: module.provides_capabilities,
                 reason: String::new(),
-            },
-            ModulePanelEntry {
-                id: "org.weave.tabletop.open_adventure.tide_replacement".to_owned(),
-                version: "1.0.0".to_owned(),
-                title: "Tide Replacement".to_owned(),
-                verified: true,
-                provides: vec![TabletopCapability::ChecksAndConflicts],
-                reason: String::new(),
-            },
-        ]
+            })
+            .collect()
+    }
+
+    fn allowlist_entry(
+        id: &str,
+        version: &str,
+        sha256: &str,
+    ) -> Option<&'static weave_tabletop::OpenAdventureVerifiedModule> {
+        OPEN_ADVENTURE_VERIFIED_MODULES
+            .iter()
+            .find(|entry| entry.id == id && entry.version == version && entry.sha256 == sha256)
     }
 
     fn apply_modules(form: &PanelForm) -> Result<ModulePanelOutcome, TabletopError> {
@@ -3445,14 +3455,15 @@ pub mod open_adventure {
             &available, &artifacts, &selection, &core,
         ) {
             Ok(effective) => {
+                let confirmed = effective.enabled_modules.clone();
                 let inactive_modules = module_options(experience)
                     .into_iter()
-                    .filter(|entry| !enabled_modules.contains(&entry.id))
+                    .filter(|entry| !confirmed.contains(&entry.id))
                     .collect();
                 Ok(ModulePanelOutcome {
                     diagnostics: Vec::new(),
                     effective_capabilities: effective.capabilities,
-                    enabled_modules,
+                    enabled_modules: effective.enabled_modules,
                     inactive_modules,
                 })
             }
@@ -3494,7 +3505,7 @@ pub mod open_adventure {
                 Ok(ModulePanelOutcome {
                     diagnostics,
                     effective_capabilities: Vec::new(),
-                    enabled_modules,
+                    enabled_modules: Vec::new(),
                     inactive_modules: vec![inactive],
                 })
             }
@@ -3505,10 +3516,10 @@ pub mod open_adventure {
         open_adventure_module_options(&available_modules(), experience)
             .into_iter()
             .map(|module| ModulePanelEntry {
+                verified: allowlist_entry(&module.id, &module.version, &module.sha256).is_some(),
                 id: module.id,
                 version: module.version,
                 title: module.title,
-                verified: true,
                 provides: module.provides_capabilities,
                 reason: String::new(),
             })
@@ -3725,8 +3736,8 @@ pub mod open_adventure {
 mod tests {
     use super::*;
     use weave_tabletop::{
-        OpenAdventureResolver, OpenTaleResolver, SparkResolver, TabletopResolver,
-        WickedOnesResolver,
+        OpenAdventureResolver, OpenTaleResolver, SparkResolver, TabletopCapabilityDeclaration,
+        TabletopResolver, WickedOnesResolver, spark_manifest,
     };
 
     fn registry(
@@ -4211,10 +4222,14 @@ mod tests {
         );
         assert!(rejected.effective_capabilities.is_empty());
         assert!(
+            rejected.enabled_modules.is_empty(),
+            "a rejected module must never be reported enabled"
+        );
+        assert!(
             rejected
                 .inactive_modules
                 .iter()
-                .any(|module| !module.verified)
+                .any(|module| { !module.verified && module.id.ends_with(".unverified") })
         );
     }
 
@@ -4266,6 +4281,107 @@ mod tests {
             "operation",
             "dormant controls must not build requests",
         ))
+    }
+
+    fn manifest_with_encounters() -> AdapterManifest {
+        let mut manifest = spark_manifest();
+        manifest.capabilities.push(TabletopCapabilityDeclaration {
+            capability: TabletopCapability::Encounters,
+            version: 1,
+        });
+        manifest
+            .capabilities
+            .sort_by_key(|declaration| declaration.capability);
+        manifest
+    }
+
+    struct ModuleCapabilityAdapter {
+        capability: TabletopCapability,
+    }
+
+    impl TabletopPanelAdapter for ModuleCapabilityAdapter {
+        fn adapter_id(&self) -> &'static str {
+            weave_tabletop::SPARK_ADAPTER_ID
+        }
+
+        fn adapter_version(&self) -> &'static str {
+            weave_tabletop::SPARK_ADAPTER_VERSION
+        }
+
+        fn manifest(&self) -> AdapterManifest {
+            manifest_with_encounters()
+        }
+
+        fn creation_panel(&self) -> CreationPanel {
+            spark::SparkPanels.creation_panel()
+        }
+
+        fn panels(&self) -> Vec<PanelDescriptor> {
+            spark::SparkPanels.panels()
+        }
+
+        fn module_panel(&self) -> Option<ModulePanel> {
+            Some(ModulePanel {
+                capability: self.capability,
+                title: "Module gate",
+                fields: Vec::new(),
+                modules: Vec::new(),
+                apply: test_module_outcome,
+            })
+        }
+    }
+
+    fn test_module_outcome(_form: &PanelForm) -> Result<ModulePanelOutcome, TabletopError> {
+        Ok(ModulePanelOutcome {
+            diagnostics: Vec::new(),
+            effective_capabilities: vec![TabletopCapability::Encounters],
+            enabled_modules: Vec::new(),
+            inactive_modules: Vec::new(),
+        })
+    }
+
+    #[test]
+    fn module_panel_requires_its_own_declared_capability() {
+        let declared: Arc<dyn TabletopPanelAdapter> = Arc::new(ModuleCapabilityAdapter {
+            capability: TabletopCapability::Encounters,
+        });
+        let manifest = declared.manifest();
+        let session =
+            TabletopPanelSession::new(declared, registry(&manifest, SparkResolver)).unwrap();
+        assert!(
+            !has_capability(session.manifest(), TabletopCapability::DerivedValues),
+            "the fixture must not declare DerivedValues"
+        );
+        let panel = session.module_panel().unwrap();
+        assert_eq!(panel.capability, TabletopCapability::Encounters);
+        assert!(
+            session
+                .apply_modules(&PanelForm::new())
+                .unwrap()
+                .effective_capabilities
+                .contains(&TabletopCapability::Encounters)
+        );
+
+        let absent: Arc<dyn TabletopPanelAdapter> = Arc::new(ModuleCapabilityAdapter {
+            capability: TabletopCapability::DerivedValues,
+        });
+        let manifest = absent.manifest();
+        let session =
+            TabletopPanelSession::new(absent, registry(&manifest, SparkResolver)).unwrap();
+        let error = session.module_panel().unwrap_err();
+        assert_eq!(
+            error,
+            TabletopError::UndeclaredCapability {
+                capability: TabletopCapability::DerivedValues,
+            }
+        );
+        assert!(error.to_string().starts_with("TT106"));
+        assert_eq!(
+            session.apply_modules(&PanelForm::new()).unwrap_err(),
+            TabletopError::UndeclaredCapability {
+                capability: TabletopCapability::DerivedValues,
+            }
+        );
     }
 
     #[test]
