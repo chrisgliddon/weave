@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   ADAPTER_CONSUMERS,
+  canonicalPayloadJson,
   renderAdapterRuns,
   validateProjection,
 } from "../src/tabletop-adapters.js";
@@ -40,6 +41,10 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+function sha256Text(text) {
+  return createHash("sha256").update(text).digest("hex");
+}
+
 test("loads every checked-in adapter with the recorded step and event counts", () => {
   const runs = loadAllAdapterRuns(fixtureRoot);
   assert.deepEqual(
@@ -55,10 +60,16 @@ test("loads every checked-in adapter with the recorded step and event counts", (
     [7, 20, 15, 28, 8, 1, 2],
   );
   for (const run of runs) {
+    assert.match(run.initial_state_sha256, /^[0-9a-f]{64}$/u);
     assert.match(run.final_state_sha256, /^[0-9a-f]{64}$/u);
     assert.match(run.presentation_color, /^hsl\(\d+, 52%, 58%\)$/u);
-    assert.ok(run.event_count >= run.public_event_count);
+    assert.equal("event_count" in run, false);
     assert.ok(run.steps.every((step) => typeof step.id === "string"));
+    assert.ok(
+      run.steps.every((step) =>
+        step.events.every((event, index) => event.sequence === index),
+      ),
+    );
   }
   for (const run of runs.slice(0, 4)) {
     assert.ok(run.observable.length > 0, `${run.key} observable values`);
@@ -85,8 +96,8 @@ test("Freehack exposes only its public receipts and public final state", () => {
   for (const step of run.steps) {
     for (const event of step.events) {
       assert.equal("visibility" in event, false);
-      assert.equal("payload_sha256" in event, false);
       assert.ok(event.payload);
+      assert.equal(sha256Text(canonicalPayloadJson(event.payload)), event.payload_sha256);
     }
   }
   const publicState = readJson(
@@ -97,26 +108,111 @@ test("Freehack exposes only its public receipts and public final state", () => {
     .digest("hex");
   assert.equal(run.final_state_sha256, expectedHash);
   assert.ok(run.observable.some((line) => line.startsWith("memories[")));
+  for (const marker of ["sealed_route", "host_only", "private", "authority", "entropy"]) {
+    assert.equal(
+      run.observable.some((line) => line.includes(marker)),
+      false,
+      `Freehack public observable leaks ${marker}`,
+    );
+  }
 });
 
 test("the generated public projection matches a fresh fixture load", () => {
-  const projection = validateProjection(readJson(generatedPath));
+  const projection = validateProjection(readJson(generatedPath), sha256Text);
   const runs = loadAllAdapterRuns(fixtureRoot);
   assert.equal(projection.adapters.length, runs.length);
   projection.adapters.forEach((adapter, index) => {
     const run = runs[index];
     assert.equal(adapter.key, run.key);
-    assert.deepEqual(adapter.steps, run.steps);
-    assert.equal(adapter.event_count, run.event_count);
+    assert.equal(adapter.id, run.id);
+    assert.equal(adapter.version, run.version);
+    assert.equal(adapter.source, run.source);
     assert.equal(adapter.public_event_count, run.public_event_count);
+    assert.equal(adapter.initial_state_sha256, run.initial_state_sha256);
     assert.equal(adapter.final_state_sha256, run.final_state_sha256);
     assert.equal(adapter.presentation_color, run.presentation_color);
+    assert.deepEqual(adapter.contract, run.contract);
     assert.deepEqual(adapter.observable, run.observable);
+    assert.equal(adapter.steps.length, run.steps.length);
+    if (adapter.source !== "canonical_project") {
+      assert.equal(adapter.character_name, run.character_name);
+    }
+    adapter.steps.forEach((step, stepIndex) => {
+      const expectedStep = run.steps[stepIndex];
+      assert.equal(step.id, expectedStep.id);
+      assert.equal(step.operation, expectedStep.operation);
+      assert.equal(step.capability, expectedStep.capability);
+      assert.equal(step.request_sha256, expectedStep.request_sha256);
+      assert.equal(step.before_state_sha256, expectedStep.before_state_sha256);
+      assert.equal(step.after_state_sha256, expectedStep.after_state_sha256);
+      assert.deepEqual(
+        step.events.map(({ sequence, kind, capability }) => ({
+          sequence,
+          kind,
+          capability,
+        })),
+        expectedStep.events.map(({ sequence, kind, capability }) => ({
+          sequence,
+          kind,
+          capability,
+        })),
+      );
+      if (adapter.source !== "canonical_project") {
+        assert.deepEqual(step.events, expectedStep.events);
+      }
+    });
   });
 });
 
+test("the public projection omits hidden totals and revalidates payload digests", () => {
+  const projection = validateProjection(readJson(generatedPath), sha256Text);
+  for (const adapter of projection.adapters) {
+    assert.equal("event_count" in adapter, false);
+    assert.equal(
+      adapter.public_event_count,
+      adapter.steps.reduce((total, step) => total + step.events.length, 0),
+    );
+    for (const step of adapter.steps) {
+      step.events.forEach((event, index) => {
+        assert.equal(event.sequence, index);
+        assert.equal(
+          sha256Text(canonicalPayloadJson(event.payload)),
+          event.payload_sha256,
+        );
+      });
+    }
+  }
+});
+
+test("validateProjection rejects a reordered adapter, wrong step count, and forged event", () => {
+  const reordered = readJson(generatedPath);
+  reordered.adapters[0].key = reordered.adapters[1].key;
+  assert.throws(() => validateProjection(reordered), /is not plug-and-play/u);
+
+  const shortened = readJson(generatedPath);
+  shortened.adapters[0].steps.pop();
+  assert.throws(() => validateProjection(shortened), /exact step count/u);
+
+  const forgedKind = readJson(generatedPath);
+  forgedKind.adapters[0].steps[0].events[0].kind = "forged_event";
+  assert.throws(
+    () => validateProjection(forgedKind, sha256Text),
+    /event kind is not declared/u,
+  );
+
+  const forgedPayload = readJson(generatedPath);
+  forgedPayload.adapters[0].steps[0].events[0].payload = {
+    kind: "string",
+    value: "forged",
+  };
+  assert.throws(
+    () => validateProjection(forgedPayload, sha256Text),
+    /event payload digest does not match/u,
+  );
+});
+
 test("PixiJS rendering covers every adapter and every public event", () => {
-  const projection = validateProjection(readJson(generatedPath));
+  const projection = validateProjection(readJson(generatedPath), sha256Text);
   const rendered = [];
   class Text {
     constructor({ text, style }) {
@@ -193,7 +289,144 @@ test("rejects a fixture whose final state does not match the last receipt", () =
     writeFileSync(path, JSON.stringify(state));
     assert.throws(
       () => loadAdapterRun(openTale, root),
-      /final state does not match/u,
+      /final state (digest )?does not match/u,
+    );
+  });
+});
+
+test("rejects forged capabilities, operations, and event kinds", () => {
+  const plugAndPlay = descriptor("plug-and-play");
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const requestPath = join(
+      directory,
+      "playthrough",
+      "canal_chase.tabletop-request.json",
+    );
+    const request = readJson(requestPath);
+    request.capability = "world_state";
+    writeFileSync(requestPath, JSON.stringify(request));
+    const receiptPath = join(
+      directory,
+      "playthrough",
+      "canal_chase.tabletop-receipt.json",
+    );
+    const receipt = readJson(receiptPath);
+    receipt.capability = "world_state";
+    writeFileSync(receiptPath, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /capability is not declared for the operation/u,
+    );
+  });
+
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const requestPath = join(
+      directory,
+      "playthrough",
+      "canal_chase.tabletop-request.json",
+    );
+    const request = readJson(requestPath);
+    request.operation = "forged_operation";
+    writeFileSync(requestPath, JSON.stringify(request));
+    const receiptPath = join(
+      directory,
+      "playthrough",
+      "canal_chase.tabletop-receipt.json",
+    );
+    const receipt = readJson(receiptPath);
+    receipt.operation = "forged_operation";
+    writeFileSync(receiptPath, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /operation is not declared by the manifest/u,
+    );
+  });
+
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const path = join(directory, "playthrough", "canal_chase.tabletop-receipt.json");
+    const receipt = readJson(path);
+    receipt.events[0].kind = "forged_event";
+    writeFileSync(path, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /event kind is not declared for the operation/u,
+    );
+  });
+});
+
+test("rejects forged canonical operations, capabilities, and event kinds", () => {
+  const spark = descriptor("spark");
+  withAdapterCopy(spark.key, (root, directory) => {
+    const projectPath = join(directory, spark.project);
+    const project = readJson(projectPath);
+    project.scripted_path[0].operation = "forged_operation";
+    writeFileSync(projectPath, JSON.stringify(project));
+    const expectedPath = join(directory, spark.expected);
+    const expected = readJson(expectedPath);
+    expected.steps[0].operation = "forged_operation";
+    writeFileSync(expectedPath, JSON.stringify(expected));
+    assert.throws(
+      () => loadAdapterRun(spark, root),
+      /operation is not declared/u,
+    );
+  });
+
+  withAdapterCopy(spark.key, (root, directory) => {
+    const projectPath = join(directory, spark.project);
+    const project = readJson(projectPath);
+    project.scripted_path[0].capability = "world_state";
+    writeFileSync(projectPath, JSON.stringify(project));
+    const expectedPath = join(directory, spark.expected);
+    const expected = readJson(expectedPath);
+    expected.steps[0].capability = "world_state";
+    writeFileSync(expectedPath, JSON.stringify(expected));
+    assert.throws(
+      () => loadAdapterRun(spark, root),
+      /capability is not declared for the operation/u,
+    );
+  });
+
+  withAdapterCopy(spark.key, (root, directory) => {
+    const path = join(directory, spark.expected);
+    const expected = readJson(path);
+    expected.steps[0].event_kinds[0] = "forged_event";
+    writeFileSync(path, JSON.stringify(expected));
+    assert.throws(
+      () => loadAdapterRun(spark, root),
+      /event kind is not declared for the operation/u,
+    );
+  });
+});
+
+test("rejects a Freehack public receipt that differs from its authority receipt", () => {
+  const freehack = descriptor("freehack");
+  withAdapterCopy(freehack.key, (root, directory) => {
+    const path = join(
+      directory,
+      "playthrough",
+      "create_crossing_track.public-receipt.json",
+    );
+    const receipt = readJson(path);
+    receipt.events[0].kind = "forged_event";
+    writeFileSync(path, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(freehack, root),
+      /public receipt event differs from its authority receipt/u,
+    );
+  });
+
+  withAdapterCopy(freehack.key, (root, directory) => {
+    const path = join(
+      directory,
+      "playthrough",
+      "create_crossing_track.public-receipt.json",
+    );
+    const receipt = readJson(path);
+    receipt.events[0].payload = { kind: "string", value: "forged" };
+    writeFileSync(path, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(freehack, root),
+      /public receipt event differs from its authority receipt/u,
     );
   });
 });
@@ -212,6 +445,42 @@ test("rejects a Freehack public receipt that carries an authority field", () => 
     assert.throws(
       () => loadAdapterRun(freehack, root),
       /public event schema is invalid/u,
+    );
+  });
+});
+
+test("rejects forged request, state, and payload digests", () => {
+  const plugAndPlay = descriptor("plug-and-play");
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const path = join(directory, "playthrough", "canal_chase.tabletop-request.json");
+    const request = readJson(path);
+    request.input.value.max_checks.value = 2.0;
+    writeFileSync(path, JSON.stringify(request));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /request digest does not match the receipt/u,
+    );
+  });
+
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const path = join(directory, "playthrough", "canal_chase.tabletop-receipt.json");
+    const receipt = readJson(path);
+    receipt.after_state.value.value.dead.value = true;
+    writeFileSync(path, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /after-state digest does not match the receipt/u,
+    );
+  });
+
+  withAdapterCopy(plugAndPlay.key, (root, directory) => {
+    const path = join(directory, "playthrough", "canal_chase.tabletop-receipt.json");
+    const receipt = readJson(path);
+    receipt.events[0].payload.value.outcome.value = "forged";
+    writeFileSync(path, JSON.stringify(receipt));
+    assert.throws(
+      () => loadAdapterRun(plugAndPlay, root),
+      /event payload digest does not match/u,
     );
   });
 });

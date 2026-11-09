@@ -140,6 +140,102 @@ export function flattenDomainValue(encoded) {
   return flattenPlain(decodeDomainValue(encoded));
 }
 
+class RawNumber {
+  constructor(text) {
+    this.text = text;
+  }
+}
+
+function f64Text(value) {
+  if (Object.is(value, -0)) return "-0.0";
+  if (Number.isInteger(value)) return `${value}.0`;
+  return String(value).replace("e+", "e").replace(/e(-?)0+(\d+)/u, "e$1$2");
+}
+
+function canonicalAdapter(adapter) {
+  return {
+    id: adapter.id,
+    version: adapter.version,
+    schema_version: adapter.schema_version,
+    content_sha256: adapter.content_sha256,
+  };
+}
+
+function canonicalDomain(encoded) {
+  switch (encoded?.kind) {
+    case "null":
+      return { kind: "null" };
+    case "bool":
+      return { kind: "bool", value: encoded.value };
+    case "number":
+      return { kind: "number", value: new RawNumber(f64Text(encoded.value)) };
+    case "string":
+      return { kind: "string", value: encoded.value };
+    case "symbol":
+      return { kind: "symbol", value: encoded.value };
+    case "list":
+      return { kind: "list", value: encoded.value.map(canonicalDomain) };
+    case "object": {
+      const value = {};
+      for (const key of Object.keys(encoded.value).sort()) {
+        value[key] = canonicalDomain(encoded.value[key]);
+      }
+      return { kind: "object", value };
+    }
+    default:
+      reject("invalid compiled domain value");
+  }
+}
+
+function canonicalStringify(value) {
+  if (value instanceof RawNumber) return value.text;
+  if (value === null) return "null";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalStringify).join(",")}]`;
+  return `{${Object.keys(value)
+    .map((key) => `${JSON.stringify(key)}:${canonicalStringify(value[key])}`)
+    .join(",")}}`;
+}
+
+/** Canonical JSON for one resolver payload, matching Rust's serde_json serialization. */
+export function canonicalPayloadJson(payload) {
+  return canonicalStringify(canonicalDomain(payload));
+}
+
+/** Canonical JSON for one mutable tabletop state. */
+export function canonicalStateJson(state) {
+  return canonicalStringify({
+    state_format_version: state.state_format_version,
+    adapter: canonicalAdapter(state.adapter),
+    owner_id: state.owner_id,
+    definition_sha256: state.definition_sha256,
+    revision: state.revision,
+    entropy: {
+      algorithm: state.entropy.algorithm,
+      seed: state.entropy.seed,
+      cursor: state.entropy.cursor,
+    },
+    value: canonicalDomain(state.value),
+  });
+}
+
+/** Canonical JSON for one resolver request. */
+export function canonicalRequestJson(request) {
+  return canonicalStringify({
+    resolver_format_version: request.resolver_format_version,
+    request_id: request.request_id,
+    adapter: canonicalAdapter(request.adapter),
+    operation: request.operation,
+    capability: request.capability,
+    definition_sha256: request.definition_sha256,
+    definition: canonicalDomain(request.definition),
+    expected_state_sha256: request.expected_state_sha256,
+    input: canonicalDomain(request.input),
+  });
+}
+
 /** Flatten a plain JSON value into stable, sorted `path=value` lines. */
 export function flattenPlain(value, path = "", lines = []) {
   if (Array.isArray(value)) {
@@ -176,6 +272,24 @@ function formatScalar(value) {
   return String(value);
 }
 
+/** Compact manifest contract used by the public projection. */
+export function manifestContract(manifest) {
+  return {
+    manifest_format_version: manifest.manifest_format_version,
+    operations: Object.fromEntries(
+      Object.entries(manifest.operations).map(([id, operation]) => [
+        id,
+        {
+          required_capability: operation.required_capability,
+          event_kinds: operation.event_kinds,
+        },
+      ]),
+    ),
+    event_types: Object.keys(manifest.event_types).sort(),
+    runtime_visibility: manifest.visibility.runtime,
+  };
+}
+
 /** Deterministic presentation colour, matching the Bevy consumer. */
 export function presentationColor(id) {
   let hash = 2_166_136_261;
@@ -186,33 +300,125 @@ export function presentationColor(id) {
   return `hsl(${hash % 360}, 52%, 58%)`;
 }
 
-/** Validate the public projection shared with the PixiJS app. */
-export function validateProjection(projection) {
-  if (projection?.projection_format_version !== 1) {
+/**
+ * Validate the public projection shared with the PixiJS app.
+ *
+ * When `hash` is supplied, every public event payload digest is recomputed with the same
+ * canonicalization Rust uses. The projection contains only public event counts and public data.
+ */
+export function validateProjection(projection, hash) {
+  if (projection?.projection_format_version !== 2) {
     reject("unsupported tabletop consumer projection version");
   }
   if (!Array.isArray(projection.adapters) || projection.adapters.length !== ADAPTER_CONSUMERS.length) {
     reject("tabletop consumer projection does not list every adapter");
   }
-  for (const adapter of projection.adapters) {
-    if (typeof adapter.key !== "string" || !Array.isArray(adapter.steps)) {
-      reject("invalid tabletop consumer adapter entry");
+  projection.adapters.forEach((adapter, index) => {
+    const descriptor = ADAPTER_CONSUMERS[index];
+    if (adapter.key !== descriptor.key) {
+      reject(`projection adapter ${index} is not ${descriptor.key}`);
     }
+    if (adapter.id !== descriptor.id || adapter.version !== descriptor.version) {
+      reject(`${adapter.key} projection coordinate does not match the consumer`);
+    }
+    if (!["fixture_tree", "freehack_public", "canonical_project"].includes(adapter.source)) {
+      reject(`${adapter.key} projection source is invalid`);
+    }
+    if ("event_count" in adapter) {
+      reject(`${adapter.key} projection must not publish hidden event totals`);
+    }
+    if (!Array.isArray(adapter.steps) || adapter.steps.length !== descriptor.expectedSteps) {
+      reject(`${adapter.key} projection does not contain the exact step count`);
+    }
+    if (adapter.presentation_color !== presentationColor(descriptor.id)) {
+      reject(`${adapter.key} presentation colour is not deterministic`);
+    }
+    requireDigest(adapter.initial_state_sha256, `${adapter.key} initial state`);
     requireDigest(adapter.final_state_sha256, `${adapter.key} final state`);
-    if (!/^hsl\(\d+, 52%, 58%\)$/u.test(adapter.presentation_color ?? "")) {
-      reject(`${adapter.key} presentation colour is invalid`);
+    if (!Array.isArray(adapter.observable) || !adapter.observable.every((line) => typeof line === "string")) {
+      reject(`${adapter.key} observable values are invalid`);
     }
-    for (const step of adapter.steps) {
-      if (typeof step.id !== "string" || !Array.isArray(step.events)) {
-        reject(`${adapter.key} step is invalid`);
+    const contract = adapter.contract;
+    if (
+      contract?.manifest_format_version !== 1 ||
+      typeof contract.operations !== "object" ||
+      !Array.isArray(contract.event_types) ||
+      !Array.isArray(contract.runtime_visibility) ||
+      !contract.runtime_visibility.includes("public")
+    ) {
+      reject(`${adapter.key} declared contract is invalid`);
+    }
+
+    let publicEventCount = 0;
+    const stepIds = new Set();
+    adapter.steps.forEach((step, stepIndex) => {
+      if (typeof step.id !== "string" || step.id.length === 0) {
+        reject(`${adapter.key} step ${stepIndex} has no id`);
       }
-      step.events.forEach((event, index) => {
-        if (event.sequence !== index || typeof event.kind !== "string" || typeof event.capability !== "string") {
-          reject(`${adapter.key} event sequence is invalid`);
+      if (stepIds.has(step.id)) {
+        reject(`${adapter.key} step ${step.id} is duplicated`);
+      }
+      stepIds.add(step.id);
+      const declaration = contract.operations[step.operation];
+      if (!declaration) {
+        reject(`${adapter.key} ${step.id}: operation is not declared by the manifest`);
+      }
+      if (declaration.required_capability !== step.capability) {
+        reject(`${adapter.key} ${step.id}: capability is not declared for the operation`);
+      }
+      requireDigest(step.request_sha256, `${adapter.key} ${step.id} request`);
+      requireDigest(step.before_state_sha256, `${adapter.key} ${step.id} before state`);
+      requireDigest(step.after_state_sha256, `${adapter.key} ${step.id} after state`);
+      if (stepIndex === 0) {
+        if (step.before_state_sha256 !== adapter.initial_state_sha256) {
+          reject(`${adapter.key} ${step.id}: first step does not start from the initial state`);
         }
+      } else if (
+        adapter.source !== "freehack_public" &&
+        step.before_state_sha256 !== adapter.steps[stepIndex - 1].after_state_sha256
+      ) {
+        reject(`${adapter.key} ${step.id}: public state-hash chain is broken`);
+      }
+      if (!Array.isArray(step.events)) {
+        reject(`${adapter.key} ${step.id}: step has no events`);
+      }
+      step.events.forEach((event, eventIndex) => {
+        if (event.sequence !== eventIndex) {
+          reject(`${adapter.key} ${step.id}: public events are not renumbered`);
+        }
+        if (
+          typeof event.kind !== "string" ||
+          !declaration.event_kinds.includes(event.kind) ||
+          !contract.event_types.includes(event.kind)
+        ) {
+          reject(`${adapter.key} ${step.id}: event kind is not declared`);
+        }
+        if (event.capability !== step.capability) {
+          reject(`${adapter.key} ${step.id}: event capability is not declared`);
+        }
+        requireDigest(event.payload_sha256, `${adapter.key} ${step.id} event payload`);
+        if (!event.payload || typeof event.payload !== "object") {
+          reject(`${adapter.key} ${step.id}: public event has no payload`);
+        }
+        if (hash && hash(canonicalPayloadJson(event.payload)) !== event.payload_sha256) {
+          reject(`${adapter.key} ${step.id}: event payload digest does not match`);
+        }
+        publicEventCount += 1;
       });
+    });
+    if (adapter.public_event_count !== publicEventCount) {
+      reject(`${adapter.key} public event count does not match the rendered events`);
     }
-  }
+    if (
+      adapter.source !== "freehack_public" &&
+      adapter.steps.at(-1).after_state_sha256 !== adapter.final_state_sha256
+    ) {
+      reject(`${adapter.key} final state hash does not match the last step`);
+    }
+    if (adapter.source !== "canonical_project" && typeof adapter.character_name !== "string") {
+      reject(`${adapter.key} character name is missing`);
+    }
+  });
   return projection;
 }
 
@@ -225,7 +431,7 @@ export function renderAdapterRuns(PIXI, app, adapters) {
       `${adapter.key} ${adapter.version}`,
       adapter.id,
       adapter.character_name ?? "synthetic project",
-      `${adapter.steps.length} steps · ${adapter.event_count} events`,
+      `${adapter.steps.length} steps · ${adapter.public_event_count} public events`,
       `color ${adapter.presentation_color}`,
       `final ${adapter.final_state_sha256.slice(0, 16)}`,
     ];
@@ -257,13 +463,23 @@ export function renderAdapterRuns(PIXI, app, adapters) {
 }
 
 /** Validate one fixture-tree bundle before it is used or projected. */
-export function validateFixtureBundle(descriptor, bundle) {
+export function validateFixtureBundle(descriptor, bundle, hash) {
+  if (typeof hash !== "function") {
+    reject("fixture validation requires a SHA-256 digest function");
+  }
   const { manifest, creation, preview, initialState, finalState, steps } = bundle;
   if (manifest?.manifest_format_version !== 1) {
     reject("unsupported tabletop manifest version");
   }
   if (manifest.id !== descriptor.id || manifest.version !== descriptor.version) {
     reject("tabletop manifest coordinate does not match the consumer");
+  }
+  if (
+    typeof manifest.operations !== "object" ||
+    typeof manifest.event_types !== "object" ||
+    !Array.isArray(manifest.visibility?.authority_host)
+  ) {
+    reject("tabletop manifest contract is incomplete");
   }
   if (creation?.creation_format_version !== 1) {
     reject("unsupported tabletop creation version");
@@ -284,7 +500,9 @@ export function validateFixtureBundle(descriptor, bundle) {
   if (!Array.isArray(steps) || steps.length === 0) {
     reject("playthrough has no steps");
   }
-  let expectedBefore = steps[0].receipt.before_state_sha256;
+
+  const initialHash = hash(canonicalStateJson(initialState));
+  let expectedBefore = initialHash;
   steps.forEach((step, index) => {
     const { request, receipt } = step;
     if (request.resolver_format_version !== 1 || receipt.resolver_format_version !== 1) {
@@ -300,20 +518,37 @@ export function validateFixtureBundle(descriptor, bundle) {
     ) {
       reject(`${step.id}: request and receipt coordinates differ`);
     }
-    if (request.operation !== receipt.operation || request.capability !== receipt.capability) {
+    if (request.operation !== receipt.operation) {
       reject(`${step.id}: request and receipt operation differ`);
+    }
+    if (request.capability !== receipt.capability) {
+      reject(`${step.id}: request and receipt capability differ`);
+    }
+    const declaration = manifest.operations[request.operation];
+    if (!declaration) {
+      reject(`${step.id}: operation is not declared by the manifest`);
+    }
+    if (declaration.required_capability !== request.capability) {
+      reject(`${step.id}: capability is not declared for the operation`);
     }
     requireDigest(request.expected_state_sha256, `${step.id} expected state`);
     requireDigest(receipt.request_sha256, `${step.id} request hash`);
     requireDigest(receipt.before_state_sha256, `${step.id} before state`);
     requireDigest(receipt.after_state_sha256, `${step.id} after state`);
+    if (hash(canonicalRequestJson(request)) !== receipt.request_sha256) {
+      reject(`${step.id}: request digest does not match the receipt`);
+    }
     if (receipt.before_state_sha256 !== request.expected_state_sha256) {
       reject(`${step.id}: request does not expect the receipt's preceding state`);
     }
-    if (index > 0 && receipt.before_state_sha256 !== expectedBefore) {
+    if (receipt.before_state_sha256 !== expectedBefore) {
       reject(`${step.id}: state hash chain is broken`);
     }
-    expectedBefore = receipt.after_state_sha256;
+    const afterHash = hash(canonicalStateJson(receipt.after_state));
+    if (afterHash !== receipt.after_state_sha256) {
+      reject(`${step.id}: after-state digest does not match the receipt`);
+    }
+    expectedBefore = afterHash;
     requireCoordinate(receipt.after_state, manifest, `${step.id} after state`);
     if (receipt.after_state.state_format_version !== 1) {
       reject(`${step.id}: unsupported tabletop state version`);
@@ -338,11 +573,32 @@ export function validateFixtureBundle(descriptor, bundle) {
       ) {
         reject(`${step.id}: event envelope is invalid`);
       }
+      if (!declaration.event_kinds.includes(event.kind)) {
+        reject(`${step.id}: event kind is not declared for the operation`);
+      }
+      if (!Object.hasOwn(manifest.event_types, event.kind)) {
+        reject(`${step.id}: event kind has no declared payload type`);
+      }
+      if (!manifest.visibility.authority_host.includes(event.visibility)) {
+        reject(`${step.id}: event visibility is outside the manifest policy`);
+      }
+      if (event.capability !== request.capability) {
+        reject(`${step.id}: event capability is not declared for the operation`);
+      }
       requireDigest(event.payload_sha256, `${step.id} event payload`);
+      if (event.payload == null) {
+        reject(`${step.id}: authority event payload is redacted`);
+      }
+      if (hash(canonicalPayloadJson(event.payload)) !== event.payload_sha256) {
+        reject(`${step.id}: event payload digest does not match`);
+      }
       if (event.visibility === "public" && event.payload == null) {
         reject(`${step.id}: public event has no payload`);
       }
     });
+    if (index + 1 === steps.length && expectedBefore !== hash(canonicalStateJson(finalState))) {
+      reject("final state digest does not match the last replayed receipt");
+    }
   });
   if (JSON.stringify(steps.at(-1).receipt.after_state) !== JSON.stringify(finalState)) {
     reject("final state does not match the last replayed receipt");
@@ -354,19 +610,26 @@ export function validateFixtureBundle(descriptor, bundle) {
 }
 
 /** Extract the runtime-visible portion of a validated fixture-tree bundle. */
-export function publicFixtureView(descriptor, bundle) {
-  const steps = bundle.steps.map((step) => ({
-    id: step.id,
-    operation: step.request.operation,
-    events: step.receipt.events
-      .filter((event) => event.visibility === "public")
-      .map((event) => ({
-        sequence: event.sequence,
-        kind: event.kind,
-        capability: event.capability,
-        payload: decodeDomainValue(event.payload),
-      })),
-  }));
+export function publicFixtureView(descriptor, bundle, hash) {
+  const steps = bundle.steps
+    .map((step) => ({
+      id: step.id,
+      operation: step.request.operation,
+      capability: step.receipt.capability,
+      request_sha256: step.receipt.request_sha256,
+      before_state_sha256: step.receipt.before_state_sha256,
+      after_state_sha256: step.receipt.after_state_sha256,
+      events: step.receipt.events
+        .filter((event) => event.visibility === "public")
+        .map((event, sequence) => ({
+          sequence,
+          kind: event.kind,
+          capability: event.capability,
+          payload: event.payload,
+          payload_sha256: event.payload_sha256,
+        })),
+    }))
+    .filter((step) => step.events.length > 0);
   const publicEventCount = steps.reduce((total, step) => total + step.events.length, 0);
   return {
     key: descriptor.key,
@@ -374,11 +637,12 @@ export function publicFixtureView(descriptor, bundle) {
     version: bundle.manifest.version,
     source: "fixture_tree",
     character_name: bundle.creation.name,
-    steps,
-    event_count: bundle.steps.reduce((total, step) => total + step.receipt.events.length, 0),
     public_event_count: publicEventCount,
-    final_state_sha256: bundle.steps.at(-1).receipt.after_state_sha256,
+    initial_state_sha256: hash(canonicalStateJson(bundle.initialState)),
+    final_state_sha256: steps.at(-1).after_state_sha256,
     presentation_color: presentationColor(bundle.manifest.id),
+    contract: manifestContract(bundle.manifest),
+    steps,
     observable: flattenDomainValue(bundle.finalState.value),
   };
 }

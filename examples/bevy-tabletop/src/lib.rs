@@ -18,7 +18,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use weave_domain::DomainValue;
 use weave_tabletop::conformance::{
     ConformanceAdapter, OpenAdventureConformance, SparkConformance, WickedOnesConformance,
@@ -26,16 +26,16 @@ use weave_tabletop::conformance::{
 use weave_tabletop::{
     AdapterManifest, DungeonpunkCreationPreview, DungeonpunkCreationRequest, DungeonpunkResolver,
     EventVisibility, FreehackAuthorityReceipt, FreehackCreationPreview, FreehackCreationRequest,
-    FreehackResolver, OpenTaleCreationPreview, OpenTaleCreationRequest, OpenTaleResolver,
-    PlugAndPlayCreationPreview, PlugAndPlayCreationRequest, PlugAndPlayResolver,
+    FreehackResolver, HostAudience, OpenTaleCreationPreview, OpenTaleCreationRequest,
+    OpenTaleResolver, PlugAndPlayCreationPreview, PlugAndPlayCreationRequest, PlugAndPlayResolver,
     RESOLVER_FORMAT_VERSION, ResolutionReceipt, ResolutionRequest, ResolverRegistry,
     TabletopCapability, TabletopState, canonical_fingerprint, create_dungeonpunk_character,
     create_freehack_character, create_open_tale_character, create_plug_and_play_character,
     dungeonpunk_manifest, freehack_manifest, open_tale_manifest, plug_and_play_manifest,
-    project_freehack_public_state, resolved_adapter, sha256_bytes, validate_adapter_manifest,
-    validate_dungeonpunk_creation_preview, validate_freehack_authority_receipt,
-    validate_freehack_creation_preview, validate_open_tale_creation_preview,
-    validate_plug_and_play_creation_preview,
+    project_freehack_public_state, project_receipt_for_audience, resolved_adapter, sha256_bytes,
+    validate_adapter_manifest, validate_dungeonpunk_creation_preview,
+    validate_freehack_authority_receipt, validate_freehack_creation_preview,
+    validate_open_tale_creation_preview, validate_plug_and_play_creation_preview,
 };
 
 /// Every adapter with a checked-in fixture tree or canonical project.
@@ -182,6 +182,8 @@ pub struct AdapterRun {
     pub character_name: String,
     pub steps: Vec<ReplayedStep>,
     pub final_state: TabletopState,
+    /// Fingerprint of the starting state, matching the PixiJS projection chain.
+    pub initial_state_sha256: String,
     /// Fingerprint of the runtime-visible final state, matching the PixiJS projection.
     pub public_final_state_sha256: String,
     /// Flattened scalar leaves of the final adapter state, sorted by path.
@@ -333,6 +335,12 @@ fn replay_fixture_tree(
     let expected_final =
         TabletopState::from_json(&read_text(&directory.join(spec.final_state_file))?)
             .map_err(|error| format!("{}: final state is invalid: {error}", adapter.key()))?;
+    let initial_state_sha256 = canonical_fingerprint(&initial_state).map_err(|error| {
+        format!(
+            "{}: initial state fingerprint failed: {error}",
+            adapter.key()
+        )
+    })?;
 
     let mut registry = ResolverRegistry::new();
     register_fixture_resolver(adapter, &manifest, &mut registry)?;
@@ -404,18 +412,30 @@ fn replay_fixture_tree(
         verify_index(adapter, &directory.join(index_file), &steps)?;
     }
 
-    let public_final_state_sha256 = if adapter == Adapter::Freehack {
-        let public_state = project_freehack_public_state(&state)
-            .map_err(|error| format!("freehack: public state projection failed: {error}"))?;
-        canonical_fingerprint(&public_state)
-            .map_err(|error| format!("freehack: public state fingerprint failed: {error}"))?
+    let public_state = if adapter == Adapter::Freehack {
+        Some(
+            project_freehack_public_state(&state)
+                .map_err(|error| format!("freehack: public state projection failed: {error}"))?,
+        )
     } else {
-        steps
+        None
+    };
+    let public_final_state_sha256 = match &public_state {
+        Some(public_state) => canonical_fingerprint(public_state)
+            .map_err(|error| format!("freehack: public state fingerprint failed: {error}"))?,
+        None => steps
             .last()
             .map(|step| step.receipt.after_state_sha256.clone())
-            .ok_or_else(|| format!("{}: no replayed final state", adapter.key()))?
+            .ok_or_else(|| format!("{}: no replayed final state", adapter.key()))?,
     };
-    let observable = flatten_value(&state.value);
+    let observable = match &public_state {
+        Some(public_state) => {
+            let json = serde_json::to_value(public_state)
+                .map_err(|error| format!("freehack: public state serialization failed: {error}"))?;
+            flatten_json(&json)
+        }
+        None => flatten_value(&state.value),
+    };
     Ok(AdapterRun {
         adapter,
         source: RunSource::FixtureTree,
@@ -423,6 +443,7 @@ fn replay_fixture_tree(
         character_name,
         steps,
         final_state: state,
+        initial_state_sha256,
         public_final_state_sha256,
         observable,
     })
@@ -562,6 +583,7 @@ fn replay_canonical_project(adapter: Adapter, root: &Path) -> Result<AdapterRun,
         character_name,
         steps,
         final_state: state,
+        initial_state_sha256: expected.initial_state_sha256,
         public_final_state_sha256: final_state_hash,
         observable,
     })
@@ -958,6 +980,50 @@ fn flatten_value(value: &DomainValue) -> Vec<String> {
     lines
 }
 
+fn flatten_json(value: &serde_json::Value) -> Vec<String> {
+    let mut lines = Vec::new();
+    flatten_json_into(value, "", &mut lines);
+    lines
+}
+
+fn flatten_json_into(value: &serde_json::Value, path: &str, lines: &mut Vec<String>) {
+    match value {
+        serde_json::Value::Null => lines.push(join_path(path, "null")),
+        serde_json::Value::Bool(value) => lines.push(join_path(path, value)),
+        serde_json::Value::Number(value) => {
+            if let Some(value) = value.as_u64() {
+                lines.push(join_path(path, value));
+            } else if let Some(value) = value.as_i64() {
+                lines.push(join_path(path, value));
+            } else if let Some(value) = value.as_f64() {
+                lines.push(join_path(path, format_number(value)));
+            }
+        }
+        serde_json::Value::String(value) => lines.push(join_path(path, value)),
+        serde_json::Value::Array(values) => {
+            if values.is_empty() {
+                lines.push(join_path(path, "[]"));
+            }
+            for (index, value) in values.iter().enumerate() {
+                flatten_json_into(value, &format!("{path}[{index}]"), lines);
+            }
+        }
+        serde_json::Value::Object(fields) => {
+            if fields.is_empty() {
+                lines.push(join_path(path, "{}"));
+            }
+            for (key, value) in fields {
+                let child = if path.is_empty() {
+                    key.clone()
+                } else {
+                    format!("{path}.{key}")
+                };
+                flatten_json_into(value, &child, lines);
+            }
+        }
+    }
+}
+
 fn flatten_into(value: &DomainValue, path: &str, lines: &mut Vec<String>) {
     match value {
         DomainValue::Null => lines.push(join_path(path, "null")),
@@ -1012,11 +1078,197 @@ pub fn fixture_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../tabletop-adapters")
 }
 
+#[derive(Debug, Serialize)]
+struct PixijsProjection {
+    projection_format_version: u32,
+    generated_by: String,
+    source: String,
+    adapters: Vec<PixijsAdapter>,
+}
+
+#[derive(Debug, Serialize)]
+struct PixijsAdapter {
+    key: String,
+    id: String,
+    version: String,
+    source: String,
+    character_name: Option<String>,
+    public_event_count: usize,
+    initial_state_sha256: String,
+    final_state_sha256: String,
+    presentation_color: String,
+    contract: PixijsContract,
+    steps: Vec<PixijsStep>,
+    observable: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct PixijsContract {
+    manifest_format_version: u32,
+    operations: std::collections::BTreeMap<String, PixijsOperation>,
+    event_types: Vec<String>,
+    runtime_visibility: Vec<EventVisibility>,
+}
+
+#[derive(Debug, Serialize)]
+struct PixijsOperation {
+    required_capability: TabletopCapability,
+    event_kinds: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct PixijsStep {
+    id: String,
+    operation: String,
+    capability: TabletopCapability,
+    request_sha256: String,
+    before_state_sha256: String,
+    after_state_sha256: String,
+    events: Vec<PixijsEvent>,
+}
+
+#[derive(Debug, Serialize)]
+struct PixijsEvent {
+    sequence: usize,
+    kind: String,
+    capability: TabletopCapability,
+    payload: DomainValue,
+    payload_sha256: String,
+}
+
+/// Deterministic presentation colour, matching the PixiJS consumer.
+#[must_use]
+pub fn presentation_color(id: &str) -> String {
+    let mut hash = 2_166_136_261_u32;
+    for byte in id.bytes() {
+        hash ^= u32::from(byte);
+        hash = hash.wrapping_mul(16_777_619);
+    }
+    format!("hsl({}, 52%, 58%)", hash % 360)
+}
+
+/// Build the public PixiJS projection from fully replayed and verified adapter data.
+///
+/// Public events are re-derived from each authority receipt with `project_receipt_for_audience`,
+/// so a changed kind or payload cannot enter the browser bundle. Hidden event totals are omitted.
+pub fn publish_pixijs_projection(root: &Path) -> Result<String, String> {
+    let runs = replay_all(root)?;
+    let adapters = runs
+        .iter()
+        .map(pixijs_adapter)
+        .collect::<Result<Vec<_>, String>>()?;
+    let projection = PixijsProjection {
+        projection_format_version: 2,
+        generated_by: "weave-example-bevy-tabletop publish-pixijs".to_owned(),
+        source: "validated checked-in tabletop adapter fixture trees and canonical projects"
+            .to_owned(),
+        adapters,
+    };
+    let mut json = serde_json::to_string_pretty(&projection)
+        .map_err(|error| format!("PixiJS projection serialization failed: {error}"))?;
+    json.push('\n');
+    Ok(json)
+}
+
+fn pixijs_adapter(run: &AdapterRun) -> Result<PixijsAdapter, String> {
+    let mut public_event_count = 0;
+    let mut steps = Vec::new();
+    for step in &run.steps {
+        let projected =
+            project_receipt_for_audience(&step.receipt, &run.manifest, HostAudience::Runtime)
+                .map_err(|error| {
+                    format!(
+                        "{}: {} runtime projection failed: {error}",
+                        run.adapter.key(),
+                        step.id
+                    )
+                })?;
+        let events = projected
+            .events
+            .iter()
+            .filter(|event| event.visibility == EventVisibility::Public)
+            .enumerate()
+            .map(|(sequence, event)| {
+                let payload = event.payload.clone().ok_or_else(|| {
+                    format!(
+                        "{}: {} public event has no payload",
+                        run.adapter.key(),
+                        step.id
+                    )
+                })?;
+                Ok(PixijsEvent {
+                    sequence,
+                    kind: event.kind.clone(),
+                    capability: event.capability,
+                    payload,
+                    payload_sha256: event.payload_sha256.clone(),
+                })
+            })
+            .collect::<Result<Vec<_>, String>>()?;
+        if events.is_empty() {
+            continue;
+        }
+        public_event_count += events.len();
+        steps.push(PixijsStep {
+            id: step.id.clone(),
+            operation: step.operation.clone(),
+            capability: step.receipt.capability,
+            request_sha256: step.receipt.request_sha256.clone(),
+            before_state_sha256: step.receipt.before_state_sha256.clone(),
+            after_state_sha256: step.receipt.after_state_sha256.clone(),
+            events,
+        });
+    }
+
+    let operations = run
+        .manifest
+        .operations
+        .iter()
+        .map(|(id, operation)| {
+            (
+                id.clone(),
+                PixijsOperation {
+                    required_capability: operation.required_capability,
+                    event_kinds: operation.event_kinds.clone(),
+                },
+            )
+        })
+        .collect();
+    let source = match run.source {
+        RunSource::CanonicalProject => "canonical_project",
+        RunSource::FixtureTree if run.adapter == Adapter::Freehack => "freehack_public",
+        RunSource::FixtureTree => "fixture_tree",
+    };
+    Ok(PixijsAdapter {
+        key: run.adapter.key().to_owned(),
+        id: run.manifest.id.clone(),
+        version: run.manifest.version.clone(),
+        source: source.to_owned(),
+        character_name: Some(run.character_name.clone()),
+        public_event_count,
+        initial_state_sha256: run.initial_state_sha256.clone(),
+        final_state_sha256: run.public_final_state_sha256.clone(),
+        presentation_color: presentation_color(&run.manifest.id),
+        contract: PixijsContract {
+            manifest_format_version: run.manifest.manifest_format_version,
+            operations,
+            event_types: run.manifest.event_types.keys().cloned().collect(),
+            runtime_visibility: run.manifest.visibility.runtime.clone(),
+        },
+        steps,
+        observable: if run.source == RunSource::CanonicalProject {
+            Vec::new()
+        } else {
+            run.observable.clone()
+        },
+    })
+}
+
 /// A stable one-line summary used by both Bevy binaries and documentation.
 #[must_use]
 pub fn summary_line(run: &AdapterRun) -> String {
     format!(
-        "{} {}: {} · {} · {} steps · {} events ({} public) · revision {} · entropy {} · final {}",
+        "{} {}: {} · {} · {} steps · {} authority events ({} public) · revision {} · entropy {} · final {}",
         run.manifest.id,
         run.manifest.version,
         run.character_name,
@@ -1193,6 +1445,74 @@ mod tests {
     }
 
     #[test]
+    fn pixijs_projection_contains_only_public_data_and_exact_counts() {
+        let json = publish_pixijs_projection(&fixture_root()).expect("projection publishes");
+        let projection: serde_json::Value =
+            serde_json::from_str(&json).expect("projection parses as JSON");
+        assert_eq!(projection["projection_format_version"], 2);
+        let adapters = projection["adapters"]
+            .as_array()
+            .expect("adapters is an array");
+        let expected = [
+            ("plug-and-play", 7, 7),
+            ("dungeonpunk", 11, 20),
+            ("freehack", 14, 15),
+            ("open-tale", 11, 28),
+            ("spark", 6, 8),
+            ("wicked-ones", 1, 1),
+            ("open-adventure", 2, 2),
+        ];
+        assert_eq!(adapters.len(), expected.len());
+        for (adapter, (key, steps, public_events)) in adapters.iter().zip(expected) {
+            assert_eq!(adapter["key"], key);
+            assert!(adapter.get("event_count").is_none());
+            assert_eq!(adapter["public_event_count"], public_events);
+            let step_values = adapter["steps"].as_array().expect("steps is an array");
+            assert_eq!(step_values.len(), steps);
+            assert_eq!(
+                step_values.first().expect("a first step")["before_state_sha256"],
+                adapter["initial_state_sha256"]
+            );
+            for step in step_values {
+                assert_eq!(step["capability"], step["events"][0]["capability"]);
+                for (index, event) in step["events"]
+                    .as_array()
+                    .expect("events is an array")
+                    .iter()
+                    .enumerate()
+                {
+                    assert_eq!(event["sequence"], index);
+                }
+            }
+            if key != "freehack" {
+                assert_eq!(
+                    step_values.last().expect("a last step")["after_state_sha256"],
+                    adapter["final_state_sha256"]
+                );
+                for pair in step_values.windows(2) {
+                    assert_eq!(
+                        pair[0]["after_state_sha256"],
+                        pair[1]["before_state_sha256"]
+                    );
+                }
+            }
+        }
+
+        let freehack = &adapters[2];
+        let observable = serde_json::to_string(&freehack["observable"]).expect("observable text");
+        for marker in [
+            "sealed_route",
+            "host_only",
+            "private",
+            "authority",
+            "entropy",
+            "secret",
+        ] {
+            assert!(!observable.contains(marker), "Freehack leaks {marker}");
+        }
+    }
+
+    #[test]
     fn observable_values_are_stable_and_match_known_final_fields() {
         let runs = runs();
         let plug_and_play = &runs[0];
@@ -1228,8 +1548,20 @@ mod tests {
             freehack
                 .observable
                 .iter()
-                .any(|line| line == "memories.tide_gate.topic=the public tide-gate schedule")
+                .any(|line| line == "memories[1].topic=the public tide-gate schedule")
         );
+        for marker in [
+            "sealed_route",
+            "host_only",
+            "private",
+            "authority",
+            "entropy",
+        ] {
+            assert!(
+                !freehack.observable.iter().any(|line| line.contains(marker)),
+                "Freehack authority data leaked into the public observable: {marker}"
+            );
+        }
 
         let open_tale = &runs[3];
         assert!(

@@ -6,11 +6,15 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   ADAPTER_CONSUMERS,
+  canonicalPayloadJson,
+  canonicalStateJson,
   flattenPlain,
+  manifestContract,
   presentationColor,
   publicFixtureView,
   reject,
@@ -19,12 +23,42 @@ import {
   validateFixtureBundle,
 } from "./tabletop-adapters.js";
 
+const pinnedProjectionPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "tabletop-fixtures.generated.json",
+);
+
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+function pinnedManifest(descriptor) {
+  const projection = readJson(pinnedProjectionPath);
+  const adapter = projection.adapters?.find((entry) => entry.key === descriptor.key);
+  if (!adapter?.contract || adapter.id !== descriptor.id || adapter.version !== descriptor.version) {
+    reject(`${descriptor.key}: pinned manifest contract is missing or stale`);
+  }
+  return {
+    manifest_format_version: adapter.contract.manifest_format_version,
+    id: adapter.id,
+    version: adapter.version,
+    operations: adapter.contract.operations,
+    event_types: Object.fromEntries(
+      adapter.contract.event_types.map((kind) => [kind, true]),
+    ),
+    visibility: {
+      authority_host: ["public", "authoring", "host_only"],
+      runtime: adapter.contract.runtime_visibility,
+    },
+  };
+}
+
+function sha256Text(text) {
+  return createHash("sha256").update(text).digest("hex");
+}
+
 function sha256Json(value) {
-  return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  return sha256Text(JSON.stringify(value));
 }
 
 function requireManifest(descriptor, manifest) {
@@ -42,7 +76,7 @@ function requireOperation(manifest, operation, capability) {
     reject(`operation ${operation} is not declared by the adapter manifest`);
   }
   if (declaration.required_capability !== capability) {
-    reject(`operation ${operation} capability does not match the adapter manifest`);
+    reject(`operation ${operation} capability is not declared for the operation`);
   }
 }
 
@@ -72,11 +106,11 @@ function loadFixtureTree(descriptor, directory) {
   const finalState = readJson(join(directory, descriptor.finalState));
   const steps = loadFixtureSteps(descriptor, directory, initialState);
   const bundle = { manifest, creation, preview, initialState, finalState, steps };
-  validateFixtureBundle(descriptor, bundle);
+  validateFixtureBundle(descriptor, bundle, sha256Text);
   if (descriptor.index) {
     verifyIndex(descriptor, directory, steps);
   }
-  return publicFixtureView(descriptor, bundle);
+  return publicFixtureView(descriptor, bundle, sha256Text);
 }
 
 function loadFixtureSteps(descriptor, directory, initialState) {
@@ -147,6 +181,8 @@ function loadFreehackPublic(descriptor, directory) {
   if (creation?.creation_format_version !== 1 || typeof creation.name !== "string") {
     reject("unsupported tabletop creation version");
   }
+  const authorityState = readJson(join(directory, "authority-state.tabletop-state.json"));
+  const initialHash = sha256Text(canonicalStateJson(authorityState));
   const publicState = readJson(join(directory, descriptor.publicState));
   if (publicState?.projection_format_version !== 1) {
     reject("unsupported Freehack public state version");
@@ -154,7 +190,7 @@ function loadFreehackPublic(descriptor, directory) {
   requireCoordinate(publicState, manifest, "Freehack public state");
 
   let contentSha256 = publicState.adapter.content_sha256;
-  const steps = descriptor.publicOrder.map((id) => {
+  const steps = descriptor.publicOrder.map((id, stepIndex) => {
     const receipt = readJson(
       join(directory, "playthrough", `${id}${descriptor.publicReceiptSuffix}`),
     );
@@ -175,7 +211,39 @@ function loadFreehackPublic(descriptor, directory) {
     if (!Array.isArray(receipt.events) || receipt.events.length === 0) {
       reject(`${id}: public receipt has no events`);
     }
-    const events = receipt.events.map((event, index) => {
+
+    const authority = readJson(
+      join(directory, "playthrough", `${id}.authority-receipt.json`),
+    );
+    if (authority?.projection_format_version !== 1 || !authority.receipt) {
+      reject(`${id}: authority receipt is missing or unsupported`);
+    }
+    const source = authority.receipt;
+    requireCoordinate(source, manifest, `${id} authority receipt`);
+    if (source.operation !== receipt.operation || source.capability !== receipt.capability) {
+      reject(`${id}: authority receipt operation differs from the public receipt`);
+    }
+    const sourceEvents = source.events
+      .filter((event) => event.visibility === "public")
+      .map((event, sequence) => {
+        if (event.payload == null) {
+          reject(`${id}: authority public event has no payload`);
+        }
+        if (sha256Text(canonicalPayloadJson(event.payload)) !== event.payload_sha256) {
+          reject(`${id}: authority public event payload digest does not match`);
+        }
+        return {
+          sequence,
+          kind: event.kind,
+          capability: event.capability,
+          payload: event.payload,
+          payload_sha256: event.payload_sha256,
+        };
+      });
+    if (sourceEvents.length !== receipt.events.length) {
+      reject(`${id}: public receipt does not match its authority receipt`);
+    }
+    receipt.events.forEach((event, index) => {
       if (
         event.sequence !== index ||
         typeof event.kind !== "string" ||
@@ -186,17 +254,29 @@ function loadFreehackPublic(descriptor, directory) {
       ) {
         reject(`${id}: public event schema is invalid`);
       }
-      return {
-        sequence: event.sequence,
-        kind: event.kind,
-        capability: event.capability,
-        payload: event.payload,
-      };
+      const anchored = sourceEvents[index];
+      if (
+        anchored.kind !== event.kind ||
+        anchored.capability !== event.capability ||
+        JSON.stringify(anchored.payload) !== JSON.stringify(event.payload)
+      ) {
+        reject(`${id}: public receipt event differs from its authority receipt`);
+      }
     });
+    requireDigest(source.request_sha256, `${id} authority request`);
+    requireDigest(source.before_state_sha256, `${id} authority before state`);
+    requireDigest(source.after_state_sha256, `${id} authority after state`);
+    if (stepIndex === 0 && source.before_state_sha256 !== initialHash) {
+      reject(`${id}: first public step does not start from the authority initial state`);
+    }
     return {
       id,
       operation: receipt.operation,
-      events,
+      capability: receipt.capability,
+      request_sha256: source.request_sha256,
+      before_state_sha256: source.before_state_sha256,
+      after_state_sha256: source.after_state_sha256,
+      events: sourceEvents,
       public_state: receipt.public_state,
       public_state_sha256: receipt.public_state_sha256,
     };
@@ -208,23 +288,26 @@ function loadFreehackPublic(descriptor, directory) {
   if (JSON.stringify(steps.at(-1).public_state) !== JSON.stringify(publicState)) {
     reject("Freehack final public state does not match the checked-in public state");
   }
-  const eventCount = steps.reduce((total, step) => total + step.events.length, 0);
+  const publicEventCount = steps.reduce((total, step) => total + step.events.length, 0);
   return {
     key: descriptor.key,
     id: manifest.id,
     version: manifest.version,
     source: "freehack_public",
     character_name: creation.name,
-    steps: steps.map(({ public_state, public_state_sha256, ...step }) => step),
-    event_count: eventCount,
-    public_event_count: eventCount,
+    public_event_count: publicEventCount,
+    initial_state_sha256: initialHash,
     final_state_sha256: steps.at(-1).public_state_sha256,
     presentation_color: presentationColor(manifest.id),
+    contract: manifestContract(manifest),
+    steps: steps.map(({ public_state, public_state_sha256, ...step }) => step),
     observable: flattenPlain(publicState),
   };
 }
 
 function loadCanonicalProject(descriptor, directory) {
+  const manifest = pinnedManifest(descriptor);
+  requireManifest(descriptor, manifest);
   const project = readJson(join(directory, descriptor.project));
   const expected = readJson(join(directory, descriptor.expected));
   if (project?.project_format_version !== 1 || expected?.project_format_version !== 1) {
@@ -253,7 +336,6 @@ function loadCanonicalProject(descriptor, directory) {
   requireDigest(expected.final_state_sha256, `${descriptor.key} final state`);
 
   let before = expected.initial_state_sha256;
-  let recordedEvents = 0;
   let publicEvents = 0;
   const steps = expected.steps.map((step, index) => {
     const operation = project.scripted_path[index];
@@ -264,6 +346,7 @@ function loadCanonicalProject(descriptor, directory) {
     ) {
       reject(`${descriptor.key}: expected step does not match the scripted path`);
     }
+    requireOperation(manifest, step.operation, step.capability);
     requireDigest(step.request_sha256, `${step.request_id} request`);
     requireDigest(step.before_state_sha256, `${step.request_id} before state`);
     requireDigest(step.receipt_sha256, `${step.request_id} receipt`);
@@ -278,7 +361,12 @@ function loadCanonicalProject(descriptor, directory) {
     if (!Array.isArray(step.event_kinds) || step.event_kinds.length === 0) {
       reject(`${descriptor.key}: expected step has no event kinds`);
     }
-    recordedEvents += step.event_kinds.length;
+    const declaration = manifest.operations[step.operation];
+    for (const kind of step.event_kinds) {
+      if (!declaration.event_kinds.includes(kind) || !Object.hasOwn(manifest.event_types, kind)) {
+        reject(`${descriptor.key}: expected event kind is not declared for the operation`);
+      }
+    }
     const publicKinds = step.event_kinds.filter(
       (kind) => kind !== "entropy_trace" && !kind.endsWith("_authority"),
     );
@@ -286,6 +374,10 @@ function loadCanonicalProject(descriptor, directory) {
     return {
       id: step.request_id,
       operation: step.operation,
+      capability: step.capability,
+      request_sha256: step.request_sha256,
+      before_state_sha256: step.before_state_sha256,
+      after_state_sha256: step.after_state_sha256,
       events: publicKinds.map((kind, sequence) => ({
         sequence,
         kind,
@@ -302,11 +394,12 @@ function loadCanonicalProject(descriptor, directory) {
     version: project.adapter_version,
     source: "canonical_project",
     character_name: null,
-    steps,
-    event_count: recordedEvents,
     public_event_count: publicEvents,
+    initial_state_sha256: expected.initial_state_sha256,
     final_state_sha256: expected.final_state_sha256,
     presentation_color: presentationColor(project.adapter_id),
+    contract: manifestContract(manifest),
+    steps,
     observable: [],
   };
 }

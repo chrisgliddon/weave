@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "fixtures": "node scripts/tabletop-public-fixtures.mjs",
+    "fixtures": "cargo run -q -p weave-example-bevy-tabletop --bin publish-pixijs",
     "prebuild": "npm run fixtures",
     "pretest": "npm run fixtures",
     "test": "node --test"

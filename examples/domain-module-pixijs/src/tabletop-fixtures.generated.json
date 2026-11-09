@@ -1,7 +1,7 @@
 {
-  "projection_format_version": 1,
-  "generated_by": "scripts/tabletop-public-fixtures.mjs",
-  "source": "checked-in tabletop adapter fixture trees and canonical projects",
+  "projection_format_version": 2,
+  "generated_by": "weave-example-bevy-tabletop publish-pixijs",
+  "source": "validated checked-in tabletop adapter fixture trees and canonical projects",
   "adapters": [
     {
       "key": "plug-and-play",
@@ -9,201 +9,585 @@
       "version": "1.0.0",
       "source": "fixture_tree",
       "character_name": "Ember Vale",
+      "public_event_count": 7,
+      "initial_state_sha256": "284c36e2f08bd3c28ab333c5138b198a2e47ba6bf59f46e1c6f862aac9bfdddc",
+      "final_state_sha256": "962635b705d3b020874b76ccee019153ac6c1eb16f2e926a15088e59c2f669d5",
+      "presentation_color": "hsl(105, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "attack": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "attack_resolved",
+              "entropy_trace",
+              "resource_changed"
+            ]
+          },
+          "chase": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "chase_resolved",
+              "entropy_trace"
+            ]
+          },
+          "check": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "check_resolved",
+              "entropy_trace",
+              "resource_changed"
+            ]
+          },
+          "fortune_test": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "entropy_trace",
+              "fortune_test_resolved"
+            ]
+          },
+          "group_check": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "entropy_trace",
+              "group_check_resolved"
+            ]
+          },
+          "initiative": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "entropy_trace",
+              "initiative_ordered"
+            ]
+          },
+          "take_damage": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "damage_applied",
+              "resource_changed"
+            ]
+          }
+        },
+        "event_types": [
+          "attack_resolved",
+          "chase_resolved",
+          "check_resolved",
+          "damage_applied",
+          "entropy_trace",
+          "fortune_test_resolved",
+          "group_check_resolved",
+          "initiative_ordered",
+          "resource_changed"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "cross_rooftop",
           "operation": "check",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "d043e911825a557ec7c982e733030f7072a4a8785897708e58faf938f7abfc1b",
+          "before_state_sha256": "284c36e2f08bd3c28ab333c5138b198a2e47ba6bf59f46e1c6f862aac9bfdddc",
+          "after_state_sha256": "5260a0d6d51c2b72d669c9c63d2d25e81e0d3959f4e672d38cf21a9bcb055f03",
           "events": [
             {
               "sequence": 0,
               "kind": "check_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "attribute": "agility",
-                "critical": false,
-                "die": 4,
-                "fumble": false,
-                "outcome": "failure",
-                "rerolled": true,
-                "total": 11
-              }
+                "kind": "object",
+                "value": {
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "agility"
+                  },
+                  "critical": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "die": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "fumble": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "rerolled": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 11.0
+                  }
+                }
+              },
+              "payload_sha256": "213b4b3813404789a476416e4db63ee1702bb4d53a4dac9328950da8b46cf96e"
             }
           ]
         },
         {
           "id": "test_fortune",
           "operation": "fortune_test",
+          "capability": "resources_and_conditions",
+          "request_sha256": "79ae61b97247b594ec29eaeddacd1349c9483386582c855925ff13331595c488",
+          "before_state_sha256": "5260a0d6d51c2b72d669c9c63d2d25e81e0d3959f4e672d38cf21a9bcb055f03",
+          "after_state_sha256": "4015657e6be266b84098f54e1c9763f32c82aaaac37b68563f90609dfbd31cdf",
           "events": [
             {
               "sequence": 0,
               "kind": "fortune_test_resolved",
               "capability": "resources_and_conditions",
               "payload": {
-                "die": 1,
-                "fortune": 1,
-                "success": false
-              }
+                "kind": "object",
+                "value": {
+                  "die": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "fortune": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "success": {
+                    "kind": "bool",
+                    "value": false
+                  }
+                }
+              },
+              "payload_sha256": "fe51f2ac4d0e8ebfcc9607418fb93aecb21bfbe7eb330a029f4b5833f6450885"
             }
           ]
         },
         {
           "id": "fire_signal_pistol",
           "operation": "attack",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "806b8182cd351b42f0304e012fa01c8ea6dfa4112873f3891ad891014f8150aa",
+          "before_state_sha256": "4015657e6be266b84098f54e1c9763f32c82aaaac37b68563f90609dfbd31cdf",
+          "after_state_sha256": "59af91dc0d1087f7967b3a08fbf30c08b3d6b88ff8af95ac516e75b91a5ada48",
           "events": [
             {
               "sequence": 0,
               "kind": "attack_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "critical": false,
-                "damage": 1,
-                "fumble": false,
-                "hit": true,
-                "jammed": false,
-                "self_damage": 0,
-                "total": 15,
-                "weapon_id": "signal pistol"
-              }
+                "kind": "object",
+                "value": {
+                  "critical": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "damage": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "fumble": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "hit": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "jammed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "self_damage": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 15.0
+                  },
+                  "weapon_id": {
+                    "kind": "string",
+                    "value": "signal pistol"
+                  }
+                }
+              },
+              "payload_sha256": "47fce0e3e3678133f368c174f63fd4e08321e5c3411be1f15ab1fee4b4f2ff5e"
             }
           ]
         },
         {
           "id": "lift_gate_together",
           "operation": "group_check",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "b7577e4a2c39f454d87da505f02dca8fe332358dd9016e01e7658994f5a89b21",
+          "before_state_sha256": "59af91dc0d1087f7967b3a08fbf30c08b3d6b88ff8af95ac516e75b91a5ada48",
+          "after_state_sha256": "a8f549fa34636315a099d852d0c7d26b829dc8bd7af30739eb10da1d9edbf002",
           "events": [
             {
               "sequence": 0,
               "kind": "group_check_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "failures": 1,
-                "results": [
-                  {
-                    "critical": false,
-                    "die": 5,
-                    "fumble": false,
-                    "id": "ember",
-                    "success": true,
-                    "total": 9
+                "kind": "object",
+                "value": {
+                  "failures": {
+                    "kind": "number",
+                    "value": 1.0
                   },
-                  {
-                    "critical": false,
-                    "die": 3,
-                    "fumble": false,
-                    "id": "rook",
-                    "success": false,
-                    "total": 7
+                  "results": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "critical": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "die": {
+                            "kind": "number",
+                            "value": 5.0
+                          },
+                          "fumble": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "ember"
+                          },
+                          "success": {
+                            "kind": "bool",
+                            "value": true
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 9.0
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "critical": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "die": {
+                            "kind": "number",
+                            "value": 3.0
+                          },
+                          "fumble": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "rook"
+                          },
+                          "success": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 7.0
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "critical": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "die": {
+                            "kind": "number",
+                            "value": 4.0
+                          },
+                          "fumble": {
+                            "kind": "bool",
+                            "value": false
+                          },
+                          "id": {
+                            "kind": "string",
+                            "value": "tamsin"
+                          },
+                          "success": {
+                            "kind": "bool",
+                            "value": true
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 8.0
+                          }
+                        }
+                      }
+                    ]
                   },
-                  {
-                    "critical": false,
-                    "die": 4,
-                    "fumble": false,
-                    "id": "tamsin",
-                    "success": true,
-                    "total": 8
+                  "success": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "successes": {
+                    "kind": "number",
+                    "value": 2.0
                   }
-                ],
-                "success": true,
-                "successes": 2
-              }
+                }
+              },
+              "payload_sha256": "bf93a5b1ded857efbecfe8cf3b8c7d89ac8b463ffc4ce0e91761d1722f99c09e"
             }
           ]
         },
         {
           "id": "draw_initiative",
           "operation": "initiative",
+          "capability": "encounters",
+          "request_sha256": "71e8ebdbd1425de761f9ba2666f1e8de9925e198e9f2157446d098f0ad693932",
+          "before_state_sha256": "a8f549fa34636315a099d852d0c7d26b829dc8bd7af30739eb10da1d9edbf002",
+          "after_state_sha256": "94984fc8506cec562bea3bfca7ce6256f8953fc2fd6621f66d093b6b6df387b4",
           "events": [
             {
               "sequence": 0,
               "kind": "initiative_ordered",
               "capability": "encounters",
               "payload": {
-                "entries": [
-                  {
-                    "label": "9 hearts",
-                    "participant": "warden",
-                    "rank": 9,
-                    "suit": "hearts"
-                  },
-                  {
-                    "label": "4 diamonds",
-                    "participant": "ember",
-                    "rank": 4,
-                    "suit": "diamonds"
-                  },
-                  {
-                    "label": "Joker",
-                    "participant": "rook",
-                    "rank": 0,
-                    "suit": "joker"
+                "kind": "object",
+                "value": {
+                  "entries": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "label": {
+                            "kind": "string",
+                            "value": "9 hearts"
+                          },
+                          "participant": {
+                            "kind": "string",
+                            "value": "warden"
+                          },
+                          "rank": {
+                            "kind": "number",
+                            "value": 9.0
+                          },
+                          "suit": {
+                            "kind": "symbol",
+                            "value": "hearts"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "label": {
+                            "kind": "string",
+                            "value": "4 diamonds"
+                          },
+                          "participant": {
+                            "kind": "string",
+                            "value": "ember"
+                          },
+                          "rank": {
+                            "kind": "number",
+                            "value": 4.0
+                          },
+                          "suit": {
+                            "kind": "symbol",
+                            "value": "diamonds"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "label": {
+                            "kind": "string",
+                            "value": "Joker"
+                          },
+                          "participant": {
+                            "kind": "string",
+                            "value": "rook"
+                          },
+                          "rank": {
+                            "kind": "number",
+                            "value": 0.0
+                          },
+                          "suit": {
+                            "kind": "symbol",
+                            "value": "joker"
+                          }
+                        }
+                      }
+                    ]
                   }
-                ]
-              }
+                }
+              },
+              "payload_sha256": "205f516a5ebf0c20910277129bc1964b78fb013a9921cbed1b032d3de1cd3b43"
             }
           ]
         },
         {
           "id": "canal_chase",
           "operation": "chase",
+          "capability": "encounters",
+          "request_sha256": "3a1065022d7047e820406a9a6929d470359c149d2b61b9d3c73feaa218d4a002",
+          "before_state_sha256": "94984fc8506cec562bea3bfca7ce6256f8953fc2fd6621f66d093b6b6df387b4",
+          "after_state_sha256": "34ea83f2aba55b52ccbeaf8c0c44d22ca0c9b204df67098ba841b2d447ffdd19",
           "events": [
             {
               "sequence": 0,
               "kind": "chase_resolved",
               "capability": "encounters",
               "payload": {
-                "outcome": "escaped",
-                "rounds": [
-                  {
-                    "opponent_die": 2,
-                    "opponent_total": 6,
-                    "player_die": 4,
-                    "player_total": 11,
-                    "round": 1,
-                    "winner": "player"
+                "kind": "object",
+                "value": {
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "escaped"
                   },
-                  {
-                    "opponent_die": 2,
-                    "opponent_total": 6,
-                    "player_die": 5,
-                    "player_total": 12,
-                    "round": 2,
-                    "winner": "player"
-                  },
-                  {
-                    "opponent_die": 4,
-                    "opponent_total": 8,
-                    "player_die": 4,
-                    "player_total": 11,
-                    "round": 3,
-                    "winner": "player"
+                  "rounds": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "opponent_die": {
+                            "kind": "number",
+                            "value": 2.0
+                          },
+                          "opponent_total": {
+                            "kind": "number",
+                            "value": 6.0
+                          },
+                          "player_die": {
+                            "kind": "number",
+                            "value": 4.0
+                          },
+                          "player_total": {
+                            "kind": "number",
+                            "value": 11.0
+                          },
+                          "round": {
+                            "kind": "number",
+                            "value": 1.0
+                          },
+                          "winner": {
+                            "kind": "symbol",
+                            "value": "player"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "opponent_die": {
+                            "kind": "number",
+                            "value": 2.0
+                          },
+                          "opponent_total": {
+                            "kind": "number",
+                            "value": 6.0
+                          },
+                          "player_die": {
+                            "kind": "number",
+                            "value": 5.0
+                          },
+                          "player_total": {
+                            "kind": "number",
+                            "value": 12.0
+                          },
+                          "round": {
+                            "kind": "number",
+                            "value": 2.0
+                          },
+                          "winner": {
+                            "kind": "symbol",
+                            "value": "player"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "opponent_die": {
+                            "kind": "number",
+                            "value": 4.0
+                          },
+                          "opponent_total": {
+                            "kind": "number",
+                            "value": 8.0
+                          },
+                          "player_die": {
+                            "kind": "number",
+                            "value": 4.0
+                          },
+                          "player_total": {
+                            "kind": "number",
+                            "value": 11.0
+                          },
+                          "round": {
+                            "kind": "number",
+                            "value": 3.0
+                          },
+                          "winner": {
+                            "kind": "symbol",
+                            "value": "player"
+                          }
+                        }
+                      }
+                    ]
                   }
-                ]
-              }
+                }
+              },
+              "payload_sha256": "18eb6d89a2b23ed42fc19abd64e764104497923938517bfecaf84899a70be831"
             }
           ]
         },
         {
           "id": "take_fall_damage",
           "operation": "take_damage",
+          "capability": "resources_and_conditions",
+          "request_sha256": "a8dfd0baa4836954959dddacc850fee2c8a654285d02765b4b8192a6c5fa4670",
+          "before_state_sha256": "34ea83f2aba55b52ccbeaf8c0c44d22ca0c9b204df67098ba841b2d447ffdd19",
+          "after_state_sha256": "962635b705d3b020874b76ccee019153ac6c1eb16f2e926a15088e59c2f669d5",
           "events": [
             {
               "sequence": 0,
               "kind": "damage_applied",
               "capability": "resources_and_conditions",
               "payload": {
-                "amount": 99,
-                "dead": false,
-                "remaining": 0,
-                "wounded": true
-              }
+                "kind": "object",
+                "value": {
+                  "amount": {
+                    "kind": "number",
+                    "value": 99.0
+                  },
+                  "dead": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "remaining": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "wounded": {
+                    "kind": "bool",
+                    "value": true
+                  }
+                }
+              },
+              "payload_sha256": "ebd7ba15094b8f49b4956c00b5884781352483084983be1ef93c2292566728f9"
             }
           ]
         }
       ],
-      "event_count": 15,
-      "public_event_count": 7,
-      "final_state_sha256": "962635b705d3b020874b76ccee019153ac6c1eb16f2e926a15088e59c2f669d5",
-      "presentation_color": "hsl(105, 52%, 58%)",
       "observable": [
         "dead=false",
         "fortune_remaining=1",
@@ -222,359 +606,990 @@
       "version": "1.0.0",
       "source": "fixture_tree",
       "character_name": "Vesper Ash",
+      "public_event_count": 20,
+      "initial_state_sha256": "229bd1158e112fa3c51429e4dffaa82f2a7b087445ba55cbb04b3694c32ff55a",
+      "final_state_sha256": "d637bf445e993fb38263d3422a502bb736b802e20c9482eee1cfa25ebc50509c",
+      "presentation_color": "hsl(342, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "damage": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "damage_applied",
+              "death_resolved",
+              "entropy_trace",
+              "equipment_changed",
+              "resource_changed"
+            ]
+          },
+          "death_check": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "death_resolved",
+              "entropy_trace",
+              "resource_changed"
+            ]
+          },
+          "gm_move": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "gm_move_selected"
+            ]
+          },
+          "grow": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "advancement_applied",
+              "resource_changed"
+            ]
+          },
+          "harm_threat": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "entropy_trace",
+              "threat_changed"
+            ]
+          },
+          "harm_threat_minor": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "threat_changed"
+            ]
+          },
+          "impairment": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "impairment_changed"
+            ]
+          },
+          "minor_damage": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "damage_applied",
+              "death_resolved",
+              "equipment_changed",
+              "resource_changed"
+            ]
+          },
+          "rest": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "resource_changed",
+              "rest_resolved"
+            ]
+          },
+          "struggle": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "entropy_trace",
+              "gm_move_prompt",
+              "help_applied",
+              "resource_changed",
+              "roll_resolved",
+              "struggle_resolved"
+            ]
+          },
+          "survival_decision": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "death_resolved",
+              "resource_changed"
+            ]
+          },
+          "tick_clock": {
+            "required_capability": "clocks",
+            "event_kinds": [
+              "clock_changed",
+              "clock_triggered"
+            ]
+          }
+        },
+        "event_types": [
+          "advancement_applied",
+          "clock_changed",
+          "clock_triggered",
+          "damage_applied",
+          "death_resolved",
+          "entropy_trace",
+          "equipment_changed",
+          "gm_move_prompt",
+          "gm_move_selected",
+          "help_applied",
+          "impairment_changed",
+          "resource_changed",
+          "rest_resolved",
+          "roll_resolved",
+          "struggle_resolved",
+          "threat_changed"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "raise_gate_together",
           "operation": "struggle",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "31e127c1c36e6ee7ef3570bfb57a1d51e41dda21498ae8d6e73273b88632d897",
+          "before_state_sha256": "229bd1158e112fa3c51429e4dffaa82f2a7b087445ba55cbb04b3694c32ff55a",
+          "after_state_sha256": "012ce03760fcda264e4da75ead4d968a5a604a29ce9099afae9c6b88ffc1eed4",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "attribute": "strength",
-                "dice": [
-                  2,
-                  3,
-                  3
-                ],
-                "dice_pool": 3,
-                "edge": "neutral",
-                "failure_xp_gained": true,
-                "helped": true,
-                "outcome": "failure",
-                "push": true,
-                "selected": 3,
-                "selection": "highest"
-              }
+                "kind": "object",
+                "value": {
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "strength"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      }
+                    ]
+                  },
+                  "dice_pool": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "edge": {
+                    "kind": "symbol",
+                    "value": "neutral"
+                  },
+                  "failure_xp_gained": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "helped": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "push": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "selected": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "selection": {
+                    "kind": "symbol",
+                    "value": "highest"
+                  }
+                }
+              },
+              "payload_sha256": "fdeb7e7b816c39e1e4c8e660ec6a44069f0e5ca4f38adfe5bb60d3457480255a"
             },
             {
               "sequence": 1,
               "kind": "struggle_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "choices": [
-                  "failure_with_cost"
-                ],
-                "cost_required": true,
-                "failure": true,
-                "outcome": "failure",
-                "partial": false
-              }
+                "kind": "object",
+                "value": {
+                  "choices": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "failure_with_cost"
+                      }
+                    ]
+                  },
+                  "cost_required": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "failure": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "partial": {
+                    "kind": "bool",
+                    "value": false
+                  }
+                }
+              },
+              "payload_sha256": "1482e68108b2b2e542508b2dfc34d206f84fc37bbbadb6222b044a4a76278a14"
             },
             {
               "sequence": 2,
               "kind": "help_applied",
               "capability": "checks_and_conflicts",
               "payload": {
-                "helper_id": "mara",
-                "stress_delta": 1
-              }
+                "kind": "object",
+                "value": {
+                  "helper_id": {
+                    "kind": "string",
+                    "value": "mara"
+                  },
+                  "stress_delta": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "413ed488ba2c3209d3d60667bca9b721c5fce0ada6eb16b252183fa63a44a8ad"
             },
             {
               "sequence": 3,
               "kind": "gm_move_prompt",
               "capability": "checks_and_conflicts",
               "payload": {
-                "categories": [
-                  "escalate",
-                  "injure",
-                  "rob",
-                  "twist_outcome",
-                  "warn"
-                ],
-                "reason": "failed_roll"
-              }
+                "kind": "object",
+                "value": {
+                  "categories": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "escalate"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "injure"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "rob"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "twist_outcome"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "warn"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "kind": "symbol",
+                    "value": "failed_roll"
+                  }
+                }
+              },
+              "payload_sha256": "85d98e8778325840d5091c4be5953d6191154b98553987e7ebec78bb3516bb3d"
             }
           ]
         },
         {
           "id": "rest_after_push",
           "operation": "rest",
+          "capability": "resources_and_conditions",
+          "request_sha256": "4f3d235dd9ae37ab5eee728ebb8830442b1a4aeb8f4bf0c6b2039bccc90d398c",
+          "before_state_sha256": "012ce03760fcda264e4da75ead4d968a5a604a29ce9099afae9c6b88ffc1eed4",
+          "after_state_sha256": "3081dfaf4ebde44920dc71caf9de4e56d4434b09f171262c79dc76637aeee8c8",
           "events": [
             {
               "sequence": 0,
               "kind": "rest_resolved",
               "capability": "resources_and_conditions",
               "payload": {
-                "hours": 4,
-                "hp_after": 11,
-                "hp_before": 11,
-                "stress_after": 0,
-                "stress_before": 2
-              }
+                "kind": "object",
+                "value": {
+                  "hours": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "hp_after": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "hp_before": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "stress_after": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "stress_before": {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                }
+              },
+              "payload_sha256": "1150503a5bc1baafc78d436dfe417b5cb97986c3b117a1eeb06096e218edd70b"
             }
           ]
         },
         {
           "id": "read_omens",
           "operation": "struggle",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "e7f749c6edcb06d3137d3ea5174533dc419f85a0b7bcb2dd42aefaab2e8f0f14",
+          "before_state_sha256": "3081dfaf4ebde44920dc71caf9de4e56d4434b09f171262c79dc76637aeee8c8",
+          "after_state_sha256": "a55db00ad7bb0cc0389d46ed83e27aa1293cebda31e5e30af9e66cb8101cfe27",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "attribute": "charisma",
-                "dice": [
-                  1,
-                  2
-                ],
-                "dice_pool": -1,
-                "edge": "disadvantage",
-                "failure_xp_gained": true,
-                "helped": false,
-                "outcome": "failure",
-                "push": false,
-                "selected": 1,
-                "selection": "lowest"
-              }
+                "kind": "object",
+                "value": {
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "charisma"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      }
+                    ]
+                  },
+                  "dice_pool": {
+                    "kind": "number",
+                    "value": -1.0
+                  },
+                  "edge": {
+                    "kind": "symbol",
+                    "value": "disadvantage"
+                  },
+                  "failure_xp_gained": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "helped": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "push": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "selected": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "selection": {
+                    "kind": "symbol",
+                    "value": "lowest"
+                  }
+                }
+              },
+              "payload_sha256": "387d21b1348347c3b6e2711ab0d77f790ccbc74d5987273800e0f47764470b08"
             },
             {
               "sequence": 1,
               "kind": "struggle_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "choices": [
-                  "failure_with_cost"
-                ],
-                "cost_required": true,
-                "failure": true,
-                "outcome": "failure",
-                "partial": false
-              }
+                "kind": "object",
+                "value": {
+                  "choices": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "failure_with_cost"
+                      }
+                    ]
+                  },
+                  "cost_required": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "failure": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "partial": {
+                    "kind": "bool",
+                    "value": false
+                  }
+                }
+              },
+              "payload_sha256": "1482e68108b2b2e542508b2dfc34d206f84fc37bbbadb6222b044a4a76278a14"
             },
             {
               "sequence": 2,
               "kind": "gm_move_prompt",
               "capability": "checks_and_conflicts",
               "payload": {
-                "categories": [
-                  "escalate",
-                  "injure",
-                  "rob",
-                  "twist_outcome",
-                  "warn"
-                ],
-                "reason": "failed_roll"
-              }
+                "kind": "object",
+                "value": {
+                  "categories": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "escalate"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "injure"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "rob"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "twist_outcome"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "warn"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "kind": "symbol",
+                    "value": "failed_roll"
+                  }
+                }
+              },
+              "payload_sha256": "85d98e8778325840d5091c4be5953d6191154b98553987e7ebec78bb3516bb3d"
             }
           ]
         },
         {
           "id": "bargain_gate",
           "operation": "struggle",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "fd1c203860b96050d7842011ad50e18c49fbda8c01d227c7b37bb9efebe4f29f",
+          "before_state_sha256": "a55db00ad7bb0cc0389d46ed83e27aa1293cebda31e5e30af9e66cb8101cfe27",
+          "after_state_sha256": "c88a0074b390082293fcc3632584c6d3d371ac41539b6a8c06b69deb0cfefe3d",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "attribute": "charisma",
-                "dice": [
-                  3,
-                  2
-                ],
-                "dice_pool": -1,
-                "edge": "disadvantage",
-                "failure_xp_gained": true,
-                "helped": false,
-                "outcome": "failure",
-                "push": false,
-                "selected": 2,
-                "selection": "lowest"
-              }
+                "kind": "object",
+                "value": {
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "charisma"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      }
+                    ]
+                  },
+                  "dice_pool": {
+                    "kind": "number",
+                    "value": -1.0
+                  },
+                  "edge": {
+                    "kind": "symbol",
+                    "value": "disadvantage"
+                  },
+                  "failure_xp_gained": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "helped": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "push": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "selected": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "selection": {
+                    "kind": "symbol",
+                    "value": "lowest"
+                  }
+                }
+              },
+              "payload_sha256": "67be0b4fe8a44c767673a5479277982923fe206ddd674714968f3c6e482e23f7"
             },
             {
               "sequence": 1,
               "kind": "struggle_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "choices": [
-                  "failure_with_cost"
-                ],
-                "cost_required": true,
-                "failure": true,
-                "outcome": "failure",
-                "partial": false
-              }
+                "kind": "object",
+                "value": {
+                  "choices": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "failure_with_cost"
+                      }
+                    ]
+                  },
+                  "cost_required": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "failure": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "partial": {
+                    "kind": "bool",
+                    "value": false
+                  }
+                }
+              },
+              "payload_sha256": "1482e68108b2b2e542508b2dfc34d206f84fc37bbbadb6222b044a4a76278a14"
             },
             {
               "sequence": 2,
               "kind": "gm_move_prompt",
               "capability": "checks_and_conflicts",
               "payload": {
-                "categories": [
-                  "escalate",
-                  "injure",
-                  "rob",
-                  "twist_outcome",
-                  "warn"
-                ],
-                "reason": "failed_roll"
-              }
+                "kind": "object",
+                "value": {
+                  "categories": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "symbol",
+                        "value": "escalate"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "injure"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "rob"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "twist_outcome"
+                      },
+                      {
+                        "kind": "symbol",
+                        "value": "warn"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "kind": "symbol",
+                    "value": "failed_roll"
+                  }
+                }
+              },
+              "payload_sha256": "85d98e8778325840d5091c4be5953d6191154b98553987e7ebec78bb3516bb3d"
             }
           ]
         },
         {
           "id": "learn_bridgecraft",
           "operation": "grow",
+          "capability": "advancement",
+          "request_sha256": "ff7c6ca51a2279dc5c6576647e85f23ca227289a5b104947535317010ebdb74e",
+          "before_state_sha256": "c88a0074b390082293fcc3632584c6d3d371ac41539b6a8c06b69deb0cfefe3d",
+          "after_state_sha256": "038176b08fc82d06f59d3d968bfcd87e1bb1ae0e0295c29576ccf04d26c9380f",
           "events": [
             {
               "sequence": 0,
               "kind": "advancement_applied",
               "capability": "advancement",
               "payload": {
-                "cost": 3,
-                "kind": "add_move",
-                "move_id": "bridgecraft"
-              }
+                "kind": "object",
+                "value": {
+                  "cost": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "add_move"
+                  },
+                  "move_id": {
+                    "kind": "string",
+                    "value": "bridgecraft"
+                  }
+                }
+              },
+              "payload_sha256": "c0b3a62db556984fd96a660e65925a1d5dbad889c24e6267f5b885c58337de4b"
             }
           ]
         },
         {
           "id": "take_minor_harm",
           "operation": "minor_damage",
+          "capability": "resources_and_conditions",
+          "request_sha256": "a6af090d20f796b99d63c7f744dde1d29c8d38b62c8d11af5cfb3893a93a3377",
+          "before_state_sha256": "038176b08fc82d06f59d3d968bfcd87e1bb1ae0e0295c29576ccf04d26c9380f",
+          "after_state_sha256": "96ec3af0024b5507573a84bc364384c1151011858aa1ff1a27c19c6417b52c50",
           "events": [
             {
               "sequence": 0,
               "kind": "damage_applied",
               "capability": "resources_and_conditions",
               "payload": {
-                "applied": 1,
-                "dice": [],
-                "hp_after": 10,
-                "hp_before": 11,
-                "prevented": 0,
-                "raw_damage": 1,
-                "status": "active",
-                "tier": "minor"
-              }
+                "kind": "object",
+                "value": {
+                  "applied": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": []
+                  },
+                  "hp_after": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "hp_before": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "prevented": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "raw_damage": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "active"
+                  },
+                  "tier": {
+                    "kind": "symbol",
+                    "value": "minor"
+                  }
+                }
+              },
+              "payload_sha256": "e41bc8f82f7dc36816614c34844b8d20c5236b66bbeebaef9375ae60cc3cdfb0"
             }
           ]
         },
         {
           "id": "rest_after_harm",
           "operation": "rest",
+          "capability": "resources_and_conditions",
+          "request_sha256": "8113c837dcd4a2253bd24f1ee20bcbbaf033da57bc3cf0d9653509f794cfde03",
+          "before_state_sha256": "96ec3af0024b5507573a84bc364384c1151011858aa1ff1a27c19c6417b52c50",
+          "after_state_sha256": "0ec7083cff32e03cc27ff7984edb07329d07eaa9d9360edd42c0d5e3c5b25fdc",
           "events": [
             {
               "sequence": 0,
               "kind": "rest_resolved",
               "capability": "resources_and_conditions",
               "payload": {
-                "hours": 2,
-                "hp_after": 11,
-                "hp_before": 10,
-                "stress_after": 0,
-                "stress_before": 0
-              }
+                "kind": "object",
+                "value": {
+                  "hours": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "hp_after": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "hp_before": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "stress_after": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "stress_before": {
+                    "kind": "number",
+                    "value": 0.0
+                  }
+                }
+              },
+              "payload_sha256": "6e58b653f2305eb8655b649ce8a94f2649a0c4326a64cdddff7a7721f2eb5d13"
             }
           ]
         },
         {
           "id": "wake_bridge",
           "operation": "tick_clock",
+          "capability": "clocks",
+          "request_sha256": "c21d0f7465a3061833222841b3439a8144fc51fe0489529d403ae9e166aad0b0",
+          "before_state_sha256": "0ec7083cff32e03cc27ff7984edb07329d07eaa9d9360edd42c0d5e3c5b25fdc",
+          "after_state_sha256": "2b5b7b39f73180cc51d1987ebabfa4a5aa01b37166cacad952906b1096a0491c",
           "events": [
             {
               "sequence": 0,
               "kind": "clock_changed",
               "capability": "clocks",
               "payload": {
-                "after": 4,
-                "before": 2,
-                "clock_id": "bridge_wakes",
-                "delta": 2,
-                "segments": 4
-              }
+                "kind": "object",
+                "value": {
+                  "after": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "before": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "clock_id": {
+                    "kind": "string",
+                    "value": "bridge_wakes"
+                  },
+                  "delta": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "segments": {
+                    "kind": "number",
+                    "value": 4.0
+                  }
+                }
+              },
+              "payload_sha256": "929c88df81bae8c449e19d83d4aeef010d6b434263e70a2968a27df5671f992f"
             },
             {
               "sequence": 1,
               "kind": "clock_triggered",
               "capability": "clocks",
               "payload": {
-                "boundary": "full",
-                "clock_id": "bridge_wakes"
-              }
+                "kind": "object",
+                "value": {
+                  "boundary": {
+                    "kind": "symbol",
+                    "value": "full"
+                  },
+                  "clock_id": {
+                    "kind": "string",
+                    "value": "bridge_wakes"
+                  }
+                }
+              },
+              "payload_sha256": "ff66cc15253dc1506cbe0ec66b754e20e05118b0409207b35cd345c9709b3c0a"
             }
           ]
         },
         {
           "id": "strike_ash_hound",
           "operation": "harm_threat",
+          "capability": "encounters",
+          "request_sha256": "371e22435cf725b4e7d71a638ad07b492e5557d78ba4cbbb10efc001e8aa4c3b",
+          "before_state_sha256": "2b5b7b39f73180cc51d1987ebabfa4a5aa01b37166cacad952906b1096a0491c",
+          "after_state_sha256": "26d2ea732d1dbc34aabea96562ce8772029076c4ed7db038ceb5f00285f3bf48",
           "events": [
             {
               "sequence": 0,
               "kind": "threat_changed",
               "capability": "encounters",
               "payload": {
-                "applied": 4,
-                "armor": 1,
-                "defeated": false,
-                "dice": [
-                  5
-                ],
-                "hp_after": 4,
-                "hp_before": 8,
-                "raw_damage": 5,
-                "threat_id": "ash_hound",
-                "tier": "standard"
-              }
+                "kind": "object",
+                "value": {
+                  "applied": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "armor": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "defeated": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 5.0
+                      }
+                    ]
+                  },
+                  "hp_after": {
+                    "kind": "number",
+                    "value": 4.0
+                  },
+                  "hp_before": {
+                    "kind": "number",
+                    "value": 8.0
+                  },
+                  "raw_damage": {
+                    "kind": "number",
+                    "value": 5.0
+                  },
+                  "threat_id": {
+                    "kind": "string",
+                    "value": "ash_hound"
+                  },
+                  "tier": {
+                    "kind": "symbol",
+                    "value": "standard"
+                  }
+                }
+              },
+              "payload_sha256": "2cf452dd358cbfe3c1e7b5e66a6865d881be6202b03166c1a4caf115d1291af5"
             }
           ]
         },
         {
           "id": "brace_falling_stone",
           "operation": "damage",
+          "capability": "resources_and_conditions",
+          "request_sha256": "9ef0f2fe1c1d93b63ef75de3a81361ddb7f3963f10a72ae252ddaa8d207ef9e2",
+          "before_state_sha256": "26d2ea732d1dbc34aabea96562ce8772029076c4ed7db038ceb5f00285f3bf48",
+          "after_state_sha256": "f677d06f5a439daeca5078ff80a02d7912abc5331e21a42119671098a93a6e0d",
           "events": [
             {
               "sequence": 0,
               "kind": "damage_applied",
               "capability": "resources_and_conditions",
               "payload": {
-                "applied": 0,
-                "dice": [
-                  3
-                ],
-                "hp_after": 11,
-                "hp_before": 11,
-                "prevented": 3,
-                "raw_damage": 3,
-                "status": "active",
-                "tier": "standard"
-              }
+                "kind": "object",
+                "value": {
+                  "applied": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      }
+                    ]
+                  },
+                  "hp_after": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "hp_before": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "prevented": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "raw_damage": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "active"
+                  },
+                  "tier": {
+                    "kind": "symbol",
+                    "value": "standard"
+                  }
+                }
+              },
+              "payload_sha256": "2e762c735319a32bd75fa88c53f8b0060542f0ea044df7d7ce6f93521a2b366a"
             },
             {
               "sequence": 1,
               "kind": "equipment_changed",
               "capability": "resources_and_conditions",
               "payload": {
-                "damage_marks": 1,
-                "destroyed": false,
-                "item_id": "armor"
-              }
+                "kind": "object",
+                "value": {
+                  "damage_marks": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "destroyed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "item_id": {
+                    "kind": "string",
+                    "value": "armor"
+                  }
+                }
+              },
+              "payload_sha256": "7750c1c1b71884e565386c1d091e98ab75653eb7ca1b689ae3846f19de6549a6"
             }
           ]
         },
         {
           "id": "warn_of_trouble",
           "operation": "gm_move",
+          "capability": "campaign_state",
+          "request_sha256": "c0c5b658c6d0d30335ed7394ab5caed3259f51794e78f7a78c4b1a494828b392",
+          "before_state_sha256": "f677d06f5a439daeca5078ff80a02d7912abc5331e21a42119671098a93a6e0d",
+          "after_state_sha256": "d637bf445e993fb38263d3422a502bb736b802e20c9482eee1cfa25ebc50509c",
           "events": [
             {
               "sequence": 0,
               "kind": "gm_move_selected",
               "capability": "campaign_state",
               "payload": {
-                "category": "warn",
-                "move": "show_distant_trouble"
-              }
+                "kind": "object",
+                "value": {
+                  "category": {
+                    "kind": "symbol",
+                    "value": "warn"
+                  },
+                  "move": {
+                    "kind": "symbol",
+                    "value": "show_distant_trouble"
+                  }
+                }
+              },
+              "payload_sha256": "f144250ae88a5038f678b966b1360310fde5259ba5acfbfbf7965c0405084323"
             }
           ]
         }
       ],
-      "event_count": 33,
-      "public_event_count": 20,
-      "final_state_sha256": "d637bf445e993fb38263d3422a502bb736b802e20c9482eee1cfa25ebc50509c",
-      "presentation_color": "hsl(342, 52%, 58%)",
       "observable": [
         "advancement.learned_moves[0].id=bridgecraft",
         "advancement.learned_moves[0].label=Bridgecraft",
@@ -630,10 +1645,123 @@
       "version": "1.0.0",
       "source": "freehack_public",
       "character_name": "Tavi Quill",
+      "public_event_count": 15,
+      "initial_state_sha256": "0b6c3c8302c18e06c11b6c0aee2698c905cd99d70bd699a80910bc7a634e61d8",
+      "final_state_sha256": "14e3afe2446d887b20da3257a2f549b359ca549068b26bfa088d0cd413543754",
+      "presentation_color": "hsl(315, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "advance_track": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "track_advanced",
+              "track_advanced_authority",
+              "track_completed",
+              "track_completed_authority"
+            ]
+          },
+          "cancel_submission": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "submission_cancelled",
+              "submission_cancelled_authority"
+            ]
+          },
+          "create_track": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "track_created",
+              "track_created_authority"
+            ]
+          },
+          "open_section": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "section_opened"
+            ]
+          },
+          "preview_probability": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "probability_previewed",
+              "probability_previewed_authority"
+            ]
+          },
+          "recall_memory": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "entropy_trace",
+              "memory_resolved",
+              "memory_resolved_authority"
+            ]
+          },
+          "resolve_check": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "check_resolved",
+              "check_resolved_authority",
+              "entropy_trace"
+            ]
+          },
+          "resolve_section": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "section_resolved",
+              "section_resolved_authority"
+            ]
+          },
+          "submit_action": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "submission_recorded",
+              "submission_recorded_authority"
+            ]
+          },
+          "timeout_section": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "section_timed_out",
+              "section_timed_out_authority"
+            ]
+          }
+        },
+        "event_types": [
+          "check_resolved",
+          "check_resolved_authority",
+          "entropy_trace",
+          "memory_resolved",
+          "memory_resolved_authority",
+          "probability_previewed",
+          "probability_previewed_authority",
+          "section_opened",
+          "section_resolved",
+          "section_resolved_authority",
+          "section_timed_out",
+          "section_timed_out_authority",
+          "submission_cancelled",
+          "submission_cancelled_authority",
+          "submission_recorded",
+          "submission_recorded_authority",
+          "track_advanced",
+          "track_advanced_authority",
+          "track_completed",
+          "track_completed_authority",
+          "track_created",
+          "track_created_authority"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "preview_crossing_probability",
           "operation": "preview_probability",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "8a0798ea63f2973e6b3ddcf277776b84ca3de6abbb81af8568e495ef00ed364e",
+          "before_state_sha256": "0b6c3c8302c18e06c11b6c0aee2698c905cd99d70bd699a80910bc7a634e61d8",
+          "after_state_sha256": "0a8db01b45330af46a29f91886bbfdc93146095cfd209f60c35a603951730629",
           "events": [
             {
               "sequence": 0,
@@ -648,24 +1776,29 @@
                   },
                   "opposition_total": {
                     "kind": "number",
-                    "value": 3
+                    "value": 3.0
                   },
                   "success_basis_points_floor": {
                     "kind": "number",
-                    "value": 6400
+                    "value": 6400.0
                   },
                   "support_total": {
                     "kind": "number",
-                    "value": 4
+                    "value": 4.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "635fccc0ea8397442e3deb536e4e7e20c03b6658bf81d658117698384be85d34"
             }
           ]
         },
         {
           "id": "cross_wet_gantry",
           "operation": "resolve_check",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "d46f636bf3349fde25609ea5720a0c036535fd6f11a27546a4e15db8fa5c1433",
+          "before_state_sha256": "0a8db01b45330af46a29f91886bbfdc93146095cfd209f60c35a603951730629",
+          "after_state_sha256": "47b4a578a3d7036c1d4b9bcefaf4067b05948a2fe455adaa04b77582c1d251e1",
           "events": [
             {
               "sequence": 0,
@@ -680,7 +1813,7 @@
                   },
                   "magnitude": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   },
                   "outcome": {
                     "kind": "symbol",
@@ -688,16 +1821,21 @@
                   },
                   "support_total": {
                     "kind": "number",
-                    "value": 4
+                    "value": 4.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "4e34095e69f9c8d8511b5fdec6e14581c00596dd47c63ff461fef57fb0fe228f"
             }
           ]
         },
         {
           "id": "recall_tide_gate",
           "operation": "recall_memory",
+          "capability": "resources_and_conditions",
+          "request_sha256": "1ca25261531c4f9b37198f8467e2805e777f3f27e3b6fb83e09172c9f40107b7",
+          "before_state_sha256": "271632e4b7b65f1a1b97f621150c3228dd8162d3e58bc8e956363a7a48b5f3cb",
+          "after_state_sha256": "b9937fd9092b73de0ba5eb2c1e7f65dac3183447bc60be09d5d7e6219798c38a",
           "events": [
             {
               "sequence": 0,
@@ -719,13 +1857,18 @@
                     "value": "the public tide-gate schedule"
                   }
                 }
-              }
+              },
+              "payload_sha256": "bba975108ba52f67ca6abeef329e533b12198b15d4bdbf155ad52fdb06cf9c06"
             }
           ]
         },
         {
           "id": "open_gantry_turn",
           "operation": "open_section",
+          "capability": "scenes",
+          "request_sha256": "4a0d11706ea09f9065f57d4229eb7331bbaceed1d6f03cf97c46d45b8ae9a331",
+          "before_state_sha256": "b9937fd9092b73de0ba5eb2c1e7f65dac3183447bc60be09d5d7e6219798c38a",
+          "after_state_sha256": "08ebb3c50475191ba67357d5a5076bf8705b150f54707fdb90028ecedba90f84",
           "events": [
             {
               "sequence": 0,
@@ -769,16 +1912,21 @@
                   },
                   "turn_ticks": {
                     "kind": "number",
-                    "value": 30
+                    "value": 30.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "ee3da52839e3faedc7133c13dd5ef6e089b2bf9917dfec64299ff4ff0115d2e1"
             }
           ]
         },
         {
           "id": "submit_ira",
           "operation": "submit_action",
+          "capability": "scenes",
+          "request_sha256": "99e7982218003a52c17b9dcb6d040a57c2dc26e020e108589024f73b9506a60f",
+          "before_state_sha256": "08ebb3c50475191ba67357d5a5076bf8705b150f54707fdb90028ecedba90f84",
+          "after_state_sha256": "f729b5e325e629f4043b87954795206d7d68e8c0f0ef0863fefff8d480b16f56",
           "events": [
             {
               "sequence": 0,
@@ -793,7 +1941,7 @@
                   },
                   "required_count": {
                     "kind": "number",
-                    "value": 2
+                    "value": 2.0
                   },
                   "section_id": {
                     "kind": "string",
@@ -801,16 +1949,21 @@
                   },
                   "submitted_count": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "38c26ea067eba99d4dc004e6a86f7e9e40e6a47ccd7b71588b46a9c810dd587d"
             }
           ]
         },
         {
           "id": "cancel_ira",
           "operation": "cancel_submission",
+          "capability": "scenes",
+          "request_sha256": "1cbab6cf8177ced8a35a30815dbc218ed135ff0903af4b7233a6b0897f245fee",
+          "before_state_sha256": "f729b5e325e629f4043b87954795206d7d68e8c0f0ef0863fefff8d480b16f56",
+          "after_state_sha256": "366230f8c9e4a1bb72f0483ebc596d043d1c3498215942c4b7752cb19ff1f420",
           "events": [
             {
               "sequence": 0,
@@ -829,16 +1982,21 @@
                   },
                   "submitted_count": {
                     "kind": "number",
-                    "value": 0
+                    "value": 0.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "7c38d9830717d7a996f360b080d3d6ba3e699ebd1f064710991b34bb25f56325"
             }
           ]
         },
         {
           "id": "resubmit_ira",
           "operation": "submit_action",
+          "capability": "scenes",
+          "request_sha256": "d30add06fb78b3bca37c436d3d50631f833a0aa9ae007898e18550dcf3c6d898",
+          "before_state_sha256": "366230f8c9e4a1bb72f0483ebc596d043d1c3498215942c4b7752cb19ff1f420",
+          "after_state_sha256": "5f1227e9500ed5d0e9f2be6f838ed78282e57c8128c7b43ef41fcac16c13b205",
           "events": [
             {
               "sequence": 0,
@@ -853,7 +2011,7 @@
                   },
                   "required_count": {
                     "kind": "number",
-                    "value": 2
+                    "value": 2.0
                   },
                   "section_id": {
                     "kind": "string",
@@ -861,16 +2019,21 @@
                   },
                   "submitted_count": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "38c26ea067eba99d4dc004e6a86f7e9e40e6a47ccd7b71588b46a9c810dd587d"
             }
           ]
         },
         {
           "id": "submit_moss",
           "operation": "submit_action",
+          "capability": "scenes",
+          "request_sha256": "a9f5d90192efaba1eb01e19bd677871ed0e517d5ef87de6415b4028076294990",
+          "before_state_sha256": "5f1227e9500ed5d0e9f2be6f838ed78282e57c8128c7b43ef41fcac16c13b205",
+          "after_state_sha256": "fa5918aa8f3f06f1bffd1c5aea36f3dc882bd9a4439ad16ffc3346e9e72000d5",
           "events": [
             {
               "sequence": 0,
@@ -885,7 +2048,7 @@
                   },
                   "required_count": {
                     "kind": "number",
-                    "value": 2
+                    "value": 2.0
                   },
                   "section_id": {
                     "kind": "string",
@@ -893,16 +2056,21 @@
                   },
                   "submitted_count": {
                     "kind": "number",
-                    "value": 2
+                    "value": 2.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "bdaf454d4c3f0353c3f5ee7b7a754a1f1e242c0b04b4a0bb794c3a408bf69d44"
             }
           ]
         },
         {
           "id": "resolve_gantry_turn",
           "operation": "resolve_section",
+          "capability": "scenes",
+          "request_sha256": "e6dabadab730a334b25ca28fd649440ee960698ba69600ee43d4348dbd8248c1",
+          "before_state_sha256": "fa5918aa8f3f06f1bffd1c5aea36f3dc882bd9a4439ad16ffc3346e9e72000d5",
+          "after_state_sha256": "e88556809d612bbbba7525c97d1e7fae67cd34f845a06ed18927cebc6b834f4d",
           "events": [
             {
               "sequence": 0,
@@ -933,13 +2101,18 @@
                     "value": "gantry_turn"
                   }
                 }
-              }
+              },
+              "payload_sha256": "fab48fca828a38b70c331985d3566a9b929f957422c614ebda87bcdfd78721c8"
             }
           ]
         },
         {
           "id": "create_crossing_track",
           "operation": "create_track",
+          "capability": "resources_and_conditions",
+          "request_sha256": "e9419cd3ccb87c39073e429d4f33fe25184dfffcdc8e1b7a3d327dae1def8bdf",
+          "before_state_sha256": "e88556809d612bbbba7525c97d1e7fae67cd34f845a06ed18927cebc6b834f4d",
+          "after_state_sha256": "37fe545f07bca3fa0553b8e02f0a2fb684fa6451b6e5666349546f267e587f0b",
           "events": [
             {
               "sequence": 0,
@@ -966,16 +2139,21 @@
                   },
                   "target_count": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "cd39adeb8339b91a4f3ab9e94136b6703f923629dd5b3a3712785e89ab0e131c"
             }
           ]
         },
         {
           "id": "advance_crossing_track",
           "operation": "advance_track",
+          "capability": "resources_and_conditions",
+          "request_sha256": "faf4162c5391ba5588c3fc6096fe8986c405adf176d44d29a221f8d1b397cfcc",
+          "before_state_sha256": "37fe545f07bca3fa0553b8e02f0a2fb684fa6451b6e5666349546f267e587f0b",
+          "after_state_sha256": "92588dff31701b60878fa62278908ce024dec791fedc225f5e085fd0668e913a",
           "events": [
             {
               "sequence": 0,
@@ -998,18 +2176,19 @@
                   },
                   "progress_after": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   },
                   "progress_before": {
                     "kind": "number",
-                    "value": 0
+                    "value": 0.0
                   },
                   "target_count": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "525007b37ecc57c65b98b55cd1e922e5aa10e5dcc5f051e1d887e8906bf700f1"
             },
             {
               "sequence": 1,
@@ -1027,13 +2206,18 @@
                     "value": "crossing_ready"
                   }
                 }
-              }
+              },
+              "payload_sha256": "f5453b02404a799103ad93084439ec2c28339fc3dcefea9ac8046a76bed9c7af"
             }
           ]
         },
         {
           "id": "open_route_turn",
           "operation": "open_section",
+          "capability": "scenes",
+          "request_sha256": "02d305c2f3bbca27286f48040dea66e3293ff5deb851e68b81735cae492a0d5b",
+          "before_state_sha256": "92588dff31701b60878fa62278908ce024dec791fedc225f5e085fd0668e913a",
+          "after_state_sha256": "33823fdb6056793e8f79de13f2c43db4052841e96481605497421c93e21172c2",
           "events": [
             {
               "sequence": 0,
@@ -1077,16 +2261,21 @@
                   },
                   "turn_ticks": {
                     "kind": "number",
-                    "value": 5
+                    "value": 5.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "e570e50c0b01a385a6abcd4eedb502765c4fc90154445c505ba372b50194fee5"
             }
           ]
         },
         {
           "id": "submit_ira_route",
           "operation": "submit_action",
+          "capability": "scenes",
+          "request_sha256": "50a38e1c9a476faa03bd5e70f4645e8020c7763d02c7bc6473ef1b5067ae3d21",
+          "before_state_sha256": "33823fdb6056793e8f79de13f2c43db4052841e96481605497421c93e21172c2",
+          "after_state_sha256": "47efb4765f88e34ff5eee6ff3bd7a8422e29a2a8c1c66933689eb477020d0b73",
           "events": [
             {
               "sequence": 0,
@@ -1101,7 +2290,7 @@
                   },
                   "required_count": {
                     "kind": "number",
-                    "value": 2
+                    "value": 2.0
                   },
                   "section_id": {
                     "kind": "string",
@@ -1109,16 +2298,21 @@
                   },
                   "submitted_count": {
                     "kind": "number",
-                    "value": 1
+                    "value": 1.0
                   }
                 }
-              }
+              },
+              "payload_sha256": "acf84c4100c6b082b0b7a88cdd3024c2e8653655c5ce318a5ab9733163ca39ce"
             }
           ]
         },
         {
           "id": "timeout_route",
           "operation": "timeout_section",
+          "capability": "scenes",
+          "request_sha256": "aabab090c3d27c89b39ed318a10a42a082a60f5f8cce84f45d8c37dccaa1803f",
+          "before_state_sha256": "47efb4765f88e34ff5eee6ff3bd7a8422e29a2a8c1c66933689eb477020d0b73",
+          "after_state_sha256": "2564ccad96311f67a8e45435a4346ef6b122278fbb52719de8e804dcffef0ec1",
           "events": [
             {
               "sequence": 0,
@@ -1129,7 +2323,7 @@
                 "value": {
                   "elapsed_ticks": {
                     "kind": "number",
-                    "value": 5
+                    "value": 5.0
                   },
                   "missing_participants": {
                     "kind": "list",
@@ -1154,15 +2348,12 @@
                     ]
                   }
                 }
-              }
+              },
+              "payload_sha256": "61d61d34ccd2d5559b63d1df2f4e02e88f3c7c72e4202ba532e779cc04557f1e"
             }
           ]
         }
       ],
-      "event_count": 15,
-      "public_event_count": 15,
-      "final_state_sha256": "14e3afe2446d887b20da3257a2f549b359ca549068b26bfa088d0cd413543754",
-      "presentation_color": "hsl(315, 52%, 58%)",
       "observable": [
         "adapter.content_sha256=f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
         "adapter.id=org.weave.tabletop.freehack",
@@ -1232,499 +2423,1352 @@
       "version": "1.0.0",
       "source": "fixture_tree",
       "character_name": "Alma Reed",
+      "public_event_count": 28,
+      "initial_state_sha256": "999021ccbf4630c89f9596967187d5d557141c8c57934a7d80175e974ae62d92",
+      "final_state_sha256": "362f3423ac139cdf8cc45674e8c6aa1aa2396ebabe248018f6d056bee19c7fea",
+      "presentation_color": "hsl(317, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "advance_character": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "advancement_applied"
+            ]
+          },
+          "apply_recovery": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "recovery_applied"
+            ]
+          },
+          "inspect_character": {
+            "required_capability": "derived_values",
+            "event_kinds": [
+              "character_inspected"
+            ]
+          },
+          "move_combat": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "combat_moved"
+            ]
+          },
+          "purchase_item": {
+            "required_capability": "equipment_and_abilities",
+            "event_kinds": [
+              "item_acquired",
+              "wealth_spent"
+            ]
+          },
+          "resolve_challenge": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "challenge_resolved",
+              "challenge_updated",
+              "mark_applied",
+              "roll_recorded"
+            ]
+          },
+          "resolve_combat_turn": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "combat_concluded",
+              "combat_updated",
+              "damage_applied",
+              "mark_applied",
+              "roll_recorded"
+            ]
+          },
+          "start_combat": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "combat_started",
+              "initiative_recorded"
+            ]
+          }
+        },
+        "event_types": [
+          "advancement_applied",
+          "challenge_resolved",
+          "challenge_updated",
+          "character_inspected",
+          "combat_concluded",
+          "combat_moved",
+          "combat_started",
+          "combat_updated",
+          "damage_applied",
+          "initiative_recorded",
+          "item_acquired",
+          "mark_applied",
+          "recovery_applied",
+          "roll_recorded",
+          "wealth_spent"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "01_cross_the_ford",
           "operation": "resolve_challenge",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "a4e1fb6fbe8085ef61ef6e2ed81024cd8e311a31a3108e276d0c998ef78aba43",
+          "before_state_sha256": "999021ccbf4630c89f9596967187d5d557141c8c57934a7d80175e974ae62d92",
+          "after_state_sha256": "83684f1b1ffdf5cb54353216327636a55eca9a7524b098c2eca93d207878afcb",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "character",
-                "band": "critical",
-                "context_id": "cross_the_ford",
-                "dice": [
-                  2,
-                  5,
-                  6
-                ],
-                "dice_total": 11,
-                "heroic_badge_spent": false,
-                "kept": [
-                  5,
-                  6
-                ],
-                "mode": "advantage",
-                "total": 14
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "character"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "critical"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "cross_the_ford"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 5.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 5.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "advantage"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 14.0
+                  }
+                }
+              },
+              "payload_sha256": "6a762bd8b46b3559238b510e2af2d26cccd9020e0c0dc94d0140549cdf544dd6"
             },
             {
               "sequence": 1,
               "kind": "challenge_updated",
               "capability": "checks_and_conflicts",
               "payload": {
-                "band": "critical",
-                "challenge_id": "cross_the_ford",
-                "label": "Cross the ford",
-                "last_total": 14,
-                "status": "succeeded",
-                "turns": 1
-              }
+                "kind": "object",
+                "value": {
+                  "band": {
+                    "kind": "symbol",
+                    "value": "critical"
+                  },
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "cross_the_ford"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Cross the ford"
+                  },
+                  "last_total": {
+                    "kind": "number",
+                    "value": 14.0
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "succeeded"
+                  },
+                  "turns": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "c5d3f3a47522761ae7670af2788913db1ec24ce0786f0617c4befbbc1a522a7e"
             },
             {
               "sequence": 2,
               "kind": "challenge_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "challenge_id": "cross_the_ford",
-                "status": "succeeded"
-              }
+                "kind": "object",
+                "value": {
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "cross_the_ford"
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "succeeded"
+                  }
+                }
+              },
+              "payload_sha256": "bb68aff7f8f5c928bcc96321eb73471d00f1818bf8a29aaa7527d98a829406aa"
             }
           ]
         },
         {
           "id": "02_failed_omen",
           "operation": "resolve_challenge",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "c53f23deddbe097388b1a8f91fe880e7f08811cd2c1a769ab09005dd6113e5f3",
+          "before_state_sha256": "83684f1b1ffdf5cb54353216327636a55eca9a7524b098c2eca93d207878afcb",
+          "after_state_sha256": "4a7c3720aaaa3618763e6acac80c63732da660b1eceb9d031fbd3a5a67efee97",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "character",
-                "band": "failure",
-                "context_id": "failed_omen",
-                "dice": [
-                  3,
-                  6
-                ],
-                "dice_total": 9,
-                "heroic_badge_spent": false,
-                "kept": [
-                  3,
-                  6
-                ],
-                "mode": "normal",
-                "total": -88
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "character"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "failed_omen"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 9.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": -88.0
+                  }
+                }
+              },
+              "payload_sha256": "ddd4552575a7842ed244532a962cc237c3f49dd2e913d36907fbe864e01f5f41"
             },
             {
               "sequence": 1,
               "kind": "challenge_updated",
               "capability": "checks_and_conflicts",
               "payload": {
-                "band": "failure",
-                "challenge_id": "failed_omen",
-                "label": "Read the flood omen",
-                "last_total": -88,
-                "status": "failed",
-                "turns": 1
-              }
+                "kind": "object",
+                "value": {
+                  "band": {
+                    "kind": "symbol",
+                    "value": "failure"
+                  },
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "failed_omen"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Read the flood omen"
+                  },
+                  "last_total": {
+                    "kind": "number",
+                    "value": -88.0
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "failed"
+                  },
+                  "turns": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "b3e5222c8f07b9bb67a9aa1312319e6692b287ee30c610a9487524157946b7d4"
             },
             {
               "sequence": 2,
               "kind": "challenge_resolved",
               "capability": "checks_and_conflicts",
               "payload": {
-                "challenge_id": "failed_omen",
-                "status": "failed"
-              }
+                "kind": "object",
+                "value": {
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "failed_omen"
+                  },
+                  "status": {
+                    "kind": "symbol",
+                    "value": "failed"
+                  }
+                }
+              },
+              "payload_sha256": "1af50b2c69faeffb5dcbd1a802bebf16a75cebc8936a92b0329ecd581fc9c342"
             },
             {
               "sequence": 3,
               "kind": "mark_applied",
               "capability": "checks_and_conflicts",
               "payload": {
-                "marks_after": 1,
-                "reason": "failed_check"
-              }
+                "kind": "object",
+                "value": {
+                  "marks_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "reason": {
+                    "kind": "string",
+                    "value": "failed_check"
+                  }
+                }
+              },
+              "payload_sha256": "c4cc3abceb5456435228f7dd19d2666151e29e71f76ecac5bf6397b63e66a6c0"
             }
           ]
         },
         {
           "id": "03_start_combat",
           "operation": "start_combat",
+          "capability": "encounters",
+          "request_sha256": "bf0547f9e51c4a200af56d1013bd4e3bc48236d569d8aa5cca01a50a20eb0482",
+          "before_state_sha256": "4a7c3720aaaa3618763e6acac80c63732da660b1eceb9d031fbd3a5a67efee97",
+          "after_state_sha256": "3427112888ca830de04d757ca299497c23ee49bc07df113240bb0048955b9836",
           "events": [
             {
               "sequence": 0,
               "kind": "combat_started",
               "capability": "encounters",
               "payload": {
-                "adversary_health": 6,
-                "adversary_name": "Bramble Hound",
-                "combat_id": "reed_watch",
-                "distance": 20,
-                "label": "Hold the reed watch"
-              }
+                "kind": "object",
+                "value": {
+                  "adversary_health": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "adversary_name": {
+                    "kind": "string",
+                    "value": "Bramble Hound"
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "distance": {
+                    "kind": "number",
+                    "value": 20.0
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Hold the reed watch"
+                  }
+                }
+              },
+              "payload_sha256": "35e6051ab8b22dfb91da72b1281743218fb097287db372f90f72b34c89eb597f"
             },
             {
               "sequence": 1,
               "kind": "initiative_recorded",
               "capability": "encounters",
               "payload": {
-                "adversary_initiative": 10,
-                "character_first": false,
-                "character_initiative": 6,
-                "combat_id": "reed_watch"
-              }
+                "kind": "object",
+                "value": {
+                  "adversary_initiative": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "character_first": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "character_initiative": {
+                    "kind": "number",
+                    "value": 6.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  }
+                }
+              },
+              "payload_sha256": "02e5a6da084b1136e8c041df6d0384fc8ef14a162266f553b2b0454d4026a19c"
             }
           ]
         },
         {
           "id": "04_move_combat",
           "operation": "move_combat",
+          "capability": "encounters",
+          "request_sha256": "c882fec4b0dc73e0b3221da391c293069db2e9fdea0bdce6272c9193eded262f",
+          "before_state_sha256": "3427112888ca830de04d757ca299497c23ee49bc07df113240bb0048955b9836",
+          "after_state_sha256": "f35d5a0c4ca32489f8f9bd73d1b7585bd693b667ba15a585d15d48ba5158f054",
           "events": [
             {
               "sequence": 0,
               "kind": "combat_moved",
               "capability": "encounters",
               "payload": {
-                "combat_id": "reed_watch",
-                "distance_after": 15,
-                "movement": 5
-              }
+                "kind": "object",
+                "value": {
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "distance_after": {
+                    "kind": "number",
+                    "value": 15.0
+                  },
+                  "movement": {
+                    "kind": "number",
+                    "value": 5.0
+                  }
+                }
+              },
+              "payload_sha256": "6c380361d47a0560e2ac41634ddc5273acf51e42b471869b6f79edbfff9bccbb"
             }
           ]
         },
         {
           "id": "05_resolve_combat_turn_1",
           "operation": "resolve_combat_turn",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "ff6c2a9c45846bad4d1fcdf67be76e4730f5b659f10872783e98f168f74e568d",
+          "before_state_sha256": "f35d5a0c4ca32489f8f9bd73d1b7585bd693b667ba15a585d15d48ba5158f054",
+          "after_state_sha256": "2816e60ae1c3d646231da6b0b1594aa10b5472a995685996e118c60203b30eb0",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "adversary",
-                "band": "partial",
-                "context_id": "reed_watch",
-                "dice": [
-                  2,
-                  6
-                ],
-                "dice_total": 8,
-                "heroic_badge_spent": false,
-                "kept": [
-                  2,
-                  6
-                ],
-                "mode": "normal",
-                "total": 8
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "adversary"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "partial"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 8.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 8.0
+                  }
+                }
+              },
+              "payload_sha256": "45d529e255620253352c4387fce83f1b1f29fe9dad844a139f26b9ba8d1a88b6"
             },
             {
               "sequence": 1,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "character",
-                "band": "success",
-                "context_id": "reed_watch",
-                "dice": [
-                  2,
-                  6
-                ],
-                "dice_total": 8,
-                "heroic_badge_spent": false,
-                "kept": [
-                  2,
-                  6
-                ],
-                "mode": "normal",
-                "total": 9
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "character"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 8.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 9.0
+                  }
+                }
+              },
+              "payload_sha256": "cd5167db0eac27e8bca9393ad42c6474e10182e42cff7a87419128c289b46a62"
             },
             {
               "sequence": 2,
               "kind": "damage_applied",
               "capability": "checks_and_conflicts",
               "payload": {
-                "amount": 3,
-                "combat_id": "reed_watch",
-                "health_after": 3,
-                "target": "adversary"
-              }
+                "kind": "object",
+                "value": {
+                  "amount": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "health_after": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "target": {
+                    "kind": "symbol",
+                    "value": "adversary"
+                  }
+                }
+              },
+              "payload_sha256": "d17057c3bfc319829fd9a6761dbe4c8bea5ec4889543e7ef3d2377b347cce602"
             },
             {
               "sequence": 3,
               "kind": "combat_updated",
               "capability": "checks_and_conflicts",
               "payload": {
-                "adversary_health": 3,
-                "combat_id": "reed_watch",
-                "distance": 15,
-                "health": 10,
-                "round": 1
-              }
+                "kind": "object",
+                "value": {
+                  "adversary_health": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "distance": {
+                    "kind": "number",
+                    "value": 15.0
+                  },
+                  "health": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "5e3f66d1070c235d0d0f76506c9ad4a2d6213a2ad4c8185934c6f14d6748a985"
             }
           ]
         },
         {
           "id": "06_resolve_combat_turn_2",
           "operation": "resolve_combat_turn",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "0dc792c3511b7df3536663fb04fa51f522d38df07c13d422420de83d7da208bd",
+          "before_state_sha256": "2816e60ae1c3d646231da6b0b1594aa10b5472a995685996e118c60203b30eb0",
+          "after_state_sha256": "424347c84178df8f00714081ec54c932a849f6b6c6d003424304bad995567c64",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "adversary",
-                "band": "partial",
-                "context_id": "reed_watch",
-                "dice": [
-                  1,
-                  6
-                ],
-                "dice_total": 7,
-                "heroic_badge_spent": false,
-                "kept": [
-                  1,
-                  6
-                ],
-                "mode": "normal",
-                "total": 7
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "adversary"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "partial"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 7.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 7.0
+                  }
+                }
+              },
+              "payload_sha256": "1bc0aae2e58178fe251a57392c6e9602a8912578bbd5967472d5657adf6b6ac4"
             },
             {
               "sequence": 1,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "character",
-                "band": "partial",
-                "context_id": "reed_watch",
-                "dice": [
-                  1,
-                  4
-                ],
-                "dice_total": 5,
-                "heroic_badge_spent": false,
-                "kept": [
-                  1,
-                  4
-                ],
-                "mode": "normal",
-                "total": 6
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "character"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "partial"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 4.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 5.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 4.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 6.0
+                  }
+                }
+              },
+              "payload_sha256": "b5a7c68ee56ea547f1cae39ba9e3313ba55df5ec2118b972943b9cc3a23a4d26"
             },
             {
               "sequence": 2,
               "kind": "damage_applied",
               "capability": "checks_and_conflicts",
               "payload": {
-                "amount": 2,
-                "combat_id": "reed_watch",
-                "health_after": 1,
-                "target": "adversary"
-              }
+                "kind": "object",
+                "value": {
+                  "amount": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "health_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "target": {
+                    "kind": "symbol",
+                    "value": "adversary"
+                  }
+                }
+              },
+              "payload_sha256": "ba113392adb3dae03ed40921d37e026e7b053c6287bfefcf80e550a107aa1f8f"
             },
             {
               "sequence": 3,
               "kind": "combat_updated",
               "capability": "checks_and_conflicts",
               "payload": {
-                "adversary_health": 1,
-                "combat_id": "reed_watch",
-                "distance": 15,
-                "health": 10,
-                "round": 2
-              }
+                "kind": "object",
+                "value": {
+                  "adversary_health": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "distance": {
+                    "kind": "number",
+                    "value": 15.0
+                  },
+                  "health": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 2.0
+                  }
+                }
+              },
+              "payload_sha256": "90069cd4d65a46f43cc48d4085e51d5957ef87b4a3351caa050e70d953d83108"
             }
           ]
         },
         {
           "id": "07_resolve_combat_turn_3",
           "operation": "resolve_combat_turn",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "61a3bb6c8a81a3bcf2f90d6faa8d6ddd09e0104f12ebd969878b4073d4627430",
+          "before_state_sha256": "424347c84178df8f00714081ec54c932a849f6b6c6d003424304bad995567c64",
+          "after_state_sha256": "223a6ef3ce263e0d34910f63c9988ea4b193436bc3bbc03d745707c0ce0b5b03",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "adversary",
-                "band": "success",
-                "context_id": "reed_watch",
-                "dice": [
-                  6,
-                  6
-                ],
-                "dice_total": 12,
-                "heroic_badge_spent": false,
-                "kept": [
-                  6,
-                  6
-                ],
-                "mode": "normal",
-                "total": 12
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "adversary"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 12.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 6.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 12.0
+                  }
+                }
+              },
+              "payload_sha256": "b29a39670ea829b3b61635ea26d6d99c04f058c43a804c965a28a9f94949ce13"
             },
             {
               "sequence": 1,
               "kind": "roll_recorded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "actor": "character",
-                "band": "partial",
-                "context_id": "reed_watch",
-                "dice": [
-                  2,
-                  3
-                ],
-                "dice_total": 5,
-                "heroic_badge_spent": false,
-                "kept": [
-                  2,
-                  3
-                ],
-                "mode": "normal",
-                "total": 6
-              }
+                "kind": "object",
+                "value": {
+                  "actor": {
+                    "kind": "string",
+                    "value": "character"
+                  },
+                  "band": {
+                    "kind": "symbol",
+                    "value": "partial"
+                  },
+                  "context_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      }
+                    ]
+                  },
+                  "dice_total": {
+                    "kind": "number",
+                    "value": 5.0
+                  },
+                  "heroic_badge_spent": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kept": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 3.0
+                      }
+                    ]
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "normal"
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 6.0
+                  }
+                }
+              },
+              "payload_sha256": "71abd17293100257192b8fd955956c89175a6e1a9e05066fd2060efc2f27b931"
             },
             {
               "sequence": 2,
               "kind": "damage_applied",
               "capability": "checks_and_conflicts",
               "payload": {
-                "amount": 2,
-                "combat_id": "reed_watch",
-                "health_after": 0,
-                "target": "adversary"
-              }
+                "kind": "object",
+                "value": {
+                  "amount": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "health_after": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "target": {
+                    "kind": "symbol",
+                    "value": "adversary"
+                  }
+                }
+              },
+              "payload_sha256": "ac3a5a368d8129849ffbc8e0d409d9a4535f7cf82b59a02fc967656e5f950832"
             },
             {
               "sequence": 3,
               "kind": "combat_updated",
               "capability": "checks_and_conflicts",
               "payload": {
-                "adversary_health": 0,
-                "combat_id": "reed_watch",
-                "distance": 15,
-                "health": 10,
-                "round": 3
-              }
+                "kind": "object",
+                "value": {
+                  "adversary_health": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "distance": {
+                    "kind": "number",
+                    "value": 15.0
+                  },
+                  "health": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "round": {
+                    "kind": "number",
+                    "value": 3.0
+                  }
+                }
+              },
+              "payload_sha256": "67d28a69e6152ccf3d7951b1cfbd78f9cf8d6278fb0bd89a6da1018756b9c29a"
             },
             {
               "sequence": 4,
               "kind": "combat_concluded",
               "capability": "checks_and_conflicts",
               "payload": {
-                "combat_id": "reed_watch",
-                "outcome": "victory"
-              }
+                "kind": "object",
+                "value": {
+                  "combat_id": {
+                    "kind": "string",
+                    "value": "reed_watch"
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "victory"
+                  }
+                }
+              },
+              "payload_sha256": "dd4d854cb5c14aef6520beddb257c6fd08813640659f2adabc7b148605f80dab"
             }
           ]
         },
         {
           "id": "08_apply_recovery",
           "operation": "apply_recovery",
+          "capability": "resources_and_conditions",
+          "request_sha256": "50eb14f5e922e28ec035f1d9000e539a5890d441c1dcd04429c55bbea2c094e9",
+          "before_state_sha256": "223a6ef3ce263e0d34910f63c9988ea4b193436bc3bbc03d745707c0ce0b5b03",
+          "after_state_sha256": "81cad66a5d1de73dae0ea76741d59e93515d588e24cf3de0eab9fef785aa6695",
           "events": [
             {
               "sequence": 0,
               "kind": "recovery_applied",
               "capability": "resources_and_conditions",
               "payload": {
-                "health_after": 10,
-                "marks_after": 0,
-                "mode": "rest",
-                "resolve_after": 4
-              }
+                "kind": "object",
+                "value": {
+                  "health_after": {
+                    "kind": "number",
+                    "value": 10.0
+                  },
+                  "marks_after": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "mode": {
+                    "kind": "symbol",
+                    "value": "rest"
+                  },
+                  "resolve_after": {
+                    "kind": "number",
+                    "value": 4.0
+                  }
+                }
+              },
+              "payload_sha256": "ac5d61c195edbb01d3dffe8277cdc23d944c2f7ae1da8e11327c5d885a253efe"
             }
           ]
         },
         {
           "id": "09_advance_character",
           "operation": "advance_character",
+          "capability": "advancement",
+          "request_sha256": "8a2ebd32bba4f1abf7a80bae964b0d0d22593d1149fd48f9fc48fd9141e54c35",
+          "before_state_sha256": "81cad66a5d1de73dae0ea76741d59e93515d588e24cf3de0eab9fef785aa6695",
+          "after_state_sha256": "11036919786f7eedd664849bb01cf2adeb9ee2fbdc6b18a90c92e84e4189ef2e",
           "events": [
             {
               "sequence": 0,
               "kind": "advancement_applied",
               "capability": "advancement",
               "payload": {
-                "experience_after": 12,
-                "experience_before": 0,
-                "level_after": 2,
-                "level_before": 1,
-                "milestone": "Held the reed watch"
-              }
+                "kind": "object",
+                "value": {
+                  "experience_after": {
+                    "kind": "number",
+                    "value": 12.0
+                  },
+                  "experience_before": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "level_after": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "level_before": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "milestone": {
+                    "kind": "string",
+                    "value": "Held the reed watch"
+                  }
+                }
+              },
+              "payload_sha256": "d62f1a75f54fbf068c55dc336543a0a504521b57b0e2f2006af3cf1f012867c2"
             }
           ]
         },
         {
           "id": "10_purchase_item",
           "operation": "purchase_item",
+          "capability": "equipment_and_abilities",
+          "request_sha256": "2c198c57ab5ec4bfbdba1b2892611c0fcdb75af367af4a1cce8d3ca3f9947a60",
+          "before_state_sha256": "11036919786f7eedd664849bb01cf2adeb9ee2fbdc6b18a90c92e84e4189ef2e",
+          "after_state_sha256": "a8061777b5ca01b05787018616d9c8028c3e850770454deaf25485d74b2daaed",
           "events": [
             {
               "sequence": 0,
               "kind": "item_acquired",
               "capability": "equipment_and_abilities",
               "payload": {
-                "cost": 1,
-                "item_id": "rope",
-                "label": "Rope",
-                "quantity_after": 1
-              }
+                "kind": "object",
+                "value": {
+                  "cost": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "item_id": {
+                    "kind": "string",
+                    "value": "rope"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Rope"
+                  },
+                  "quantity_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "96251ebf55233d19705e2d2f683cf5431c0535e70534ad11622b32c51218ca8c"
             },
             {
               "sequence": 1,
               "kind": "wealth_spent",
               "capability": "equipment_and_abilities",
               "payload": {
-                "cost": 1,
-                "item_id": "rope",
-                "wealth_after": 1
-              }
+                "kind": "object",
+                "value": {
+                  "cost": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "item_id": {
+                    "kind": "string",
+                    "value": "rope"
+                  },
+                  "wealth_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "d4f26d04a01ae3b7b1a3e4e9b801b1f3e5e7ee9ae3f857735000030fadde11f9"
             }
           ]
         },
         {
           "id": "11_inspect_character",
           "operation": "inspect_character",
+          "capability": "derived_values",
+          "request_sha256": "808be9de48f1b64ceaacf222e4b50b8d6846fbd083dfc68f5db587f85c1714c9",
+          "before_state_sha256": "a8061777b5ca01b05787018616d9c8028c3e850770454deaf25485d74b2daaed",
+          "after_state_sha256": "362f3423ac139cdf8cc45674e8c6aa1aa2396ebabe248018f6d056bee19c7fea",
           "events": [
             {
               "sequence": 0,
               "kind": "character_inspected",
               "capability": "derived_values",
               "payload": {
-                "attributes": {
-                  "dexterity": 3,
-                  "intelligence": 1,
-                  "magicy": 1,
-                  "motion": 3,
-                  "perception": 2,
-                  "persuasion": 1,
-                  "strength": 3,
-                  "vitality": 3,
-                  "volition": 1
-                },
-                "experience": 12,
-                "items": [
-                  "short_blade",
-                  "travel_cloak"
-                ],
-                "level": 2,
-                "qualities": {
-                  "capacity": 8,
-                  "defense": 8,
-                  "hit_points": 10,
-                  "resolve": 4,
-                  "toughness": 8
-                },
-                "skills": [
-                  "athletics",
-                  "composure"
-                ],
-                "wealth": 1
-              }
+                "kind": "object",
+                "value": {
+                  "attributes": {
+                    "kind": "object",
+                    "value": {
+                      "dexterity": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "intelligence": {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      "magicy": {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      "motion": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "perception": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "persuasion": {
+                        "kind": "number",
+                        "value": 1.0
+                      },
+                      "strength": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "vitality": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "volition": {
+                        "kind": "number",
+                        "value": 1.0
+                      }
+                    }
+                  },
+                  "experience": {
+                    "kind": "number",
+                    "value": 12.0
+                  },
+                  "items": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "short_blade"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "travel_cloak"
+                      }
+                    ]
+                  },
+                  "level": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "qualities": {
+                    "kind": "object",
+                    "value": {
+                      "capacity": {
+                        "kind": "number",
+                        "value": 8.0
+                      },
+                      "defense": {
+                        "kind": "number",
+                        "value": 8.0
+                      },
+                      "hit_points": {
+                        "kind": "number",
+                        "value": 10.0
+                      },
+                      "resolve": {
+                        "kind": "number",
+                        "value": 4.0
+                      },
+                      "toughness": {
+                        "kind": "number",
+                        "value": 8.0
+                      }
+                    }
+                  },
+                  "skills": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "athletics"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "composure"
+                      }
+                    ]
+                  },
+                  "wealth": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "bb25839c528690c5c73257fd8f3fc7821bac8c8d62c313acc21dbcd496c26343"
             }
           ]
         }
       ],
-      "event_count": 28,
-      "public_event_count": 28,
-      "final_state_sha256": "362f3423ac139cdf8cc45674e8c6aa1aa2396ebabe248018f6d056bee19c7fea",
-      "presentation_color": "hsl(317, 52%, 58%)",
       "observable": [
         "challenges.cross_the_ford.attribute=strength",
         "challenges.cross_the_ford.band=critical",
@@ -1772,89 +3816,478 @@
       "id": "org.weave.tabletop.spark",
       "version": "1.0.0",
       "source": "canonical_project",
-      "character_name": null,
+      "character_name": "Conformance Lumen",
+      "public_event_count": 8,
+      "initial_state_sha256": "9166d6f0f4d5a8ee3c788b51002cac134186fabfe6da3a62aa47b552cae54685",
+      "final_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
+      "presentation_color": "hsl(217, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "add_supporter": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "supporter_added"
+            ]
+          },
+          "boost_roll": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "boost_applied",
+              "harm_changed",
+              "influence_changed"
+            ]
+          },
+          "close_scene": {
+            "required_capability": "scenes",
+            "event_kinds": [
+              "belief_reviewed",
+              "harm_changed",
+              "influence_changed",
+              "scene_closed"
+            ]
+          },
+          "declare_action": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "declaration_registered"
+            ]
+          },
+          "open_conflict": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "conflict_opened"
+            ]
+          },
+          "replace_belief": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "belief_replaced",
+              "growth_changed"
+            ]
+          },
+          "resolve_conflict": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "conflict_escalated",
+              "conflict_resolved",
+              "harm_changed",
+              "influence_changed",
+              "victory_cost_paid"
+            ]
+          },
+          "roll_conflict": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "entropy_trace",
+              "roll_recorded"
+            ]
+          }
+        },
+        "event_types": [
+          "belief_replaced",
+          "belief_reviewed",
+          "boost_applied",
+          "conflict_escalated",
+          "conflict_opened",
+          "conflict_resolved",
+          "declaration_registered",
+          "entropy_trace",
+          "growth_changed",
+          "harm_changed",
+          "influence_changed",
+          "roll_recorded",
+          "scene_closed",
+          "supporter_added",
+          "victory_cost_paid"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "conformance_open",
           "operation": "open_conflict",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "e1ab1ed77dd22d32595a5972111c97253969bc23d22ae70760e818bae9ded22f",
+          "before_state_sha256": "9166d6f0f4d5a8ee3c788b51002cac134186fabfe6da3a62aa47b552cae54685",
+          "after_state_sha256": "7b1a12fa85ae99c93f418db20dbe83b9811d60e375b72a25e18879bbb8b282a3",
           "events": [
             {
               "sequence": 0,
               "kind": "conflict_opened",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "conflict_id": {
+                    "kind": "string",
+                    "value": "conformance_gate"
+                  },
+                  "max_escalation": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "stakes": {
+                    "kind": "string",
+                    "value": "Control of the conformance gate."
+                  },
+                  "victory_cost_amount": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "victory_cost_attribute": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "victory_cost_kind": {
+                    "kind": "symbol",
+                    "value": "influence"
+                  }
+                }
+              },
+              "payload_sha256": "076b7c951243607e5502941bc4d4ef8ada974efcc98c9e5d803179e769680d15"
             }
           ]
         },
         {
           "id": "conformance_declare_owner",
           "operation": "declare_action",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "5f7f51152a95cc31a23ca274288bc5d5a262475a53e03b613c419289db0e8464",
+          "before_state_sha256": "7b1a12fa85ae99c93f418db20dbe83b9811d60e375b72a25e18879bbb8b282a3",
+          "after_state_sha256": "e6444044dd36a28951e223af48ba2070ca51647caf10687f69ba74831727ff7a",
           "events": [
             {
               "sequence": 0,
               "kind": "declaration_registered",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "actor_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.conformance_lumen"
+                  },
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "mind"
+                  },
+                  "conflict_id": {
+                    "kind": "string",
+                    "value": "conformance_gate"
+                  },
+                  "declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_owner"
+                  },
+                  "description": {
+                    "kind": "string",
+                    "value": "The owner reads the tide table aloud."
+                  },
+                  "talent_bonus": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "talent_id": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              },
+              "payload_sha256": "e902de85e5277a2acfa0d3a63679d944b6e51e9bde910dd7101bda7e440fd611"
             }
           ]
         },
         {
           "id": "conformance_declare_opponent",
           "operation": "declare_action",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "678f1f395c79012d39fd155366d9baed9389d0a862dc88d8bbc0ffc156e10a27",
+          "before_state_sha256": "e6444044dd36a28951e223af48ba2070ca51647caf10687f69ba74831727ff7a",
+          "after_state_sha256": "dfe9e48855a19fa639f1617b63fbf12eb500064cc809f7fcbe7ee820f4ad847b",
           "events": [
             {
               "sequence": 0,
               "kind": "declaration_registered",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "actor_id": {
+                    "kind": "string",
+                    "value": "conformance_opponent"
+                  },
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "body"
+                  },
+                  "conflict_id": {
+                    "kind": "string",
+                    "value": "conformance_gate"
+                  },
+                  "declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_opponent"
+                  },
+                  "description": {
+                    "kind": "string",
+                    "value": "The opponent contests the conformance gate."
+                  },
+                  "talent_bonus": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "talent_id": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              },
+              "payload_sha256": "6a536e7c1a6f6fda4353552578049d8f19b07a68a40992f3c08bd5a86af63b05"
             }
           ]
         },
         {
           "id": "conformance_support",
           "operation": "add_supporter",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "2053ef7c5398826d91d778091be7c5b1f71ccfb7110f84f948ba789c1052bc23",
+          "before_state_sha256": "dfe9e48855a19fa639f1617b63fbf12eb500064cc809f7fcbe7ee820f4ad847b",
+          "after_state_sha256": "a01a30c134f3b10094ab09497b99ff842a703b9b571447b86cf3822c9d15ade5",
           "events": [
             {
               "sequence": 0,
               "kind": "supporter_added",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "actor_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.conformance_lumen"
+                  },
+                  "conflict_id": {
+                    "kind": "string",
+                    "value": "conformance_gate"
+                  },
+                  "declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_owner"
+                  },
+                  "relationship_id": {
+                    "kind": "string",
+                    "value": "conformance_sable"
+                  },
+                  "supporter_bonus": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "supporters": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "conformance_sable"
+                      }
+                    ]
+                  }
+                }
+              },
+              "payload_sha256": "02fd6993d76c08a95321d0865429af09ca5ad4a5020014c75dbb3085118f786d"
             }
           ]
         },
         {
           "id": "conformance_roll",
           "operation": "roll_conflict",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "36dde1f4f8c5eb8f7b3aace6c5be2045c80be96f8761fcbd169042315480ee83",
+          "before_state_sha256": "a01a30c134f3b10094ab09497b99ff842a703b9b571447b86cf3822c9d15ade5",
+          "after_state_sha256": "360cca3fc71f9656194e5b8d8ba1962bef2819c9d31b3c8fc55c2f834605a92f",
           "events": [
             {
               "sequence": 0,
               "kind": "roll_recorded",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "actor_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.conformance_lumen"
+                  },
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "mind"
+                  },
+                  "declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_owner"
+                  },
+                  "die": {
+                    "kind": "symbol",
+                    "value": "d12"
+                  },
+                  "harm_boost": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "influence_boost": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "roll": {
+                    "kind": "number",
+                    "value": 12.0
+                  },
+                  "supporter_bonus": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "talent_bonus": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 13.0
+                  }
+                }
+              },
+              "payload_sha256": "629e08392193912bd2a1a220193b50a9d953fe64bd855312aa4067bb68b9b446"
             },
             {
               "sequence": 1,
               "kind": "roll_recorded",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "actor_id": {
+                    "kind": "string",
+                    "value": "conformance_opponent"
+                  },
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "body"
+                  },
+                  "declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_opponent"
+                  },
+                  "die": {
+                    "kind": "symbol",
+                    "value": "d4"
+                  },
+                  "harm_boost": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "influence_boost": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "roll": {
+                    "kind": "number",
+                    "value": 3.0
+                  },
+                  "supporter_bonus": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "talent_bonus": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 3.0
+                  }
+                }
+              },
+              "payload_sha256": "0857a85fad95dc4aeca264a05c8a0a2f3cc690c4308cd3204c9b7315b4a65bbd"
             }
           ]
         },
         {
           "id": "conformance_resolve",
           "operation": "resolve_conflict",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "7c79b5db501767c3179ba7b2e4e6c75e1198e69298162a86ea4aaaa88b1749a6",
+          "before_state_sha256": "360cca3fc71f9656194e5b8d8ba1962bef2819c9d31b3c8fc55c2f834605a92f",
+          "after_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
           "events": [
             {
               "sequence": 0,
               "kind": "conflict_resolved",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "conflict_id": {
+                    "kind": "string",
+                    "value": "conformance_gate"
+                  },
+                  "escalation": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "tie_broken": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "total": {
+                    "kind": "number",
+                    "value": 13.0
+                  },
+                  "winner_actor_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.conformance_lumen"
+                  },
+                  "winner_declaration_id": {
+                    "kind": "string",
+                    "value": "conformance_owner"
+                  }
+                }
+              },
+              "payload_sha256": "5e8214dac618aa3a5207ca2c620ee4e12eedaf037591362373bce066e9320eed"
             },
             {
               "sequence": 1,
               "kind": "victory_cost_paid",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "amount": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "attribute": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "charged": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "influence"
+                  },
+                  "payer_actor_id": {
+                    "kind": "string",
+                    "value": "org.weave.character.conformance_lumen"
+                  }
+                }
+              },
+              "payload_sha256": "449b5a7edb7c4ecfa4eb366c6ed2a39d6f0857abdcf20743e3764128be290f4b"
             }
           ]
         }
       ],
-      "event_count": 9,
-      "public_event_count": 8,
-      "final_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
-      "presentation_color": "hsl(217, 52%, 58%)",
       "observable": []
     },
     {
@@ -1862,24 +4295,292 @@
       "id": "org.weave.tabletop.wicked_ones",
       "version": "1.0.0",
       "source": "canonical_project",
-      "character_name": null,
+      "character_name": "Conformance Marrow",
+      "public_event_count": 1,
+      "initial_state_sha256": "dfd4b9c6dcdcc19b7a5c4598451fb1eaddade58cb0774e7de60d90fd8dd006c8",
+      "final_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
+      "presentation_color": "hsl(229, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "adjust_faction_clock": {
+            "required_capability": "factions",
+            "event_kinds": [
+              "faction_clock_changed"
+            ]
+          },
+          "advance_campaign_phase": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "campaign_phase_changed"
+            ]
+          },
+          "advance_master_plan": {
+            "required_capability": "factions",
+            "event_kinds": [
+              "master_plan_advanced"
+            ]
+          },
+          "apply_shock": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "condition_changed",
+              "shock_applied"
+            ]
+          },
+          "death_knell": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "condition_changed",
+              "death_knell_recorded"
+            ]
+          },
+          "engage_raid": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "raid_engagement_ready"
+            ]
+          },
+          "flashback": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "flashback_recorded"
+            ]
+          },
+          "gain_dark_heart": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "dark_heart_gained"
+            ]
+          },
+          "go_feral": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "condition_changed"
+            ]
+          },
+          "pause_campaign": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "campaign_paused"
+            ]
+          },
+          "perform_downtime_action": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "downtime_action_resolved"
+            ]
+          },
+          "perform_recovery": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "recovery_performed"
+            ]
+          },
+          "plan_raid": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "raid_planned"
+            ]
+          },
+          "purchase_upgrade": {
+            "required_capability": "equipment_and_abilities",
+            "event_kinds": [
+              "upgrade_purchased"
+            ]
+          },
+          "resolve_action": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "action_resolved",
+              "condition_changed"
+            ]
+          },
+          "resolve_calamity": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "calamity_resolved"
+            ]
+          },
+          "resolve_dungeon_event": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "dungeon_event_resolved"
+            ]
+          },
+          "resolve_raid_outcome": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "raid_blowback",
+              "raid_loot_resolved"
+            ]
+          },
+          "resume_campaign": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "campaign_resumed"
+            ]
+          },
+          "set_campaign": {
+            "required_capability": "campaign_state",
+            "event_kinds": [
+              "campaign_initialized"
+            ]
+          },
+          "spend_reckless_advancement": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "reckless_advancement_spent"
+            ]
+          },
+          "spend_wicked_advancement": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "wicked_advancement_spent"
+            ]
+          }
+        },
+        "event_types": [
+          "action_resolved",
+          "calamity_resolved",
+          "campaign_initialized",
+          "campaign_paused",
+          "campaign_phase_changed",
+          "campaign_resumed",
+          "condition_changed",
+          "dark_heart_gained",
+          "death_knell_recorded",
+          "downtime_action_resolved",
+          "dungeon_event_resolved",
+          "faction_clock_changed",
+          "flashback_recorded",
+          "master_plan_advanced",
+          "raid_blowback",
+          "raid_engagement_ready",
+          "raid_loot_resolved",
+          "raid_planned",
+          "reckless_advancement_spent",
+          "recovery_performed",
+          "shock_applied",
+          "upgrade_purchased",
+          "wicked_advancement_spent"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "conformance_resolve_action",
           "operation": "resolve_action",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "23f697e33b3e99f4f6bf553e3a3c948411203835e35d1e0a1bb958796bdd45aa",
+          "before_state_sha256": "dfd4b9c6dcdcc19b7a5c4598451fb1eaddade58cb0774e7de60d90fd8dd006c8",
+          "after_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
           "events": [
             {
               "sequence": 0,
               "kind": "action_resolved",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "action": {
+                    "kind": "symbol",
+                    "value": "sneak"
+                  },
+                  "approach": {
+                    "kind": "symbol",
+                    "value": "guile"
+                  },
+                  "condition": {
+                    "kind": "symbol",
+                    "value": "steady"
+                  },
+                  "consequence_kind": {
+                    "kind": "symbol",
+                    "value": "complication"
+                  },
+                  "consequence_label": {
+                    "kind": "string",
+                    "value": "A minor complication follows from the action"
+                  },
+                  "consequence_severity": {
+                    "kind": "symbol",
+                    "value": "minor"
+                  },
+                  "dark_hearts": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "number",
+                        "value": 5.0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 1.0
+                      }
+                    ]
+                  },
+                  "effect": {
+                    "kind": "symbol",
+                    "value": "standard"
+                  },
+                  "going_hard": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "intention": {
+                    "kind": "string",
+                    "value": "Slip past the conformance ledger"
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "mixed"
+                  },
+                  "pool": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "position": {
+                    "kind": "symbol",
+                    "value": "risky"
+                  },
+                  "resistance_dice": {
+                    "kind": "list",
+                    "value": []
+                  },
+                  "resistance_outcome": {
+                    "kind": "symbol",
+                    "value": "none"
+                  },
+                  "resisted": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "stress_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "stress_before": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "stress_cost": {
+                    "kind": "number",
+                    "value": 1.0
+                  }
+                }
+              },
+              "payload_sha256": "a5b190529d8de7c285fe34ebbbc43ad058a08f320ec2602971b084eaec86904d"
             }
           ]
         }
       ],
-      "event_count": 1,
-      "public_event_count": 1,
-      "final_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
-      "presentation_color": "hsl(229, 52%, 58%)",
       "observable": []
     },
     {
@@ -1887,35 +4588,363 @@
       "id": "org.weave.tabletop.open_adventure",
       "version": "1.0.0",
       "source": "canonical_project",
-      "character_name": null,
+      "character_name": "Conformance Ivy",
+      "public_event_count": 2,
+      "initial_state_sha256": "9655914ad713033ba54b884b33cf17e94a7fb2e24800e5b7503190bf1af194d1",
+      "final_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
+      "presentation_color": "hsl(239, 52%, 58%)",
+      "contract": {
+        "manifest_format_version": 1,
+        "operations": {
+          "advance_encounter_participant": {
+            "required_capability": "advancement",
+            "event_kinds": [
+              "advancement_recorded",
+              "advancement_recorded_authority"
+            ]
+          },
+          "begin_challenge": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "challenge_begun",
+              "challenge_begun_authority"
+            ]
+          },
+          "end_encounter": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "encounter_ended",
+              "encounter_ended_authority",
+              "encounter_reward_granted",
+              "encounter_reward_granted_authority"
+            ]
+          },
+          "heal_encounter_participant": {
+            "required_capability": "resources_and_conditions",
+            "event_kinds": [
+              "encounter_condition_changed",
+              "encounter_condition_changed_authority",
+              "participant_healed",
+              "participant_healed_authority"
+            ]
+          },
+          "resolve_challenge_action": {
+            "required_capability": "checks_and_conflicts",
+            "event_kinds": [
+              "action_resolved",
+              "action_resolved_authority",
+              "challenge_completed",
+              "challenge_completed_authority",
+              "character_defeated",
+              "character_defeated_authority",
+              "entropy_trace"
+            ]
+          },
+          "resolve_encounter_action": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "encounter_action_resolved",
+              "encounter_action_resolved_authority",
+              "encounter_condition_changed",
+              "encounter_condition_changed_authority",
+              "encounter_ended",
+              "encounter_ended_authority",
+              "encounter_reward_granted",
+              "encounter_reward_granted_authority",
+              "entropy_trace"
+            ]
+          },
+          "start_encounter": {
+            "required_capability": "encounters",
+            "event_kinds": [
+              "encounter_started",
+              "encounter_started_authority"
+            ]
+          }
+        },
+        "event_types": [
+          "action_resolved",
+          "action_resolved_authority",
+          "advancement_recorded",
+          "advancement_recorded_authority",
+          "challenge_begun",
+          "challenge_begun_authority",
+          "challenge_completed",
+          "challenge_completed_authority",
+          "character_defeated",
+          "character_defeated_authority",
+          "encounter_action_resolved",
+          "encounter_action_resolved_authority",
+          "encounter_condition_changed",
+          "encounter_condition_changed_authority",
+          "encounter_ended",
+          "encounter_ended_authority",
+          "encounter_reward_granted",
+          "encounter_reward_granted_authority",
+          "encounter_started",
+          "encounter_started_authority",
+          "entropy_trace",
+          "participant_healed",
+          "participant_healed_authority"
+        ],
+        "runtime_visibility": [
+          "public"
+        ]
+      },
       "steps": [
         {
           "id": "conformance_begin_challenge",
           "operation": "begin_challenge",
+          "capability": "encounters",
+          "request_sha256": "7096dfee9825679303d3258d028244249e6139865d524bdb1e9d86d10692cdde",
+          "before_state_sha256": "9655914ad713033ba54b884b33cf17e94a7fb2e24800e5b7503190bf1af194d1",
+          "after_state_sha256": "068dbecbc46cfa8e4e4170422e4c7c6ed46dec52046a04e9741ed3a02855ffc7",
           "events": [
             {
               "sequence": 0,
               "kind": "challenge_begun",
-              "capability": "encounters"
+              "capability": "encounters",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "conformance_channel"
+                  },
+                  "challenge_points": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "difficulty_score": {
+                    "kind": "number",
+                    "value": 9.0
+                  },
+                  "effect": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "kind": {
+                    "kind": "symbol",
+                    "value": "environmental"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Cross the conformance channel"
+                  },
+                  "npc_defense": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "npc_effect": {
+                    "kind": "number",
+                    "value": 0.0
+                  },
+                  "npc_target": {
+                    "kind": "symbol",
+                    "value": "body"
+                  }
+                }
+              },
+              "payload_sha256": "846dcef1dcc455aca16f743501385dc2436e8fac5a90a56eec254aad3ce20bf2"
             }
           ]
         },
         {
           "id": "conformance_resolve_challenge",
           "operation": "resolve_challenge_action",
+          "capability": "checks_and_conflicts",
+          "request_sha256": "64000fee70501f3da67b00f69b5a761ce229acff2bfdf8451cf83c673011cf32",
+          "before_state_sha256": "068dbecbc46cfa8e4e4170422e4c7c6ed46dec52046a04e9741ed3a02855ffc7",
+          "after_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
           "events": [
             {
               "sequence": 0,
               "kind": "action_resolved",
-              "capability": "checks_and_conflicts"
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "action_score": {
+                    "kind": "number",
+                    "value": 11.0
+                  },
+                  "attribute": {
+                    "kind": "symbol",
+                    "value": "reasoning"
+                  },
+                  "challenge_id": {
+                    "kind": "string",
+                    "value": "conformance_channel"
+                  },
+                  "challenge_points_after": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "challenge_points_before": {
+                    "kind": "number",
+                    "value": 2.0
+                  },
+                  "completed": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "dice": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "object",
+                        "value": {
+                          "rolls": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "number",
+                                "value": 3.0
+                              }
+                            ]
+                          },
+                          "sides": {
+                            "kind": "number",
+                            "value": 10.0
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 3.0
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "rolls": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "number",
+                                "value": 5.0
+                              }
+                            ]
+                          },
+                          "sides": {
+                            "kind": "number",
+                            "value": 10.0
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 5.0
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "rolls": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "number",
+                                "value": 1.0
+                              }
+                            ]
+                          },
+                          "sides": {
+                            "kind": "number",
+                            "value": 10.0
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 1.0
+                          }
+                        }
+                      },
+                      {
+                        "kind": "object",
+                        "value": {
+                          "rolls": {
+                            "kind": "list",
+                            "value": [
+                              {
+                                "kind": "number",
+                                "value": 4.0
+                              }
+                            ]
+                          },
+                          "sides": {
+                            "kind": "number",
+                            "value": 10.0
+                          },
+                          "total": {
+                            "kind": "number",
+                            "value": 4.0
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "difficulty": {
+                    "kind": "number",
+                    "value": 9.0
+                  },
+                  "effect": {
+                    "kind": "number",
+                    "value": 1.0
+                  },
+                  "favored_action_id": {
+                    "kind": "string",
+                    "value": ""
+                  },
+                  "modifiers": {
+                    "kind": "object",
+                    "value": {
+                      "base": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "benefits": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "drawbacks": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "favored": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "modus_operandi": {
+                        "kind": "number",
+                        "value": 3.0
+                      },
+                      "situation": {
+                        "kind": "number",
+                        "value": 0.0
+                      },
+                      "specialization": {
+                        "kind": "number",
+                        "value": 2.0
+                      },
+                      "total": {
+                        "kind": "number",
+                        "value": 11.0
+                      }
+                    }
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "roll_total": {
+                    "kind": "number",
+                    "value": 13.0
+                  }
+                }
+              },
+              "payload_sha256": "478f288bdacc471d9ea792a3e47a2c150b2e5c3502fd7e9179a609a06fac4e27"
             }
           ]
         }
       ],
-      "event_count": 5,
-      "public_event_count": 2,
-      "final_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
-      "presentation_color": "hsl(239, 52%, 58%)",
       "observable": []
     }
   ]

@@ -45,21 +45,21 @@ matching its checked-in artifact.
 Every shipped adapter has checked-in replay data. Four use complete fixture trees. Three use the
 canonical synthetic project format from the adapter catalog.
 
-| Adapter | Replay source | Steps |
-|---|---|---|
-| Plug-And-Play | `examples/tabletop-adapters/plug-and-play` fixture tree | 7 |
-| Dungeonpunk | `examples/tabletop-adapters/dungeonpunk` fixture tree | 11 |
-| Freehack | `examples/tabletop-adapters/freehack` fixture tree (authority host) | 16 |
-| Open Tale | `examples/tabletop-adapters/open-tale` fixture tree | 11 |
-| Spark | `examples/tabletop-adapters/spark/project` canonical project | 6 |
-| Wicked Ones | `examples/tabletop-adapters/wicked-ones/project` canonical project | 1 |
-| Open Adventure | `examples/tabletop-adapters/open-adventure/project` canonical project | 2 |
+| Adapter | Replay source | Authority steps | Public steps |
+|---|---|---|---|
+| Plug-And-Play | `examples/tabletop-adapters/plug-and-play` fixture tree | 7 | 7 |
+| Dungeonpunk | `examples/tabletop-adapters/dungeonpunk` fixture tree | 11 | 11 |
+| Freehack | `examples/tabletop-adapters/freehack` fixture tree (authority host) | 16 | 14 |
+| Open Tale | `examples/tabletop-adapters/open-tale` fixture tree | 11 | 11 |
+| Spark | `examples/tabletop-adapters/spark/project` canonical project | 6 | 6 |
+| Wicked Ones | `examples/tabletop-adapters/wicked-ones/project` canonical project | 1 | 1 |
+| Open Adventure | `examples/tabletop-adapters/open-adventure/project` canonical project | 2 | 2 |
 
 The four fixture trees provide a checked-in creation request, creation preview, starting state,
 playthrough requests and receipts, and final state. Freehack is replayed as an authority host: the
 consumer reads the checked-in `*.authority-receipt.json` artifacts, which retain every private
-payload, and it never prints those payloads. The observable output is the adapter state, not
-host-only event data.
+payload, and it never prints those payloads. Its observable values come from the public state
+projection, not the authority state. The public bundle omits the two host-only steps.
 
 Spark, Wicked Ones, and Open Adventure provide a canonical synthetic project instead: a seed, a
 scripted operation path, and expected creation, request, receipt, state, and event hashes. This
@@ -91,8 +91,25 @@ Canonical projects:
    before and after state hashes, revision, entropy consumption, and event kinds.
 5. Require the final state hash to match.
 
-Observable values are the sorted scalar leaves of the final adapter `DomainValue`. The same
-flattening rule is implemented by the PixiJS consumer, so both render identical paths and values.
+Observable values are the sorted scalar leaves of the replayed state. For Freehack they come from
+the public state projection; for the other fixture-tree adapters they come from the final adapter
+`DomainValue`. The PixiJS bundle carries the same public values for those adapters and the same
+canonical event sequence for the canonical projects; it does not carry a state projection for the
+three canonical projects, whose checked-in expected output contains hashes rather than state.
+
+## Publish the PixiJS projection
+
+The PixiJS app loads only a Rust-generated public projection:
+
+```bash
+cargo run -p weave-example-bevy-tabletop --bin publish-pixijs
+```
+
+The publisher replays and verifies every adapter, re-derives public events with
+`project_receipt_for_audience`, omits hidden event totals and host-only steps, and writes
+`examples/domain-module-pixijs/src/tabletop-fixtures.generated.json`. The Bevy report remains the
+authority-host view: it shows authority event totals, while the public bundle publishes only
+`public_event_count`.
 
 ## Fixture provenance
 

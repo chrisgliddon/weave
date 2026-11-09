@@ -31,24 +31,45 @@ the PixiJS bundle.
 
 ## Tabletop adapter replay consumer
 
-`src/tabletop-adapters.js` and `src/tabletop-adapter-fixtures.node.js` load and validate every
-adapter's checked-in replay data, then render the public events, final state hash, and observable
-values with PixiJS `Text`. Coverage is:
+`src/tabletop-adapters.js` validates the public projection and renders it with PixiJS `Text`.
+`src/tabletop-adapter-fixtures.node.js` reads the original checked-in fixtures in Node, validates
+the complete replay record, and anchors Freehack public receipts to their authority receipts.
+Coverage is:
 
 | Adapter | Source | Steps | Public events |
 |---|---|---|---|
 | Plug-And-Play | fixture tree | 7 | 7 |
 | Dungeonpunk | fixture tree | 11 | 20 |
-| Freehack | public receipts and public state | 14 | 15 |
+| Freehack | public receipts and public state | 14 public steps | 15 |
 | Open Tale | fixture tree | 11 | 28 |
 | Spark | canonical project | 6 | 8 |
 | Wicked Ones | canonical project | 1 | 1 |
 | Open Adventure | canonical project | 2 | 2 |
 
-`scripts/tabletop-public-fixtures.mjs` writes `src/tabletop-fixtures.generated.json`. It reads the
-authority-capable fixture files with Node built-ins, validates the complete state-hash chain, and
-keeps only public events and public state, so the browser bundle never contains an authority
-payload. `npm test` and `npm run build` regenerate the projection first.
+The browser imports only `src/tabletop-fixtures.generated.json`. It is produced by the Rust
+publisher, which fully replays every checked-in fixture and canonical project:
+
+```bash
+cargo run -p weave-example-bevy-tabletop --bin publish-pixijs
+```
+
+The publisher re-derives public events with `project_receipt_for_audience`, emits only public event
+counts, and never writes an authority payload or a hidden event total. Freehack public steps are
+anchored to their authority receipts; steps with no public event are omitted.
+
+The Node validator rejects forged fixture data:
+
+- it recomputes request, state, and event-payload SHA-256 digests with the same canonical JSON
+  serialization Rust uses;
+- it requires every operation, capability, event kind, and event payload type to be declared by the
+  pinned manifest contract;
+- it requires the first step's before-state digest to equal the initial state digest and each later
+  state digest to chain exactly;
+- it compares each Freehack public receipt, kind by kind and payload by payload, with its matching
+  authority receipt;
+- it renumbers public events by filtered index, so hidden event positions do not leak;
+- it rejects unsupported versions, mismatched coordinates, broken final states, authority fields in
+  a public receipt, and a stale canonical project chain.
 
 ```bash
 cd examples/domain-module-pixijs
@@ -57,10 +78,8 @@ npm test
 npm run build
 ```
 
-The tests cover every adapter, reject an unsupported state version, a mismatched adapter
-coordinate, a broken final-state chain, a Freehack receipt carrying an authority field, and a stale
-canonical project chain. All checks run offline against the checked-in synthetic fixtures; no
-upstream art or prose is bundled.
+`npm test` and `npm run build` run `npm run fixtures`, which invokes the Rust publisher first. All
+checks run offline against the checked-in synthetic fixtures; no upstream art or prose is bundled.
 
 Run `npm run dev` for the browser view. The pure value-reader tests intentionally run in Node so
 local checks can verify the portable boundary without a GPU or browser.
