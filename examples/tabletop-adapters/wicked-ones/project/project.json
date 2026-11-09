@@ -1,0 +1,62 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.wicked_ones",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "source": {
+    "source_class": "synthetic_original",
+    "license": "MIT",
+    "provenance": "Original synthetic project authored for Weave. Names, prose, settings, and scenario inputs are invented; no upstream rules text, artwork, layout, or asset is copied."
+  },
+  "manifest": {
+    "adapter_id": "org.weave.tabletop.wicked_ones",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "source": "live adapter manifest selected by exact coordinate"
+  },
+  "scripted_path": [
+    {
+      "request_id": "conformance_resolve_action",
+      "operation": "resolve_action",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "action": {
+            "kind": "symbol",
+            "value": "sneak"
+          },
+          "approach": {
+            "kind": "symbol",
+            "value": "guile"
+          },
+          "bonus": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "effect": {
+            "kind": "symbol",
+            "value": "standard"
+          },
+          "going_hard": {
+            "kind": "bool",
+            "value": false
+          },
+          "intention": {
+            "kind": "string",
+            "value": "Slip past the conformance ledger"
+          },
+          "position": {
+            "kind": "symbol",
+            "value": "risky"
+          },
+          "teamwork": {
+            "kind": "list",
+            "value": []
+          }
+        }
+      }
+    }
+  ]
+}

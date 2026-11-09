@@ -1,0 +1,31 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.dungeonpunk",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11",
+  "creation_preview_sha256": "7c9ed5e1fdb13a43d1fc1a3ce12e85aaeecc2caa7a53cdc13456fbffbae19718",
+  "definition_sha256": "9a2dd61cf464b4e08ac748e2788250447c555d44fb4ee70f9da4eb5025e98015",
+  "initial_state_sha256": "1ca7d085e8363757f7d648d906b874d9271f6b27941b1c995a0748ada3b4e3e2",
+  "steps": [
+    {
+      "request_id": "conformance_struggle",
+      "operation": "struggle",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "dbc52381001d38bc2f65ffecdb61b23a82d8cf25269a7e4c9e0f68809c89894e",
+      "before_state_sha256": "1ca7d085e8363757f7d648d906b874d9271f6b27941b1c995a0748ada3b4e3e2",
+      "receipt_sha256": "c8d6d432c33259731a2c5cf57205a0b25b111c404b57d040417fe6e771a3b657",
+      "after_state_sha256": "b90fa93bd88d3570b32260c1c8da8e7fb4e09ba81bf2a1554c85f135040bca21",
+      "revision": 1,
+      "entropy_consumed": 2,
+      "event_kinds": [
+        "roll_resolved",
+        "struggle_resolved",
+        "entropy_trace"
+      ]
+    }
+  ],
+  "final_state_sha256": "b90fa93bd88d3570b32260c1c8da8e7fb4e09ba81bf2a1554c85f135040bca21",
+  "replay": "exact"
+}

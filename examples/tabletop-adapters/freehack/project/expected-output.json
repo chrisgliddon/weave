@@ -1,0 +1,31 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.freehack",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
+  "creation_preview_sha256": "8797e606c8706a029350fdeb9d3543ea936f5e05b7a17c737d03dbdb1269d3d1",
+  "definition_sha256": "5db032adf4c78ea49bcac64373e8ccc21ca311221988eb314232b5c72d9cf560",
+  "initial_state_sha256": "7d909b2960225a8e50688dadfde494a4779fbd3a9dcef67720be7beaf63edfa1",
+  "steps": [
+    {
+      "request_id": "conformance_resolve_check",
+      "operation": "resolve_check",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "dbcca7303db7f6aab592e4babe1c1a896060ffa8f98cbc3681ad5612789844e0",
+      "before_state_sha256": "7d909b2960225a8e50688dadfde494a4779fbd3a9dcef67720be7beaf63edfa1",
+      "receipt_sha256": "6b2b5c093c102f86d1ae0ef5a58a9e46134078c0769e26c02726d4e90eadb8ed",
+      "after_state_sha256": "4660ee5bbbb1fb0ec32922e6154abe864ae05a69fa2cd566b77dbb801a9bf5c4",
+      "revision": 1,
+      "entropy_consumed": 1,
+      "event_kinds": [
+        "check_resolved",
+        "check_resolved_authority",
+        "entropy_trace"
+      ]
+    }
+  ],
+  "final_state_sha256": "4660ee5bbbb1fb0ec32922e6154abe864ae05a69fa2cd566b77dbb801a9bf5c4",
+  "replay": "exact"
+}

@@ -1,0 +1,46 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.open_adventure",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "d7ebe47034ab749fa615ba3781f8eb5a008e84ec550a5666b12d65107725e2ff",
+  "creation_preview_sha256": "36cf482f93abf42823260f1e25d035c034fe9c0512d0bbac843d7bcfc7292555",
+  "definition_sha256": "d36c8724400156bcc8af7237a05632923b711d084166c58b220ca426512a1e89",
+  "initial_state_sha256": "9655914ad713033ba54b884b33cf17e94a7fb2e24800e5b7503190bf1af194d1",
+  "steps": [
+    {
+      "request_id": "conformance_begin_challenge",
+      "operation": "begin_challenge",
+      "capability": "encounters",
+      "request_sha256": "7096dfee9825679303d3258d028244249e6139865d524bdb1e9d86d10692cdde",
+      "before_state_sha256": "9655914ad713033ba54b884b33cf17e94a7fb2e24800e5b7503190bf1af194d1",
+      "receipt_sha256": "cdf120978b7c18763d79bdbd1116bbf38d63211e8df77c9a465cbf5e285a8be2",
+      "after_state_sha256": "068dbecbc46cfa8e4e4170422e4c7c6ed46dec52046a04e9741ed3a02855ffc7",
+      "revision": 1,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "challenge_begun",
+        "challenge_begun_authority"
+      ]
+    },
+    {
+      "request_id": "conformance_resolve_challenge",
+      "operation": "resolve_challenge_action",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "64000fee70501f3da67b00f69b5a761ce229acff2bfdf8451cf83c673011cf32",
+      "before_state_sha256": "068dbecbc46cfa8e4e4170422e4c7c6ed46dec52046a04e9741ed3a02855ffc7",
+      "receipt_sha256": "9fcb36d180d27b37a5fc149464c3894b27af17b7a55b42e8ccf869b5c94e4405",
+      "after_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
+      "revision": 2,
+      "entropy_consumed": 4,
+      "event_kinds": [
+        "action_resolved",
+        "action_resolved_authority",
+        "entropy_trace"
+      ]
+    }
+  ],
+  "final_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
+  "replay": "exact"
+}

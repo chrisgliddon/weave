@@ -1,0 +1,59 @@
+{
+  "snapshot_format_version": 1,
+  "adapter_id": "org.weave.tabletop.example_snapshot",
+  "source_url": "https://example.org/synthetic-rules",
+  "edition": "Synthetic Rules, first public edition",
+  "revision": "authored-revision-7",
+  "retrieved_on": "2026-11-09",
+  "source_class": "verified_cc0",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+  "artifacts": [
+    {
+      "exact_artifact": "synthetic-rules.txt",
+      "media_type": "text/plain",
+      "sha256": "31b1f6fc0ec7844b3eba61137585ac403532526349134dc3ad9be07e5559c6cd",
+      "redistributed": false
+    },
+    {
+      "exact_artifact": "LICENSE-CC0-1.0.txt",
+      "media_type": "text/plain",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "redistributed": true
+    }
+  ],
+  "reviewed_boundary": {
+    "included": [
+      "Ember, Tide, and Vale rating vocabulary",
+      "single-die check threshold",
+      "equipped item bonus",
+      "zero-through-four resource track"
+    ],
+    "excluded": [
+      "artwork",
+      "community supplements",
+      "fonts",
+      "layout",
+      "logos",
+      "trade dress",
+      "unverified assets"
+    ]
+  },
+  "attribution": "Synthetic Rules is an invented public fixture. This record names no real person, project, or organization.",
+  "compatibility_statement": "This record is a synthetic worked example. It demonstrates the review format and describes no real upstream work.",
+  "review": {
+    "reviewer_role": "synthetic licensing reviewer",
+    "reviewed_on": "2026-11-09",
+    "decision": "approved",
+    "checklist": {
+      "attribution_confirmed": true,
+      "digest_matches_exact_bytes": true,
+      "edition_and_revision_recorded": true,
+      "excluded_assets_confirmed": true,
+      "license_scope_confirmed": true,
+      "license_text_retained": true,
+      "no_build_network_dependency": true,
+      "public_url_reachable_at_capture": true
+    }
+  }
+}

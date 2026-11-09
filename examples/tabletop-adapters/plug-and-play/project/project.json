@@ -1,0 +1,50 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.plug_and_play",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "source": {
+    "source_class": "synthetic_original",
+    "license": "MIT",
+    "provenance": "Original synthetic project authored for Weave. Names, prose, settings, and scenario inputs are invented; no upstream rules text, artwork, layout, or asset is copied."
+  },
+  "manifest": {
+    "adapter_id": "org.weave.tabletop.plug_and_play",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "source": "live adapter manifest selected by exact coordinate"
+  },
+  "scripted_path": [
+    {
+      "request_id": "conformance_check",
+      "operation": "check",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "attribute": {
+            "kind": "symbol",
+            "value": "brains"
+          },
+          "difficulty": {
+            "kind": "number",
+            "value": 12.0
+          },
+          "modifier": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "roll_mode": {
+            "kind": "symbol",
+            "value": "normal"
+          },
+          "spend_fortune_on_failure": {
+            "kind": "bool",
+            "value": false
+          }
+        }
+      }
+    }
+  ]
+}

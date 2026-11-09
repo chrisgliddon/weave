@@ -243,6 +243,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/plug-and-play/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_plug_and_play",
+        "expected_output": "examples/tabletop-adapters/plug-and-play/project/expected-output.json",
+        "expected_output_sha256": "44757b05788c6965952a20469f256d6f88176abbc1e3ce548ebc27808aa7e636",
+        "seed": 20261031
       }
     },
     {
@@ -557,6 +564,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/dungeonpunk/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_dungeonpunk",
+        "expected_output": "examples/tabletop-adapters/dungeonpunk/project/expected-output.json",
+        "expected_output_sha256": "8a7c865878538071f9d6aeb135f72c3f58bf88c224a39f5e30ae75c83cdc14e1",
+        "seed": 20261031
       }
     },
     {
@@ -834,6 +848,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/freehack/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_freehack",
+        "expected_output": "examples/tabletop-adapters/freehack/project/expected-output.json",
+        "expected_output_sha256": "9a2fa685ce5859da7e3b0c362e1b3e215c480cfee9122d173cc4c71a7efc76c1",
+        "seed": 20261031
       }
     },
     {
@@ -1206,6 +1227,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/wicked-ones/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_wicked_ones",
+        "expected_output": "examples/tabletop-adapters/wicked-ones/project/expected-output.json",
+        "expected_output_sha256": "ca3f7c86f8559764bc95284e2bad4c2fda03aebe24d0aa436301de6e981aa682",
+        "seed": 20261031
       }
     },
     {
@@ -1446,6 +1474,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/spark/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_spark",
+        "expected_output": "examples/tabletop-adapters/spark/project/expected-output.json",
+        "expected_output_sha256": "b38da1febc0b577be77344d849deaa30dbece6c7d8200fd34d642686495455b8",
+        "seed": 20261031
       }
     },
     {
@@ -1682,6 +1717,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/open-adventure/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_adventure",
+        "expected_output": "examples/tabletop-adapters/open-adventure/project/expected-output.json",
+        "expected_output_sha256": "5d26e5b7551c6e21643c362c6d3e4bd67c5e77a3469f35838c17c256359c141c",
+        "seed": 20261031
       }
     },
     {
@@ -1916,6 +1958,13 @@
           "namespace_collision",
           "deterministic_output"
         ]
+      },
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/open-tale/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_tale",
+        "expected_output": "examples/tabletop-adapters/open-tale/project/expected-output.json",
+        "expected_output_sha256": "3d7d70733c5a42b72a04fc39f9ea80f5f8fa4673fdf56845b21a6a70b9d62fd9",
+        "seed": 20261031
       }
     }
   ]

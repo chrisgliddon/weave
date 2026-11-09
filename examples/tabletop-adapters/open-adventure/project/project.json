@@ -1,0 +1,84 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.open_adventure",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "source": {
+    "source_class": "synthetic_original",
+    "license": "MIT",
+    "provenance": "Original synthetic project authored for Weave. Names, prose, settings, and scenario inputs are invented; no upstream rules text, artwork, layout, or asset is copied."
+  },
+  "manifest": {
+    "adapter_id": "org.weave.tabletop.open_adventure",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "source": "live adapter manifest selected by exact coordinate"
+  },
+  "scripted_path": [
+    {
+      "request_id": "conformance_begin_challenge",
+      "operation": "begin_challenge",
+      "capability": "encounters",
+      "input": {
+        "kind": "object",
+        "value": {
+          "challenge_id": {
+            "kind": "string",
+            "value": "conformance_channel"
+          },
+          "challenge_points": {
+            "kind": "number",
+            "value": 2.0
+          },
+          "difficulty_score": {
+            "kind": "number",
+            "value": 9.0
+          },
+          "disclosure": {
+            "kind": "symbol",
+            "value": "public"
+          },
+          "effect": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "kind": {
+            "kind": "symbol",
+            "value": "environmental"
+          },
+          "label": {
+            "kind": "string",
+            "value": "Cross the conformance channel"
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_resolve_challenge",
+      "operation": "resolve_challenge_action",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "attribute": {
+            "kind": "symbol",
+            "value": "reasoning"
+          },
+          "challenge_id": {
+            "kind": "string",
+            "value": "conformance_channel"
+          },
+          "disclosure": {
+            "kind": "symbol",
+            "value": "public"
+          },
+          "situation_modifier": {
+            "kind": "number",
+            "value": 0.0
+          }
+        }
+      }
+    }
+  ]
+}

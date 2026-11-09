@@ -403,6 +403,9 @@ cargo run -p weave-tabletop -- freehack-resolve \
   --state examples/tabletop-adapters/freehack/authority-state.tabletop-state.json \
   --authority-output target/freehack-authority-receipt.json \
   --public-output target/freehack-public-receipt.json
+
+cargo test -p weave-tabletop --test catalog
+cargo test -p weave-tabletop --test compatibility
 ```
 
 The checked [Lantern Trail fixture](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/contract)
@@ -497,6 +500,136 @@ WEAVE_WRITE_ADAPTER_CATALOG=1 cargo test -p weave-tabletop --test catalog -- --i
 cargo test -p weave-tabletop --test catalog
 ```
 
+### Compatibility and migration matrix
+
+`examples/tabletop-adapters/catalog/compatibility-matrix.json` is format 1. It records:
+
+- one row per adapter with id, version, state-schema version, namespace, title, licence, source
+  class, compatibility ranges, capabilities, ordered creation steps, operations, declared
+  migration ids, and the canonical project link;
+- one row for every directed cross-system pair. Each row sets `conversion_allowed` to false and
+  names the five categories that never transfer: attributes, items, resources, progression, and
+  campaign state; and
+- one row for every same-adapter migration declared by a live manifest, with source id, version
+  requirement, schema versions, review flags, and description.
+
+`conversion_policy` states the rule directly. Cross-system conversion is not supported and is
+never implied by a shared field name, die shape, or system label. Converting between adapters
+requires a separately approved migration. This build declares no cross-system migration. Without
+one, a switch archives the outgoing definition and state unchanged under its own namespace.
+
+Note what a category row means: `source_capabilities` lists the source adapter's declared
+capabilities for that category, and `note` states that none of the category transfers to the
+target. A target always starts from its own definition, never from converted values. No shipped
+adapter currently declares a same-adapter migration, so `migrations` is empty; that empty set is
+also drift-checked.
+
+`crates/weave-tabletop/tests/catalog.rs` rebuilds the matrix from the live manifests, policies,
+and canonical project files, then fails when any row differs. A changed capability, operation,
+licence, source class, migration declaration, project link, or expected-output digest cannot enter
+a release silently.
+
+### Canonical synthetic projects
+
+Every adapter has one project at `examples/tabletop-adapters/<adapter>/project/`. Each project
+contains:
+
+- `README.md` with the project scope and exact command;
+- `project.json` with the selected adapter id, version, and schema version, a deterministic seed,
+  synthetic source and MIT licence provenance, and the scripted operation path; and
+- `expected-output.json` with creation fingerprints plus the request, receipt, state, entropy, and
+  event data for every step.
+
+The command compiles the test harness, creates the character, plays the scripted path through the
+resolver registry, replays every receipt from its recorded before-state, and compares the result
+with the checked-in expected output. It performs no network access.
+
+| Adapter | Project command |
+|---|---|
+| Plug-And-Play | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_plug_and_play` |
+| Dungeonpunk | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_dungeonpunk` |
+| Freehack | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_freehack` |
+| Wicked Ones | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_wicked_ones` |
+| Spark | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_spark` |
+| Open Adventure | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_adventure` |
+| Open Tale | `cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_tale` |
+
+The projects use only synthetic names, prose, settings, and scenario inputs. The project source
+records `synthetic_original` and `MIT`. No upstream prose, artwork, layout, or asset is copied.
+
+Regenerate the expected output only after a reviewed adapter change:
+
+```bash
+WEAVE_WRITE_COMPATIBILITY_PROJECTS=1 cargo test -p weave-tabletop --test compatibility
+cargo test -p weave-tabletop --test compatibility
+```
+
+## Upstream snapshot review process
+
+Every adapter that models an upstream work needs a reviewed snapshot record stored beside the
+adapter source. The record is data. Builds, tests, validators, and releases never fetch a URL.
+
+### Capture steps
+
+1. A repository maintainer who did not author the adapter reviews the snapshot. The reviewer
+   records a role, never a credential or unnecessary personal data.
+2. Capture the public bytes into an isolated directory outside the repository. Do not run fetched
+   scripts or open fetched documents in a context that can execute code.
+3. Record the canonical HTTPS URL, edition, revision, commit, tag, or release, retrieval date,
+   media type, and exact SHA-256 of every covered artifact.
+4. Confirm that the licence covers the reviewed portions. Mark every artifact as redistributed or
+   not redistributed. Retain the exact licence text when the licence requires it.
+5. Record the included sections and every excluded category: community supplements, logos, trade
+   dress, artwork, layout, fonts, and unverified assets.
+6. Write the record beside the adapter source, such as `SOURCE.lock.json` or the adapter's
+   in-module source record. Repeat its key fields in the manifest provenance and the matching
+   `AdapterSourcePolicy` row.
+7. Run the offline source gate and the conformance suite. Fix the record, not the digest, when
+   they disagree.
+
+### Review checklist
+
+- The URL, edition, revision, and retrieval date are present and unambiguous.
+- Every covered artifact has an exact SHA-256 over the reviewed bytes.
+- The licence expression is on the allowlist: `MIT`, `CC0-1.0`, or `Apache-2.0` for a separately
+  licensed pack.
+- The licence scope covers the reviewed portions, or those portions are excluded.
+- Required licence text and notices are retained with exact digests.
+- Artwork, fonts, layout, logos, trade dress, community material, and unverified assets are
+  excluded.
+- Attribution and the factual non-endorsement statement name no affiliation or sponsorship.
+- No build, test, validator, or release step needs network access.
+
+### Record format
+
+Store one record per reviewed snapshot. The record states:
+
+- `snapshot_format_version`, `adapter_id`, `source_url`, `edition`, `revision`, and
+  `retrieved_on`;
+- `source_class`, `license`, and `license_url`;
+- `artifacts`, each with `exact_artifact`, `media_type`, `sha256`, and `redistributed`;
+- `reviewed_boundary` with included sections and excluded material;
+- `attribution` and `compatibility_statement`; and
+- `review` with `reviewer_role`, `reviewed_on`, `decision`, and the checklist results.
+
+The synthetic worked example is
+[`examples/tabletop-adapters/catalog/upstream-snapshot-example/`](https://github.com/chrisgliddon/weave/tree/dev/examples/tabletop-adapters/catalog/upstream-snapshot-example).
+It contains an invented source and a complete record. It names no real upstream work.
+
+### Changed or missing upstream sources
+
+- **Changed bytes:** the digest gate fails. Do not update the digest to match new bytes without
+  review. Capture the new bytes as a separate snapshot, record the behavior delta, re-review the
+  licence and exclusions, then update the record, manifest provenance, policy row, catalog,
+  matrix, and canonical project together.
+- **Changed edition or revision:** treat it as changed bytes. A revision label alone is not review
+  evidence.
+- **Missing or withdrawn source:** keep the last reviewed snapshot and record the date the URL
+  stopped resolving. Do not claim current availability. If the licence no longer covers the
+  retained boundary, stop distributing the affected portions and remove them.
+- **Licence change:** re-review the whole boundary. An adapter outside the allowlist fails closed
+  and must leave the shipped registry until a separate approval exists.
+
 ## Adding an adapter
 
 An adapter is inert declarative data plus an optional trusted resolver. You do not change the
@@ -575,6 +708,11 @@ and RON, a deterministic creation request and preview, state, request and receip
 Character projection, runtime artifacts, and the retained licence text. Add
 `crates/weave-tabletop/tests/<name>.rs`.
 
+Add `examples/tabletop-adapters/<name>/project/` with `README.md`, `project.json`, and
+`expected-output.json`. Register the adapter's canonical project in
+`crates/weave-tabletop/tests/compatibility.rs` and regenerate its output as described under
+[Canonical synthetic projects](#canonical-synthetic-projects).
+
 All names, prose, settings, adventures, factions, UI copy, and expected outputs must be original
 or synthetic. Never copy upstream prose, art, layout, or community material into a fixture.
 
@@ -594,14 +732,16 @@ Exclude community supplements, logos, trade dress, artwork, layout, fonts, and u
 System names may appear only as courteous factual compatibility labels. They never imply
 affiliation, sponsorship, or endorsement.
 
-The validator is offline. Acquiring or updating an upstream artifact is a separate reviewed
-process, and a changed hash or missing exclusion must fail the gate.
+The validator is offline. Acquiring or updating an upstream artifact follows the
+[Upstream snapshot review process](#upstream-snapshot-review-process). A changed hash or missing
+exclusion must fail the gate.
 
 ### 7. Catalog
 
 Add the manifest function to `live_manifests()` in `crates/weave-tabletop/tests/catalog.rs`, then
-regenerate and verify the catalog as shown above. A source-policy row without a listed manifest
-also fails the catalog test.
+regenerate and verify the catalog, compatibility matrix, and canonical project as shown above. A
+source-policy row without a listed manifest, a missing canonical project, or a stale expected
+output also fails a drift test.
 
 ### 8. Verification commands
 
@@ -611,9 +751,10 @@ Run these from a local checkout:
 cargo test -p weave-tabletop --test <name>
 cargo test -p weave-tabletop --test conformance
 cargo test -p weave-tabletop --test catalog
+cargo test -p weave-tabletop --test compatibility
 cargo test -p weave-tabletop
 cargo clippy -p weave-tabletop --all-targets -- -D warnings
-rustfmt --edition 2024 --check crates/weave-tabletop/tests/catalog.rs
+cargo fmt --all -- --check
 ```
 
 ## Applied switches, archives, and audit

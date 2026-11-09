@@ -1,0 +1,29 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.wicked_ones",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "f719bed72613dfe238ff0424249e4f2a3a1b0cb020cd5cdd7d7d5ea611993818",
+  "creation_preview_sha256": "c49118ff9c3a70c049397491f3d2f14bd128bbc2f570af334eb2506e6e1c7c68",
+  "definition_sha256": "075623ecfee37ca7f97ae22d5141599b802b0c804f338f5e7a6e652f2a6dab6b",
+  "initial_state_sha256": "dfd4b9c6dcdcc19b7a5c4598451fb1eaddade58cb0774e7de60d90fd8dd006c8",
+  "steps": [
+    {
+      "request_id": "conformance_resolve_action",
+      "operation": "resolve_action",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "23f697e33b3e99f4f6bf553e3a3c948411203835e35d1e0a1bb958796bdd45aa",
+      "before_state_sha256": "dfd4b9c6dcdcc19b7a5c4598451fb1eaddade58cb0774e7de60d90fd8dd006c8",
+      "receipt_sha256": "204f8fed493b2c6b0f6371baed684a5780d07b0d8b4aadb0773d0b6b105129d6",
+      "after_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
+      "revision": 1,
+      "entropy_consumed": 2,
+      "event_kinds": [
+        "action_resolved"
+      ]
+    }
+  ],
+  "final_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
+  "replay": "exact"
+}

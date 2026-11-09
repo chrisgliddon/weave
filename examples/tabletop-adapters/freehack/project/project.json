@@ -1,0 +1,102 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.freehack",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "source": {
+    "source_class": "synthetic_original",
+    "license": "MIT",
+    "provenance": "Original synthetic project authored for Weave. Names, prose, settings, and scenario inputs are invented; no upstream rules text, artwork, layout, or asset is copied."
+  },
+  "manifest": {
+    "adapter_id": "org.weave.tabletop.freehack",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "source": "live adapter manifest selected by exact coordinate"
+  },
+  "scripted_path": [
+    {
+      "request_id": "conformance_resolve_check",
+      "operation": "resolve_check",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "disclosure": {
+            "kind": "symbol",
+            "value": "public"
+          },
+          "label": {
+            "kind": "string",
+            "value": "Cross the conformance gantry"
+          },
+          "opposition": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "object",
+                "value": {
+                  "id": {
+                    "kind": "string",
+                    "value": "conformance_opposition"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Conformance Opposition"
+                  },
+                  "source": {
+                    "kind": "symbol",
+                    "value": "situation"
+                  },
+                  "value": {
+                    "kind": "number",
+                    "value": 3.0
+                  }
+                }
+              }
+            ]
+          },
+          "reveal_opposition": {
+            "kind": "bool",
+            "value": true
+          },
+          "reveal_probability": {
+            "kind": "bool",
+            "value": true
+          },
+          "reveal_support": {
+            "kind": "bool",
+            "value": true
+          },
+          "support": {
+            "kind": "list",
+            "value": [
+              {
+                "kind": "object",
+                "value": {
+                  "id": {
+                    "kind": "string",
+                    "value": "focus"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Focus"
+                  },
+                  "source": {
+                    "kind": "symbol",
+                    "value": "character"
+                  },
+                  "value": {
+                    "kind": "number",
+                    "value": 4.0
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

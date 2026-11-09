@@ -1,0 +1,2371 @@
+{
+  "matrix_format_version": 1,
+  "conversion_policy": "Cross-system conversion is not supported and is never implied by a shared field name, die shape, or system label. Moving data between adapters requires a separately approved migration; this build declares none. Without one, every adapter definition and state is archived unchanged under its own namespace.",
+  "migration_policy": "Only a same-adapter release change may declare a migration. A migration must set reviewed and preserves_canonical_character to true, match the source adapter id, version requirement, and schema version, and pass a dry run against the target schema. A cross-system switch is never a migration.",
+  "adapters": [
+    {
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "plug_and_play",
+      "title": "Plug-And-Play compatible adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with the CC0 Plug-And-Play rules; not endorsed by its creator",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "encounters"
+      ],
+      "creation_steps": [
+        "identity",
+        "ratings",
+        "survivability",
+        "details"
+      ],
+      "operations": [
+        "attack",
+        "chase",
+        "check",
+        "fortune_test",
+        "group_check",
+        "initiative",
+        "take_damage"
+      ],
+      "migrations": [],
+      "source_sha256": "4d91ab7cf489c7eef6a9ad3e74be47899fd6419ea3ab0776367d6f444115985e",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "The official PDFs are hash-pinned inputs and are not redistributed with Weave.",
+        "Factual compatibility naming does not imply sponsorship or endorsement."
+      ],
+      "forbidden_files": [
+        "Plug-And-Play Rules.pdf",
+        "Plug-And-Play Character Sheet.pdf"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/plug-and-play/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_plug_and_play",
+        "expected_output": "examples/tabletop-adapters/plug-and-play/project/expected-output.json",
+        "expected_output_sha256": "44757b05788c6965952a20469f256d6f88176abbc1e3ce548ebc27808aa7e636",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "dungeonpunk",
+      "title": "Dungeonpunk compatible adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with the CC0 Dungeonpunk core rules; not endorsed by its creators",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "advancement",
+        "encounters",
+        "clocks",
+        "campaign_state"
+      ],
+      "creation_steps": [
+        "identity",
+        "attributes",
+        "moves",
+        "gear_and_bonds",
+        "campaign"
+      ],
+      "operations": [
+        "damage",
+        "death_check",
+        "gm_move",
+        "grow",
+        "harm_threat",
+        "harm_threat_minor",
+        "impairment",
+        "minor_damage",
+        "rest",
+        "struggle",
+        "survival_decision",
+        "tick_clock"
+      ],
+      "migrations": [],
+      "source_sha256": "34baec19dc4c16db6505b791f4bae2a5e482f9b59b95cfe9236496f6daaab209",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "The official release page is https://acegiak.itch.io/dungeonpunk.",
+        "The official PDF and text exports are audit inputs and are not redistributed with Weave.",
+        "The community wiki and every third-party supplement remain outside this adapter's reviewed source boundary."
+      ],
+      "forbidden_files": [
+        "dungeonpunk-google-doc.pdf",
+        "dungeonpunk-google-doc.txt"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/dungeonpunk/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_dungeonpunk",
+        "expected_output": "examples/tabletop-adapters/dungeonpunk/project/expected-output.json",
+        "expected_output_sha256": "8a7c865878538071f9d6aeb135f72c3f58bf88c224a39f5e30ae75c83cdc14e1",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "freehack",
+      "title": "Freehack 2.1 adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with Freehack 2.1",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "scenes",
+        "campaign_state"
+      ],
+      "creation_steps": [
+        "campaign",
+        "identity_and_modifiers",
+        "features_and_inventory"
+      ],
+      "operations": [
+        "advance_track",
+        "cancel_submission",
+        "create_track",
+        "open_section",
+        "preview_probability",
+        "recall_memory",
+        "resolve_check",
+        "resolve_section",
+        "submit_action",
+        "timeout_section"
+      ],
+      "migrations": [],
+      "source_sha256": "ca5c0420ec05884c1b0182f2a5857a4991e23573e10b9e28ecb009157e8ad393",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "Only hashes and independently authored behavior are bundled; the upstream PDF, icon, stylesheet, and page layout are excluded.",
+        "Freehack public payloads must be produced by the dedicated projection API; generic receipt projection retains host-event envelopes and is not a player transport."
+      ],
+      "forbidden_files": [
+        "freehack.pdf",
+        "src/freehack.md",
+        "src/freehack.yml",
+        "tools/roll.py"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/freehack/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_freehack",
+        "expected_output": "examples/tabletop-adapters/freehack/project/expected-output.json",
+        "expected_output_sha256": "9a2fa685ce5859da7e3b0c362e1b3e215c480cfee9122d173cc4c71a7efc76c1",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.wicked_ones",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "wicked_ones",
+      "title": "Wicked Ones v1.4 adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with Wicked Ones v1.4",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "advancement",
+        "clocks",
+        "factions",
+        "world_state",
+        "campaign_state"
+      ],
+      "creation_steps": [
+        "core_identity",
+        "actions",
+        "abilities_and_friend",
+        "gear_and_resources"
+      ],
+      "operations": [
+        "adjust_faction_clock",
+        "advance_campaign_phase",
+        "advance_master_plan",
+        "apply_shock",
+        "death_knell",
+        "engage_raid",
+        "flashback",
+        "gain_dark_heart",
+        "go_feral",
+        "pause_campaign",
+        "perform_downtime_action",
+        "perform_recovery",
+        "plan_raid",
+        "purchase_upgrade",
+        "resolve_action",
+        "resolve_calamity",
+        "resolve_dungeon_event",
+        "resolve_raid_outcome",
+        "resume_campaign",
+        "set_campaign",
+        "spend_reckless_advancement",
+        "spend_wicked_advancement"
+      ],
+      "migrations": [],
+      "source_sha256": "c3d2ca581eacb12afca452d75eae83e925d5be46662f08a04f383584fde276b0",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "War for the Overworld and Undead Awakening content remains owned by its author and is denied by this adapter; no such material appears in this module or its fixtures.",
+        "The primary digest covers the checked-in SOURCE_RECORD.txt text record, not a downloaded rulebook. The record states the canonical URL, CC0-1.0 licence, and v1.4 edition."
+      ],
+      "forbidden_files": [
+        "War for the Overworld",
+        "Undead Awakening"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/wicked-ones/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_wicked_ones",
+        "expected_output": "examples/tabletop-adapters/wicked-ones/project/expected-output.json",
+        "expected_output_sha256": "ca3f7c86f8559764bc95284e2bad4c2fda03aebe24d0aa436301de6e981aa682",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.spark",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "spark",
+      "title": "Spark adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with The Spark Roleplaying Game core rules",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "advancement",
+        "scenes"
+      ],
+      "creation_steps": [
+        "identity",
+        "beliefs",
+        "relationships",
+        "attributes",
+        "talents"
+      ],
+      "operations": [
+        "add_supporter",
+        "boost_roll",
+        "close_scene",
+        "declare_action",
+        "open_conflict",
+        "replace_belief",
+        "resolve_conflict",
+        "roll_conflict"
+      ],
+      "migrations": [],
+      "source_sha256": "3eacf5d0eb87873af6e5974bcc0d863c641c35ecbe1fef2d810315000fa3ec46",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "Only independently authored core-mechanics behavior and the in-module source record are bundled; no downloaded upstream file is redistributed.",
+        "Spark example settings, logos, artwork, fonts, and presentation layout are excluded.",
+        "The manifest digest is the SHA-256 of SPARK_SOURCE_RECORD, not of an upstream download."
+      ],
+      "forbidden_files": [
+        "Spark RPG core rules.pdf",
+        "spark-artwork.png",
+        "spark-display-font.otf"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/spark/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_spark",
+        "expected_output": "examples/tabletop-adapters/spark/project/expected-output.json",
+        "expected_output_sha256": "b38da1febc0b577be77344d849deaa30dbece6c7d8200fd34d642686495455b8",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.open_adventure",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "open_adventure",
+      "title": "Open Adventure: Fantasy adapter",
+      "license": "CC0-1.0",
+      "source_class": "verified_cc0",
+      "compatibility_label": "Compatible with Open Adventure: Fantasy Community-Owned Content",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "advancement",
+        "encounters"
+      ],
+      "creation_steps": [
+        "attributes",
+        "details",
+        "identity"
+      ],
+      "operations": [
+        "advance_encounter_participant",
+        "begin_challenge",
+        "end_encounter",
+        "heal_encounter_participant",
+        "resolve_challenge_action",
+        "resolve_encounter_action",
+        "start_encounter"
+      ],
+      "migrations": [],
+      "source_sha256": "caebd872fa0340b543737f55bf21581316e4cfa74ebc1cbf153b997c3ca8f450",
+      "required_license_text": {
+        "artifact": "LICENSE-CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "required_notices": [
+        "The provenance digest is the SHA-256 of the in-repository OPEN_ADVENTURE_SOURCE_RECORD string, not of a downloaded upstream file.",
+        "Masterwork Edition layout, third-party products, unmarked content, community additions, logos, artwork, and trade dress are excluded from the reviewed boundary."
+      ],
+      "forbidden_files": [
+        "open-adventure-masterwork-layout",
+        "open-adventure-artwork",
+        "open-adventure-display-font"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/open-adventure/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_adventure",
+        "expected_output": "examples/tabletop-adapters/open-adventure/project/expected-output.json",
+        "expected_output_sha256": "5d26e5b7551c6e21643c362c6d3e4bd67c5e77a3469f35838c17c256359c141c",
+        "seed": 20261031
+      }
+    },
+    {
+      "id": "org.weave.tabletop.open_tale",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "namespace": "open_tale",
+      "title": "Open Tale adapter",
+      "license": "Apache-2.0",
+      "source_class": "separately_licensed_apache2",
+      "compatibility_label": "Compatible with the Open Tale public rules reference",
+      "weave_version": ">=0.1.0, <0.2.0",
+      "character_contract_version": ">=1.0.0, <2.0.0",
+      "capabilities": [
+        "character_creation",
+        "derived_values",
+        "checks_and_conflicts",
+        "resources_and_conditions",
+        "equipment_and_abilities",
+        "advancement",
+        "encounters"
+      ],
+      "creation_steps": [
+        "attributes",
+        "identity",
+        "skills_and_wealth"
+      ],
+      "operations": [
+        "advance_character",
+        "apply_recovery",
+        "inspect_character",
+        "move_combat",
+        "purchase_item",
+        "resolve_challenge",
+        "resolve_combat_turn",
+        "start_combat"
+      ],
+      "migrations": [],
+      "source_sha256": "17a3f9dd52fc291ec10757fd8c72f9a8423e09f582ad87e24820377d15fb3270",
+      "required_license_text": {
+        "artifact": "examples/tabletop-adapters/open-tale/LICENSE-APACHE-2.0.txt",
+        "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+      },
+      "required_notices": [
+        "The complete Apache-2.0 license text is retained in LICENSE-APACHE-2.0.txt and in OPEN_TALE_LICENSE_TEXT.",
+        "This adapter does not redistribute upstream text, artwork, fonts, or layout; only independently authored integration code, formulas, and fixtures are bundled.",
+        "No upstream NOTICE file is known for the public rules reference; this notice records the attribution and modification boundary instead."
+      ],
+      "forbidden_files": [
+        "open-tale-website-theme",
+        "open-tale-artwork",
+        "open-tale-font"
+      ],
+      "canonical_project": {
+        "path": "examples/tabletop-adapters/open-tale/project",
+        "command": "cargo test -p weave-tabletop --test compatibility -- --exact canonical_project_open_tale",
+        "expected_output": "examples/tabletop-adapters/open-tale/project/expected-output.json",
+        "expected_output_sha256": "3d7d70733c5a42b72a04fc39f9ea80f5f8fa4673fdf56845b21a6a70b9d62fd9",
+        "seed": 20261031
+      }
+    }
+  ],
+  "cross_system_pairs": [
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.plug_and_play",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns attributes, ratings, and derived values inside the `plug_and_play` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns equipment, inventory, abilities, and moves inside the `plug_and_play` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.plug_and_play` owns resource tracks, harm, stress, and conditions inside the `plug_and_play` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.plug_and_play` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.dungeonpunk",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns attributes, ratings, and derived values inside the `dungeonpunk` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns equipment, inventory, abilities, and moves inside the `dungeonpunk` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns resource tracks, harm, stress, and conditions inside the `dungeonpunk` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns experience and advancement inside the `dungeonpunk` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.dungeonpunk` owns campaign, faction, clock, scene, and world state inside the `dungeonpunk` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.freehack",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns attributes, ratings, and derived values inside the `freehack` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns resource tracks, harm, stress, and conditions inside the `freehack` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.freehack` declares no experience and advancement capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.freehack` owns campaign, faction, clock, scene, and world state inside the `freehack` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.wicked_ones",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns attributes, ratings, and derived values inside the `wicked_ones` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns equipment, inventory, abilities, and moves inside the `wicked_ones` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns resource tracks, harm, stress, and conditions inside the `wicked_ones` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns experience and advancement inside the `wicked_ones` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [
+            "campaign_state"
+          ],
+          "note": "`org.weave.tabletop.wicked_ones` owns campaign, faction, clock, scene, and world state inside the `wicked_ones` namespace through [campaign_state]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own campaign, faction, clock, scene, and world state."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.spark",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation"
+          ],
+          "note": "`org.weave.tabletop.spark` owns attributes, ratings, and derived values inside the `spark` namespace through [character_creation]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.spark` owns resource tracks, harm, stress, and conditions inside the `spark` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.spark` owns experience and advancement inside the `spark` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.spark` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_adventure",
+      "target": "org.weave.tabletop.open_tale",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns attributes, ratings, and derived values inside the `open_adventure` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no equipment, inventory, abilities, and moves capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns resource tracks, harm, stress, and conditions inside the `open_adventure` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_adventure` owns experience and advancement inside the `open_adventure` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_tale`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_tale` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_adventure` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_tale`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.plug_and_play",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.plug_and_play`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.plug_and_play` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.plug_and_play`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.dungeonpunk",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.dungeonpunk`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.dungeonpunk` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.dungeonpunk`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.freehack",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.freehack`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.freehack` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.freehack`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.wicked_ones",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.wicked_ones`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.wicked_ones` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.wicked_ones`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.spark",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.spark`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.spark` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.spark`."
+        }
+      ]
+    },
+    {
+      "source": "org.weave.tabletop.open_tale",
+      "target": "org.weave.tabletop.open_adventure",
+      "conversion_allowed": false,
+      "requires_separately_approved_migration": true,
+      "categories": [
+        {
+          "category": "attributes",
+          "transfers": false,
+          "source_capabilities": [
+            "character_creation",
+            "derived_values"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns attributes, ratings, and derived values inside the `open_tale` namespace through [character_creation, derived_values]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own attributes, ratings, and derived values."
+        },
+        {
+          "category": "items",
+          "transfers": false,
+          "source_capabilities": [
+            "equipment_and_abilities"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns equipment, inventory, abilities, and moves inside the `open_tale` namespace through [equipment_and_abilities]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own equipment, inventory, abilities, and moves."
+        },
+        {
+          "category": "resources",
+          "transfers": false,
+          "source_capabilities": [
+            "resources_and_conditions"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns resource tracks, harm, stress, and conditions inside the `open_tale` namespace through [resources_and_conditions]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own resource tracks, harm, stress, and conditions."
+        },
+        {
+          "category": "progression",
+          "transfers": false,
+          "source_capabilities": [
+            "advancement"
+          ],
+          "note": "`org.weave.tabletop.open_tale` owns experience and advancement inside the `open_tale` namespace through [advancement]. None of it transfers to `org.weave.tabletop.open_adventure`; the outgoing definition and state are archived unchanged, and `org.weave.tabletop.open_adventure` starts from its own experience and advancement."
+        },
+        {
+          "category": "campaign_state",
+          "transfers": false,
+          "source_capabilities": [],
+          "note": "`org.weave.tabletop.open_tale` declares no campaign, faction, clock, scene, and world state capability, so there is nothing to transfer to `org.weave.tabletop.open_adventure`."
+        }
+      ]
+    }
+  ],
+  "migrations": []
+}

@@ -8,6 +8,7 @@ Thank you for helping build Weave. Contributions should be reviewable without re
 - Open an issue before starting a large change to the language, serialized formats, runtime behavior, public Rust APIs, or editor architecture.
 - Keep one issue and one pull request focused on one coherent outcome.
 - Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), never in a public issue or pull request.
+- Adding or updating a tabletop adapter? Follow the [upstream snapshot review process](docs/tabletop_adapters.md#upstream-snapshot-review-process).
 - Follow the mandatory secret-redaction rules in [AGENTS.md](AGENTS.md). Logs and reproductions must use `[REDACTED]` for every credential value.
 
 ## Development setup

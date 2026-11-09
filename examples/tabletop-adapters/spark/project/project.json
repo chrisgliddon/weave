@@ -1,0 +1,164 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.spark",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "source": {
+    "source_class": "synthetic_original",
+    "license": "MIT",
+    "provenance": "Original synthetic project authored for Weave. Names, prose, settings, and scenario inputs are invented; no upstream rules text, artwork, layout, or asset is copied."
+  },
+  "manifest": {
+    "adapter_id": "org.weave.tabletop.spark",
+    "version": "1.0.0",
+    "schema_version": 1,
+    "source": "live adapter manifest selected by exact coordinate"
+  },
+  "scripted_path": [
+    {
+      "request_id": "conformance_open",
+      "operation": "open_conflict",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          },
+          "max_escalation": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "stakes": {
+            "kind": "string",
+            "value": "Control of the conformance gate."
+          },
+          "victory_cost_amount": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "victory_cost_attribute": {
+            "kind": "string",
+            "value": ""
+          },
+          "victory_cost_kind": {
+            "kind": "symbol",
+            "value": "influence"
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_declare_owner",
+      "operation": "declare_action",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "actor_id": {
+            "kind": "string",
+            "value": "org.weave.character.conformance_lumen"
+          },
+          "attribute": {
+            "kind": "symbol",
+            "value": "mind"
+          },
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          },
+          "declaration_id": {
+            "kind": "string",
+            "value": "conformance_owner"
+          },
+          "description": {
+            "kind": "string",
+            "value": "The owner reads the tide table aloud."
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_declare_opponent",
+      "operation": "declare_action",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "actor_id": {
+            "kind": "string",
+            "value": "conformance_opponent"
+          },
+          "attribute": {
+            "kind": "symbol",
+            "value": "body"
+          },
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          },
+          "declaration_id": {
+            "kind": "string",
+            "value": "conformance_opponent"
+          },
+          "description": {
+            "kind": "string",
+            "value": "The opponent contests the conformance gate."
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_support",
+      "operation": "add_supporter",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          },
+          "declaration_id": {
+            "kind": "string",
+            "value": "conformance_owner"
+          },
+          "relationship_id": {
+            "kind": "string",
+            "value": "conformance_sable"
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_roll",
+      "operation": "roll_conflict",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          }
+        }
+      }
+    },
+    {
+      "request_id": "conformance_resolve",
+      "operation": "resolve_conflict",
+      "capability": "checks_and_conflicts",
+      "input": {
+        "kind": "object",
+        "value": {
+          "conflict_id": {
+            "kind": "string",
+            "value": "conformance_gate"
+          }
+        }
+      }
+    }
+  ]
+}

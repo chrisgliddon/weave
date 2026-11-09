@@ -1,0 +1,102 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.spark",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "2eadbf79295481d20bfa8beb57e16f259b03105b3508aaabaae76b9cda48c4e3",
+  "creation_preview_sha256": "f856c8890dbf341fa3d30b6af1bdb75f35eb8aa8f1c618d6fe1ead64c4ed0c7d",
+  "definition_sha256": "1698ba75fdf35814c2ede23cf4cc800a146de1ecdafca8b6ec976c379ab16c17",
+  "initial_state_sha256": "9166d6f0f4d5a8ee3c788b51002cac134186fabfe6da3a62aa47b552cae54685",
+  "steps": [
+    {
+      "request_id": "conformance_open",
+      "operation": "open_conflict",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "e1ab1ed77dd22d32595a5972111c97253969bc23d22ae70760e818bae9ded22f",
+      "before_state_sha256": "9166d6f0f4d5a8ee3c788b51002cac134186fabfe6da3a62aa47b552cae54685",
+      "receipt_sha256": "09b02d9979e2622e6713bd23d98829e5600671d15f7f2c346e20d9f873cf236c",
+      "after_state_sha256": "7b1a12fa85ae99c93f418db20dbe83b9811d60e375b72a25e18879bbb8b282a3",
+      "revision": 1,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "conflict_opened"
+      ]
+    },
+    {
+      "request_id": "conformance_declare_owner",
+      "operation": "declare_action",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "5f7f51152a95cc31a23ca274288bc5d5a262475a53e03b613c419289db0e8464",
+      "before_state_sha256": "7b1a12fa85ae99c93f418db20dbe83b9811d60e375b72a25e18879bbb8b282a3",
+      "receipt_sha256": "ccc01bcf9eaa1ecfcbe7619ba83ec3a1d75c80e4bd627d6725f80e930387b831",
+      "after_state_sha256": "e6444044dd36a28951e223af48ba2070ca51647caf10687f69ba74831727ff7a",
+      "revision": 2,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "declaration_registered"
+      ]
+    },
+    {
+      "request_id": "conformance_declare_opponent",
+      "operation": "declare_action",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "678f1f395c79012d39fd155366d9baed9389d0a862dc88d8bbc0ffc156e10a27",
+      "before_state_sha256": "e6444044dd36a28951e223af48ba2070ca51647caf10687f69ba74831727ff7a",
+      "receipt_sha256": "038335dbba869cba07dea60096288d2ca55fd232881a1b0ba36ce84478982398",
+      "after_state_sha256": "dfe9e48855a19fa639f1617b63fbf12eb500064cc809f7fcbe7ee820f4ad847b",
+      "revision": 3,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "declaration_registered"
+      ]
+    },
+    {
+      "request_id": "conformance_support",
+      "operation": "add_supporter",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "2053ef7c5398826d91d778091be7c5b1f71ccfb7110f84f948ba789c1052bc23",
+      "before_state_sha256": "dfe9e48855a19fa639f1617b63fbf12eb500064cc809f7fcbe7ee820f4ad847b",
+      "receipt_sha256": "a8db40baa27c58aed72cea29d6016a6494259dc2bae1ab189d40aa5aec8654cf",
+      "after_state_sha256": "a01a30c134f3b10094ab09497b99ff842a703b9b571447b86cf3822c9d15ade5",
+      "revision": 4,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "supporter_added"
+      ]
+    },
+    {
+      "request_id": "conformance_roll",
+      "operation": "roll_conflict",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "36dde1f4f8c5eb8f7b3aace6c5be2045c80be96f8761fcbd169042315480ee83",
+      "before_state_sha256": "a01a30c134f3b10094ab09497b99ff842a703b9b571447b86cf3822c9d15ade5",
+      "receipt_sha256": "a67d1d9e3a5b8fd8921f91d6c2c304d1552976af4e39da1b1792180a7ef7eac1",
+      "after_state_sha256": "360cca3fc71f9656194e5b8d8ba1962bef2819c9d31b3c8fc55c2f834605a92f",
+      "revision": 5,
+      "entropy_consumed": 2,
+      "event_kinds": [
+        "roll_recorded",
+        "roll_recorded",
+        "entropy_trace"
+      ]
+    },
+    {
+      "request_id": "conformance_resolve",
+      "operation": "resolve_conflict",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "7c79b5db501767c3179ba7b2e4e6c75e1198e69298162a86ea4aaaa88b1749a6",
+      "before_state_sha256": "360cca3fc71f9656194e5b8d8ba1962bef2819c9d31b3c8fc55c2f834605a92f",
+      "receipt_sha256": "0c6922c2a0f444b0191e2d584530ff7245aea5217ac5d4e258c27bfa883ac1eb",
+      "after_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
+      "revision": 6,
+      "entropy_consumed": 0,
+      "event_kinds": [
+        "conflict_resolved",
+        "victory_cost_paid"
+      ]
+    }
+  ],
+  "final_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
+  "replay": "exact"
+}

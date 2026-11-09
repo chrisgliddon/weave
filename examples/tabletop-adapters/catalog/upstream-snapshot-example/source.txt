@@ -1,0 +1,11 @@
+Synthetic Rules, first public edition
+
+This file is an original synthetic fixture authored for Weave. It contains no upstream rules
+text, names, artwork, or layout. It exists only to demonstrate how an upstream snapshot record is
+captured and reviewed.
+
+1. A character has three ratings: Ember, Tide, and Vale.
+2. A check rolls one die and adds the named rating.
+3. A result of six or more succeeds.
+4. An item adds one to one named rating while equipped.
+5. A resource track holds zero through four marks.

@@ -1,0 +1,30 @@
+{
+  "project_format_version": 1,
+  "adapter_id": "org.weave.tabletop.plug_and_play",
+  "adapter_version": "1.0.0",
+  "schema_version": 1,
+  "seed": 20261031,
+  "manifest_content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5",
+  "creation_preview_sha256": "0f4db6d0f809a6c0b79eab2453cb13988f3af16e24a05f01ec09fc7a9f91c33c",
+  "definition_sha256": "a753c64a0c961affc4a5779d2529c9578064faf1e544ea12fc2497a60e6167f5",
+  "initial_state_sha256": "8e1ee29dc09dd51f58fd090a2fc03146bf5e13806c92f065d6a84b4168e6bac0",
+  "steps": [
+    {
+      "request_id": "conformance_check",
+      "operation": "check",
+      "capability": "checks_and_conflicts",
+      "request_sha256": "96ef31d607082316c26c9a2edc7ff25f2e962a81f09243364feaed36477fbc4e",
+      "before_state_sha256": "8e1ee29dc09dd51f58fd090a2fc03146bf5e13806c92f065d6a84b4168e6bac0",
+      "receipt_sha256": "b26646dba1b78bf90280878a7b3ae89274e9753ca11761e38f3854775adc5aab",
+      "after_state_sha256": "88eeec7acdf119244bd49b25a0a19558ea94d0d48527c4d11c60d5b22e766b9a",
+      "revision": 1,
+      "entropy_consumed": 1,
+      "event_kinds": [
+        "check_resolved",
+        "entropy_trace"
+      ]
+    }
+  ],
+  "final_state_sha256": "88eeec7acdf119244bd49b25a0a19558ea94d0d48527c4d11c60d5b22e766b9a",
+  "replay": "exact"
+}
