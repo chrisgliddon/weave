@@ -160,6 +160,18 @@ impl ProjectSession {
         self.path.as_deref()
     }
 
+    /// Directory containing the project source, when the project has a path.
+    ///
+    /// Optional artifacts beside the project, such as presentation inputs,
+    /// resolve relative to this directory.
+    #[must_use]
+    pub fn directory(&self) -> Option<PathBuf> {
+        self.path
+            .as_deref()
+            .and_then(Path::parent)
+            .map(Path::to_path_buf)
+    }
+
     #[must_use]
     pub fn display_name(&self) -> String {
         self.path
@@ -659,6 +671,15 @@ mod tests {
         let reopened = ProjectSession::open(saved.source_path).expect("open project");
         assert!(reopened.source().contains("Changed."));
         assert!(!reopened.is_dirty());
+    }
+
+    #[test]
+    fn project_directory_is_the_parent_of_a_saved_source_file() {
+        let directory = tempdir().expect("temp dir");
+        let path = directory.path().join("story.weave");
+        let (project, _) = ProjectSession::create(&path, VALID).expect("create project");
+        assert_eq!(project.directory(), Some(directory.path().to_path_buf()));
+        assert_eq!(ProjectSession::untitled(VALID).directory(), None);
     }
 
     #[test]

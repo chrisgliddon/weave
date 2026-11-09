@@ -35,7 +35,7 @@ pub mod text_view;
 pub mod theme;
 
 pub use alignment::AlignmentSession;
-pub use app::{LaunchMode, StartupError, launch};
+pub use app::{LaunchMode, StartupError, launch, launch_with_project};
 pub use assistance::{CharacterAssistanceSession, CharacterAssistanceSessionError};
 pub use character::CharacterCorpusSession;
 pub use character_authoring::{

@@ -1,5 +1,12 @@
 //! Debounced compiler integration and isolated live story playback panel.
 
+// The loader lives in its own file beside this module. It is declared here with
+// an explicit path so the new file stays adjacent to `preview.rs` in the source
+// tree. A crate root declaration in `lib.rs` would make the path
+// `crate::presentation_projection` instead.
+#[path = "presentation_projection.rs"]
+pub mod presentation_projection;
+
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -16,14 +23,18 @@ use weave_domain::DomainCatalog;
 use weave_patterns::DrawResult;
 use weave_runtime::{ChoiceView, PresentationEvent, Story, StoryEvent, Value};
 
+use self::presentation_projection::{
+    PresentationInputIssue, PresentationInputIssueKind, load_adjacent_presentation_inputs,
+};
 use crate::play_view::{
     AutoAdvancePolicy, AutoAdvanceState, CharacterPresentation, DEFAULT_TEXT_SCALE,
     DIALOGUE_BASE_PX, DIALOGUE_MAX_HEIGHT_PX, MotionPreference, NARRATOR, PLAY_KEYBOARD_HINT,
-    PlayAction, PlayFocus, PlayFocusContext, PlayFocusTarget, PlayMode, PresentationDrawerRows,
-    REVEAL_SPEED_STEP, SLOT_ORDER, StagedCharacter, TextReveal, WorldPresentation,
-    focus_indicator_colour, has_critical_diagnostics, play_diagnostics, play_focus_order_for,
-    play_key_for, presentation_drawer_rows, resolve_presentation, scaled_dialogue_height,
-    scaled_text_px, scene_from_session, scene_tone, step_text_scale,
+    PlayAction, PlayDiagnostic, PlayDiagnosticSeverity, PlayFocus, PlayFocusContext,
+    PlayFocusTarget, PlayMode, PresentationDrawerRows, REVEAL_SPEED_STEP, SLOT_ORDER,
+    StagedCharacter, TextReveal, WorldPresentation, focus_indicator_colour,
+    has_critical_diagnostics, play_diagnostics, play_focus_order_for, play_key_for,
+    presentation_drawer_rows, resolve_presentation, scaled_dialogue_height, scaled_text_px,
+    scene_from_session, scene_tone, step_text_scale,
 };
 use crate::playtest::{PlaytestOutcome, PlaytestRecord};
 use crate::presentation_assets::PresentationAssets;
@@ -881,6 +892,7 @@ pub struct PresentationDrawer {
     expanded: bool,
     world: Option<WorldPresentation>,
     character: Option<CharacterPresentation>,
+    input_issues: Vec<PresentationInputIssue>,
 }
 
 impl PresentationDrawer {
@@ -915,6 +927,16 @@ impl PresentationDrawer {
     /// Replace the character-driven presentation configuration.
     pub fn set_character(&mut self, character: Option<CharacterPresentation>) {
         self.character = character;
+    }
+
+    /// Problems found while loading the optional presentation inputs.
+    #[must_use]
+    pub fn input_issues(&self) -> &[PresentationInputIssue] {
+        &self.input_issues
+    }
+
+    fn set_input_issues(&mut self, issues: Vec<PresentationInputIssue>) {
+        self.input_issues = issues;
     }
 
     /// Resolve this drawer's inputs against one preview session.
@@ -1026,6 +1048,35 @@ impl PreviewSurface {
             self.last_stages.clear();
             cx.notify();
         }
+        self.refresh_presentation_inputs(cx);
+    }
+
+    /// Reload optional World and Character presentation inputs beside the project.
+    ///
+    /// The adjacent `weave.presentation.json` file is optional. Missing or
+    /// invalid input is recorded on the presentation drawer and shown in the
+    /// diagnostics panel; playback keeps using the compiled story and the
+    /// documented no-reference fallbacks. The loader reads the file on every
+    /// call, so a source edit that changes a selector value, or an edited input
+    /// file, produces the same plan for the same bytes.
+    ///
+    /// Returns whether the inputs changed and the surface repainted.
+    pub fn refresh_presentation_inputs(&mut self, cx: &mut Context<Self>) -> bool {
+        let inputs = load_adjacent_presentation_inputs(self.assets.root());
+        let changed = {
+            let drawer = &self.presentation_drawer;
+            drawer.world() != inputs.world.as_ref()
+                || drawer.character() != inputs.character.as_ref()
+                || drawer.input_issues() != inputs.issues.as_slice()
+        };
+        if !changed {
+            return false;
+        }
+        self.set_world_presentation(inputs.world, cx);
+        self.set_character_presentation(inputs.character, cx);
+        self.presentation_drawer.set_input_issues(inputs.issues);
+        cx.notify();
+        true
     }
 
     /// Re-stat staged images and repaint when one changed on disk.
@@ -1037,7 +1088,8 @@ impl PreviewSurface {
         if changed {
             cx.notify();
         }
-        changed
+        let refreshed = self.refresh_presentation_inputs(cx);
+        changed || refreshed
     }
 
     /// Image loader currently bound to the preview.
@@ -1204,6 +1256,7 @@ impl PreviewSurface {
         if pending.revision != revision {
             return false;
         }
+        self.refresh_presentation_inputs(cx);
         let compiled =
             self.session
                 .compile_source(&pending.source, pending.source_name, pending.revision);
@@ -1220,6 +1273,7 @@ impl PreviewSurface {
     ) -> bool {
         self.pending = None;
         self.debouncer.cancel();
+        self.refresh_presentation_inputs(cx);
         let compiled = self.session.compile_source(source, source_name, revision);
         cx.notify();
         compiled
@@ -1936,6 +1990,18 @@ impl PreviewSurface {
             body = body.child(drawer_text(text));
         }
 
+        if !self.presentation_drawer.input_issues().is_empty() {
+            body = body.child(drawer_section("INPUTS"));
+            for issue in self.presentation_drawer.input_issues() {
+                body = body.child(drawer_note(format!(
+                    "{} · {} — {}",
+                    issue.kind.label(),
+                    issue.source,
+                    issue.detail
+                )));
+            }
+        }
+
         if !rows.diagnostics.is_empty() {
             body = body.child(drawer_section("DIAGNOSTICS"));
             for diagnostic in &rows.diagnostics {
@@ -1964,7 +2030,21 @@ impl PreviewSurface {
         let expanded = self.diagnostics_expanded;
         let scene = scene_from_session(&self.session);
         let rows = self.presentation_drawer.view(&self.session);
-        let diagnostics = play_diagnostics(&scene, Some(&rows));
+        let mut diagnostics = play_diagnostics(&scene, Some(&rows));
+        diagnostics.extend(self.presentation_drawer.input_issues().iter().map(|issue| {
+            PlayDiagnostic {
+                severity: match issue.kind {
+                    PresentationInputIssueKind::Missing => PlayDiagnosticSeverity::Note,
+                    PresentationInputIssueKind::Invalid => PlayDiagnosticSeverity::Warning,
+                },
+                summary: format!(
+                    "{} · {} — {}",
+                    issue.kind.label(),
+                    issue.source,
+                    issue.detail
+                ),
+            }
+        }));
         let critical = has_critical_diagnostics(&diagnostics);
         let summary = if diagnostics.is_empty() {
             String::new()

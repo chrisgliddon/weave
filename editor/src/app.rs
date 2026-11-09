@@ -85,13 +85,18 @@ pub enum StartupError {
 
 /// Start the editor while converting platform panics into a clear process-level error.
 pub fn launch(mode: LaunchMode) -> Result<(), StartupError> {
-    match catch_unwind(AssertUnwindSafe(|| launch_unchecked(mode))) {
+    launch_with_project(mode, None)
+}
+
+/// Start the editor and open one project, when given.
+pub fn launch_with_project(mode: LaunchMode, project: Option<PathBuf>) -> Result<(), StartupError> {
+    match catch_unwind(AssertUnwindSafe(|| launch_unchecked(mode, project))) {
         Ok(result) => result,
         Err(payload) => Err(StartupError::PlatformPanic(panic_message(payload))),
     }
 }
 
-fn launch_unchecked(mode: LaunchMode) -> Result<(), StartupError> {
+fn launch_unchecked(mode: LaunchMode, project: Option<PathBuf>) -> Result<(), StartupError> {
     let failure = Rc::new(RefCell::new(None::<String>));
     let callback_failure = Rc::clone(&failure);
     let application = match mode {
@@ -116,7 +121,10 @@ fn launch_unchecked(mode: LaunchMode) -> Result<(), StartupError> {
                 app_id: Some("dev.weave.editor".to_owned()),
                 ..Default::default()
             },
-            |window, cx| cx.new(|cx| EditorShell::new(window, cx)),
+            |window, cx| {
+                let project = project.clone();
+                cx.new(|cx| EditorShell::new(window, project.as_deref(), cx))
+            },
         );
         match opened {
             Ok(_) => {
@@ -307,7 +315,7 @@ struct EditorShell {
 }
 
 impl EditorShell {
-    fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+    fn new(window: &mut Window, project: Option<&Path>, cx: &mut Context<Self>) -> Self {
         let focus = cx.focus_handle();
         focus.focus(window, cx);
         let mut state = EditorState::default();
@@ -389,6 +397,10 @@ impl EditorShell {
             focus,
         };
         shell.schedule_project_poll(cx);
+        let mut shell = shell;
+        if let Some(path) = project {
+            shell.open_project_path(path, cx);
+        }
         shell
     }
 
@@ -854,6 +866,7 @@ impl EditorShell {
     fn load_project_source(&mut self, cx: &mut Context<Self>) -> bool {
         let source = self.project.source().to_owned();
         self.install_project_domain_catalog(cx);
+        self.synchronize_preview_directory(cx);
         self.synchronize_manuscript(cx);
         self.canonical = CanonicalProjectModel::new(source.clone());
         self.canonical_revision_seen = self.canonical.revision();
@@ -868,6 +881,13 @@ impl EditorShell {
         let compiled = self.compile_current_source(cx);
         let _ = self.compile_preview_now(cx);
         compiled
+    }
+
+    fn synchronize_preview_directory(&mut self, cx: &mut Context<Self>) {
+        let directory = self.project.directory();
+        self.preview.update(cx, |preview, cx| {
+            preview.set_project_directory(directory, cx);
+        });
     }
 
     fn synchronize_manuscript(&mut self, cx: &mut Context<Self>) {
@@ -1043,6 +1063,7 @@ impl EditorShell {
     fn finish_save(&mut self, diagnostic_count: usize, cx: &mut Context<Self>) {
         self.save_knot_preferences(cx);
         self.install_project_domain_catalog(cx);
+        self.synchronize_preview_directory(cx);
         self.synchronize_manuscript(cx);
         self.text.update(cx, |text, _| text.mark_saved());
         self.state.project_name = self.project.display_name();
@@ -1464,6 +1485,8 @@ impl gpui::Render for EditorShell {
             self.knot.update(cx, |view, cx| {
                 view.set_knot(&document, knot_name.as_deref(), cx)
             });
+            self.outline
+                .update(cx, |view, cx| view.set_document(&document, cx));
         }
         if layout.inspector_sidebar {
             let knot_selected = selection.as_ref().is_some_and(|data| {
