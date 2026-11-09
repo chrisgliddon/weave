@@ -1,5 +1,6 @@
 //! Standalone GPUI application and testable editor-domain services.
 
+pub mod accessibility;
 pub mod alignment;
 pub mod app;
 pub mod assistance;

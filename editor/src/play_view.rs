@@ -34,6 +34,7 @@ use serde::{Deserialize, Serialize};
 use weave_core::ir::{AnchorIr, DomainValueIr, Fit, Slot, StoryIr, TransitionKind};
 use weave_runtime::{ChoiceView, PresentationEvent, Value};
 
+use crate::accessibility::AccessibleNode;
 use crate::preview::{PreviewSession, PreviewStatus, PreviewTranscript};
 use crate::theme::DARK_THEME;
 
@@ -2179,6 +2180,23 @@ impl PlayFocus {
     }
 }
 
+/// Build the logical accessibility tree for the current control set.
+///
+/// The pinned `gpui` revision has no accessibility API, so this tree is the platform-neutral
+/// contract a host can attach to its own bridge. Every control appears once, in focus order.
+#[must_use]
+pub fn play_accessibility_tree(
+    order: &[PlayFocusTarget],
+    focused: PlayFocusTarget,
+) -> Vec<AccessibleNode> {
+    order
+        .iter()
+        .map(|target| {
+            AccessibleNode::new(target.role(), target.label()).focused(*target == focused)
+        })
+        .collect()
+}
+
 /// Accessibility metadata for the focused control.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayAccessibility {
@@ -3519,6 +3537,26 @@ Mara: The ferry leaves at dusk.
             PlayFocusTarget::Advance,
             "a chosen option restores focus to the next scene action"
         );
+    }
+
+    #[test]
+    fn the_accessibility_tree_lists_every_control_once_in_focus_order() {
+        let scene = scene_from_session(&session());
+        let order = play_focus_order(&scene, play_context(false));
+        let focused = *order.first().expect("a focusable control");
+        let tree = play_accessibility_tree(&order, focused);
+        assert_eq!(tree.len(), order.len());
+        assert!(crate::accessibility::focus_is_unique(&tree));
+        assert_eq!(
+            tree.iter().filter(|node| node.focused).count(),
+            1,
+            "one control holds focus"
+        );
+        for (node, target) in tree.iter().zip(&order) {
+            assert_eq!(&node.label, &target.label());
+            assert_eq!(node.role, target.role());
+            assert!(!node.label.is_empty());
+        }
     }
 
     #[test]
