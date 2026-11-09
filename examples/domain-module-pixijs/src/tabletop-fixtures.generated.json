@@ -1,0 +1,1922 @@
+{
+  "projection_format_version": 1,
+  "generated_by": "scripts/tabletop-public-fixtures.mjs",
+  "source": "checked-in tabletop adapter fixture trees and canonical projects",
+  "adapters": [
+    {
+      "key": "plug-and-play",
+      "id": "org.weave.tabletop.plug_and_play",
+      "version": "1.0.0",
+      "source": "fixture_tree",
+      "character_name": "Ember Vale",
+      "steps": [
+        {
+          "id": "cross_rooftop",
+          "operation": "check",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "check_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "attribute": "agility",
+                "critical": false,
+                "die": 4,
+                "fumble": false,
+                "outcome": "failure",
+                "rerolled": true,
+                "total": 11
+              }
+            }
+          ]
+        },
+        {
+          "id": "test_fortune",
+          "operation": "fortune_test",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "fortune_test_resolved",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "die": 1,
+                "fortune": 1,
+                "success": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "fire_signal_pistol",
+          "operation": "attack",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "attack_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "critical": false,
+                "damage": 1,
+                "fumble": false,
+                "hit": true,
+                "jammed": false,
+                "self_damage": 0,
+                "total": 15,
+                "weapon_id": "signal pistol"
+              }
+            }
+          ]
+        },
+        {
+          "id": "lift_gate_together",
+          "operation": "group_check",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "group_check_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "failures": 1,
+                "results": [
+                  {
+                    "critical": false,
+                    "die": 5,
+                    "fumble": false,
+                    "id": "ember",
+                    "success": true,
+                    "total": 9
+                  },
+                  {
+                    "critical": false,
+                    "die": 3,
+                    "fumble": false,
+                    "id": "rook",
+                    "success": false,
+                    "total": 7
+                  },
+                  {
+                    "critical": false,
+                    "die": 4,
+                    "fumble": false,
+                    "id": "tamsin",
+                    "success": true,
+                    "total": 8
+                  }
+                ],
+                "success": true,
+                "successes": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "draw_initiative",
+          "operation": "initiative",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "initiative_ordered",
+              "capability": "encounters",
+              "payload": {
+                "entries": [
+                  {
+                    "label": "9 hearts",
+                    "participant": "warden",
+                    "rank": 9,
+                    "suit": "hearts"
+                  },
+                  {
+                    "label": "4 diamonds",
+                    "participant": "ember",
+                    "rank": 4,
+                    "suit": "diamonds"
+                  },
+                  {
+                    "label": "Joker",
+                    "participant": "rook",
+                    "rank": 0,
+                    "suit": "joker"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "canal_chase",
+          "operation": "chase",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "chase_resolved",
+              "capability": "encounters",
+              "payload": {
+                "outcome": "escaped",
+                "rounds": [
+                  {
+                    "opponent_die": 2,
+                    "opponent_total": 6,
+                    "player_die": 4,
+                    "player_total": 11,
+                    "round": 1,
+                    "winner": "player"
+                  },
+                  {
+                    "opponent_die": 2,
+                    "opponent_total": 6,
+                    "player_die": 5,
+                    "player_total": 12,
+                    "round": 2,
+                    "winner": "player"
+                  },
+                  {
+                    "opponent_die": 4,
+                    "opponent_total": 8,
+                    "player_die": 4,
+                    "player_total": 11,
+                    "round": 3,
+                    "winner": "player"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "take_fall_damage",
+          "operation": "take_damage",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "damage_applied",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "amount": 99,
+                "dead": false,
+                "remaining": 0,
+                "wounded": true
+              }
+            }
+          ]
+        }
+      ],
+      "event_count": 15,
+      "public_event_count": 7,
+      "final_state_sha256": "962635b705d3b020874b76ccee019153ac6c1eb16f2e926a15088e59c2f669d5",
+      "presentation_color": "hsl(105, 52%, 58%)",
+      "observable": [
+        "dead=false",
+        "fortune_remaining=1",
+        "inventory[0]=field knife",
+        "inventory[1]=signal pistol",
+        "inventory[2]=weather cloak",
+        "jammed_items=[]",
+        "last_operation=take_damage",
+        "survivability_current=0",
+        "wounded=true"
+      ]
+    },
+    {
+      "key": "dungeonpunk",
+      "id": "org.weave.tabletop.dungeonpunk",
+      "version": "1.0.0",
+      "source": "fixture_tree",
+      "character_name": "Vesper Ash",
+      "steps": [
+        {
+          "id": "raise_gate_together",
+          "operation": "struggle",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "attribute": "strength",
+                "dice": [
+                  2,
+                  3,
+                  3
+                ],
+                "dice_pool": 3,
+                "edge": "neutral",
+                "failure_xp_gained": true,
+                "helped": true,
+                "outcome": "failure",
+                "push": true,
+                "selected": 3,
+                "selection": "highest"
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "struggle_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "choices": [
+                  "failure_with_cost"
+                ],
+                "cost_required": true,
+                "failure": true,
+                "outcome": "failure",
+                "partial": false
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "help_applied",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "helper_id": "mara",
+                "stress_delta": 1
+              }
+            },
+            {
+              "sequence": 3,
+              "kind": "gm_move_prompt",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "categories": [
+                  "escalate",
+                  "injure",
+                  "rob",
+                  "twist_outcome",
+                  "warn"
+                ],
+                "reason": "failed_roll"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rest_after_push",
+          "operation": "rest",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "rest_resolved",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "hours": 4,
+                "hp_after": 11,
+                "hp_before": 11,
+                "stress_after": 0,
+                "stress_before": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "read_omens",
+          "operation": "struggle",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "attribute": "charisma",
+                "dice": [
+                  1,
+                  2
+                ],
+                "dice_pool": -1,
+                "edge": "disadvantage",
+                "failure_xp_gained": true,
+                "helped": false,
+                "outcome": "failure",
+                "push": false,
+                "selected": 1,
+                "selection": "lowest"
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "struggle_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "choices": [
+                  "failure_with_cost"
+                ],
+                "cost_required": true,
+                "failure": true,
+                "outcome": "failure",
+                "partial": false
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "gm_move_prompt",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "categories": [
+                  "escalate",
+                  "injure",
+                  "rob",
+                  "twist_outcome",
+                  "warn"
+                ],
+                "reason": "failed_roll"
+              }
+            }
+          ]
+        },
+        {
+          "id": "bargain_gate",
+          "operation": "struggle",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "attribute": "charisma",
+                "dice": [
+                  3,
+                  2
+                ],
+                "dice_pool": -1,
+                "edge": "disadvantage",
+                "failure_xp_gained": true,
+                "helped": false,
+                "outcome": "failure",
+                "push": false,
+                "selected": 2,
+                "selection": "lowest"
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "struggle_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "choices": [
+                  "failure_with_cost"
+                ],
+                "cost_required": true,
+                "failure": true,
+                "outcome": "failure",
+                "partial": false
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "gm_move_prompt",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "categories": [
+                  "escalate",
+                  "injure",
+                  "rob",
+                  "twist_outcome",
+                  "warn"
+                ],
+                "reason": "failed_roll"
+              }
+            }
+          ]
+        },
+        {
+          "id": "learn_bridgecraft",
+          "operation": "grow",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "advancement_applied",
+              "capability": "advancement",
+              "payload": {
+                "cost": 3,
+                "kind": "add_move",
+                "move_id": "bridgecraft"
+              }
+            }
+          ]
+        },
+        {
+          "id": "take_minor_harm",
+          "operation": "minor_damage",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "damage_applied",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "applied": 1,
+                "dice": [],
+                "hp_after": 10,
+                "hp_before": 11,
+                "prevented": 0,
+                "raw_damage": 1,
+                "status": "active",
+                "tier": "minor"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rest_after_harm",
+          "operation": "rest",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "rest_resolved",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "hours": 2,
+                "hp_after": 11,
+                "hp_before": 10,
+                "stress_after": 0,
+                "stress_before": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "wake_bridge",
+          "operation": "tick_clock",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "clock_changed",
+              "capability": "clocks",
+              "payload": {
+                "after": 4,
+                "before": 2,
+                "clock_id": "bridge_wakes",
+                "delta": 2,
+                "segments": 4
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "clock_triggered",
+              "capability": "clocks",
+              "payload": {
+                "boundary": "full",
+                "clock_id": "bridge_wakes"
+              }
+            }
+          ]
+        },
+        {
+          "id": "strike_ash_hound",
+          "operation": "harm_threat",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "threat_changed",
+              "capability": "encounters",
+              "payload": {
+                "applied": 4,
+                "armor": 1,
+                "defeated": false,
+                "dice": [
+                  5
+                ],
+                "hp_after": 4,
+                "hp_before": 8,
+                "raw_damage": 5,
+                "threat_id": "ash_hound",
+                "tier": "standard"
+              }
+            }
+          ]
+        },
+        {
+          "id": "brace_falling_stone",
+          "operation": "damage",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "damage_applied",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "applied": 0,
+                "dice": [
+                  3
+                ],
+                "hp_after": 11,
+                "hp_before": 11,
+                "prevented": 3,
+                "raw_damage": 3,
+                "status": "active",
+                "tier": "standard"
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "equipment_changed",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "damage_marks": 1,
+                "destroyed": false,
+                "item_id": "armor"
+              }
+            }
+          ]
+        },
+        {
+          "id": "warn_of_trouble",
+          "operation": "gm_move",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "gm_move_selected",
+              "capability": "campaign_state",
+              "payload": {
+                "category": "warn",
+                "move": "show_distant_trouble"
+              }
+            }
+          ]
+        }
+      ],
+      "event_count": 33,
+      "public_event_count": 20,
+      "final_state_sha256": "d637bf445e993fb38263d3422a502bb736b802e20c9482eee1cfa25ebc50509c",
+      "presentation_color": "hsl(342, 52%, 58%)",
+      "observable": [
+        "advancement.learned_moves[0].id=bridgecraft",
+        "advancement.learned_moves[0].label=Bridgecraft",
+        "advancement.stat_increases.charisma=0",
+        "advancement.stat_increases.constitution=0",
+        "advancement.stat_increases.dexterity=0",
+        "advancement.stat_increases.intelligence=0",
+        "advancement.stat_increases.strength=0",
+        "advancement.stat_increases.wisdom=0",
+        "bonds[0]=I owe Rook a road home.",
+        "bonds[1]=Mara knows what woke below the bridge.",
+        "clocks.bridge_wakes.filled=4",
+        "clocks.bridge_wakes.label=The bridge wakes",
+        "clocks.bridge_wakes.segments=4",
+        "clocks.bridge_wakes.trigger=full",
+        "dead=false",
+        "death_check_pending=false",
+        "encumbered=false",
+        "gear.armor.damage_marks=1",
+        "gear.armor.destroyed=false",
+        "gear.field_pack.damage_marks=0",
+        "gear.field_pack.destroyed=false",
+        "gear.rations.damage_marks=0",
+        "gear.rations.destroyed=false",
+        "gear.shield.damage_marks=0",
+        "gear.shield.destroyed=false",
+        "gear.sword.damage_marks=0",
+        "gear.sword.destroyed=false",
+        "gear.tools.damage_marks=0",
+        "gear.tools.destroyed=false",
+        "gear_weight_half_units=24",
+        "hp_current=11",
+        "hp_max=11",
+        "impairments=[]",
+        "last_operation=gm_move",
+        "stress=0",
+        "survival_offer_pending=false",
+        "threats.ash_hound.armor=1",
+        "threats.ash_hound.clock_id=bridge_wakes",
+        "threats.ash_hound.defeated=false",
+        "threats.ash_hound.hp_current=4",
+        "threats.ash_hound.hp_max=8",
+        "threats.ash_hound.kind=foe",
+        "threats.ash_hound.label=Ash hound",
+        "total_load_half_units=24",
+        "unconscious=false",
+        "xp=0"
+      ]
+    },
+    {
+      "key": "freehack",
+      "id": "org.weave.tabletop.freehack",
+      "version": "1.0.0",
+      "source": "freehack_public",
+      "character_name": "Tavi Quill",
+      "steps": [
+        {
+          "id": "preview_crossing_probability",
+          "operation": "preview_probability",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "probability_previewed",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "label": {
+                    "kind": "string",
+                    "value": "Estimate the gantry crossing"
+                  },
+                  "opposition_total": {
+                    "kind": "number",
+                    "value": 3
+                  },
+                  "success_basis_points_floor": {
+                    "kind": "number",
+                    "value": 6400
+                  },
+                  "support_total": {
+                    "kind": "number",
+                    "value": 4
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "cross_wet_gantry",
+          "operation": "resolve_check",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "check_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "label": {
+                    "kind": "string",
+                    "value": "Cross the wet gantry"
+                  },
+                  "magnitude": {
+                    "kind": "number",
+                    "value": 1
+                  },
+                  "outcome": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "support_total": {
+                    "kind": "number",
+                    "value": 4
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "recall_tide_gate",
+          "operation": "recall_memory",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "memory_resolved",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "has_experience": {
+                    "kind": "bool",
+                    "value": false
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "tide_gate"
+                  },
+                  "topic": {
+                    "kind": "string",
+                    "value": "the public tide-gate schedule"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "open_gantry_turn",
+          "operation": "open_section",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "section_opened",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "abstraction": {
+                    "kind": "symbol",
+                    "value": "objective"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Gantry Turn"
+                  },
+                  "mapping": {
+                    "kind": "symbol",
+                    "value": "mapped"
+                  },
+                  "participants": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "timing": {
+                    "kind": "symbol",
+                    "value": "timed"
+                  },
+                  "turn_ticks": {
+                    "kind": "number",
+                    "value": 30
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "submit_ira",
+          "operation": "submit_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "submission_recorded",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "participant_id": {
+                    "kind": "string",
+                    "value": "ira"
+                  },
+                  "required_count": {
+                    "kind": "number",
+                    "value": 2
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  },
+                  "submitted_count": {
+                    "kind": "number",
+                    "value": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "cancel_ira",
+          "operation": "cancel_submission",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "submission_cancelled",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "participant_id": {
+                    "kind": "string",
+                    "value": "ira"
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  },
+                  "submitted_count": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "resubmit_ira",
+          "operation": "submit_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "submission_recorded",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "participant_id": {
+                    "kind": "string",
+                    "value": "ira"
+                  },
+                  "required_count": {
+                    "kind": "number",
+                    "value": 2
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  },
+                  "submitted_count": {
+                    "kind": "number",
+                    "value": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "submit_moss",
+          "operation": "submit_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "submission_recorded",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "participant_id": {
+                    "kind": "string",
+                    "value": "moss"
+                  },
+                  "required_count": {
+                    "kind": "number",
+                    "value": 2
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  },
+                  "submitted_count": {
+                    "kind": "number",
+                    "value": 2
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "resolve_gantry_turn",
+          "operation": "resolve_section",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "section_resolved",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "public_summary": {
+                    "kind": "string",
+                    "value": "The gantry stabilizes."
+                  },
+                  "resolved_order": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "gantry_turn"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "create_crossing_track",
+          "operation": "create_track",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "track_created",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "advances_on": {
+                    "kind": "symbol",
+                    "value": "success"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "crossing_ready"
+                  },
+                  "interval": {
+                    "kind": "string",
+                    "value": "after a stable crossing"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Crossing Ready"
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "advance_crossing_track",
+          "operation": "advance_track",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "track_advanced",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "completed": {
+                    "kind": "bool",
+                    "value": true
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "crossing_ready"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Crossing Ready"
+                  },
+                  "progress_after": {
+                    "kind": "number",
+                    "value": 1
+                  },
+                  "progress_before": {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  "target_count": {
+                    "kind": "number",
+                    "value": 1
+                  }
+                }
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "track_completed",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "consequence": {
+                    "kind": "string",
+                    "value": "The crossing route becomes dependable."
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "crossing_ready"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "open_route_turn",
+          "operation": "open_section",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "section_opened",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "abstraction": {
+                    "kind": "symbol",
+                    "value": "strategic"
+                  },
+                  "id": {
+                    "kind": "string",
+                    "value": "route_turn"
+                  },
+                  "label": {
+                    "kind": "string",
+                    "value": "Route Turn"
+                  },
+                  "mapping": {
+                    "kind": "symbol",
+                    "value": "unmapped"
+                  },
+                  "participants": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      },
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "timing": {
+                    "kind": "symbol",
+                    "value": "timed"
+                  },
+                  "turn_ticks": {
+                    "kind": "number",
+                    "value": 5
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "submit_ira_route",
+          "operation": "submit_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "submission_recorded",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "participant_id": {
+                    "kind": "string",
+                    "value": "ira"
+                  },
+                  "required_count": {
+                    "kind": "number",
+                    "value": 2
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "route_turn"
+                  },
+                  "submitted_count": {
+                    "kind": "number",
+                    "value": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "timeout_route",
+          "operation": "timeout_section",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "section_timed_out",
+              "capability": "scenes",
+              "payload": {
+                "kind": "object",
+                "value": {
+                  "elapsed_ticks": {
+                    "kind": "number",
+                    "value": 5
+                  },
+                  "missing_participants": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "moss"
+                      }
+                    ]
+                  },
+                  "section_id": {
+                    "kind": "string",
+                    "value": "route_turn"
+                  },
+                  "submitted_participants": {
+                    "kind": "list",
+                    "value": [
+                      {
+                        "kind": "string",
+                        "value": "ira"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "event_count": 15,
+      "public_event_count": 15,
+      "final_state_sha256": "14e3afe2446d887b20da3257a2f549b359ca549068b26bfa088d0cd413543754",
+      "presentation_color": "hsl(315, 52%, 58%)",
+      "observable": [
+        "adapter.content_sha256=f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece",
+        "adapter.id=org.weave.tabletop.freehack",
+        "adapter.schema_version=1",
+        "adapter.version=1.0.0",
+        "memories[0].has_experience=true",
+        "memories[0].id=old_channel",
+        "memories[0].rationale=Established explicitly during character creation.",
+        "memories[0].topic=the old freight channel",
+        "memories[1].has_experience=false",
+        "memories[1].id=tide_gate",
+        "memories[1].rationale=The deterministic memory check did not establish prior experience with this topic.",
+        "memories[1].topic=the public tide-gate schedule",
+        "owner_id=org.weave.character.tavi_quill",
+        "projection_format_version=1",
+        "sections[0].abstraction=objective",
+        "sections[0].elapsed_ticks=0",
+        "sections[0].id=gantry_turn",
+        "sections[0].label=Gantry Turn",
+        "sections[0].mapping=mapped",
+        "sections[0].participants[0]=ira",
+        "sections[0].participants[1]=moss",
+        "sections[0].public_summary=The gantry stabilizes.",
+        "sections[0].resolved_order[0]=ira",
+        "sections[0].resolved_order[1]=moss",
+        "sections[0].revealed_submissions=[]",
+        "sections[0].status=resolved",
+        "sections[0].submitted_participants[0]=ira",
+        "sections[0].submitted_participants[1]=moss",
+        "sections[0].timing=timed",
+        "sections[0].turn_ticks=30",
+        "sections[1].abstraction=strategic",
+        "sections[1].elapsed_ticks=5",
+        "sections[1].id=route_turn",
+        "sections[1].label=Route Turn",
+        "sections[1].mapping=unmapped",
+        "sections[1].participants[0]=ira",
+        "sections[1].participants[1]=moss",
+        "sections[1].public_summary=null",
+        "sections[1].resolved_order[0]=ira",
+        "sections[1].revealed_submissions=[]",
+        "sections[1].status=timed_out",
+        "sections[1].submitted_participants[0]=ira",
+        "sections[1].timing=timed",
+        "sections[1].turn_ticks=5",
+        "tracks[0].advances_on=success",
+        "tracks[0].completed=true",
+        "tracks[0].consequence=The crossing route becomes dependable.",
+        "tracks[0].id=crossing_ready",
+        "tracks[0].interval=after a stable crossing",
+        "tracks[0].label=Crossing Ready",
+        "tracks[0].progress=1",
+        "tracks[0].target_count=1",
+        "tracks[1].advances_on=failure",
+        "tracks[1].completed=false",
+        "tracks[1].consequence=The character must pause and recover.",
+        "tracks[1].id=fatigue",
+        "tracks[1].interval=after strenuous movement",
+        "tracks[1].label=Fatigue",
+        "tracks[1].progress=0",
+        "tracks[1].target_count=3"
+      ]
+    },
+    {
+      "key": "open-tale",
+      "id": "org.weave.tabletop.open_tale",
+      "version": "1.0.0",
+      "source": "fixture_tree",
+      "character_name": "Alma Reed",
+      "steps": [
+        {
+          "id": "01_cross_the_ford",
+          "operation": "resolve_challenge",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "character",
+                "band": "critical",
+                "context_id": "cross_the_ford",
+                "dice": [
+                  2,
+                  5,
+                  6
+                ],
+                "dice_total": 11,
+                "heroic_badge_spent": false,
+                "kept": [
+                  5,
+                  6
+                ],
+                "mode": "advantage",
+                "total": 14
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "challenge_updated",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "band": "critical",
+                "challenge_id": "cross_the_ford",
+                "label": "Cross the ford",
+                "last_total": 14,
+                "status": "succeeded",
+                "turns": 1
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "challenge_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "challenge_id": "cross_the_ford",
+                "status": "succeeded"
+              }
+            }
+          ]
+        },
+        {
+          "id": "02_failed_omen",
+          "operation": "resolve_challenge",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "character",
+                "band": "failure",
+                "context_id": "failed_omen",
+                "dice": [
+                  3,
+                  6
+                ],
+                "dice_total": 9,
+                "heroic_badge_spent": false,
+                "kept": [
+                  3,
+                  6
+                ],
+                "mode": "normal",
+                "total": -88
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "challenge_updated",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "band": "failure",
+                "challenge_id": "failed_omen",
+                "label": "Read the flood omen",
+                "last_total": -88,
+                "status": "failed",
+                "turns": 1
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "challenge_resolved",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "challenge_id": "failed_omen",
+                "status": "failed"
+              }
+            },
+            {
+              "sequence": 3,
+              "kind": "mark_applied",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "marks_after": 1,
+                "reason": "failed_check"
+              }
+            }
+          ]
+        },
+        {
+          "id": "03_start_combat",
+          "operation": "start_combat",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "combat_started",
+              "capability": "encounters",
+              "payload": {
+                "adversary_health": 6,
+                "adversary_name": "Bramble Hound",
+                "combat_id": "reed_watch",
+                "distance": 20,
+                "label": "Hold the reed watch"
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "initiative_recorded",
+              "capability": "encounters",
+              "payload": {
+                "adversary_initiative": 10,
+                "character_first": false,
+                "character_initiative": 6,
+                "combat_id": "reed_watch"
+              }
+            }
+          ]
+        },
+        {
+          "id": "04_move_combat",
+          "operation": "move_combat",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "combat_moved",
+              "capability": "encounters",
+              "payload": {
+                "combat_id": "reed_watch",
+                "distance_after": 15,
+                "movement": 5
+              }
+            }
+          ]
+        },
+        {
+          "id": "05_resolve_combat_turn_1",
+          "operation": "resolve_combat_turn",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "adversary",
+                "band": "partial",
+                "context_id": "reed_watch",
+                "dice": [
+                  2,
+                  6
+                ],
+                "dice_total": 8,
+                "heroic_badge_spent": false,
+                "kept": [
+                  2,
+                  6
+                ],
+                "mode": "normal",
+                "total": 8
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "character",
+                "band": "success",
+                "context_id": "reed_watch",
+                "dice": [
+                  2,
+                  6
+                ],
+                "dice_total": 8,
+                "heroic_badge_spent": false,
+                "kept": [
+                  2,
+                  6
+                ],
+                "mode": "normal",
+                "total": 9
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "damage_applied",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "amount": 3,
+                "combat_id": "reed_watch",
+                "health_after": 3,
+                "target": "adversary"
+              }
+            },
+            {
+              "sequence": 3,
+              "kind": "combat_updated",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "adversary_health": 3,
+                "combat_id": "reed_watch",
+                "distance": 15,
+                "health": 10,
+                "round": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "06_resolve_combat_turn_2",
+          "operation": "resolve_combat_turn",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "adversary",
+                "band": "partial",
+                "context_id": "reed_watch",
+                "dice": [
+                  1,
+                  6
+                ],
+                "dice_total": 7,
+                "heroic_badge_spent": false,
+                "kept": [
+                  1,
+                  6
+                ],
+                "mode": "normal",
+                "total": 7
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "character",
+                "band": "partial",
+                "context_id": "reed_watch",
+                "dice": [
+                  1,
+                  4
+                ],
+                "dice_total": 5,
+                "heroic_badge_spent": false,
+                "kept": [
+                  1,
+                  4
+                ],
+                "mode": "normal",
+                "total": 6
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "damage_applied",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "amount": 2,
+                "combat_id": "reed_watch",
+                "health_after": 1,
+                "target": "adversary"
+              }
+            },
+            {
+              "sequence": 3,
+              "kind": "combat_updated",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "adversary_health": 1,
+                "combat_id": "reed_watch",
+                "distance": 15,
+                "health": 10,
+                "round": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "07_resolve_combat_turn_3",
+          "operation": "resolve_combat_turn",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "adversary",
+                "band": "success",
+                "context_id": "reed_watch",
+                "dice": [
+                  6,
+                  6
+                ],
+                "dice_total": 12,
+                "heroic_badge_spent": false,
+                "kept": [
+                  6,
+                  6
+                ],
+                "mode": "normal",
+                "total": 12
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "actor": "character",
+                "band": "partial",
+                "context_id": "reed_watch",
+                "dice": [
+                  2,
+                  3
+                ],
+                "dice_total": 5,
+                "heroic_badge_spent": false,
+                "kept": [
+                  2,
+                  3
+                ],
+                "mode": "normal",
+                "total": 6
+              }
+            },
+            {
+              "sequence": 2,
+              "kind": "damage_applied",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "amount": 2,
+                "combat_id": "reed_watch",
+                "health_after": 0,
+                "target": "adversary"
+              }
+            },
+            {
+              "sequence": 3,
+              "kind": "combat_updated",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "adversary_health": 0,
+                "combat_id": "reed_watch",
+                "distance": 15,
+                "health": 10,
+                "round": 3
+              }
+            },
+            {
+              "sequence": 4,
+              "kind": "combat_concluded",
+              "capability": "checks_and_conflicts",
+              "payload": {
+                "combat_id": "reed_watch",
+                "outcome": "victory"
+              }
+            }
+          ]
+        },
+        {
+          "id": "08_apply_recovery",
+          "operation": "apply_recovery",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "recovery_applied",
+              "capability": "resources_and_conditions",
+              "payload": {
+                "health_after": 10,
+                "marks_after": 0,
+                "mode": "rest",
+                "resolve_after": 4
+              }
+            }
+          ]
+        },
+        {
+          "id": "09_advance_character",
+          "operation": "advance_character",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "advancement_applied",
+              "capability": "advancement",
+              "payload": {
+                "experience_after": 12,
+                "experience_before": 0,
+                "level_after": 2,
+                "level_before": 1,
+                "milestone": "Held the reed watch"
+              }
+            }
+          ]
+        },
+        {
+          "id": "10_purchase_item",
+          "operation": "purchase_item",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "item_acquired",
+              "capability": "equipment_and_abilities",
+              "payload": {
+                "cost": 1,
+                "item_id": "rope",
+                "label": "Rope",
+                "quantity_after": 1
+              }
+            },
+            {
+              "sequence": 1,
+              "kind": "wealth_spent",
+              "capability": "equipment_and_abilities",
+              "payload": {
+                "cost": 1,
+                "item_id": "rope",
+                "wealth_after": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "11_inspect_character",
+          "operation": "inspect_character",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "character_inspected",
+              "capability": "derived_values",
+              "payload": {
+                "attributes": {
+                  "dexterity": 3,
+                  "intelligence": 1,
+                  "magicy": 1,
+                  "motion": 3,
+                  "perception": 2,
+                  "persuasion": 1,
+                  "strength": 3,
+                  "vitality": 3,
+                  "volition": 1
+                },
+                "experience": 12,
+                "items": [
+                  "short_blade",
+                  "travel_cloak"
+                ],
+                "level": 2,
+                "qualities": {
+                  "capacity": 8,
+                  "defense": 8,
+                  "hit_points": 10,
+                  "resolve": 4,
+                  "toughness": 8
+                },
+                "skills": [
+                  "athletics",
+                  "composure"
+                ],
+                "wealth": 1
+              }
+            }
+          ]
+        }
+      ],
+      "event_count": 28,
+      "public_event_count": 28,
+      "final_state_sha256": "362f3423ac139cdf8cc45674e8c6aa1aa2396ebabe248018f6d056bee19c7fea",
+      "presentation_color": "hsl(317, 52%, 58%)",
+      "observable": [
+        "challenges.cross_the_ford.attribute=strength",
+        "challenges.cross_the_ford.band=critical",
+        "challenges.cross_the_ford.difficulty=9",
+        "challenges.cross_the_ford.distance=20",
+        "challenges.cross_the_ford.label=Cross the ford",
+        "challenges.cross_the_ford.last_total=14",
+        "challenges.cross_the_ford.status=succeeded",
+        "challenges.cross_the_ford.turns=1",
+        "challenges.failed_omen.attribute=strength",
+        "challenges.failed_omen.band=failure",
+        "challenges.failed_omen.difficulty=30",
+        "challenges.failed_omen.distance=1000",
+        "challenges.failed_omen.label=Read the flood omen",
+        "challenges.failed_omen.last_total=-88",
+        "challenges.failed_omen.status=failed",
+        "challenges.failed_omen.turns=1",
+        "combats.reed_watch.adversary_agility=1",
+        "combats.reed_watch.adversary_damage=2",
+        "combats.reed_watch.adversary_defense=7",
+        "combats.reed_watch.adversary_health=0",
+        "combats.reed_watch.adversary_max_health=6",
+        "combats.reed_watch.adversary_name=Bramble Hound",
+        "combats.reed_watch.attacks=3",
+        "combats.reed_watch.character_first=false",
+        "combats.reed_watch.character_initiative=6",
+        "combats.reed_watch.distance=15",
+        "combats.reed_watch.label=Hold the reed watch",
+        "combats.reed_watch.round=3",
+        "combats.reed_watch.status=concluded",
+        "experience=12",
+        "health=10",
+        "heroic_badges=1",
+        "inventory.rope.quantity=1",
+        "inventory.short_blade.quantity=1",
+        "inventory.travel_cloak.quantity=1",
+        "level=2",
+        "marks=0",
+        "resolve=4",
+        "wealth=1"
+      ]
+    },
+    {
+      "key": "spark",
+      "id": "org.weave.tabletop.spark",
+      "version": "1.0.0",
+      "source": "canonical_project",
+      "character_name": null,
+      "steps": [
+        {
+          "id": "conformance_open",
+          "operation": "open_conflict",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "conflict_opened",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        },
+        {
+          "id": "conformance_declare_owner",
+          "operation": "declare_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "declaration_registered",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        },
+        {
+          "id": "conformance_declare_opponent",
+          "operation": "declare_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "declaration_registered",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        },
+        {
+          "id": "conformance_support",
+          "operation": "add_supporter",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "supporter_added",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        },
+        {
+          "id": "conformance_roll",
+          "operation": "roll_conflict",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts"
+            },
+            {
+              "sequence": 1,
+              "kind": "roll_recorded",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        },
+        {
+          "id": "conformance_resolve",
+          "operation": "resolve_conflict",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "conflict_resolved",
+              "capability": "checks_and_conflicts"
+            },
+            {
+              "sequence": 1,
+              "kind": "victory_cost_paid",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        }
+      ],
+      "event_count": 9,
+      "public_event_count": 8,
+      "final_state_sha256": "43e0df3b9c9ae768b1cd48acb2c012e3a869305267a0d0cad95274f787af975f",
+      "presentation_color": "hsl(217, 52%, 58%)",
+      "observable": []
+    },
+    {
+      "key": "wicked-ones",
+      "id": "org.weave.tabletop.wicked_ones",
+      "version": "1.0.0",
+      "source": "canonical_project",
+      "character_name": null,
+      "steps": [
+        {
+          "id": "conformance_resolve_action",
+          "operation": "resolve_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "action_resolved",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        }
+      ],
+      "event_count": 1,
+      "public_event_count": 1,
+      "final_state_sha256": "0304f0f5b0d118a3f0624b9d97bfd1a07f4be6fa269b6b65cc9f0565e3d7ccd5",
+      "presentation_color": "hsl(229, 52%, 58%)",
+      "observable": []
+    },
+    {
+      "key": "open-adventure",
+      "id": "org.weave.tabletop.open_adventure",
+      "version": "1.0.0",
+      "source": "canonical_project",
+      "character_name": null,
+      "steps": [
+        {
+          "id": "conformance_begin_challenge",
+          "operation": "begin_challenge",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "challenge_begun",
+              "capability": "encounters"
+            }
+          ]
+        },
+        {
+          "id": "conformance_resolve_challenge",
+          "operation": "resolve_challenge_action",
+          "events": [
+            {
+              "sequence": 0,
+              "kind": "action_resolved",
+              "capability": "checks_and_conflicts"
+            }
+          ]
+        }
+      ],
+      "event_count": 5,
+      "public_event_count": 2,
+      "final_state_sha256": "0940e337105cc4a5098e51e24d6cfaff4a5203fe17275782c21ab4a1509c8be0",
+      "presentation_color": "hsl(239, 52%, 58%)",
+      "observable": []
+    }
+  ]
+}

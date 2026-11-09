@@ -31,6 +31,8 @@ import {
   freehackPresentation,
   tabletopPresentation,
 } from "./tabletop-presentation.js";
+import { renderAdapterRuns } from "./tabletop-adapters.js";
+import generatedTabletopFixtures from "./tabletop-fixtures.generated.json";
 
 const status = document.querySelector("#status");
 const canvasHost = document.querySelector("#canvas");
@@ -70,6 +72,19 @@ try {
   });
   canvasHost.append(app.canvas);
 
+  const tabletopHost = document.querySelector("#tabletop-canvas");
+  const tabletopApp = new Application();
+  await tabletopApp.init({
+    width: 720,
+    height: 560,
+    background: 0x111326,
+    antialias: true,
+    autoDensity: true,
+    resolution: Math.min(window.devicePixelRatio, 2),
+  });
+  tabletopHost.append(tabletopApp.canvas);
+  renderAdapterRuns({ Text }, tabletopApp, generatedTabletopFixtures.adapters);
+
   const reading = new Text({
     text: `${worldLines.join("\n")}\n${composedWorld.harbor} · ${composedWorld.behavior} · ${composedWorld.primaryBiome}\n\n${character.displayName} · ${identityPresentation.pronounSubject} · ${identityPresentation.accent} · ${identityPresentation.visualTone}\n${expressionCharacter.term.surface} · ${expressionCharacter.preference.polarity} ${expressionCharacter.preference.target}\n${expressionCharacter.voice.instruction} · ${expressionCharacter.template.id}\ncreativity ${character.creativity} · derived OCEAN openness ${character.oceanOpenness}\n${alignmentCharacter.values.map((value) => value.label).join(" · ")} · alignment write-back ${alignmentCharacter.canonicalPersonalityWriteBack}\n${projectionCharacter.values.map((value) => value.label).join(" · ")} · projection HEXACO write-back ${projectionCharacter.writeBack.hexaco}\n${temporalCharacter.cues.length} reviewed temporal cues · presentation write-back ${identityPresentation.canonicalPersonalityWriteBack}\n\n${tabletop.name} · A ${tabletop.attributes.agility} Bn ${tabletop.attributes.brains} Bw ${tabletop.attributes.brawn} W ${tabletop.attributes.wits}\n${tabletop.check.outcome} (${tabletop.check.total}) · Fortune ${tabletop.fortune} · Survivability ${tabletop.survivability}\n${dungeonpunk.name} · STR ${dungeonpunk.attributes.strength} DEX ${dungeonpunk.attributes.dexterity} CON ${dungeonpunk.attributes.constitution}\nStruggle ${dungeonpunk.roll.outcome} (${dungeonpunk.roll.selected}) · HP ${dungeonpunk.hp} · Stress ${dungeonpunk.stress} · XP ${dungeonpunk.xp}\n${freehack.name} · ${freehack.archetype} · Focus ${freehack.modifiers.focus} · Fatigue ${freehack.fatigue}\nFreehack ${freehack.check.outcome} (${freehack.check.magnitude}) · gantry ${freehack.gantryStatus} · ${freehack.publicMemoryCount} public memories\n${label} · ${phase} · ${intensity}`,
     style: {
@@ -108,7 +123,7 @@ try {
   app.stage.addChild(packCard);
 
   status.textContent =
-    "PixiJS read portable World, Character, Plug-And-Play, Dungeonpunk, Freehack, and compact Character-pack exports; Freehack uses only its explicit public story/receipt schema, tabletop play retains exact adapter hashes and redacted audit boundaries, projection labels retain review lineage and no write-back authority, temporal fact/cue lineage stays separate, and the Character runtime pack renders the same approved identity, colour, personality, alignment, birth, voice, inner-life, and date-context values as the Bevy consumer.";
+    "PixiJS read portable World, Character, Plug-And-Play, Dungeonpunk, Freehack, and compact Character-pack exports; Freehack uses only its explicit public story/receipt schema, tabletop play retains exact adapter hashes and redacted audit boundaries, projection labels retain review lineage and no write-back authority, temporal fact/cue lineage stays separate, and the Character runtime pack renders the same approved identity, colour, personality, alignment, birth, voice, inner-life, and date-context values as the Bevy consumer. The tabletop adapter panel replays every checked-in adapter projection, including the Spark, Wicked Ones, and Open Adventure canonical projects.";
 } catch (error) {
   status.textContent = `The portable domain export could not be displayed: ${error.message ?? error}`;
 }

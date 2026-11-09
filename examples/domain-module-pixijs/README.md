@@ -29,12 +29,38 @@ public-only story/receipt schema and rejects authority event kinds, entropy, req
 opposition, secret tracks/memories, and private submissions; no authority artifact is imported by
 the PixiJS bundle.
 
+## Tabletop adapter replay consumer
+
+`src/tabletop-adapters.js` and `src/tabletop-adapter-fixtures.node.js` load and validate every
+adapter's checked-in replay data, then render the public events, final state hash, and observable
+values with PixiJS `Text`. Coverage is:
+
+| Adapter | Source | Steps | Public events |
+|---|---|---|---|
+| Plug-And-Play | fixture tree | 7 | 7 |
+| Dungeonpunk | fixture tree | 11 | 20 |
+| Freehack | public receipts and public state | 14 | 15 |
+| Open Tale | fixture tree | 11 | 28 |
+| Spark | canonical project | 6 | 8 |
+| Wicked Ones | canonical project | 1 | 1 |
+| Open Adventure | canonical project | 2 | 2 |
+
+`scripts/tabletop-public-fixtures.mjs` writes `src/tabletop-fixtures.generated.json`. It reads the
+authority-capable fixture files with Node built-ins, validates the complete state-hash chain, and
+keeps only public events and public state, so the browser bundle never contains an authority
+payload. `npm test` and `npm run build` regenerate the projection first.
+
 ```bash
 cd examples/domain-module-pixijs
 npm ci
 npm test
 npm run build
 ```
+
+The tests cover every adapter, reject an unsupported state version, a mismatched adapter
+coordinate, a broken final-state chain, a Freehack receipt carrying an authority field, and a stale
+canonical project chain. All checks run offline against the checked-in synthetic fixtures; no
+upstream art or prose is bundled.
 
 Run `npm run dev` for the browser view. The pure value-reader tests intentionally run in Node so
 local checks can verify the portable boundary without a GPU or browser.

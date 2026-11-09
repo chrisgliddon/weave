@@ -6,6 +6,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "fixtures": "node scripts/tabletop-public-fixtures.mjs",
+    "prebuild": "npm run fixtures",
+    "pretest": "npm run fixtures",
     "test": "node --test"
   },
   "dependencies": {

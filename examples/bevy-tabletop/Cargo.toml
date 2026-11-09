@@ -1,0 +1,19 @@
+[package]
+name = "weave-example-bevy-tabletop"
+description = "Bevy consumer that replays every checked-in tabletop adapter fixture"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+default-run = "weave-example-bevy-tabletop"
+
+[dependencies]
+bevy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+weave-domain = { path = "../../crates/weave-domain" }
+weave-tabletop = { path = "../../crates/weave-tabletop" }
+
+[lints]
+workspace = true
