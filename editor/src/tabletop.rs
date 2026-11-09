@@ -1,5 +1,8 @@
 //! Generic editor discovery for declarative tabletop adapter contracts.
 
+#[path = "tabletop_panels.rs"]
+pub mod tabletop_panels;
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use weave_tabletop::{
