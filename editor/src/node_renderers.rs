@@ -241,17 +241,17 @@ fn render_weave_node(
         NodeShape::Hexagon => "⬡",
         NodeShape::Pill => "●",
     };
+    // Fixed sizes match the flow node's declared size so handles and edges land on the
+    // visible card edge. Content that overflows is clipped rather than growing the card.
+    let (width, height) = match kind {
+        GraphNodeKind::Variable => (176.0, 54.0),
+        GraphNodeKind::Choice => (220.0, 78.0),
+        GraphNodeKind::Knot | GraphNodeKind::Grammar | GraphNodeKind::Pattern => (220.0, 92.0),
+    };
     let mut card = div()
-        .w(px(if kind == GraphNodeKind::Variable {
-            176.0
-        } else {
-            220.0
-        }))
-        .min_h(px(if kind == GraphNodeKind::Variable {
-            54.0
-        } else {
-            78.0
-        }))
+        .w(px(width))
+        .h(px(height))
+        .overflow_hidden()
         .flex()
         .flex_col()
         .gap_1()

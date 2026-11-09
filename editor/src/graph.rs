@@ -602,10 +602,20 @@ impl GraphDocument {
                         ]
                     }
                 };
+                // Match the size the renderer draws exactly. gpui-flow only measures custom
+                // renderers when the wrapper reports bounds, so a declared size that differs
+                // from the card leaves connectors short of, or past, the visible edge.
+                let (width, height) = match node.kind {
+                    GraphNodeKind::Variable => (176.0, 54.0),
+                    GraphNodeKind::Choice => (220.0, 78.0),
+                    GraphNodeKind::Knot | GraphNodeKind::Grammar | GraphNodeKind::Pattern => {
+                        (220.0, 92.0)
+                    }
+                };
                 let mut flow = FlowNode::new(&node.id, node.position.x, node.position.y)
                     .label(&node.label)
                     .node_type(node.kind.renderer_key())
-                    .size(node.width, node.height)
+                    .size(width, height)
                     .handles(handles);
                 flow.selected = self.selection.contains(&node.id);
                 flow
@@ -626,7 +636,19 @@ impl GraphDocument {
                     GraphEdgeKind::Divert => (0x99a3b5, EdgeType::Bezier { curvature: 0.25 }),
                     GraphEdgeKind::Thread => (0xb481ff, EdgeType::Straight),
                 };
+                let source_handle = match self
+                    .nodes
+                    .iter()
+                    .find(|node| node.id == edge.source)
+                    .map(|node| node.kind)
+                {
+                    Some(GraphNodeKind::Choice) => "branch",
+                    _ => "out",
+                };
+                let target_handle = "in";
                 let mut flow = FlowEdge::new(&edge.id, &edge.source, &edge.target)
+                    .source_handle(source_handle)
+                    .target_handle(target_handle)
                     .color(color)
                     .stroke_width(if edge.kind == GraphEdgeKind::Thread {
                         1.0
