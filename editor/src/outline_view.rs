@@ -205,7 +205,11 @@ impl gpui::Render for OutlineSurface {
                     .cursor_pointer()
                     .when(selected == Some(index), |row| {
                         row.bg(rgb(DARK_THEME.accent))
+                            .text_color(rgb(DARK_THEME.workspace))
                     })
+                    .role(gpui::Role::TreeItem)
+                    .aria_label(format!("{title} {detail}"))
+                    .aria_selected(selected == Some(index))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         let _ = this.outline.select_node(&node);
                         this.open_selected(cx);

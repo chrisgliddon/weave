@@ -1357,6 +1357,8 @@ impl PreviewSurface {
                     } else {
                         focus_indicator_colour(focused == target)
                     }))
+                    .role(gpui::Role::Tab)
+                    .aria_label(mode.label())
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if active {
@@ -1629,6 +1631,8 @@ impl PreviewSurface {
             .border_color(rgb(focus_indicator_colour(
                 focused == PlayFocusTarget::Advance,
             )))
+            .role(gpui::Role::Button)
+            .aria_label("Advance scene")
             .cursor_pointer()
             .on_click(cx.listener(|this, _, _, cx| {
                 this.activate_play_target(PlayFocusTarget::Advance, cx);
@@ -1677,6 +1681,8 @@ impl PreviewSurface {
                             focused == PlayFocusTarget::Choice(index),
                         )))
                         .bg(rgb(DARK_THEME.chrome))
+                        .role(gpui::Role::Button)
+                        .aria_label(choice.text.clone())
                         .cursor_pointer()
                         .text_size(px(scaled_text_px(13.0, self.text_scale)))
                         .text_color(rgb(DARK_THEME.text))
@@ -1725,6 +1731,8 @@ impl PreviewSurface {
                     .border_color(rgb(focus_indicator_colour(
                         focused == PlayFocusTarget::PlaytestToggle,
                     )))
+                    .role(gpui::Role::Button)
+                    .aria_label("Playtest drawer")
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if expanded {
@@ -1955,6 +1963,8 @@ impl PreviewSurface {
                     .border_color(rgb(focus_indicator_colour(
                         focused == PlayFocusTarget::PresentationToggle,
                     )))
+                    .role(gpui::Role::Button)
+                    .aria_label("Resolved presentation drawer")
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if expanded {
@@ -2097,6 +2107,8 @@ impl PreviewSurface {
                     .border_color(rgb(focus_indicator_colour(
                         focused == PlayFocusTarget::DiagnosticsToggle,
                     )))
+                    .role(gpui::Role::Button)
+                    .aria_label("Diagnostics drawer")
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if expanded {
@@ -2559,6 +2571,8 @@ impl PreviewSurface {
                     )))
                     .bg(rgb(DARK_THEME.accent))
                     .text_color(rgb(on_accent_text_colour()))
+                    .role(gpui::Role::Button)
+                    .aria_label(choice.text.clone())
                     .cursor_pointer()
                     .text_xs()
                     .child(choice.text)
@@ -2582,6 +2596,8 @@ impl PreviewSurface {
                         focused == PlayFocusTarget::DebugIssue,
                     )))
                     .bg(rgb(DARK_THEME.error))
+                    .role(gpui::Role::Button)
+                    .aria_label(issue.message.clone())
                     .cursor_pointer()
                     .text_xs()
                     .child(issue.message.clone())
@@ -2609,6 +2625,8 @@ impl PreviewSurface {
                     .border_color(rgb(focus_indicator_colour(
                         focused == PlayFocusTarget::DebugKnot(index),
                     )))
+                    .role(gpui::Role::Button)
+                    .aria_label(format!("Replay {knot}"))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(DARK_THEME.accent))

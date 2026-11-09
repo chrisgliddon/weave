@@ -880,8 +880,8 @@ impl BodyParser {
     fn new(source: &str, base_offset: usize, base_line: usize) -> Self {
         let mut lines = Vec::new();
         let mut offset = base_offset;
-        let mut line_number = base_line;
-        for segment in source.split_inclusive('\n') {
+        for (line_index, segment) in source.split_inclusive('\n').enumerate() {
+            let line_number = base_line + line_index;
             let content = segment
                 .strip_suffix('\n')
                 .unwrap_or(segment)
@@ -889,7 +889,6 @@ impl BodyParser {
                 .unwrap_or_else(|| segment.strip_suffix('\n').unwrap_or(segment));
             lines.push(BodyLine::new(content, offset, line_number));
             offset += segment.len();
-            line_number += 1;
         }
         if !source.is_empty() && !source.ends_with('\n') && lines.is_empty() {
             lines.push(BodyLine::new(source, base_offset, base_line));

@@ -661,6 +661,11 @@ impl gpui::Render for KnotView {
 impl KnotView {
     fn block_row(&self, block: &KnotBlock, cx: &mut Context<Self>) -> gpui::AnyElement {
         let path = block.path.clone();
+        let block_key = path
+            .iter()
+            .map(usize::to_string)
+            .collect::<Vec<_>>()
+            .join(".");
         let editable_path = path.clone();
         let removable_path = path.clone();
         let move_up_path = path.clone();
@@ -718,7 +723,9 @@ impl KnotView {
         row = row
             .child(
                 div()
-                    .id("move-block-up")
+                    .id(format!("move-block-up:{block_key}"))
+                    .role(gpui::Role::Button)
+                    .aria_label("Move block earlier")
                     .px_2()
                     .rounded_md()
                     .text_xs()
@@ -731,7 +738,9 @@ impl KnotView {
             )
             .child(
                 div()
-                    .id("move-block-down")
+                    .id(format!("move-block-down:{block_key}"))
+                    .role(gpui::Role::Button)
+                    .aria_label("Move block later")
                     .px_2()
                     .rounded_md()
                     .text_xs()
@@ -747,7 +756,9 @@ impl KnotView {
             let inline_text = inline_text.clone();
             row = row.child(
                 div()
-                    .id("edit-block")
+                    .id(format!("edit-block:{block_key}"))
+                    .role(gpui::Role::Button)
+                    .aria_label("Edit block")
                     .px_2()
                     .rounded_md()
                     .text_xs()
@@ -766,7 +777,9 @@ impl KnotView {
         if block.kind.removable() {
             row = row.child(
                 div()
-                    .id("remove-block")
+                    .id(format!("remove-block:{block_key}"))
+                    .role(gpui::Role::Button)
+                    .aria_label("Remove block")
                     .px_2()
                     .rounded_md()
                     .text_xs()
@@ -821,6 +834,10 @@ fn mode_button(
         } else {
             DARK_THEME.chrome
         }))
+        .when(active, |button| button.text_color(rgb(DARK_THEME.workspace)))
+        .role(gpui::Role::Tab)
+        .aria_label(label)
+        .aria_selected(active)
         .child(label)
         .on_click(listener)
         .into_any_element()

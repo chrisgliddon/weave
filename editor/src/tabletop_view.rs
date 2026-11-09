@@ -1111,6 +1111,9 @@ impl TabletopView {
                     } else {
                         DARK_THEME.chrome
                     }))
+                    .role(gpui::Role::Tab)
+                    .aria_label(panel.title.to_string())
+                    .aria_selected(selected)
                     .cursor_pointer()
                     .on_click(cx.listener(move |this, _, _, cx| this.select_panel(index, cx)))
                     .child(div().text_sm().child(panel.title.to_owned()))
@@ -1258,6 +1261,8 @@ impl TabletopView {
                     } else {
                         DARK_THEME.chrome
                     }))
+                    .role(gpui::Role::Button)
+                    .aria_label(operation.title.to_string())
                     .cursor_pointer()
                     .on_click(cx.listener(move |this, _, _, cx| this.select_operation(index, cx)))
                     .child(div().text_sm().child(operation.title.to_owned()))
@@ -1550,6 +1555,8 @@ fn field_row(
 ) -> AnyElement {
     let mut row = div()
         .id(id)
+        .role(gpui::Role::TextInput)
+        .aria_label(field.label.to_owned())
         .flex()
         .flex_col()
         .gap_1()
@@ -1598,6 +1605,8 @@ fn action_button(
 ) -> AnyElement {
     div()
         .id(id)
+        .role(gpui::Role::Button)
+        .aria_label(label)
         .px_3()
         .py_1p5()
         .rounded_md()

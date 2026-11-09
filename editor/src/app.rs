@@ -113,7 +113,7 @@ fn launch_unchecked(mode: LaunchMode, project: Option<PathBuf>) -> Result<(), St
     };
     application.run(move |cx: &mut App| {
         install_commands_and_menus(cx);
-        cx.on_window_closed(|cx| {
+        cx.on_window_closed(|cx, _| {
             if cx.windows().is_empty() {
                 cx.quit();
             }

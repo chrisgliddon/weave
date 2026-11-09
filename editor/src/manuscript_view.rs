@@ -9,7 +9,7 @@ use std::ops::Range;
 use std::path::Path;
 
 use gpui::{
-    AnyElement, Context, FocusHandle, KeyDownEvent, Render, ScrollDelta, ScrollWheelEvent, Window,
+    AnyElement, Context, FocusHandle, KeyDownEvent, Render, ScrollDelta, ScrollEvent, Window,
     div, prelude::*, px, rgb,
 };
 
@@ -2508,7 +2508,7 @@ impl ManuscriptSurface {
                     .id("manuscript-table-viewport")
                     .flex_1()
                     .overflow_y_scroll()
-                    .on_scroll_wheel(cx.listener(|this, event: &ScrollWheelEvent, _, cx| {
+                    .on_scroll(cx.listener(|this, event: &ScrollEvent, _, cx| {
                         let delta = match event.delta {
                             ScrollDelta::Pixels(point) => f32::from(point.y),
                             ScrollDelta::Lines(point) => point.y * ROW_HEIGHT,
