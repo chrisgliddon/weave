@@ -9,8 +9,8 @@ use std::ops::Range;
 use std::path::Path;
 
 use gpui::{
-    AnyElement, Context, FocusHandle, KeyDownEvent, Render, ScrollDelta, ScrollEvent, Window,
-    div, prelude::*, px, rgb,
+    AnyElement, Context, FocusHandle, KeyDownEvent, Render, ScrollDelta, ScrollEvent, Window, div,
+    prelude::*, px, rgb,
 };
 
 use crate::manuscript::{

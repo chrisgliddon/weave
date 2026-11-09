@@ -834,7 +834,9 @@ fn mode_button(
         } else {
             DARK_THEME.chrome
         }))
-        .when(active, |button| button.text_color(rgb(DARK_THEME.workspace)))
+        .when(active, |button| {
+            button.text_color(rgb(DARK_THEME.workspace))
+        })
         .role(gpui::Role::Tab)
         .aria_label(label)
         .aria_selected(active)
