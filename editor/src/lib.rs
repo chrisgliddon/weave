@@ -29,6 +29,7 @@ pub mod relationships;
 pub mod state;
 pub mod sync;
 pub mod tabletop;
+pub mod tabletop_view;
 pub mod temporal_context;
 pub mod text_editor;
 pub mod text_view;
@@ -106,6 +107,7 @@ pub use tabletop::{
     FreehackSeedLineage, PlugAndPlayCreationSession, PlugAndPlaySeedLineage, TabletopEditorCatalog,
     TabletopPanelInspection,
 };
+pub use tabletop_view::{TabletopView, TabletopViewEvent};
 pub use temporal_context::TemporalContextSession;
 pub use text_editor::{SyntaxKind, SyntaxToken, TextBuffer, highlight_source};
 pub use text_view::TextSurface;

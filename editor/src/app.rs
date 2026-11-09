@@ -5,6 +5,7 @@ use std::io::Read;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use gpui::{
@@ -28,8 +29,14 @@ use crate::preview::{PreviewEvent, PreviewSurface};
 use crate::project::{ConflictResolution, ExternalChange, ProjectSession, ProjectWatcher};
 use crate::state::{CenterView, EditorCommand, EditorState};
 use crate::sync::{CanonicalProjectModel, TextSync};
+use crate::tabletop::tabletop_panels::{TabletopPanelAdapter, builtin_panel_adapters};
+use crate::tabletop_view::{TabletopView, TabletopViewEvent};
 use crate::text_view::TextSurface;
 use crate::theme::DARK_THEME;
+use weave_tabletop::{
+    OPEN_ADVENTURE_ADAPTER_ID, OPEN_TALE_ADAPTER_ID, ResolverRegistry, SPARK_ADAPTER_ID,
+    WICKED_ONES_ADAPTER_ID,
+};
 
 actions!(
     weave_editor,
@@ -43,6 +50,7 @@ actions!(
         ShowText,
         ShowManuscript,
         ShowOutline,
+        ShowTabletop,
         MoveChapterUp,
         MoveChapterDown,
         MoveChapterPromote,
@@ -178,6 +186,23 @@ fn read_sidecar(path: &Path) -> Option<String> {
     (text.len() as u64 <= MAX_SIDECAR_BYTES).then_some(text)
 }
 
+/// Exact resolver registry for one built-in panel adapter.
+fn tabletop_registry(adapter: &dyn TabletopPanelAdapter) -> Option<ResolverRegistry> {
+    use weave_tabletop::{
+        OpenAdventureResolver, OpenTaleResolver, SparkResolver, WickedOnesResolver,
+    };
+    let manifest = adapter.manifest();
+    let mut registry = ResolverRegistry::new();
+    let registered = match adapter.adapter_id() {
+        SPARK_ADAPTER_ID => registry.register(&manifest, SparkResolver),
+        WICKED_ONES_ADAPTER_ID => registry.register(&manifest, WickedOnesResolver),
+        OPEN_TALE_ADAPTER_ID => registry.register(&manifest, OpenTaleResolver),
+        OPEN_ADVENTURE_ADAPTER_ID => registry.register(&manifest, OpenAdventureResolver),
+        _ => return None,
+    };
+    registered.ok().map(|()| registry)
+}
+
 /// Knot and statement path for a choice node, if the node is a choice.
 fn choice_of_node(node_id: &str) -> Option<(String, Vec<usize>)> {
     let rest = node_id.strip_prefix("choice:")?;
@@ -221,6 +246,7 @@ fn install_commands_and_menus(cx: &mut App) {
         KeyBinding::new("secondary-2", ShowText, Some("WeaveEditor")),
         KeyBinding::new("secondary-3", ShowManuscript, Some("WeaveEditor")),
         KeyBinding::new("secondary-4", ShowOutline, Some("WeaveEditor")),
+        KeyBinding::new("secondary-5", ShowTabletop, Some("WeaveEditor")),
         KeyBinding::new("secondary-shift-up", MoveChapterUp, Some("WeaveManuscript")),
         KeyBinding::new(
             "secondary-shift-down",
@@ -268,6 +294,7 @@ fn install_commands_and_menus(cx: &mut App) {
             MenuItem::action("Text", ShowText),
             MenuItem::action("Manuscript", ShowManuscript),
             MenuItem::action("Outline", ShowOutline),
+            MenuItem::action("Tabletop", ShowTabletop),
             MenuItem::separator(),
             MenuItem::action("Project", ToggleProject),
             MenuItem::action("Inspector", ToggleInspector),
@@ -307,6 +334,9 @@ struct EditorShell {
     graph: Entity<GraphSurface>,
     knot: Entity<KnotView>,
     outline: Entity<OutlineSurface>,
+    tabletop: Entity<TabletopView>,
+    tabletop_adapters: Vec<Arc<dyn TabletopPanelAdapter>>,
+    tabletop_selected: usize,
     text: Entity<TextSurface>,
     patterns: Entity<PatternBrowserSurface>,
     preview: Entity<PreviewSurface>,
@@ -340,6 +370,21 @@ impl EditorShell {
         let knot =
             cx.new(|_| KnotView::new(canonical.graph_document(), KnotViewPreferences::default()));
         let outline = cx.new(|_| OutlineSurface::new(canonical.graph_document()));
+        let tabletop_adapters = builtin_panel_adapters();
+        let tabletop = cx.new(TabletopView::new);
+        if let Some(adapter) = tabletop_adapters.first().cloned()
+            && let Some(registry) = tabletop_registry(adapter.as_ref())
+        {
+            let _ = tabletop.update(cx, |view, cx| {
+                view.set_adapter(adapter, Arc::new(registry), cx)
+            });
+        }
+        cx.subscribe(&tabletop, |_, _, event: &TabletopViewEvent, cx| {
+            if matches!(event, TabletopViewEvent::Changed) {
+                cx.notify();
+            }
+        })
+        .detach();
         cx.subscribe(&outline, |this, _, event, cx| {
             this.handle_outline_event(event, cx);
         })
@@ -395,6 +440,9 @@ impl EditorShell {
             graph,
             knot,
             outline,
+            tabletop,
+            tabletop_adapters,
+            tabletop_selected: 0,
             text,
             patterns,
             preview,
@@ -811,7 +859,7 @@ impl EditorShell {
                         crate::state::StatusMessage::Info("Undid source edit".to_owned());
                 }
             }
-            CenterView::Graph | CenterView::Outline => {
+            CenterView::Graph | CenterView::Outline | CenterView::Tabletop => {
                 if let Some(source) = self.canonical.undo() {
                     self.apply_history_source(source, "Undid synchronized graph edit", cx);
                 } else {
@@ -845,7 +893,7 @@ impl EditorShell {
                 self.state.status =
                     crate::state::StatusMessage::Info("The manuscript has no redo yet".to_owned());
             }
-            CenterView::Graph | CenterView::Outline => {
+            CenterView::Graph | CenterView::Outline | CenterView::Tabletop => {
                 if let Some(source) = self.canonical.redo() {
                     self.apply_history_source(source, "Redid synchronized graph edit", cx);
                 } else {
@@ -886,6 +934,71 @@ impl EditorShell {
         let compiled = self.compile_current_source(cx);
         let _ = self.compile_preview_now(cx);
         compiled
+    }
+
+    fn select_tabletop_adapter(&mut self, index: usize, cx: &mut Context<Self>) {
+        let Some(adapter) = self.tabletop_adapters.get(index).cloned() else {
+            return;
+        };
+        let Some(registry) = tabletop_registry(adapter.as_ref()) else {
+            self.state
+                .report_error("No trusted resolver is registered for this adapter".to_owned());
+            return;
+        };
+        match self.tabletop.update(cx, |view, cx| {
+            view.set_adapter(adapter, Arc::new(registry), cx)
+        }) {
+            Ok(()) => self.tabletop_selected = index,
+            Err(error) => self.state.report_error(error.to_string()),
+        }
+        cx.notify();
+    }
+
+    fn tabletop_content(&mut self, cx: &mut Context<Self>) -> AnyElement {
+        let mut row = div()
+            .flex()
+            .items_center()
+            .gap_2()
+            .px_3()
+            .py_2()
+            .bg(rgb(DARK_THEME.chrome))
+            .border_b_1()
+            .border_color(rgb(DARK_THEME.border));
+        for (index, adapter) in self.tabletop_adapters.iter().enumerate() {
+            let label = adapter
+                .adapter_id()
+                .rsplit('.')
+                .next()
+                .unwrap_or("adapter")
+                .replace('_', " ");
+            let active = index == self.tabletop_selected;
+            row = row.child(
+                div()
+                    .id(("tabletop-adapter", index))
+                    .px_2()
+                    .py_1()
+                    .rounded_md()
+                    .text_xs()
+                    .cursor_pointer()
+                    .when(active, |tab| {
+                        tab.bg(rgb(DARK_THEME.accent))
+                            .text_color(rgb(DARK_THEME.text))
+                    })
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.select_tabletop_adapter(index, cx);
+                    }))
+                    .child(label),
+            );
+        }
+        div()
+            .flex_1()
+            .min_w_0()
+            .h_full()
+            .flex()
+            .flex_col()
+            .child(row)
+            .child(self.tabletop.clone())
+            .into_any_element()
     }
 
     fn synchronize_preview_directory(&mut self, cx: &mut Context<Self>) {
@@ -1449,12 +1562,14 @@ impl gpui::Render for EditorShell {
             CenterView::Text => "Unicode source editor",
             CenterView::Manuscript => "Ordered chapter tree and card board",
             CenterView::Outline => "Indented story outline",
+            CenterView::Tabletop => "Manifest-driven tabletop panels",
         };
         let center_content = match layout.center {
             CenterView::Graph => self.graph.clone().into_any_element(),
             CenterView::Text => self.text.clone().into_any_element(),
             CenterView::Manuscript => self.manuscript.clone().into_any_element(),
             CenterView::Outline => self.outline.clone().into_any_element(),
+            CenterView::Tabletop => self.tabletop_content(cx),
         };
         let center = div()
             .flex()
@@ -1545,6 +1660,9 @@ impl gpui::Render for EditorShell {
             }))
             .on_action(cx.listener(|this, _: &ShowOutline, _, cx| {
                 this.apply(EditorCommand::ShowOutline, cx);
+            }))
+            .on_action(cx.listener(|this, _: &ShowTabletop, _, cx| {
+                this.apply(EditorCommand::ShowTabletop, cx);
             }))
             .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, _, cx| {
                 if this.state.layout.center != CenterView::Outline {
@@ -1694,6 +1812,22 @@ impl gpui::Render for EditorShell {
                                     .child("Outline")
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.apply(EditorCommand::ShowOutline, cx);
+                                    })),
+                            )
+                            .child(
+                                div()
+                                    .id("nav-tabletop")
+                                    .px_2()
+                                    .py_1()
+                                    .rounded_md()
+                                    .cursor_pointer()
+                                    .when(layout.center == CenterView::Tabletop, |tab| {
+                                        tab.bg(rgb(DARK_THEME.accent))
+                                            .text_color(rgb(DARK_THEME.text))
+                                    })
+                                    .child("Tabletop")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.apply(EditorCommand::ShowTabletop, cx);
                                     })),
                             )
                             .child(
