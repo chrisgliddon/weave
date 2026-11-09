@@ -29,8 +29,45 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::ErrorKind;
+use std::io::{ErrorKind, Read};
 use std::path::{Component, Path, PathBuf};
+
+/// Largest presentation input the editor will read.
+const MAX_PRESENTATION_INPUT_BYTES: u64 = 1024 * 1024;
+
+/// Read one project-local file through an opened handle.
+///
+/// Refuses symlinks and special files on Unix, and bounds the read so a large
+/// or blocking file cannot stall the UI thread.
+fn read_bounded_text(path: &Path) -> std::io::Result<String> {
+    #[cfg(unix)]
+    let file = {
+        use std::os::unix::fs::OpenOptionsExt;
+        fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(path)?
+    };
+    #[cfg(not(unix))]
+    let file = fs::File::open(path)?;
+    let metadata = file.metadata()?;
+    if !metadata.file_type().is_file() || metadata.len() > MAX_PRESENTATION_INPUT_BYTES {
+        return Err(std::io::Error::new(
+            ErrorKind::InvalidData,
+            "not a regular file within the presentation input size limit",
+        ));
+    }
+    let mut text = String::new();
+    file.take(MAX_PRESENTATION_INPUT_BYTES + 1)
+        .read_to_string(&mut text)?;
+    if text.len() as u64 > MAX_PRESENTATION_INPUT_BYTES {
+        return Err(std::io::Error::new(
+            ErrorKind::InvalidData,
+            "presentation input exceeds the size limit",
+        ));
+    }
+    Ok(text)
+}
 
 use serde::Deserialize;
 use weave_character::{
@@ -106,7 +143,7 @@ impl PresentationInputs {
 pub fn load_presentation_inputs(directory: &Path) -> PresentationInputs {
     let source = PRESENTATION_INPUT_FILE_NAME.to_owned();
     let path = directory.join(PRESENTATION_INPUT_FILE_NAME);
-    let text = match fs::read_to_string(&path) {
+    let text = match read_bounded_text(&path) {
         Ok(text) => text,
         Err(error) if error.kind() == ErrorKind::NotFound => {
             return PresentationInputs {
@@ -245,7 +282,7 @@ fn load_character_collection(
             detail: "the Character collection path must stay inside the project directory"
                 .to_owned(),
         })?;
-    let text = fs::read_to_string(&path).map_err(|error| PresentationInputIssue {
+    let text = read_bounded_text(&path).map_err(|error| PresentationInputIssue {
         kind: if error.kind() == ErrorKind::NotFound {
             PresentationInputIssueKind::Missing
         } else {
@@ -287,7 +324,7 @@ fn resolve_project_file(
         .canonicalize()
         .map_err(|_| PresentationInputIssueKind::Invalid)?;
     match root.join(declared).canonicalize() {
-        Ok(resolved) if resolved.starts_with(&root) => Ok(resolved),
+        Ok(resolved) if resolved.starts_with(&root) && resolved.is_file() => Ok(resolved),
         Ok(_) => Err(PresentationInputIssueKind::Invalid),
         Err(error) if error.kind() == ErrorKind::NotFound => {
             Err(PresentationInputIssueKind::Missing)
