@@ -1518,6 +1518,10 @@ impl gpui::Render for TabletopView {
         if let Some(draft) = &self.draft {
             root = root.child(
                 div()
+                    .id("tabletop-field-draft")
+                    .role(gpui::Role::TextInput)
+                    .aria_label(draft.target.label())
+                    .aria_value(draft.rendered())
                     .flex()
                     .flex_col()
                     .gap_1()
@@ -1557,6 +1561,7 @@ fn field_row(
         .id(id)
         .role(gpui::Role::TextInput)
         .aria_label(field.label.to_owned())
+        .aria_value(buffer.to_owned())
         .flex()
         .flex_col()
         .gap_1()

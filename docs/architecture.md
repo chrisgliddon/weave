@@ -67,7 +67,7 @@ weave-core + weave-patterns + weave-compiler + weave-runtime
 
 ## Compatibility
 
-- Workspace MSRV: Rust 1.93. The editor's pinned GPUI revision establishes this minimum; Bevy 0.18.1 remains supported.
+- Workspace MSRV: Rust 1.98. The editor's pinned GPUI revision establishes this minimum; Bevy 0.18.1 remains supported.
 - Serialized IR version: `weave_core::ir::IR_VERSION`.
 - Bevy integration target: Bevy 0.18.
 - Source files use the versioned language contract in [`language_guide.md`](language_guide.md).

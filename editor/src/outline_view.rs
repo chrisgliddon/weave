@@ -218,13 +218,21 @@ impl gpui::Render for OutlineSurface {
                         div()
                             .flex_1()
                             .text_sm()
-                            .text_color(rgb(DARK_THEME.text))
+                            .text_color(rgb(if selected == Some(index) {
+                                DARK_THEME.workspace
+                            } else {
+                                DARK_THEME.text
+                            }))
                             .child(title),
                     )
                     .child(
                         div()
                             .text_xs()
-                            .text_color(rgb(DARK_THEME.muted_text))
+                            .text_color(rgb(if selected == Some(index) {
+                                DARK_THEME.workspace
+                            } else {
+                                DARK_THEME.muted_text
+                            }))
                             .child(detail),
                     ),
             );

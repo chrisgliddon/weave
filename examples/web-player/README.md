@@ -31,7 +31,7 @@ Seeds cross the JavaScript boundary as unsigned 32-bit integers and are expanded
 
 The WASM module never reads or writes cookies, storage, the DOM, or the network. It only accepts immutable story JSON and returns a versioned state string. The example's JavaScript explicitly owns `localStorage`, so an embedding host can instead keep state in memory, IndexedDB, a server, or nowhere.
 
-With Rust 1.93 and `wasm-bindgen` 0.2.127, the release build is roughly 0.8 MB of uncompressed WASM plus about 12 KB of generated JavaScript. Treat those as approximate: toolchain, linker, and compression settings move them. `scripts/build-web-player.sh` prints the exact byte counts of both artifacts after binding generation, and that output is the record for a given build. HTTP compression is deployment-specific.
+With Rust 1.98 and `wasm-bindgen` 0.2.127, the release build is roughly 0.8 MB of uncompressed WASM plus about 12 KB of generated JavaScript. Treat those as approximate: toolchain, linker, and compression settings move them. `scripts/build-web-player.sh` prints the exact byte counts of both artifacts after binding generation, and that output is the record for a given build. HTTP compression is deployment-specific.
 
 Run native and WASM tests with:
 

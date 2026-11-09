@@ -1359,6 +1359,7 @@ impl PreviewSurface {
                     }))
                     .role(gpui::Role::Tab)
                     .aria_label(mode.label())
+                    .aria_selected(active)
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if active {
@@ -1631,8 +1632,8 @@ impl PreviewSurface {
             .border_color(rgb(focus_indicator_colour(
                 focused == PlayFocusTarget::Advance,
             )))
-            .role(gpui::Role::Button)
-            .aria_label("Advance scene")
+            .role(gpui::Role::Group)
+            .aria_label("Dialogue")
             .cursor_pointer()
             .on_click(cx.listener(|this, _, _, cx| {
                 this.activate_play_target(PlayFocusTarget::Advance, cx);
@@ -1668,6 +1669,16 @@ impl PreviewSurface {
                         },
                     )),
             );
+        } else if scene.choices.is_empty() {
+            dialogue = dialogue.child(preview_button(
+                "Continue",
+                "play-continue",
+                focused == PlayFocusTarget::Advance,
+                cx,
+                |this, cx| {
+                    this.activate_play_target(PlayFocusTarget::Advance, cx);
+                },
+            ));
         } else if !scene.choices.is_empty() {
             for (index, choice) in scene.choices.iter().enumerate() {
                 dialogue = dialogue.child(
@@ -1682,11 +1693,15 @@ impl PreviewSurface {
                         )))
                         .bg(rgb(DARK_THEME.chrome))
                         .role(gpui::Role::Button)
-                        .aria_label(choice.text.clone())
+                        .aria_label(choice_label(index, &choice.text))
                         .cursor_pointer()
                         .text_size(px(scaled_text_px(13.0, self.text_scale)))
                         .text_color(rgb(DARK_THEME.text))
-                        .child(format!("{}. {}", index + 1, choice.text))
+                        .child(format!(
+                            "{}. {}",
+                            index + 1,
+                            choice_label(index, &choice.text)
+                        ))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.focus.focus(window, cx);
                             this.session.choose(index);
@@ -2572,10 +2587,10 @@ impl PreviewSurface {
                     .bg(rgb(DARK_THEME.accent))
                     .text_color(rgb(on_accent_text_colour()))
                     .role(gpui::Role::Button)
-                    .aria_label(choice.text.clone())
+                    .aria_label(choice_label(index, &choice.text))
                     .cursor_pointer()
                     .text_xs()
-                    .child(choice.text)
+                    .child(choice_label(index, &choice.text))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.focus.focus(window, cx);
                         this.choose(index, cx);
@@ -2744,6 +2759,14 @@ fn drawer_note(text: String) -> AnyElement {
         .into_any_element()
 }
 
+fn choice_label(index: usize, text: &str) -> String {
+    if text.trim().is_empty() {
+        format!("Choice {}", index + 1)
+    } else {
+        text.to_owned()
+    }
+}
+
 fn preview_button(
     label: &str,
     id: &'static str,
@@ -2753,6 +2776,8 @@ fn preview_button(
 ) -> AnyElement {
     div()
         .id(id)
+        .role(gpui::Role::Button)
+        .aria_label(label.to_owned())
         .px_2()
         .py_1()
         .rounded_md()
@@ -2929,6 +2954,13 @@ Done.
         let compiled =
             weave_compiler::compile(STORY, &CompileOptions::default()).expect("story compiles");
         PreviewSession::from_story(compiled.story, seed, 1)
+    }
+
+    #[test]
+    fn empty_choice_labels_receive_a_stable_fallback() {
+        assert_eq!(choice_label(0, ""), "Choice 1");
+        assert_eq!(choice_label(2, "   "), "Choice 3");
+        assert_eq!(choice_label(1, "Leave"), "Leave");
     }
 
     #[test]

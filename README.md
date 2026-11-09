@@ -3,7 +3,7 @@
 *A narrative scripting language that merges generative grammar with branching interactive fiction, powered by pattern-based meaning systems.*
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.93%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.98%2B-orange.svg)](https://www.rust-lang.org)
 [![Bevy](https://img.shields.io/badge/bevy-0.18-blueviolet.svg)](https://bevyengine.org)
 [![GPUI](https://img.shields.io/badge/editor-GPUI-green.svg)](https://gpui.rs)
 
