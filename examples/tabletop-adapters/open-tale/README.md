@@ -44,10 +44,13 @@ PixiJS in this fixture tree:
 node examples/tabletop-adapters/open-tale/consumers/pixijs/consumer.mjs
 ```
 
-Bevy boundary: `consumers/bevy/bevy_consumer.rs` is a reference Bevy 0.18 resource and `Startup`
-consumer for the RON fixtures. The adapter fixture tree is not a workspace member, and this task's
-scope excluded Cargo changes, so the workspace does not compile that file. Its header states the
-gap and how to host it.
+Bevy boundary: the consumer is now a workspace member. Replay all eleven steps with:
+
+```bash
+cargo run -p weave-example-bevy-tabletop --bin open-tale
+```
+
+The old reference file moved into that crate; `consumers/bevy/README.md` points at the command.
 
 ## Regenerate
 

@@ -500,7 +500,19 @@ WEAVE_WRITE_ADAPTER_CATALOG=1 cargo test -p weave-tabletop --test catalog -- --i
 cargo test -p weave-tabletop --test catalog
 ```
 
-### Compatibility and migration matrix
+### Host consumers
+
+Every adapter has a Bevy consumer and a PixiJS consumer that replay its checked-in fixtures offline:
+
+```bash
+cargo run -p weave-example-bevy-tabletop            # every adapter
+cargo run -p weave-example-bevy-tabletop -- spark   # one adapter
+cd examples/domain-module-pixijs && npm test        # PixiJS suite
+```
+
+The catalog records both commands for each adapter and fails a drift test when either changes.
+
+## Compatibility and migration matrix
 
 `examples/tabletop-adapters/catalog/compatibility-matrix.json` is format 1. It records:
 

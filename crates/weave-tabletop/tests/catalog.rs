@@ -65,6 +65,17 @@ struct CatalogAdapter {
     source: CatalogSource,
     conformance: CatalogConformance,
     canonical_project: CatalogProject,
+    consumers: CatalogConsumers,
+}
+
+/// Runnable host consumers for one adapter.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CatalogConsumers {
+    /// Exact command that replays this adapter in the Bevy consumer.
+    bevy: String,
+    /// Exact command that runs the PixiJS consumer suite, which covers every adapter.
+    pixijs: String,
 }
 
 /// The checked-in canonical synthetic project and its single reproduction command.
@@ -296,6 +307,15 @@ fn catalog_adapter(
             checks,
         },
         canonical_project: canonical_project.clone(),
+        consumers: catalog_consumers(manifest),
+    }
+}
+
+fn catalog_consumers(manifest: &AdapterManifest) -> CatalogConsumers {
+    let key = manifest.namespace.replace('_', "-");
+    CatalogConsumers {
+        bevy: format!("cargo run -p weave-example-bevy-tabletop -- {key}"),
+        pixijs: "cd examples/domain-module-pixijs && npm test".to_owned(),
     }
 }
 

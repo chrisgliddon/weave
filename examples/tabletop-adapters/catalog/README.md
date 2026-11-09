@@ -28,9 +28,25 @@ Three files are generated from live adapter data. Do not edit them by hand.
 | `conformance.status` | `standard_suite_registered` or `not_registered`. |
 | `conformance.checks` | Check ids the standard suite applies, or an empty list when unregistered. |
 | `canonical_project` | Project path, exact reproduction command, expected-output path and digest, and seed. |
+| `consumers` | Exact Bevy command for this adapter and the PixiJS suite command that covers every adapter. |
 
 Every adapter appears, including one outside the standard suite. That keeps the shipped surface
 visible and lets a consumer check capabilities and licences before installing anything.
+
+## Run a host consumer
+
+Each adapter lists a `consumers.bevy` command, for example:
+
+```bash
+cargo run -p weave-example-bevy-tabletop -- spark
+cargo run -p weave-example-bevy-tabletop -- wicked-ones
+```
+
+The PixiJS consumer covers every adapter from the same public projection:
+
+```bash
+cd examples/domain-module-pixijs && npm test
+```
 
 ## Read the compatibility and migration matrix
 
