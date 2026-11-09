@@ -158,7 +158,7 @@ mistaken for a character name.
 
 `Tab` and `Shift+Tab` move focus, `Enter` or `Space` activates the focused
 control, `1` to `9` choose, `+` and `-` scale the text, `[` and `]` change the
-text reveal speed, `S` reveals the current line at once, `A` toggles bounded
+text reveal speed, `S` toggles instant text reveal, `A` toggles bounded
 auto-advance, and `M` turns reduced motion on or off. Reduced motion reveals
 text immediately and drops transitions without changing cue order. `D` opens
 the playtest drawer and `V` the resolved-presentation drawer; `I` opens

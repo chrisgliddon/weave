@@ -32,9 +32,10 @@ use crate::play_view::{
     PlayAction, PlayDiagnostic, PlayDiagnosticSeverity, PlayFocus, PlayFocusContext,
     PlayFocusTarget, PlayMode, PresentationDrawerRows, REVEAL_SPEED_STEP, SLOT_ORDER,
     StagedCharacter, TextReveal, WorldPresentation, focus_indicator_colour,
-    has_critical_diagnostics, play_diagnostics, play_focus_order_for, play_key_for,
-    presentation_drawer_rows, resolve_presentation, scaled_dialogue_height, scaled_text_px,
-    scene_from_session, scene_tone, step_text_scale,
+    focus_indicator_colour_on_fill, has_critical_diagnostics, on_accent_text_colour,
+    play_diagnostics, play_focus_order_for, play_key_for, presentation_drawer_rows,
+    resolve_presentation, scaled_dialogue_height, scaled_text_px, scene_from_session, scene_tone,
+    step_text_scale,
 };
 use crate::playtest::{PlaytestOutcome, PlaytestRecord};
 use crate::presentation_assets::PresentationAssets;
@@ -494,6 +495,9 @@ impl PreviewSession {
     }
 
     pub fn choose(&mut self, index: usize) -> bool {
+        if index >= self.choices().len() {
+            return false;
+        }
         let choice = self.choices().get(index).cloned();
         let Some(runtime) = self.runtime.as_mut() else {
             self.fail("No valid compiled story is available", None);
@@ -638,6 +642,11 @@ impl PlaytestDrawer {
     /// Show or hide the drawer body.
     pub fn toggle(&mut self) {
         self.expanded = !self.expanded;
+    }
+
+    /// Force the drawer body open or closed.
+    pub fn set_expanded(&mut self, expanded: bool) {
+        self.expanded = expanded;
     }
 
     /// Captured or imported record.
@@ -905,6 +914,11 @@ impl PresentationDrawer {
     /// Show or hide the drawer body.
     pub fn toggle(&mut self) {
         self.expanded = !self.expanded;
+    }
+
+    /// Force the drawer body open or closed.
+    pub fn set_expanded(&mut self, expanded: bool) {
+        self.expanded = expanded;
     }
 
     /// World-driven presentation configuration.
@@ -1338,11 +1352,15 @@ impl PreviewSurface {
                     .py_1()
                     .rounded_md()
                     .border_1()
-                    .border_color(rgb(focus_indicator_colour(focused == target)))
+                    .border_color(rgb(if active {
+                        focus_indicator_colour_on_fill(focused == target)
+                    } else {
+                        focus_indicator_colour(focused == target)
+                    }))
                     .cursor_pointer()
                     .text_xs()
                     .text_color(rgb(if active {
-                        DARK_THEME.text
+                        on_accent_text_colour()
                     } else {
                         DARK_THEME.muted_text
                     }))
@@ -1552,8 +1570,12 @@ impl PreviewSurface {
                     .absolute()
                     .top_3()
                     .right_3()
+                    .px_2()
+                    .py_1()
+                    .rounded_sm()
+                    .bg(rgb(DARK_THEME.panel))
                     .text_xs()
-                    .text_color(rgb(DARK_THEME.muted_text))
+                    .text_color(rgb(DARK_THEME.text))
                     .child(background.clone()),
             );
         }
@@ -1607,6 +1629,10 @@ impl PreviewSurface {
             .border_color(rgb(focus_indicator_colour(
                 focused == PlayFocusTarget::Advance,
             )))
+            .cursor_pointer()
+            .on_click(cx.listener(|this, _, _, cx| {
+                this.activate_play_target(PlayFocusTarget::Advance, cx);
+            }))
             .child(
                 div()
                     .text_size(px(scaled_text_px(DIALOGUE_BASE_PX, self.text_scale)))
@@ -2202,6 +2228,9 @@ impl PreviewSurface {
             PlayAction::FocusChanged(_) => {}
             PlayAction::Activate(target) => self.activate_play_target(target, cx),
             PlayAction::Choose(index) => {
+                if index >= self.session.choices().len() {
+                    return;
+                }
                 self.session.choose(index);
                 self.after_advance();
                 if self.mode == PlayMode::Play {
@@ -2215,15 +2244,30 @@ impl PreviewSurface {
                 self.play_focus.focus(PlayFocusTarget::Advance);
             }
             PlayAction::TogglePlaytest => {
+                let opening = !self.playtest_drawer.is_expanded();
                 self.playtest_drawer.toggle();
+                if opening {
+                    self.presentation_drawer.set_expanded(false);
+                    self.diagnostics_expanded = false;
+                }
                 self.play_focus.focus(PlayFocusTarget::PlaytestToggle);
             }
             PlayAction::TogglePresentation => {
+                let opening = !self.presentation_drawer.is_expanded();
                 self.presentation_drawer.toggle();
+                if opening {
+                    self.playtest_drawer.set_expanded(false);
+                    self.diagnostics_expanded = false;
+                }
                 self.play_focus.focus(PlayFocusTarget::PresentationToggle);
             }
             PlayAction::ToggleDiagnostics => {
-                self.diagnostics_expanded = !self.diagnostics_expanded;
+                let opening = !self.diagnostics_expanded;
+                self.diagnostics_expanded = opening;
+                if opening {
+                    self.playtest_drawer.set_expanded(false);
+                    self.presentation_drawer.set_expanded(false);
+                }
                 self.play_focus.focus(PlayFocusTarget::DiagnosticsToggle);
             }
             PlayAction::StepTextScale(direction) => {
@@ -2394,7 +2438,7 @@ impl PreviewSurface {
             let (prefix, text, color) = match entry {
                 PreviewTranscript::Line(line) => ("", line.as_str(), DARK_THEME.text),
                 PreviewTranscript::Choice(choice) => ("› ", choice.as_str(), DARK_THEME.accent),
-                PreviewTranscript::Jump(knot) => ("↪ ", knot.as_str(), DARK_THEME.warning),
+                PreviewTranscript::Jump(knot) => ("↪ ", knot.as_str(), DARK_THEME.text),
             };
             transcript = transcript.child(
                 div()
@@ -2510,10 +2554,11 @@ impl PreviewSurface {
                     .py_1()
                     .rounded_md()
                     .border_1()
-                    .border_color(rgb(focus_indicator_colour(
+                    .border_color(rgb(focus_indicator_colour_on_fill(
                         focused == PlayFocusTarget::DebugChoice(index),
                     )))
                     .bg(rgb(DARK_THEME.accent))
+                    .text_color(rgb(on_accent_text_colour()))
                     .cursor_pointer()
                     .text_xs()
                     .child(choice.text)
@@ -2759,8 +2804,11 @@ fn stage_figure(
         .child(div().flex_1().w_full().child(figure))
         .child(
             div()
+                .px_2()
+                .rounded_sm()
+                .bg(rgb(DARK_THEME.panel))
                 .text_xs()
-                .text_color(rgb(DARK_THEME.muted_text))
+                .text_color(rgb(DARK_THEME.text))
                 .child(stage.name.clone()),
         )
         .into_any_element()
@@ -2863,6 +2911,16 @@ Done.
         let compiled =
             weave_compiler::compile(STORY, &CompileOptions::default()).expect("story compiles");
         PreviewSession::from_story(compiled.story, seed, 1)
+    }
+
+    #[test]
+    fn an_out_of_range_choice_is_ignored_without_failing_the_session() {
+        let mut preview = session(7);
+        assert!(preview.run());
+        assert_eq!(preview.status(), PreviewStatus::WaitingForChoice);
+        assert!(!preview.choose(9));
+        assert_eq!(preview.status(), PreviewStatus::WaitingForChoice);
+        assert!(preview.choose(0));
     }
 
     #[test]

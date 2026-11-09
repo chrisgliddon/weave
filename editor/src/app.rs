@@ -1294,6 +1294,7 @@ impl EditorShell {
             |path| format!("Compiled: {}", path.display()),
         );
         let mut panel = div()
+            .id("inspector-panel")
             .w(px(width))
             .h_full()
             .flex_none()
@@ -1472,6 +1473,7 @@ impl EditorShell {
 
     fn inspector_panel(selection: Option<InspectorData>, width: f32) -> AnyElement {
         let mut panel = div()
+            .id("inspector-panel")
             .w(px(width))
             .h_full()
             .flex_none()
@@ -1479,6 +1481,7 @@ impl EditorShell {
             .flex_col()
             .gap_3()
             .p_3()
+            .overflow_y_scroll()
             .bg(rgb(DARK_THEME.panel))
             .border_l_1()
             .border_color(rgb(DARK_THEME.border))

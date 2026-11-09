@@ -109,16 +109,16 @@ impl PlayTransition {
 
     /// Opacity a clock-free renderer applies to the element that just changed.
     ///
-    /// A cut is immediate. A fade or wipe settles one bounded step short of
-    /// opaque; a renderer with a clock may interpolate to `1.0` over
-    /// [`PlayTransition::ms`] and still reach the same final staging. A slide
-    /// needs a clock to be visible and collapses to a cut here.
+    /// A cut is immediate. This surface has no transition clock, so every kind settles at the
+    /// final staging opacity instead of leaving a figure permanently dimmed. A renderer with a
+    /// clock may interpolate to `1.0` over [`PlayTransition::ms`] and reach the same end state.
     #[must_use]
     pub const fn opacity(self) -> f32 {
         match self.kind {
-            TransitionKind::Cut | TransitionKind::Slide => 1.0,
-            TransitionKind::Fade => 0.92,
-            TransitionKind::Wipe => 0.96,
+            TransitionKind::Cut
+            | TransitionKind::Slide
+            | TransitionKind::Fade
+            | TransitionKind::Wipe => 1.0,
         }
     }
 }
@@ -1429,6 +1429,25 @@ pub fn focus_indicator_colour(focused: bool) -> u32 {
     }
 }
 
+/// Focus ring for a control that already uses the accent as its fill.
+///
+/// Accent on accent has no contrast, so the ring switches to the workspace tone, which reaches
+/// about 7:1 against the accent.
+#[must_use]
+pub const fn focus_indicator_colour_on_fill(focused: bool) -> u32 {
+    if focused {
+        DARK_THEME.workspace
+    } else {
+        DARK_THEME.border
+    }
+}
+
+/// Text colour for content drawn on the accent fill.
+#[must_use]
+pub const fn on_accent_text_colour() -> u32 {
+    DARK_THEME.workspace
+}
+
 /// Clamp a requested text scale into the documented steps.
 #[must_use]
 pub fn clamp_text_scale(scale: f32) -> f32 {
@@ -1451,7 +1470,9 @@ pub fn scaled_text_px(base: f32, scale: f32) -> f32 {
 /// Scale the maximum dialogue height so enlarged text is not clipped.
 #[must_use]
 pub fn scaled_dialogue_height(base: f32, scale: f32) -> f32 {
-    base * clamp_text_scale(scale)
+    // Cap the growth so a large text scale cannot collapse the stage area inside the fixed
+    // Play panel. The dialogue scrolls instead.
+    (base * clamp_text_scale(scale)).min(240.0)
 }
 
 /// Next or previous text scale step. Direction `0` keeps the current scale.
@@ -1843,6 +1864,7 @@ impl PlayFocusTarget {
     pub const fn restore_target(self) -> Option<Self> {
         match self {
             Self::Restart | Self::Choice(_) => Some(Self::Advance),
+            Self::Advance => Some(Self::Restart),
             Self::PlaytestCapture
             | Self::PlaytestExportJson
             | Self::PlaytestExportRon
@@ -1900,10 +1922,10 @@ pub fn play_focus_order_for(
                 PlayFocusTarget::DebugSeedUp,
             ]);
             order.extend((0..context.debug_choices).map(PlayFocusTarget::DebugChoice));
-            order.extend((0..context.debug_knots).map(PlayFocusTarget::DebugKnot));
             if context.has_issue {
                 order.push(PlayFocusTarget::DebugIssue);
             }
+            order.extend((0..context.debug_knots).map(PlayFocusTarget::DebugKnot));
         }
         PlayMode::Play => {
             if ended {
@@ -3388,9 +3410,20 @@ Mara: The ferry leaves at dusk.
         assert_eq!(order[0], PlayFocusTarget::Mode(PlayMode::Debug));
         assert_eq!(order[2], PlayFocusTarget::DebugStep);
         assert_eq!(order[7], PlayFocusTarget::DebugSeedUp);
-        assert!(order.contains(&PlayFocusTarget::DebugChoice(0)));
-        assert!(order.contains(&PlayFocusTarget::DebugKnot(1)));
-        assert_eq!(order.last(), Some(&PlayFocusTarget::DebugIssue));
+        let choice_index = order
+            .iter()
+            .position(|target| matches!(target, PlayFocusTarget::DebugChoice(_)))
+            .expect("a choice control");
+        let issue_index = order
+            .iter()
+            .position(|target| *target == PlayFocusTarget::DebugIssue)
+            .expect("an issue control");
+        let knot_index = order
+            .iter()
+            .position(|target| matches!(target, PlayFocusTarget::DebugKnot(_)))
+            .expect("a knot control");
+        assert!(choice_index < issue_index);
+        assert!(issue_index < knot_index, "focus follows the draw order");
     }
 
     #[test]
@@ -3489,6 +3522,20 @@ Mara: The ferry leaves at dusk.
     }
 
     #[test]
+    fn accent_filled_controls_use_a_contrasting_ring_and_label() {
+        assert_eq!(focus_indicator_colour_on_fill(true), DARK_THEME.workspace);
+        assert_eq!(on_accent_text_colour(), DARK_THEME.workspace);
+        assert!(
+            contrast_ratio(on_accent_text_colour(), DARK_THEME.accent) >= 4.5,
+            "label on the accent fill must reach 4.5:1"
+        );
+        assert!(
+            contrast_ratio(focus_indicator_colour_on_fill(true), DARK_THEME.accent) >= 3.0,
+            "focus ring on the accent fill must reach 3:1"
+        );
+    }
+
+    #[test]
     fn focus_indicator_and_body_text_meet_minimum_contrast() {
         assert_eq!(focus_indicator_colour(true), DARK_THEME.accent);
         assert_eq!(focus_indicator_colour(false), DARK_THEME.border);
@@ -3547,13 +3594,10 @@ Mara: The ferry leaves at dusk.
             .map(|stage| stage.id.as_str())
             .collect::<Vec<_>>();
         let reduced = MotionPreference::Reduced;
-        let reduced_order = ordered_stages(&state.stages)
-            .iter()
-            .map(|stage| stage.id.as_str())
-            .collect::<Vec<_>>();
+        let reduced_order = vec!["mara", "keeper"];
         assert_eq!(
             full_order, reduced_order,
-            "cue order is identical under reduced motion"
+            "cue order is fixed by the cue list, not by the motion preference"
         );
         assert_eq!(
             reduced.transition(state.stages[0].transition),
@@ -3569,11 +3613,15 @@ Mara: The ferry leaves at dusk.
             1.0,
             "reduced motion settles the figure immediately"
         );
-        assert!(PlayScene::stage_opacity(&state.stages[0]) < 1.0);
+        assert_eq!(
+            PlayScene::stage_opacity(&state.stages[0]),
+            1.0,
+            "a clock-free surface settles at the final opacity"
+        );
 
         let mut scene = ready_scene();
         scene.background_transition = transition;
-        assert!(scene.background_opacity() < 1.0);
+        assert_eq!(scene.background_opacity(), 1.0);
         assert_eq!(reduced.background_opacity(&scene), 1.0);
         assert!(reduced.reveal(TextReveal::new(5)).instant);
     }
