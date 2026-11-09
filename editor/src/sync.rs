@@ -68,6 +68,25 @@ pub enum GraphEdit {
         path: Vec<usize>,
         delta: i32,
     },
+    /// Move one choice from a knot body into another knot body.
+    ///
+    /// The label, condition, body, and divert are preserved. The choice is inserted before a
+    /// terminal `END` in the target knot so it stays reachable.
+    MoveChoiceToKnot {
+        knot: String,
+        path: Vec<usize>,
+        target_knot: String,
+    },
+    /// Move one non-choice statement one place earlier or later within its knot.
+    ///
+    /// Content that would land after a terminal `END` is refused unless `confirm_after_end` is
+    /// set, because that content becomes unreachable.
+    MoveStatement {
+        knot: String,
+        path: Vec<usize>,
+        delta: i32,
+        confirm_after_end: bool,
+    },
 }
 
 /// Result of accepting source from the text view.
@@ -142,6 +161,18 @@ pub enum SyncConflict {
     NotRepresentable,
     #[error("the edited source could not be re-parsed; nothing was changed")]
     UnparsableEdit,
+    #[error("cannot move a choice within `{0}`; choose a different beat")]
+    SameKnot(String),
+    #[error("moving this choice into `{0}` would make it reference its own beat")]
+    SelfReference(String),
+    #[error("moving this choice would leave knot `{0}` empty; add another statement first")]
+    EmptySourceKnot(String),
+    #[error("the statement at {path:?} in knot `{knot}` is a choice; use the choice move instead")]
+    ChoiceNotMovable { knot: String, path: Vec<usize> },
+    #[error(
+        "moving this block in `{knot}` would place content after `-> END`; confirm to allow unreachable content"
+    )]
+    ContentAfterEnd { knot: String },
 }
 
 #[derive(Debug, Clone)]
@@ -269,6 +300,18 @@ impl CanonicalProjectModel {
         let reparsed = parse_document(&source).map_err(|_| SyncConflict::UnparsableEdit)?;
         if !same_structure(&reparsed, &document) {
             return Err(SyncConflict::NotRepresentable);
+        }
+        // A clamped or otherwise idempotent edit leaves the source byte-identical. Return the
+        // current revision without an undo entry so a boundary press does not spend history.
+        if source == self.source {
+            self.document = Some(reparsed.clone());
+            self.last_valid_document = reparsed;
+            return Ok(GraphSync {
+                revision: self.revision,
+                source,
+                focus_node,
+                summary,
+            });
         }
         if let GraphEdit::RenameKnot { knot, name } = edit {
             self.remap_knot_layout(knot, name);
@@ -659,17 +702,27 @@ fn mutate_document(
             knots.reverse();
             let item = knots.remove(position);
             knots.insert(target, item);
+            let new_first = match &knots[0].node {
+                Item::Knot(owner) => owner.node.name.clone(),
+                _ => knot.clone(),
+            };
             for (offset, item) in knots.into_iter().enumerate() {
                 document.items.insert(first + offset, item);
             }
-            let summary = if target == 0 {
-                format!("Moved {knot} to the front; it is now the story entry")
+            let summary = if (position == 0) != (target == 0) {
+                format!("Moved {knot}; {new_first} is now the story entry")
             } else {
                 format!("Moved {knot}")
             };
             Ok((Some(format!("knot:{knot}")), summary))
         }
         GraphEdit::MoveChoice { knot, path, delta } => {
+            if path.len() != 1 {
+                return Err(SyncConflict::MissingChoice {
+                    knot: knot.clone(),
+                    path: path.clone(),
+                });
+            }
             let owner = find_knot_mut(document, knot)?;
             let choices = owner
                 .node
@@ -694,8 +747,22 @@ fn mutate_document(
             }
             let target = target as usize;
             owner.node.body.swap(choices[position], choices[target]);
-            Ok((None, format!("Moved a choice in {knot}")))
+            Ok((
+                Some(choice_focus(knot, &[choices[target]])),
+                format!("Moved a choice in {knot}"),
+            ))
         }
+        GraphEdit::MoveChoiceToKnot {
+            knot,
+            path,
+            target_knot,
+        } => move_choice_between_knots(document, knot, path, target_knot),
+        GraphEdit::MoveStatement {
+            knot,
+            path,
+            delta,
+            confirm_after_end,
+        } => move_statement(document, knot, path, *delta, *confirm_after_end),
         GraphEdit::ReplaceKnotSource { knot, source } => {
             let fragment = format!("=== {knot} ===\n{source}\n");
             let parsed = parse_document(&fragment).map_err(|_| SyncConflict::UnparsableEdit)?;
@@ -737,6 +804,120 @@ fn mutate_document(
             ))
         }
     }
+}
+
+/// Move one choice between knot bodies without changing the choice itself.
+fn move_choice_between_knots(
+    document: &mut Document,
+    knot: &str,
+    path: &[usize],
+    target_knot: &str,
+) -> Result<(Option<String>, String), SyncConflict> {
+    if knot == target_knot {
+        return Err(SyncConflict::SameKnot(knot.to_owned()));
+    }
+    if !document
+        .knots()
+        .any(|owner| owner.node.name == *target_knot)
+    {
+        return Err(SyncConflict::MissingKnot(target_knot.to_owned()));
+    }
+    let choice = {
+        let owner = find_knot_mut(document, knot)?;
+        let (parent, index) = find_choice_slot(&mut owner.node.body, path).ok_or_else(|| {
+            SyncConflict::MissingChoice {
+                knot: knot.to_owned(),
+                path: path.to_vec(),
+            }
+        })?;
+        let choice = match &parent[index].node {
+            Statement::Choice(choice) => choice.clone(),
+            _ => unreachable!("find_choice_slot only returns choice statements"),
+        };
+        if choice_references(&choice, target_knot) {
+            return Err(SyncConflict::SelfReference(target_knot.to_owned()));
+        }
+        if path.len() == 1 && parent.len() == 1 {
+            return Err(SyncConflict::EmptySourceKnot(knot.to_owned()));
+        }
+        parent.remove(index);
+        choice
+    };
+    let owner = find_knot_mut(document, target_knot)?;
+    let insert_at = owner
+        .node
+        .body
+        .iter()
+        .position(|statement| matches!(statement.node, Statement::End))
+        .unwrap_or(owner.node.body.len());
+    owner.node.body.insert(
+        insert_at,
+        Spanned::new(Statement::Choice(choice), Span::default()),
+    );
+    Ok((
+        Some(choice_focus(target_knot, &[insert_at])),
+        format!("Moved a choice from {knot} to {target_knot}"),
+    ))
+}
+
+/// Whether a choice would reference `name` after it moved into that knot.
+fn choice_references(choice: &Choice, name: &str) -> bool {
+    choice.divert.as_deref() == Some(name) || count_references(&choice.body, name) > 0
+}
+
+/// Move one non-choice statement one place, guarding reachability after `END`.
+fn move_statement(
+    document: &mut Document,
+    knot: &str,
+    path: &[usize],
+    delta: i32,
+    confirm_after_end: bool,
+) -> Result<(Option<String>, String), SyncConflict> {
+    let focus = Some(format!("knot:{knot}"));
+    let summary = format!("Moved a block in {knot}");
+    let owner = find_knot_mut(document, knot)?;
+    let index = top_level_index(knot, path)?;
+    let Some(statement) = owner.node.body.get(index) else {
+        return Err(missing_statement(knot, path));
+    };
+    if matches!(statement.node, Statement::Choice(_)) {
+        return Err(SyncConflict::ChoiceNotMovable {
+            knot: knot.to_owned(),
+            path: path.to_vec(),
+        });
+    }
+    let step = delta.signum();
+    if step == 0 {
+        return Ok((focus, summary));
+    }
+    let target = index as i64 + i64::from(step);
+    if target < 0 || target >= owner.node.body.len() as i64 {
+        return Ok((focus, summary));
+    }
+    let target = target as usize;
+    let moved_is_end = matches!(owner.node.body[index].node, Statement::End);
+    let moved_is_trivia = matches!(
+        owner.node.body[index].node,
+        Statement::Comment(_) | Statement::Blank
+    );
+    let crosses_end = if moved_is_end {
+        let crossed_is_content = !matches!(
+            owner.node.body[target].node,
+            Statement::Comment(_) | Statement::Blank
+        );
+        step < 0 && crossed_is_content
+    } else if moved_is_trivia {
+        false
+    } else {
+        step > 0 && matches!(owner.node.body[target].node, Statement::End)
+    };
+    if crosses_end && !confirm_after_end {
+        return Err(SyncConflict::ContentAfterEnd {
+            knot: knot.to_owned(),
+        });
+    }
+    owner.node.body.swap(index, target);
+    Ok((focus, summary))
 }
 
 fn top_level_index(knot: &str, path: &[usize]) -> Result<usize, SyncConflict> {
@@ -967,6 +1148,7 @@ fn sanitize_identifier(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
+    use weave_core::ast::Cue;
 
     use super::*;
 
@@ -1446,6 +1628,501 @@ Pick.\n* [Left] -> END\nProse.\n* [Right] -> END\n";
             )
             .expect("clamped move");
         assert_eq!(unchanged.source, choices.source());
+    }
+
+    const MOVABLE: &str = r#"=== start ===
+Opening.
+* [Leave] {if ready} -> other
+    You hesitate.
+    @speaker Mara
+-> END
+=== shore ===
+The shore.
+-> END
+=== other ===
+Untouched.
+-> END
+"#;
+
+    const BLOCKS: &str = r#"=== scene ===
+First line.
+@speaker Mara
+{ready:
+    Yes.
+- else:
+    No.
+}
+-> next
+<- next
+VAR count = 1
+SET count = 2
+// note
+
+-> END
+=== next ===
+Done.
+-> END
+"#;
+
+    fn knot_body<'a>(document: &'a Document, knot: &str) -> &'a [Spanned<Statement>] {
+        &document
+            .knots()
+            .find(|owner| owner.node.name == knot)
+            .expect("knot exists")
+            .node
+            .body
+    }
+
+    fn stripped_json<T: serde::Serialize + ?Sized>(value: &T) -> serde_json::Value {
+        let mut value = serde_json::to_value(value).expect("serializable");
+        strip_spans(&mut value);
+        value
+    }
+
+    fn cue_list(document: &Document, knot: &str) -> Vec<Cue> {
+        knot_body(document, knot)
+            .iter()
+            .filter_map(|statement| match &statement.node {
+                Statement::Cue(cue) => Some(cue.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn choice_moves_between_knots_preserving_every_field_and_isolating_bodies() {
+        let mut model = CanonicalProjectModel::new(MOVABLE);
+        let before_other = stripped_json(knot_body(model.graph_document(), "other"));
+        let moved = model
+            .apply_graph_edit(
+                &GraphEdit::MoveChoiceToKnot {
+                    knot: "start".to_owned(),
+                    path: vec![1],
+                    target_knot: "shore".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("move choice between knots");
+
+        let source = knot_body(model.graph_document(), "start");
+        assert!(
+            !source
+                .iter()
+                .any(|statement| matches!(statement.node, Statement::Choice(_)))
+        );
+        assert!(
+            source
+                .iter()
+                .any(|statement| matches!(statement.node, Statement::End))
+        );
+        assert_eq!(source.len(), 2);
+
+        let target = knot_body(model.graph_document(), "shore");
+        assert_eq!(target.len(), 3);
+        let Statement::Choice(choice) = &target[1].node else {
+            panic!("moved choice is missing");
+        };
+        assert_eq!(choice.text, "Leave");
+        assert!(choice.condition.is_some());
+        assert_eq!(choice.divert.as_deref(), Some("other"));
+        assert_eq!(choice.body.len(), 2);
+        assert!(matches!(
+            choice.body[1].node,
+            Statement::Cue(Cue::Speaker(_))
+        ));
+        assert_eq!(moved.focus_node.as_deref(), Some("choice:shore:1"));
+        assert_eq!(
+            stripped_json(knot_body(model.graph_document(), "other")),
+            before_other,
+            "an unrelated knot must not change"
+        );
+    }
+
+    #[test]
+    fn choice_move_refuses_self_reference_same_knot_empty_source_and_missing_targets() {
+        let mut model = CanonicalProjectModel::new(MOVABLE);
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveChoiceToKnot {
+                        knot: "start".to_owned(),
+                        path: vec![1],
+                        target_knot: "start".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("same knot"),
+            SyncConflict::SameKnot("start".to_owned())
+        );
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveChoiceToKnot {
+                        knot: "start".to_owned(),
+                        path: vec![1],
+                        target_knot: "missing".to_owned(),
+                    },
+                    model.revision(),
+                )
+                .expect_err("missing target"),
+            SyncConflict::MissingKnot("missing".to_owned())
+        );
+
+        let mut self_reference = CanonicalProjectModel::new(
+            "=== start ===\n* [Loop] -> shore\n=== shore ===\nDone.\n-> END\n",
+        );
+        assert_eq!(
+            self_reference
+                .apply_graph_edit(
+                    &GraphEdit::MoveChoiceToKnot {
+                        knot: "start".to_owned(),
+                        path: vec![0],
+                        target_knot: "shore".to_owned(),
+                    },
+                    self_reference.revision(),
+                )
+                .expect_err("self reference"),
+            SyncConflict::SelfReference("shore".to_owned())
+        );
+
+        let mut empty = CanonicalProjectModel::new(
+            "=== lone ===\n* [Only] -> END\n=== other ===\nDone.\n-> END\n",
+        );
+        assert_eq!(
+            empty
+                .apply_graph_edit(
+                    &GraphEdit::MoveChoiceToKnot {
+                        knot: "lone".to_owned(),
+                        path: vec![0],
+                        target_knot: "other".to_owned(),
+                    },
+                    empty.revision(),
+                )
+                .expect_err("empty source"),
+            SyncConflict::EmptySourceKnot("lone".to_owned())
+        );
+    }
+
+    #[test]
+    fn choice_move_takes_one_undo_entry() {
+        let mut model = CanonicalProjectModel::new(MOVABLE);
+        model
+            .apply_graph_edit(
+                &GraphEdit::MoveChoiceToKnot {
+                    knot: "start".to_owned(),
+                    path: vec![1],
+                    target_knot: "shore".to_owned(),
+                },
+                model.revision(),
+            )
+            .expect("move choice");
+        assert_eq!(model.undo().as_deref(), Some(MOVABLE));
+        assert_eq!(knot_body(model.graph_document(), "start").len(), 3);
+    }
+
+    #[test]
+    #[allow(clippy::needless_range_loop)]
+    fn every_non_choice_block_moves_one_place_up_and_down() {
+        let document = parse_document(BLOCKS).expect("fixture parses");
+        let body = knot_body(&document, "scene");
+        let kinds = body
+            .iter()
+            .map(|statement| stripped_json(&statement.node))
+            .collect::<Vec<_>>();
+        for index in 0..body.len() {
+            if matches!(body[index].node, Statement::Choice(_) | Statement::End) {
+                continue;
+            }
+            // Move up unless the previous slot is an `END`, which the guard owns.
+            if index > 0 && !matches!(body[index - 1].node, Statement::End) {
+                let mut model = CanonicalProjectModel::new(BLOCKS);
+                model
+                    .apply_graph_edit(
+                        &GraphEdit::MoveStatement {
+                            knot: "scene".to_owned(),
+                            path: vec![index],
+                            delta: -1,
+                            confirm_after_end: false,
+                        },
+                        model.revision(),
+                    )
+                    .expect("move block up");
+                let moved =
+                    stripped_json(&knot_body(model.graph_document(), "scene")[index - 1].node);
+                assert_eq!(moved, kinds[index], "block at {index} should move up");
+            }
+            // Move down unless the next slot is an `END`.
+            if index + 1 < body.len() && !matches!(body[index + 1].node, Statement::End) {
+                let mut model = CanonicalProjectModel::new(BLOCKS);
+                model
+                    .apply_graph_edit(
+                        &GraphEdit::MoveStatement {
+                            knot: "scene".to_owned(),
+                            path: vec![index],
+                            delta: 1,
+                            confirm_after_end: false,
+                        },
+                        model.revision(),
+                    )
+                    .expect("move block down");
+                let moved =
+                    stripped_json(&knot_body(model.graph_document(), "scene")[index + 1].node);
+                assert_eq!(moved, kinds[index], "block at {index} should move down");
+                assert_eq!(
+                    stripped_json(&knot_body(model.graph_document(), "next")),
+                    stripped_json(knot_body(&document, "next")),
+                    "an unrelated knot must not change"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn block_moves_refuse_choices_and_terminal_end_without_confirmation() {
+        let mut choice = CanonicalProjectModel::new("=== pick ===\n* [Go] -> END\n");
+        assert_eq!(
+            choice
+                .apply_graph_edit(
+                    &GraphEdit::MoveStatement {
+                        knot: "pick".to_owned(),
+                        path: vec![0],
+                        delta: -1,
+                        confirm_after_end: false,
+                    },
+                    choice.revision(),
+                )
+                .expect_err("choices use the choice move"),
+            SyncConflict::ChoiceNotMovable {
+                knot: "pick".to_owned(),
+                path: vec![0],
+            }
+        );
+
+        const END_STORY: &str = "=== block ===\nA line.\n-> END\n";
+        let mut model = CanonicalProjectModel::new(END_STORY);
+        let before = model.source().to_owned();
+        let revision = model.revision();
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveStatement {
+                        knot: "block".to_owned(),
+                        path: vec![0],
+                        delta: 1,
+                        confirm_after_end: false,
+                    },
+                    revision,
+                )
+                .expect_err("content after end"),
+            SyncConflict::ContentAfterEnd {
+                knot: "block".to_owned(),
+            }
+        );
+        assert_eq!(model.source(), before);
+        assert_eq!(model.revision(), revision);
+
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveStatement {
+                        knot: "block".to_owned(),
+                        path: vec![1],
+                        delta: -1,
+                        confirm_after_end: false,
+                    },
+                    revision,
+                )
+                .expect_err("end before content"),
+            SyncConflict::ContentAfterEnd {
+                knot: "block".to_owned(),
+            }
+        );
+
+        let confirmed = model
+            .apply_graph_edit(
+                &GraphEdit::MoveStatement {
+                    knot: "block".to_owned(),
+                    path: vec![0],
+                    delta: 1,
+                    confirm_after_end: true,
+                },
+                revision,
+            )
+            .expect("confirmed move after end");
+        assert_eq!(confirmed.focus_node.as_deref(), Some("knot:block"));
+        let body = knot_body(model.graph_document(), "block");
+        assert!(matches!(body[0].node, Statement::End));
+        assert!(matches!(body[1].node, Statement::Text(_)));
+    }
+
+    #[test]
+    fn end_blocks_move_over_trivia_but_not_over_content() {
+        const TRIVIA: &str = "=== block ===\nA line.\n// note\n\n-> END\n";
+        let document = parse_document(TRIVIA).expect("fixture parses");
+        let body = knot_body(&document, "block");
+        let end = body
+            .iter()
+            .position(|statement| matches!(statement.node, Statement::End))
+            .expect("end exists");
+        assert!(matches!(body[end - 1].node, Statement::Blank));
+        assert!(matches!(body[end - 2].node, Statement::Comment(_)));
+
+        let mut model = CanonicalProjectModel::new(TRIVIA);
+        for _ in 0..2 {
+            let body = knot_body(model.graph_document(), "block");
+            let end = body
+                .iter()
+                .position(|statement| matches!(statement.node, Statement::End))
+                .expect("end exists");
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveStatement {
+                        knot: "block".to_owned(),
+                        path: vec![end],
+                        delta: -1,
+                        confirm_after_end: false,
+                    },
+                    model.revision(),
+                )
+                .expect("end moves over a blank line and a comment");
+        }
+        let body = knot_body(model.graph_document(), "block");
+        assert!(matches!(body[0].node, Statement::Text(_)));
+        assert!(matches!(body[1].node, Statement::End));
+        assert_eq!(
+            model
+                .apply_graph_edit(
+                    &GraphEdit::MoveStatement {
+                        knot: "block".to_owned(),
+                        path: vec![1],
+                        delta: -1,
+                        confirm_after_end: false,
+                    },
+                    model.revision(),
+                )
+                .expect_err("end cannot move above content"),
+            SyncConflict::ContentAfterEnd {
+                knot: "block".to_owned(),
+            }
+        );
+    }
+
+    #[test]
+    fn moving_prose_keeps_cue_order_and_moving_a_cue_changes_it() {
+        let story = "=== cues ===\n@speaker Mara\nProse.\n@scene dusk\n-> END\n";
+        let mut model = CanonicalProjectModel::new(story);
+        let before = cue_list(model.graph_document(), "cues");
+        model
+            .apply_graph_edit(
+                &GraphEdit::MoveStatement {
+                    knot: "cues".to_owned(),
+                    path: vec![1],
+                    delta: -1,
+                    confirm_after_end: false,
+                },
+                model.revision(),
+            )
+            .expect("move prose");
+        assert_eq!(cue_list(model.graph_document(), "cues"), before);
+
+        let cues = "=== cues ===\n@speaker Mara\n@scene dusk\n-> END\n";
+        let mut model = CanonicalProjectModel::new(cues);
+        model
+            .apply_graph_edit(
+                &GraphEdit::MoveStatement {
+                    knot: "cues".to_owned(),
+                    path: vec![1],
+                    delta: -1,
+                    confirm_after_end: false,
+                },
+                model.revision(),
+            )
+            .expect("move cue");
+        let after = cue_list(model.graph_document(), "cues");
+        assert_ne!(
+            after,
+            cue_list(&parse_document(cues).expect("fixture"), "cues")
+        );
+        assert!(matches!(after[0], Cue::Scene(_)));
+        assert!(matches!(after[1], Cue::Speaker(_)));
+    }
+
+    #[test]
+    fn block_move_takes_one_undo_entry_and_restores_the_exact_source() {
+        let mut model = CanonicalProjectModel::new(BLOCKS);
+        model
+            .apply_graph_edit(
+                &GraphEdit::MoveStatement {
+                    knot: "scene".to_owned(),
+                    path: vec![0],
+                    delta: 1,
+                    confirm_after_end: false,
+                },
+                model.revision(),
+            )
+            .expect("move prose");
+        assert_eq!(model.undo().as_deref(), Some(BLOCKS));
+    }
+
+    #[test]
+    fn reorder_boundaries_keep_history_and_report_entry_changes() {
+        let mut model = CanonicalProjectModel::new(LINKED);
+        let revision = model.revision();
+        let clamped = model
+            .apply_graph_edit(
+                &GraphEdit::MoveKnot {
+                    knot: "start".to_owned(),
+                    delta: -1,
+                },
+                revision,
+            )
+            .expect("clamped move");
+        assert_eq!(clamped.revision, revision);
+        assert_eq!(clamped.source, LINKED);
+        assert!(model.undo().is_none());
+
+        let moved = model
+            .apply_graph_edit(
+                &GraphEdit::MoveKnot {
+                    knot: "start".to_owned(),
+                    delta: 1,
+                },
+                revision,
+            )
+            .expect("entry move");
+        assert!(moved.summary.contains("shore"));
+        assert!(moved.summary.contains("story entry"));
+        assert!(moved.source.starts_with("=== shore ==="));
+
+        let two_choices = "=== branch ===\nPick.\n* [Left] -> END\nProse.\n* [Right] -> END\n";
+        let mut choices = CanonicalProjectModel::new(two_choices);
+        let moved = choices
+            .apply_graph_edit(
+                &GraphEdit::MoveChoice {
+                    knot: "branch".to_owned(),
+                    path: vec![1],
+                    delta: 1,
+                },
+                choices.revision(),
+            )
+            .expect("move down");
+        assert_eq!(moved.focus_node.as_deref(), Some("choice:branch:3"));
+        assert_eq!(
+            choices
+                .apply_graph_edit(
+                    &GraphEdit::MoveChoice {
+                        knot: "branch".to_owned(),
+                        path: vec![1, 0],
+                        delta: 1,
+                    },
+                    choices.revision(),
+                )
+                .expect_err("nested path"),
+            SyncConflict::MissingChoice {
+                knot: "branch".to_owned(),
+                path: vec![1, 0],
+            }
+        );
     }
 
     proptest! {

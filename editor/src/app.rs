@@ -21,7 +21,7 @@ use crate::knot_editor::KnotViewPreferences;
 use crate::knot_view::{KnotView, KnotViewEvent};
 use crate::manuscript_view::{ManuscriptSurface, MoveVerb, label_display, status_display};
 use crate::node_renderers::{InspectorData, kind_label};
-use crate::outline_view::{OutlineSurface, OutlineViewEvent};
+use crate::outline_view::{OutlineStructuralEvent, OutlineSurface, OutlineViewEvent};
 use crate::pattern_browser::{PatternBrowserEvent, PatternBrowserSurface};
 use crate::play_view::PlayMode;
 use crate::preview::{PreviewEvent, PreviewSurface};
@@ -342,6 +342,11 @@ impl EditorShell {
         let outline = cx.new(|_| OutlineSurface::new(canonical.graph_document()));
         cx.subscribe(&outline, |this, _, event, cx| {
             this.handle_outline_event(event, cx);
+        })
+        .detach();
+        cx.subscribe(&outline, |this, _, event: &OutlineStructuralEvent, cx| {
+            let OutlineStructuralEvent::Edit(edit) = event;
+            this.apply_semantic_edit(edit, None, cx);
         })
         .detach();
         cx.subscribe(&knot, |this, _, event, cx| {

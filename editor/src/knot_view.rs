@@ -266,6 +266,15 @@ impl KnotView {
         cx.emit(KnotViewEvent::Edit(edit));
     }
 
+    fn move_block(&mut self, path: Vec<usize>, choice: bool, delta: i32, cx: &mut Context<Self>) {
+        let Some(knot) = self.knot.clone() else {
+            return;
+        };
+        cx.emit(KnotViewEvent::Edit(block_move_edit(
+            &knot, path, choice, delta,
+        )));
+    }
+
     fn draft_key(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
         let key = event.keystroke.key.as_ref();
         match key {
@@ -654,6 +663,8 @@ impl KnotView {
         let path = block.path.clone();
         let editable_path = path.clone();
         let removable_path = path.clone();
+        let move_up_path = path.clone();
+        let move_down_path = path;
         let is_choice = matches!(block.kind, KnotBlockKind::Choice { .. });
         let (content, editable) = match &block.kind {
             KnotBlockKind::Prose { text } => (text.clone(), true),
@@ -704,6 +715,34 @@ impl KnotView {
                 content
             }));
 
+        row = row
+            .child(
+                div()
+                    .id("move-block-up")
+                    .px_2()
+                    .rounded_md()
+                    .text_xs()
+                    .cursor_pointer()
+                    .bg(rgb(DARK_THEME.chrome))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.move_block(move_up_path.clone(), is_choice, -1, cx);
+                    }))
+                    .child("↑"),
+            )
+            .child(
+                div()
+                    .id("move-block-down")
+                    .px_2()
+                    .rounded_md()
+                    .text_xs()
+                    .cursor_pointer()
+                    .bg(rgb(DARK_THEME.chrome))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.move_block(move_down_path.clone(), is_choice, 1, cx);
+                    }))
+                    .child("↓"),
+            );
+
         if editable && editable_kind {
             let inline_text = inline_text.clone();
             row = row.child(
@@ -740,6 +779,27 @@ impl KnotView {
             );
         }
         row.into_any_element()
+    }
+}
+
+/// Canonical edit for moving one block from the knot panel.
+///
+/// Choices reorder among choices; every other block moves by one statement position. The panel
+/// does not confirm unreachable content, so a move after a terminal `END` is refused.
+fn block_move_edit(knot: &str, path: Vec<usize>, choice: bool, delta: i32) -> GraphEdit {
+    if choice {
+        GraphEdit::MoveChoice {
+            knot: knot.to_owned(),
+            path,
+            delta,
+        }
+    } else {
+        GraphEdit::MoveStatement {
+            knot: knot.to_owned(),
+            path,
+            delta,
+            confirm_after_end: false,
+        }
     }
 }
 
@@ -792,5 +852,26 @@ mod tests {
         assert_eq!(draft.text, "hélo");
         draft.move_right();
         assert_eq!(draft.rendered(), "hélo▏");
+    }
+
+    #[test]
+    fn block_move_edits_route_choices_and_blocks_separately() {
+        assert_eq!(
+            block_move_edit("start", vec![1], true, 1),
+            GraphEdit::MoveChoice {
+                knot: "start".to_owned(),
+                path: vec![1],
+                delta: 1,
+            }
+        );
+        assert_eq!(
+            block_move_edit("start", vec![2], false, -1),
+            GraphEdit::MoveStatement {
+                knot: "start".to_owned(),
+                path: vec![2],
+                delta: -1,
+                confirm_after_end: false,
+            }
+        );
     }
 }
