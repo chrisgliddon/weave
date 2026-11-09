@@ -29,6 +29,7 @@ Three files are generated from live adapter data. Do not edit them by hand.
 | `conformance.checks` | Check ids the standard suite applies, or an empty list when unregistered. |
 | `canonical_project` | Project path, exact reproduction command, expected-output path and digest, and seed. |
 | `consumers` | Exact Bevy command for this adapter and the PixiJS suite command that covers every adapter. |
+| `content_sha256` | Exact content hash of the validated manifest, so a type or visibility change moves the catalog row. |
 
 Every adapter appears, including one outside the standard suite. That keeps the shipped surface
 visible and lets a consumer check capabilities and licences before installing anything.
@@ -53,8 +54,8 @@ cd examples/domain-module-pixijs && npm test
 `compatibility-matrix.json` is format 1 and contains:
 
 - `adapters`: one row per adapter with version, state-schema version, capabilities, creation steps,
-  operations, licence, source class, compatibility ranges, declared migration ids, and the
-  canonical project link;
+  operations, licence, source class, compatibility ranges, declared migration ids, the
+  canonical project link, and the manifest content hash;
 - `cross_system_pairs`: one row for every directed pair of different adapters. Every row sets
   `conversion_allowed` to false and names the five categories that never transfer: `attributes`,
   `items`, `resources`, `progression`, and `campaign_state`;

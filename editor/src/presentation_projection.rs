@@ -142,7 +142,38 @@ impl PresentationInputs {
 #[must_use]
 pub fn load_presentation_inputs(directory: &Path) -> PresentationInputs {
     let source = PRESENTATION_INPUT_FILE_NAME.to_owned();
-    let path = directory.join(PRESENTATION_INPUT_FILE_NAME);
+    // Resolve through the project-relative gate so a symlink cannot point outside the project on
+    // any platform, then read the resolved regular file through a bounded handle.
+    let path = match resolve_project_file(directory, PRESENTATION_INPUT_FILE_NAME) {
+        Ok(path) => path,
+        Err(PresentationInputIssueKind::Missing) => {
+            return PresentationInputs {
+                world: None,
+                character: None,
+                issues: vec![PresentationInputIssue {
+                    kind: PresentationInputIssueKind::Missing,
+                    source,
+                    detail:
+                        "no World or Character presentation configuration is present; Play uses \
+                         explicit or fallback presentation"
+                            .to_owned(),
+                }],
+            };
+        }
+        Err(kind) => {
+            return PresentationInputs {
+                world: None,
+                character: None,
+                issues: vec![PresentationInputIssue {
+                    kind,
+                    source,
+                    detail:
+                        "the presentation configuration path must stay inside the project directory"
+                            .to_owned(),
+                }],
+            };
+        }
+    };
     let text = match read_bounded_text(&path) {
         Ok(text) => text,
         Err(error) if error.kind() == ErrorKind::NotFound => {
@@ -671,6 +702,40 @@ mod tests {
         let second_plan =
             resolve_presentation(&story(), second.world.as_ref(), None, Some(&variables));
         assert_eq!(first_plan, second_plan);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_symlinked_presentation_file_outside_the_project_is_refused() {
+        use std::os::unix::fs::symlink;
+        let directory = tempfile::tempdir().expect("project dir");
+        let outside = tempfile::tempdir().expect("outside dir");
+        let target = outside.path().join("conf.json");
+        fs::write(
+            &target,
+            r#"{"format_version":1,"world":{"selector":{"kind":"variable","name":"place"},"scenes":{},"fallback":null}}"#,
+        )
+        .expect("write outside file");
+        symlink(&target, directory.path().join(PRESENTATION_INPUT_FILE_NAME)).expect("symlink");
+        let inputs = load_presentation_inputs(directory.path());
+        assert!(inputs.world.is_none());
+        assert_eq!(inputs.issues.len(), 1);
+        assert_eq!(inputs.issues[0].kind, PresentationInputIssueKind::Invalid);
+    }
+
+    #[test]
+    fn an_oversized_presentation_file_is_refused() {
+        let directory = tempfile::tempdir().expect("project dir");
+        let oversized = vec![b' '; MAX_PRESENTATION_INPUT_BYTES as usize + 1];
+        fs::write(
+            directory.path().join(PRESENTATION_INPUT_FILE_NAME),
+            oversized,
+        )
+        .expect("write oversized file");
+        let inputs = load_presentation_inputs(directory.path());
+        assert!(inputs.world.is_none());
+        assert_eq!(inputs.issues.len(), 1);
+        assert_eq!(inputs.issues[0].kind, PresentationInputIssueKind::Invalid);
     }
 
     #[test]

@@ -254,7 +254,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- plug-and-play",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
     },
     {
       "id": "org.weave.tabletop.dungeonpunk",
@@ -579,7 +580,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- dungeonpunk",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
     },
     {
       "id": "org.weave.tabletop.freehack",
@@ -867,7 +869,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- freehack",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
     },
     {
       "id": "org.weave.tabletop.wicked_ones",
@@ -1250,7 +1253,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- wicked-ones",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "f719bed72613dfe238ff0424249e4f2a3a1b0cb020cd5cdd7d7d5ea611993818"
     },
     {
       "id": "org.weave.tabletop.spark",
@@ -1501,7 +1505,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- spark",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "2eadbf79295481d20bfa8beb57e16f259b03105b3508aaabaae76b9cda48c4e3"
     },
     {
       "id": "org.weave.tabletop.open_adventure",
@@ -1748,7 +1753,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- open-adventure",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "d7ebe47034ab749fa615ba3781f8eb5a008e84ec550a5666b12d65107725e2ff"
     },
     {
       "id": "org.weave.tabletop.open_tale",
@@ -1993,7 +1999,8 @@
       "consumers": {
         "bevy": "cargo run -p weave-example-bevy-tabletop -- open-tale",
         "pixijs": "cd examples/domain-module-pixijs && npm test"
-      }
+      },
+      "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
     }
   ]
 }

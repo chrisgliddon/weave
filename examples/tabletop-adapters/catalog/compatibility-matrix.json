@@ -57,7 +57,8 @@
         "expected_output": "examples/tabletop-adapters/plug-and-play/project/expected-output.json",
         "expected_output_sha256": "44757b05788c6965952a20469f256d6f88176abbc1e3ce548ebc27808aa7e636",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "58a595b04ac8454b7429955adfbad372fc3c260f421083d542b022d2c1ea1aa5"
     },
     {
       "id": "org.weave.tabletop.dungeonpunk",
@@ -123,7 +124,8 @@
         "expected_output": "examples/tabletop-adapters/dungeonpunk/project/expected-output.json",
         "expected_output_sha256": "8a7c865878538071f9d6aeb135f72c3f58bf88c224a39f5e30ae75c83cdc14e1",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "6c3bb5aede41908c20b8aef1342b4bedb33b720a1fe8f461a7144950e7b4ac11"
     },
     {
       "id": "org.weave.tabletop.freehack",
@@ -182,7 +184,8 @@
         "expected_output": "examples/tabletop-adapters/freehack/project/expected-output.json",
         "expected_output_sha256": "9a2fa685ce5859da7e3b0c362e1b3e215c480cfee9122d173cc4c71a7efc76c1",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "f9dcc165f7440b69ef239f03d4919fe4a41088ea8c7e0a59c978f460747dfece"
     },
     {
       "id": "org.weave.tabletop.wicked_ones",
@@ -256,7 +259,8 @@
         "expected_output": "examples/tabletop-adapters/wicked-ones/project/expected-output.json",
         "expected_output_sha256": "ca3f7c86f8559764bc95284e2bad4c2fda03aebe24d0aa436301de6e981aa682",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "f719bed72613dfe238ff0424249e4f2a3a1b0cb020cd5cdd7d7d5ea611993818"
     },
     {
       "id": "org.weave.tabletop.spark",
@@ -315,7 +319,8 @@
         "expected_output": "examples/tabletop-adapters/spark/project/expected-output.json",
         "expected_output_sha256": "b38da1febc0b577be77344d849deaa30dbece6c7d8200fd34d642686495455b8",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "2eadbf79295481d20bfa8beb57e16f259b03105b3508aaabaae76b9cda48c4e3"
     },
     {
       "id": "org.weave.tabletop.open_adventure",
@@ -371,7 +376,8 @@
         "expected_output": "examples/tabletop-adapters/open-adventure/project/expected-output.json",
         "expected_output_sha256": "5d26e5b7551c6e21643c362c6d3e4bd67c5e77a3469f35838c17c256359c141c",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "d7ebe47034ab749fa615ba3781f8eb5a008e84ec550a5666b12d65107725e2ff"
     },
     {
       "id": "org.weave.tabletop.open_tale",
@@ -430,7 +436,8 @@
         "expected_output": "examples/tabletop-adapters/open-tale/project/expected-output.json",
         "expected_output_sha256": "3d7d70733c5a42b72a04fc39f9ea80f5f8fa4673fdf56845b21a6a70b9d62fd9",
         "seed": 20261031
-      }
+      },
+      "content_sha256": "180055725d63d39a876fec0f3870b90dcbe539421dc1ee2d2b37f7e285ab61b4"
     }
   ],
   "cross_system_pairs": [

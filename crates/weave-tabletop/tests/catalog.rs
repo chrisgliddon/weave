@@ -15,7 +15,7 @@ use weave_tabletop::{
     AdapterManifest, AdapterMigrationDeclaration, AdapterProvenance, AdapterSourceClass,
     AdapterSourcePolicy, ExcludedMaterial, PolicyFile, TabletopCapability, dungeonpunk_manifest,
     freehack_manifest, open_adventure_manifest, open_tale_manifest, plug_and_play_manifest,
-    sha256_bytes, spark_manifest, wicked_ones_manifest,
+    resolved_adapter, sha256_bytes, spark_manifest, wicked_ones_manifest,
 };
 
 const CATALOG_FORMAT_VERSION: u32 = 1;
@@ -66,6 +66,8 @@ struct CatalogAdapter {
     conformance: CatalogConformance,
     canonical_project: CatalogProject,
     consumers: CatalogConsumers,
+    /// Exact content hash of the validated manifest; changes in types or visibility move it.
+    content_sha256: String,
 }
 
 /// Runnable host consumers for one adapter.
@@ -308,6 +310,9 @@ fn catalog_adapter(
         },
         canonical_project: canonical_project.clone(),
         consumers: catalog_consumers(manifest),
+        content_sha256: resolved_adapter(manifest)
+            .expect("a shipped manifest resolves to its exact coordinate")
+            .content_sha256,
     }
 }
 
@@ -548,6 +553,8 @@ struct MatrixAdapter {
     required_notices: Vec<String>,
     forbidden_files: Vec<String>,
     canonical_project: CatalogProject,
+    /// Exact content hash of the validated manifest.
+    content_sha256: String,
 }
 
 /// One directed cross-system pair and the data that does not transfer.
@@ -757,6 +764,9 @@ fn live_matrix() -> CompatibilityMatrix {
                     .map(|file| (*file).to_owned())
                     .collect(),
                 canonical_project: canonical_project(manifest),
+                content_sha256: resolved_adapter(manifest)
+                    .expect("a shipped manifest resolves to its exact coordinate")
+                    .content_sha256,
             }
         })
         .collect::<Vec<_>>();
