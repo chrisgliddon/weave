@@ -17,6 +17,7 @@
   "pattern"
   "scene"
   "stage"
+  "channel"
   "background"
   "fit"
   "anchor"
@@ -32,6 +33,7 @@
   "duplicates"
   "positions"
   "VAR"
+  "STRINGS"
   "LIST"
   "FLAG"
   "STATE"
@@ -135,3 +137,10 @@
   "#"
   "==="
 ] @punctuation.delimiter
+
+(channel_declaration name: (identifier) @type)
+(channel_field name: (identifier) @property)
+(strings_declaration name: (identifier) @type)
+(strings_key) @property
+(tag) @attribute
+(markup) @tag

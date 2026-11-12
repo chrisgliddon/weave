@@ -1,0 +1,96 @@
+==================
+Channels, string tables, tags, and inline markup
+==================
+
+channel dialog { animated: true, cps: 40, box: bottom }
+channel sign {
+    animated: false
+    frame: "brass"
+}
+
+STRINGS ui
+    title = "<b>Lamp</b>" ^screen:title
+    menu.begin = "Begin" ^button
+
+=== shore ===
+@to sign
+GULL POINT <pause 0.4> <b>LIGHT</b> ^id:shore.sign
+@to
+Two ^ eight is 2^8, and 3 < 4. ^calm ^sfx:wind
+* [Ask about the lamp] ^curious {if true} -> shore
+-> END
+
+---
+
+(source_file
+  (channel_declaration
+    (identifier)
+    (channel_field
+      (identifier)
+      (boolean))
+    (channel_field
+      (identifier)
+      (number))
+    (channel_field
+      (identifier)
+      (identifier)))
+  (channel_declaration
+    (identifier)
+    (channel_field
+      (identifier)
+      (boolean))
+    (channel_field
+      (identifier)
+      (string
+        (string_content))))
+  (strings_declaration
+    (identifier)
+    (strings_block
+      (strings_entry
+        (strings_key)
+        (string
+          (string_content))
+        (tag))
+      (strings_entry
+        (strings_key)
+        (string
+          (string_content))
+        (tag))))
+  (knot
+    (knot_header
+      (identifier))
+    (directive_statement
+      (cue_directive)
+      (identifier))
+    (narrative_statement
+      (narrative_text)
+      (narrative_text)
+      (markup)
+      (markup)
+      (narrative_text)
+      (markup)
+      (tag))
+    (directive_statement
+      (cue_directive))
+    (narrative_statement
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (narrative_text)
+      (tag)
+      (tag))
+    (choice_statement
+      (choice_marker)
+      (choice_label
+        (choice_text))
+      (tag)
+      (choice_condition
+        (boolean)))
+    (divert_statement
+      (identifier))
+    (divert_statement)))

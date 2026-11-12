@@ -293,6 +293,70 @@
     }
   },
   {
+    "type": "channel_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "channel_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "channel_field",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "boolean",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "choice_condition",
     "named": true,
     "fields": {},
@@ -389,6 +453,16 @@
         "types": [
           {
             "type": "choice_label",
+            "named": true
+          }
+        ]
+      },
+      "tag": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "tag",
             "named": true
           }
         ]
@@ -1020,7 +1094,15 @@
           "named": true
         },
         {
+          "type": "markup",
+          "named": true
+        },
+        {
           "type": "narrative_text",
+          "named": true
+        },
+        {
+          "type": "tag",
           "named": true
         }
       ]
@@ -1314,6 +1396,10 @@
       "required": false,
       "types": [
         {
+          "type": "channel_declaration",
+          "named": true
+        },
+        {
           "type": "flag_declaration",
           "named": true
         },
@@ -1347,6 +1433,10 @@
         },
         {
           "type": "state_declaration",
+          "named": true
+        },
+        {
+          "type": "strings_declaration",
           "named": true
         },
         {
@@ -1583,6 +1673,83 @@
     }
   },
   {
+    "type": "strings_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "strings_entry",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "strings_declaration",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "strings_block",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "strings_entry",
+    "named": true,
+    "fields": {
+      "key": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "strings_key",
+            "named": true
+          }
+        ]
+      },
+      "tag": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "tag",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "symbol_list",
     "named": true,
     "fields": {},
@@ -1814,6 +1981,10 @@
     "named": false
   },
   {
+    "type": "STRINGS",
+    "named": false
+  },
+  {
     "type": "THREAD",
     "named": false
   },
@@ -1847,6 +2018,10 @@
   },
   {
     "type": "center",
+    "named": false
+  },
+  {
+    "type": "channel",
     "named": false
   },
   {
@@ -1935,6 +2110,10 @@
     "named": false
   },
   {
+    "type": "markup",
+    "named": true
+  },
+  {
     "type": "module",
     "named": false
   },
@@ -2004,6 +2183,14 @@
   },
   {
     "type": "string_content",
+    "named": true
+  },
+  {
+    "type": "strings_key",
+    "named": true
+  },
+  {
+    "type": "tag",
     "named": true
   },
   {

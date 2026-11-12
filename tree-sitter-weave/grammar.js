@@ -29,7 +29,7 @@ export default grammar({
 
   supertypes: $ => [$.expression],
 
-  conflicts: $ => [[$.choice_statement]],
+  conflicts: $ => [[$.choice_statement], [$.strings_declaration]],
 
   rules: {
     source_file: $ => repeat(choice($._top_level_item, $._newline)),
@@ -40,6 +40,8 @@ export default grammar({
       $.pattern_declaration,
       $.scene_declaration,
       $.stage_declaration,
+      $.channel_declaration,
+      $.strings_declaration,
       $.variable_declaration,
       $.list_declaration,
       $.flag_declaration,
@@ -262,6 +264,45 @@ export default grammar({
       field("value", $.string),
     ),
 
+    channel_declaration: $ => seq(
+      "channel",
+      field("name", $.identifier),
+      "{",
+      repeat(choice(seq($.channel_field, optional(",")), $._newline)),
+      "}",
+    ),
+
+    channel_field: $ => seq(
+      field("name", $.identifier),
+      ":",
+      field("value", choice($.string, $.number, $.boolean, $.identifier)),
+    ),
+
+    strings_declaration: $ => seq(
+      keyword("STRINGS"),
+      field("name", $.identifier),
+      optional(seq(repeat1($._newline), field("body", $.strings_block))),
+    ),
+
+    strings_block: $ => seq(
+      $._indent,
+      repeat(choice($.strings_entry, $._newline)),
+      $._dedent,
+    ),
+
+    strings_entry: $ => seq(
+      field("key", $.strings_key),
+      "=",
+      field("value", $.string),
+      repeat(field("tag", $.tag)),
+    ),
+
+    strings_key: _ => token(prec(-1, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)*/)),
+
+    tag: _ => token(prec(1, /\^[A-Za-z_][A-Za-z0-9_.\-]*(:[^\s]+)?/)),
+
+    markup: _ => token(prec(1, /<\/?[A-Za-z_][A-Za-z0-9_]*( [0-9.]+)?>/)),
+
     knot: $ => prec.right(seq(
       $.knot_header,
       repeat(choice($._statement, $._newline)),
@@ -299,6 +340,7 @@ export default grammar({
     choice_statement: $ => seq(
       field("kind", $.choice_marker),
       field("label", $.choice_label),
+      repeat(field("tag", $.tag)),
       optional(field("condition", $.choice_condition)),
       optional(field("divert", $.inline_divert)),
       optional(seq(repeat1($._newline), field("body", $.block))),
@@ -393,13 +435,17 @@ export default grammar({
     ),
 
     narrative_statement: $ => repeat1(choice(
+      $.tag,
+      $.markup,
       $.narrative_text,
       $.escape_sequence,
       $.grammar_reference,
       $.interpolation,
     )),
 
-    narrative_text: _ => token(/[^#{}\\\r\n \t]+/),
+    // Text stops at `<` so inline markup is its own token; a `<` that does not
+    // start markup, as in `3 < 4`, is text on its own.
+    narrative_text: _ => token(/[^#{}\\\r\n \t<]+|</),
 
     interpolation: $ => seq("{", $.expression, "}"),
 
