@@ -19,7 +19,8 @@ use weave_patterns::{PackageRegistry, PackageRequirement};
 #[command(
     name = "weavec",
     version,
-    about = "Compile Weave narrative source to runtime IR"
+    about = "Compile Weave narrative source to runtime IR",
+    after_help = "Writer tools:\n  weavec ids [--stamp] <file>            list or stamp stable line ids\n  weavec export --unreal <outdir> <file>  write Unreal string tables, line rows, and voice scripts\n  weavec play <file> [--plan 0,1] [--seed N] [--json]  print a scripted playthrough transcript"
 )]
 struct Cli {
     /// Input `.weave` source file.
@@ -100,7 +101,12 @@ enum OutputFormat {
     Json,
 }
 
+mod tools;
+
 fn main() -> ExitCode {
+    if let Some(code) = tools::dispatch() {
+        return code;
+    }
     let cli = Cli::parse();
     if cli.schema {
         return ExitCode::from(emit_schema(&cli));
@@ -463,18 +469,40 @@ fn default_output(input: &Path, format: OutputFormat) -> PathBuf {
     })
 }
 
-fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
+/// Replace `path` atomically. A symlink is written through to its target, an
+/// existing file keeps its permissions, and a new file is created `0644`
+/// (before the umask-free rename) rather than the temporary file's `0600`.
+pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
+    let target = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let existing = std::fs::metadata(&target)
+        .ok()
+        .map(|metadata| metadata.permissions());
+    let parent = target.parent().unwrap_or_else(|| Path::new("."));
     let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
     temporary.write_all(bytes)?;
     temporary.as_file().sync_all()?;
+    match existing {
+        Some(permissions) => temporary.as_file().set_permissions(permissions)?,
+        None => set_new_file_permissions(temporary.as_file())?,
+    }
     temporary
-        .persist(path)
+        .persist(&target)
         .map_err(|error| error.error)
         .map(|_| ())
 }
 
-fn print_diagnostics(path: &Path, source: &str, diagnostics: &[Diagnostic]) {
+#[cfg(unix)]
+fn set_new_file_permissions(file: &std::fs::File) -> io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    file.set_permissions(std::fs::Permissions::from_mode(0o644))
+}
+
+#[cfg(not(unix))]
+fn set_new_file_permissions(_file: &std::fs::File) -> io::Result<()> {
+    Ok(())
+}
+
+pub(crate) fn print_diagnostics(path: &Path, source: &str, diagnostics: &[Diagnostic]) {
     let lines = source.lines().collect::<Vec<_>>();
     for diagnostic in diagnostics {
         let severity = match diagnostic.severity {

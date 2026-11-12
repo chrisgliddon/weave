@@ -26,6 +26,7 @@ thiserror.workspace = true
 weave-core = { path = "../weave-core" }
 weave-domain = { path = "../weave-domain" }
 weave-patterns = { path = "../weave-patterns" }
+weave-web = { path = "../weave-web" }
 
 [lints]
 workspace = true
