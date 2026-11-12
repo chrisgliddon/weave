@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/tabletop-adapters/plug-and-play/runtime/ember-vale.weave",
   "entry": "start",
   "globals": [
@@ -743,6 +743,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -787,99 +792,102 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "character_name"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "character_name"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " enters play with Agility "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "agility"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", Brains "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "brains"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", Brawn "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "brawn"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", Wits "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "wits"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", Fortune "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "fortune"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", and Survivability "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "survivability"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " enters play with Agility "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "agility"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", Brains "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "brains"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", Brawn "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "brawn"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", Wits "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "wits"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", Fortune "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "fortune"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", and Survivability "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "survivability"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     },
@@ -893,64 +901,67 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "The active rules are "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_id"
-                                ]
+                          "id": "start.2",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "The active rules are "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_id"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "@"
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_version"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ("
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_sha256"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "); wounded is "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "wounded"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "@"
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_version"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " ("
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_sha256"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "); wounded is "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "wounded"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -968,12 +979,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "This branch is unreachable because the selected adapter declares checks and encounters."
-                        }
-                      ]
+                      "id": "start.3",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "This branch is unreachable because the selected adapter declares checks and encounters."
+                          }
+                        ]
+                      }
                     }
                   }
                 }

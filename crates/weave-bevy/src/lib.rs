@@ -20,7 +20,7 @@ use weave_compiler::{CompileOptions, compile};
 use weave_core::ir::StoryIr;
 use weave_patterns::{DrawResult, PatternValue};
 use weave_runtime::{
-    ChoiceView, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState, VariableState,
+    ChoiceView, Line, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState, VariableState,
 };
 
 pub mod play;
@@ -176,10 +176,12 @@ pub struct StoryReady;
 pub struct StoryReloaded;
 
 /// One narrative line delivered by the runtime.
-#[derive(Event, Debug, Clone, PartialEq, Eq)]
+#[derive(Event, Debug, Clone, PartialEq)]
 pub struct DeliverLine {
-    /// Fully rendered text.
+    /// Fully rendered plain text, the same as `line.text`.
     pub text: String,
+    /// The structured line: id, channel, speaker, rich text, spans, beats, tags, and metadata.
+    pub line: Line,
 }
 
 /// A host-selectable choice set delivered by the runtime.
@@ -476,7 +478,10 @@ fn trigger_presentation(world: &mut World, presentation: Vec<PresentationEvent>)
 
 fn trigger_story_event(world: &mut World, event: StoryEvent) {
     match event {
-        StoryEvent::Line(text) => world.trigger(DeliverLine { text }),
+        StoryEvent::Line(line) => world.trigger(DeliverLine {
+            text: line.text.clone(),
+            line,
+        }),
         StoryEvent::Choices(choices) => world.trigger(DeliverChoices { choices }),
         StoryEvent::Ended => world.trigger(StoryEnded),
     }
@@ -853,6 +858,8 @@ The ferry leaves at dusk.
                 id: "choice".to_owned(),
                 text: "Choose".to_owned(),
                 once: true,
+                tags: Vec::new(),
+                meta: std::collections::BTreeMap::new(),
             }],
         };
         assert_eq!(event.len(), 1);

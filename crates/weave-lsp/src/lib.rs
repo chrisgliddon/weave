@@ -15,6 +15,7 @@ use tower_lsp_server::jsonrpc::{Error, Result};
 use tower_lsp_server::ls_types::*;
 use tower_lsp_server::{Client, LanguageServer};
 use walkdir::{DirEntry, WalkDir};
+use weave_core::markup::NARRATION_CHANNEL;
 use weave_core::{Diagnostic as WeaveDiagnostic, Severity, Span};
 
 #[derive(Debug, Clone)]
@@ -552,15 +553,32 @@ impl LanguageServer for Backend {
                 }
             }
         }
-        if let Some(document) = project.documents.get(&position.text_document.uri)
-            && let Ok(byte) = text::byte_offset(&document.text, position.position)
-            && line_prefix(&document.text, byte)
-                .trim_start()
-                .starts_with("->")
-        {
+        let prefix = project
+            .documents
+            .get(&position.text_document.uri)
+            .and_then(|document| {
+                text::byte_offset(&document.text, position.position)
+                    .ok()
+                    .map(|byte| line_prefix(&document.text, byte).trim_start().to_owned())
+            })
+            .unwrap_or_default();
+        if prefix.starts_with("->") {
             items.retain(|item| {
                 item.kind == Some(CompletionItemKind::FUNCTION) || item.label == "END"
             });
+        } else if prefix == "@to" || prefix.starts_with("@to ") {
+            items.retain(|item| item.kind == Some(CompletionItemKind::EVENT));
+            if !items.iter().any(|item| item.label == NARRATION_CHANNEL) {
+                items.insert(
+                    0,
+                    CompletionItem {
+                        label: NARRATION_CHANNEL.to_owned(),
+                        kind: Some(CompletionItemKind::EVENT),
+                        detail: Some("default text channel".to_owned()),
+                        ..CompletionItem::default()
+                    },
+                );
+            }
         }
         Ok(Some(CompletionResponse::Array(items)))
     }
@@ -668,6 +686,8 @@ const KEYWORD_COMPLETIONS: &[(&str, &str)] = &[
     ("STATE", "declare a state machine"),
     ("GRAMMAR", "declare a generative grammar"),
     ("PATTERN", "declare a pattern system"),
+    ("STRINGS", "declare a table of interface strings"),
+    ("channel", "declare a text channel"),
     ("END", "end story execution"),
 ];
 
@@ -749,6 +769,9 @@ const fn lsp_symbol_kind(kind: WeaveSymbolKind) -> SymbolKind {
         WeaveSymbolKind::Variant => SymbolKind::ENUM_MEMBER,
         WeaveSymbolKind::Slot => SymbolKind::CONSTANT,
         WeaveSymbolKind::Variable => SymbolKind::VARIABLE,
+        WeaveSymbolKind::Channel => SymbolKind::EVENT,
+        WeaveSymbolKind::StringTable => SymbolKind::NAMESPACE,
+        WeaveSymbolKind::StringKey => SymbolKind::STRING,
     }
 }
 
@@ -765,6 +788,9 @@ const fn completion_kind(kind: WeaveSymbolKind) -> CompletionItemKind {
         WeaveSymbolKind::Variant => CompletionItemKind::ENUM_MEMBER,
         WeaveSymbolKind::Slot => CompletionItemKind::CONSTANT,
         WeaveSymbolKind::Variable => CompletionItemKind::VARIABLE,
+        WeaveSymbolKind::Channel => CompletionItemKind::EVENT,
+        WeaveSymbolKind::StringTable => CompletionItemKind::MODULE,
+        WeaveSymbolKind::StringKey => CompletionItemKind::TEXT,
     }
 }
 

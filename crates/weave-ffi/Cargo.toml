@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 serde_json.workspace = true
+weave-core = { path = "../weave-core" }
 weave-web = { path = "../weave-web" }
 
 # The workspace forbids unsafe code. A C ABI cannot avoid it, so this crate denies it

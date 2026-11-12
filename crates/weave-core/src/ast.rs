@@ -116,6 +116,22 @@ impl Document {
         })
     }
 
+    /// Iterate over all channel declarations in source order.
+    pub fn channels(&self) -> impl Iterator<Item = &Spanned<ChannelDecl>> {
+        self.items.iter().filter_map(|item| match &item.node {
+            Item::Channel(channel) => Some(channel),
+            _ => None,
+        })
+    }
+
+    /// Iterate over all string tables in source order.
+    pub fn string_tables(&self) -> impl Iterator<Item = &Spanned<StringsDecl>> {
+        self.items.iter().filter_map(|item| match &item.node {
+            Item::Strings(table) => Some(table),
+            _ => None,
+        })
+    }
+
     /// Iterate over all stage declarations in source order.
     pub fn stages(&self) -> impl Iterator<Item = &Spanned<StageDecl>> {
         self.items.iter().filter_map(|item| match &item.node {
@@ -138,6 +154,10 @@ pub enum Item {
     Scene(Spanned<SceneDecl>),
     /// Character stage usable by presentation cues.
     Stage(Spanned<StageDecl>),
+    /// Text channel usable by `@to` cues.
+    Channel(Spanned<ChannelDecl>),
+    /// Table of interface strings outside the narrative flow.
+    Strings(Spanned<StringsDecl>),
     /// Story-scoped declaration executed at startup.
     Global(Spanned<Statement>),
     /// Named narrative block.
@@ -414,6 +434,57 @@ pub enum StageEntry {
     Blank,
 }
 
+/// Text channel declaration: `channel <name> { key: value, ... }`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ChannelDecl {
+    /// Channel name used by `@to`.
+    pub name: String,
+    /// Settings in source order.
+    pub fields: Vec<Spanned<ChannelField>>,
+}
+
+/// One `key: literal` setting of a channel.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ChannelField {
+    /// Setting name.
+    pub key: String,
+    /// Literal value: string, number, Boolean, or bare symbol.
+    pub value: Literal,
+}
+
+/// Interface string table: `STRINGS <table>` followed by indented entries.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StringsDecl {
+    /// Table name.
+    pub name: String,
+    /// Entries and trivia in source order.
+    pub entries: Vec<Spanned<StringsEntry>>,
+}
+
+/// One item inside a string table.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum StringsEntry {
+    /// `key = "value" ^tags`.
+    Entry(StringItem),
+    /// Source comment without its marker.
+    Comment(String),
+    /// Blank source line.
+    Blank,
+}
+
+/// One keyed interface string.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StringItem {
+    /// Dotted key, unique within its table.
+    pub key: String,
+    /// Raw string-literal contents between the quotes, escapes undecoded.
+    pub raw: String,
+    /// Location of the string literal, quotes included.
+    pub value_span: Span,
+    /// Tags after the literal, in source order.
+    pub tags: Vec<Spanned<crate::markup::Tag>>,
+}
+
 /// Named narrative block.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Knot {
@@ -476,6 +547,8 @@ pub enum Cue {
     Hide(String),
     /// Set the current speaker; `None` is narration.
     Speaker(Option<String>),
+    /// Send following lines to a channel; `None` restores `narration`.
+    To(Option<String>),
     /// Move a declared character stage to a named slot.
     Move {
         /// Stage identifier.
@@ -559,6 +632,9 @@ pub struct Choice {
     pub body: Vec<Spanned<Statement>>,
     /// Optional target executed after the body.
     pub divert: Option<String>,
+    /// Tags written after the label, in source order.
+    #[serde(default)]
+    pub tags: Vec<Spanned<crate::markup::Tag>>,
 }
 
 /// Ordered conditional statement.

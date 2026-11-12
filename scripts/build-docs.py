@@ -4281,6 +4281,7 @@ def build_site(rustdoc: Path, hugo: str) -> None:
         "weave-story-ir-v4.schema.json",
         "weave-story-ir-v5.schema.json",
         "weave-story-ir-v6.schema.json",
+        "weave-story-ir-v7.schema.json",
         "community-pattern-package-v1.schema.json",
         "domain-module-manifest-v1.schema.json",
         "domain-pack-v1.schema.json",

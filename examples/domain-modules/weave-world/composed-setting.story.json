@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/domain-modules/weave-world/composed-setting.weave",
   "entry": "start",
   "globals": [],
@@ -1094,6 +1094,11 @@
       ]
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -1129,28 +1134,31 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "The beacons answer the storm above "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "world",
-                                  "places",
-                                  "emberwake_harbor",
-                                  "name"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "The beacons answer the storm above "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "world",
+                                    "places",
+                                    "emberwake_harbor",
+                                    "name"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -1168,12 +1176,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "The harbor keeps an ordinary watch."
-                        }
-                      ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "The harbor keeps an ordinary watch."
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -1191,44 +1202,47 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "text",
-                  "value": "The "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "world",
-                      "places",
-                      "lantern_road",
-                      "name"
-                    ]
+              "id": "start.3",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "The "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "world",
+                        "places",
+                        "lantern_road",
+                        "name"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": " crosses "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "world",
+                        "places",
+                        "glasswind_reach",
+                        "name"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": "."
                   }
-                },
-                {
-                  "kind": "text",
-                  "value": " crosses "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "world",
-                      "places",
-                      "glasswind_reach",
-                      "name"
-                    ]
-                  }
-                },
-                {
-                  "kind": "text",
-                  "value": "."
-                }
-              ]
+                ]
+              }
             }
           }
         },

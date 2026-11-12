@@ -6,13 +6,16 @@ use std::fmt;
 use weave_domain::{ModuleManifest, TypeExpression};
 
 use crate::ast::{
-    BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    PatternDrawMethod, PatternEntry, Span, Spanned, StageEntry, Statement, UnaryOperator,
-    VariableKind,
+    BinaryOperator, ChannelDecl, Cue, Declaration, Document, Expr, GrammarEntry, Item,
+    ListOperation, Literal, PatternDrawMethod, PatternEntry, Span, Spanned, StageEntry, Statement,
+    StringsDecl, StringsEntry, UnaryOperator, VariableKind,
 };
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::ir::{Fit, Slot, TransitionKind};
-use crate::template::{TemplatePart, parse_template};
+use crate::markup::{
+    NARRATION_CHANNEL, collect_line_ids, extract_tags, fold_tags, parse_string_value,
+};
+use crate::template::{TemplateMode, TemplatePart, parse_template_with};
 
 /// Static Weave value type.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -141,6 +144,8 @@ struct Checker {
     scenes: BTreeMap<String, Span>,
     stages: BTreeMap<String, Span>,
     stage_variants: BTreeMap<String, BTreeSet<String>>,
+    channels: BTreeMap<String, Span>,
+    string_tables: BTreeMap<String, Span>,
     knots: BTreeSet<String>,
 }
 
@@ -156,6 +161,8 @@ impl Checker {
             scenes: BTreeMap::new(),
             stages: BTreeMap::new(),
             stage_variants: BTreeMap::new(),
+            channels: BTreeMap::new(),
+            string_tables: BTreeMap::new(),
             knots: BTreeSet::new(),
         }
     }
@@ -194,6 +201,7 @@ impl Checker {
         self.index_variables(document);
         self.refine_variables(document);
         self.check_declarations(document);
+        self.check_line_ids(document);
 
         TypeCheckResult {
             variables: self
@@ -578,6 +586,8 @@ impl Checker {
                         self.duplicate("W2011", "knot", &knot.node.name, knot.span);
                     }
                 }
+                Item::Channel(channel) => self.index_channel(channel),
+                Item::Strings(table) => self.check_string_table(table),
                 Item::Scene(scene) => {
                     let name = &scene.node.name;
                     if self.scenes.insert(name.clone(), scene.span).is_some() {
@@ -885,7 +895,7 @@ impl Checker {
 
     fn check_statement(&mut self, statement: &Spanned<Statement>) {
         match &statement.node {
-            Statement::Text(text) => self.check_template(text, statement.span, None),
+            Statement::Text(text) => self.check_line(text, statement.span),
             Statement::Declare(declaration) => self.check_declaration(declaration, statement.span),
             Statement::Assign { name, value } => self.check_assignment(name, value, statement.span),
             Statement::MutateList {
@@ -895,6 +905,9 @@ impl Checker {
             } => self.check_list_mutation(*operation, name, value, statement.span),
             Statement::Choice(choice) => {
                 self.check_template(&choice.text, statement.span, None);
+                if let Err(mut errors) = fold_tags(&choice.tags, false) {
+                    self.diagnostics.append(&mut errors);
+                }
                 if let Some(condition) = &choice.condition {
                     self.require_boolean(condition, "choice condition");
                 }
@@ -939,7 +952,18 @@ impl Checker {
                     );
                 }
             }
-            Cue::Speaker(None) => {}
+            Cue::Speaker(None) | Cue::To(None) => {}
+            Cue::To(Some(name)) => {
+                if name != NARRATION_CHANNEL && !self.channels.contains_key(name) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2301", format!("unknown channel `{name}`"))
+                            .with_span(span)
+                            .with_help(
+                                "declare it before the first knot with `channel <name> { ... }`",
+                            ),
+                    );
+                }
+            }
             Cue::Move {
                 stage,
                 stage_span,
@@ -1182,8 +1206,32 @@ impl Checker {
         );
     }
 
+    fn check_line(&mut self, source: &str, span: Span) {
+        let tagged = match extract_tags(source, span) {
+            Ok(tagged) => tagged,
+            Err(mut diagnostics) => {
+                self.diagnostics.append(&mut diagnostics);
+                return;
+            }
+        };
+        if let Err(mut diagnostics) = fold_tags(&tagged.tags, true) {
+            self.diagnostics.append(&mut diagnostics);
+        }
+        self.check_template_parts(&tagged.blanked, span, None, TemplateMode::Markup);
+    }
+
     fn check_template(&mut self, source: &str, span: Span, current_grammar: Option<&str>) {
-        let parts = match parse_template(source, span) {
+        self.check_template_parts(source, span, current_grammar, TemplateMode::Plain);
+    }
+
+    fn check_template_parts(
+        &mut self,
+        source: &str,
+        span: Span,
+        current_grammar: Option<&str>,
+        mode: TemplateMode,
+    ) {
+        let parts = match parse_template_with(source, span, mode) {
             Ok(parts) => parts,
             Err(mut diagnostics) => {
                 self.diagnostics.append(&mut diagnostics);
@@ -1192,7 +1240,10 @@ impl Checker {
         };
         for part in parts {
             match part.node {
-                TemplatePart::Text(_) => {}
+                TemplatePart::Text(_)
+                | TemplatePart::Pause(_)
+                | TemplatePart::StyleOpen(_)
+                | TemplatePart::StyleClose(_) => {}
                 TemplatePart::GrammarRef { grammar, rule } => {
                     self.check_grammar_reference(
                         grammar.as_deref(),
@@ -1563,6 +1614,98 @@ impl Checker {
             )
             .with_span(span),
         );
+    }
+
+    fn index_channel(&mut self, channel: &Spanned<ChannelDecl>) {
+        let name = &channel.node.name;
+        if self.channels.insert(name.clone(), channel.span).is_some() {
+            self.duplicate("W2300", "channel", name, channel.span);
+        }
+        let mut seen = BTreeSet::new();
+        for field in &channel.node.fields {
+            let key = field.node.key.as_str();
+            if !seen.insert(key) {
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        "W2303",
+                        format!("channel `{name}` repeats its `{key}` setting"),
+                    )
+                    .with_span(field.span),
+                );
+                continue;
+            }
+            let problem = match (key, &field.node.value) {
+                ("animated", Literal::Bool(_)) => None,
+                ("animated", _) => Some("`animated` must be `true` or `false`"),
+                ("cps", Literal::Number(value)) if value.is_finite() && *value > 0.0 => None,
+                ("cps", _) => Some("`cps` must be a positive number of characters per second"),
+                _ => None,
+            };
+            if let Some(problem) = problem {
+                self.diagnostics.push(
+                    Diagnostic::error("W2302", format!("channel `{name}`: {problem}"))
+                        .with_span(field.span),
+                );
+            }
+        }
+    }
+
+    fn check_string_table(&mut self, table: &Spanned<StringsDecl>) {
+        let name = &table.node.name;
+        if self
+            .string_tables
+            .insert(name.clone(), table.span)
+            .is_some()
+        {
+            self.duplicate("W2310", "string table", name, table.span);
+        }
+        let mut keys = BTreeSet::new();
+        for entry in &table.node.entries {
+            let StringsEntry::Entry(item) = &entry.node else {
+                continue;
+            };
+            if !keys.insert(item.key.as_str()) {
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        "W2311",
+                        format!("string table `{name}` repeats key `{}`", item.key),
+                    )
+                    .with_span(entry.span),
+                );
+            }
+            let value_span = Span::new(
+                item.value_span.start + 1,
+                item.value_span.end.saturating_sub(1),
+                item.value_span.line,
+                item.value_span.column + 1,
+            );
+            if let Err(mut errors) = parse_string_value(&item.raw, value_span) {
+                self.diagnostics.append(&mut errors);
+            }
+            if let Err(mut errors) = fold_tags(&item.tags, false) {
+                self.diagnostics.append(&mut errors);
+            }
+        }
+    }
+
+    fn check_line_ids(&mut self, document: &Document) {
+        let mut seen: BTreeMap<String, Span> = BTreeMap::new();
+        for knot in document.knots() {
+            for entry in collect_line_ids(&knot.node.name, &knot.node.body) {
+                if let Some(first) = seen.get(&entry.id) {
+                    self.diagnostics.push(
+                        Diagnostic::error("W2320", format!("duplicate line id `{}`", entry.id))
+                            .with_span(entry.span)
+                            .with_help(format!(
+                                "line ids must be unique across the story; `{}` is first used on line {}",
+                                entry.id, first.line
+                            )),
+                    );
+                } else {
+                    seen.insert(entry.id, entry.span);
+                }
+            }
+        }
     }
 
     fn duplicate(&mut self, code: &'static str, kind: &str, name: &str, span: Span) {

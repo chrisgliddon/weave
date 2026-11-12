@@ -12,27 +12,33 @@ use weave_domain::{
 
 use weave_core::ast::{
     BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
-    ModuleDecl, ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, UnaryOperator,
-    VariableKind,
+    ModuleDecl, ModuleEntry, PatternDrawMethod, PatternEntry, Spanned, Statement, StringsEntry,
+    UnaryOperator, VariableKind,
 };
 use weave_core::ir::{
-    AnchorIr, BinaryOperatorIr, BuiltinPatternIr, ChoiceIr, ConditionalBranchIr, ConditionalIr,
-    CueIr, DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainOverrideIr,
-    DomainValueIr, Expression, Fit, GrammarIr, Instruction, InstructionKind, KnotIr,
-    ListOperationIr, PatternCollectionIr, PatternDrawMethodIr, PatternElementIr, PatternSystemIr,
-    SceneIr, Slot, SpreadIr, StageIr, StoryIr, Template, TemplatePartIr, TransitionKind,
-    UnaryOperatorIr, ValueLiteral, VariableKindIr,
+    AnchorIr, BinaryOperatorIr, BuiltinPatternIr, ChannelIr, ChoiceIr, ConditionalBranchIr,
+    ConditionalIr, CueIr, DeclarationIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr,
+    DomainOverrideIr, DomainValueIr, Expression, Fit, GrammarIr, Instruction, InstructionKind,
+    KnotIr, LineIr, ListOperationIr, PatternCollectionIr, PatternDrawMethodIr, PatternElementIr,
+    PatternSystemIr, SceneIr, Slot, SpreadIr, StageIr, StoryIr, StringEntryIr, Template,
+    TemplatePartIr, TransitionKind, UnaryOperatorIr, ValueLiteral, VariableKindIr,
+};
+use weave_core::markup::{
+    NARRATION_CHANNEL, collect_line_ids, extract_tags, fold_tags, parse_string_value, render,
 };
 use weave_core::{
-    Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplatePart, has_errors,
-    parse_document, parse_template, type_check_with_extensions,
+    Diagnostic, DomainModuleSignature, PatternSignature, Severity, TemplateMode, TemplatePart,
+    has_errors, parse_document, parse_template_with, type_check_with_extensions,
 };
+
+/// Source-level writer tooling: line ids and engine exports.
+pub mod writer;
 
 /// Compiler version corresponding to the current IR.
 pub const COMPILER_IR_VERSION: u32 = weave_core::ir::IR_VERSION;
 
 /// Stable identifier published in the machine-readable JSON Schema.
-pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:6";
+pub const JSON_SCHEMA_ID: &str = "urn:weave:schema:story-ir:7";
 
 /// Source metadata supplied by an embedding application.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -570,7 +576,7 @@ pub fn json_schema() -> Result<String, SerializeError> {
         );
         root.insert(
             "title".to_owned(),
-            serde_json::Value::String("Weave Story IR v6".to_owned()),
+            serde_json::Value::String("Weave Story IR v7".to_owned()),
         );
         root.insert(
             "x-weave-ir-version".to_owned(),
@@ -637,6 +643,7 @@ struct Lowerer {
     diagnostics: Vec<Diagnostic>,
     current_grammar: Option<String>,
     current_knot: String,
+    line_ids: std::vec::IntoIter<String>,
 }
 
 impl Lowerer {
@@ -646,6 +653,7 @@ impl Lowerer {
             diagnostics: Vec::new(),
             current_grammar: None,
             current_knot: String::new(),
+            line_ids: Vec::new().into_iter(),
         }
     }
 
@@ -810,8 +818,60 @@ impl Lowerer {
                         },
                     );
                 }
+                Item::Channel(channel) => {
+                    let mut lowered = ChannelIr::default();
+                    for field in &channel.node.fields {
+                        match (field.node.key.as_str(), &field.node.value) {
+                            ("animated", Literal::Bool(value)) => lowered.animated = *value,
+                            ("cps", Literal::Number(value)) => lowered.cps = Some(*value),
+                            (key, value) => {
+                                lowered.meta.insert(key.to_owned(), lower_literal(value));
+                            }
+                        }
+                    }
+                    story.channels.insert(channel.node.name.clone(), lowered);
+                }
+                Item::Strings(table) => {
+                    let entries = story.strings.entry(table.node.name.clone()).or_default();
+                    for entry in &table.node.entries {
+                        let StringsEntry::Entry(item) = &entry.node else {
+                            continue;
+                        };
+                        let pieces = match parse_string_value(&item.raw, item.value_span) {
+                            Ok(pieces) => pieces,
+                            Err(mut errors) => {
+                                self.diagnostics.append(&mut errors);
+                                continue;
+                            }
+                        };
+                        let tags = match fold_tags(&item.tags, false) {
+                            Ok(tags) => tags,
+                            Err(mut errors) => {
+                                self.diagnostics.append(&mut errors);
+                                continue;
+                            }
+                        };
+                        let rendered = render(&pieces);
+                        entries.insert(
+                            item.key.clone(),
+                            StringEntryIr {
+                                text: rendered.text,
+                                rich: rendered.rich,
+                                spans: rendered.spans,
+                                beats: rendered.beats,
+                                tags: tags.tags,
+                                meta: tags.meta,
+                            },
+                        );
+                    }
+                }
                 Item::Knot(knot) => {
                     self.current_knot.clone_from(&knot.node.name);
+                    self.line_ids = collect_line_ids(&knot.node.name, &knot.node.body)
+                        .into_iter()
+                        .map(|entry| entry.id)
+                        .collect::<Vec<_>>()
+                        .into_iter();
                     let content = self.lower_block(&knot.node.body, "root");
                     story
                         .knots
@@ -842,9 +902,7 @@ impl Lowerer {
         path: &str,
     ) -> Option<Instruction> {
         let kind = match &statement.node {
-            Statement::Text(text) => {
-                InstructionKind::Text(self.lower_template(text, statement.span))
-            }
+            Statement::Text(text) => InstructionKind::Text(self.lower_line(text, statement)),
             Statement::Declare(declaration) => {
                 InstructionKind::Declare(lower_declaration(declaration))
             }
@@ -866,6 +924,10 @@ impl Lowerer {
             },
             Statement::Choice(choice) => {
                 let id = format!("{}:{path}", self.current_knot);
+                let tags = fold_tags(&choice.tags, false).unwrap_or_else(|mut errors| {
+                    self.diagnostics.append(&mut errors);
+                    weave_core::markup::TagSet::default()
+                });
                 let body = self.lower_block(&choice.body, &format!("{path}.body"));
                 InstructionKind::Choice(ChoiceIr {
                     id,
@@ -877,6 +939,8 @@ impl Lowerer {
                         .map(|condition| lower_expression(&condition.node)),
                     body,
                     divert: choice.divert.clone(),
+                    tags: tags.tags,
+                    meta: tags.meta,
                 })
             }
             Statement::Conditional(conditional) => {
@@ -897,7 +961,13 @@ impl Lowerer {
             }
             Statement::Divert(target) => InstructionKind::Divert(target.clone()),
             Statement::Thread(target) => InstructionKind::Thread(target.clone()),
-            Statement::Cue(cue) => InstructionKind::Cue(lower_cue(cue)),
+            Statement::Cue(cue) => match lower_cue(cue) {
+                Some(cue) => InstructionKind::Cue(cue),
+                None => InstructionKind::Channel(match cue {
+                    Cue::To(Some(channel)) => channel.clone(),
+                    _ => NARRATION_CHANNEL.to_owned(),
+                }),
+            },
             Statement::End => InstructionKind::End,
             Statement::Comment(_) | Statement::Blank => return None,
         };
@@ -907,8 +977,43 @@ impl Lowerer {
         })
     }
 
+    fn lower_line(&mut self, raw: &str, statement: &Spanned<Statement>) -> LineIr {
+        let fallback_id = self.line_ids.next().unwrap_or_default();
+        let tagged = match extract_tags(raw, statement.span) {
+            Ok(tagged) => tagged,
+            Err(mut errors) => {
+                self.diagnostics.append(&mut errors);
+                return LineIr {
+                    id: fallback_id,
+                    template: Template::default(),
+                    tags: Vec::new(),
+                    meta: BTreeMap::new(),
+                };
+            }
+        };
+        let tags = fold_tags(&tagged.tags, true).unwrap_or_else(|mut errors| {
+            self.diagnostics.append(&mut errors);
+            weave_core::markup::TagSet::default()
+        });
+        LineIr {
+            id: tags.id.unwrap_or(fallback_id),
+            template: self.lower_template_with(&tagged.text, statement.span, TemplateMode::Markup),
+            tags: tags.tags,
+            meta: tags.meta,
+        }
+    }
+
     fn lower_template(&mut self, source: &str, span: weave_core::Span) -> Template {
-        match parse_template(source, span) {
+        self.lower_template_with(source, span, TemplateMode::Plain)
+    }
+
+    fn lower_template_with(
+        &mut self,
+        source: &str,
+        span: weave_core::Span,
+        mode: TemplateMode,
+    ) -> Template {
+        match parse_template_with(source, span, mode) {
             Ok(parts) => Template {
                 parts: parts
                     .into_iter()
@@ -921,6 +1026,9 @@ impl Lowerer {
                         TemplatePart::Expression(expression) => {
                             TemplatePartIr::Expression(lower_expression(&expression.node))
                         }
+                        TemplatePart::Pause(seconds) => TemplatePartIr::Pause(seconds),
+                        TemplatePart::StyleOpen(name) => TemplatePartIr::StyleOpen(name),
+                        TemplatePart::StyleClose(name) => TemplatePartIr::StyleClose(name),
                     })
                     .collect(),
             },
@@ -932,12 +1040,14 @@ impl Lowerer {
     }
 }
 
-fn lower_cue(cue: &Cue) -> CueIr {
-    match cue {
+/// Lower a presentation cue. `@to` is not a presentation cue and returns `None`.
+fn lower_cue(cue: &Cue) -> Option<CueIr> {
+    Some(match cue {
         Cue::Scene(name) => CueIr::Scene(name.clone()),
         Cue::Show(name) => CueIr::Show(name.clone()),
         Cue::Hide(name) => CueIr::Hide(name.clone()),
         Cue::Speaker(name) => CueIr::Speaker(name.clone()),
+        Cue::To(_) => return None,
         Cue::Move { stage, to, .. } => CueIr::Move {
             stage: stage.clone(),
             to: Slot::from_token(to).unwrap_or_default(),
@@ -950,7 +1060,7 @@ fn lower_cue(cue: &Cue) -> CueIr {
             kind: TransitionKind::from_token(kind).unwrap_or(TransitionKind::Cut),
             ms: *ms,
         },
-    }
+    })
 }
 
 fn lower_declaration(declaration: &Declaration) -> DeclarationIr {

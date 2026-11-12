@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/domain-modules/weave-character/context/runtime/ari-vale-temporal.weave",
   "entry": "start",
   "globals": [
@@ -4091,6 +4091,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -4123,12 +4128,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because reviewed temporal context cannot become personality evidence."
-                            }
-                          ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because reviewed temporal context cannot become personality evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -4146,21 +4154,24 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "character_name"
-                            ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "character_name"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " carries reviewed fictional temporal cues with separate fact and cue lineage."
                           }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " carries reviewed fictional temporal cues with separate fact and cue lineage."
-                        }
-                      ]
+                        ]
+                      }
                     }
                   }
                 }

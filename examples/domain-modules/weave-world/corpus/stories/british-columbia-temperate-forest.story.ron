@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("examples/domain-modules/weave-world/corpus/stories/british-columbia-temperate-forest.weave"),
     entry: "start",
     globals: [],
@@ -278,6 +278,11 @@ StoryIr(
             },
         ),
     },
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "start": KnotIr(
             content: [
@@ -290,56 +295,59 @@ StoryIr(
                     ),
                     kind: InstructionKind(
                         kind: text,
-                        value: Template(
-                            parts: [
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "world",
-                                            "seed",
-                                            "identity",
-                                            "display_name",
-                                        ],
+                        value: LineIr(
+                            id: "start.1",
+                            template: Template(
+                                parts: [
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "world",
+                                                "seed",
+                                                "identity",
+                                                "display_name",
+                                            ],
+                                        ),
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: " seeds a ",
-                                ),
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "world",
-                                            "seed",
-                                            "primary_biome",
-                                        ],
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: " seeds a ",
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: " world with ",
-                                ),
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "world",
-                                            "seed",
-                                            "climate",
-                                            "band",
-                                        ],
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "world",
+                                                "seed",
+                                                "primary_biome",
+                                            ],
+                                        ),
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: " conditions.",
-                                ),
-                            ],
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: " world with ",
+                                    ),
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "world",
+                                                "seed",
+                                                "climate",
+                                                "band",
+                                            ],
+                                        ),
+                                    ),
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: " conditions.",
+                                    ),
+                                ],
+                            ),
                         ),
                     ),
                 ),

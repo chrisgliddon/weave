@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/domain-modules/weave-character/ari-vale.weave",
   "entry": "start",
   "globals": [
@@ -4917,6 +4917,11 @@
       ]
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -4949,12 +4954,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because presentation cannot become personality evidence."
-                            }
-                          ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because presentation cannot become personality evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -4972,12 +4980,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "Presentation remains separate from personality evidence."
-                        }
-                      ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "Presentation remains separate from personality evidence."
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -5014,12 +5025,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because reviewed alignment shorthand cannot become personality evidence."
-                            }
-                          ]
+                          "id": "start.3",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because reviewed alignment shorthand cannot become personality evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -5059,177 +5073,180 @@
                               "kind": {
                                 "kind": "text",
                                 "value": {
-                                  "parts": [
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "character_name"
-                                        ]
+                                  "id": "start.4",
+                                  "template": {
+                                    "parts": [
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "character_name"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " uses "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "presentation_subject"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " pronouns, accent "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "presentation_accent"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": ", avatar "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "presentation_avatar"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": ", and reviewed presentation catalog "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "presentation_catalog"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " ("
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "presentation_catalog_sha256"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": "); the same profile carries "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "creativity"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " creativity evidence, a derived OCEAN openness view of "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "ocean_openness"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": ", and reviewed "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "alignment_horizon"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " / "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "alignment_reciprocity"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " narrative alignment labels selected from "
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "alignment_pack"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": "@"
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "alignment_pack_version"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " ("
+                                      },
+                                      {
+                                        "kind": "expression",
+                                        "value": {
+                                          "kind": "path",
+                                          "value": [
+                                            "alignment_pack_sha256"
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": ")."
                                       }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " uses "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "presentation_subject"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " pronouns, accent "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "presentation_accent"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": ", avatar "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "presentation_avatar"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": ", and reviewed presentation catalog "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "presentation_catalog"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " ("
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "presentation_catalog_sha256"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": "); the same profile carries "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "creativity"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " creativity evidence, a derived OCEAN openness view of "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "ocean_openness"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": ", and reviewed "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "alignment_horizon"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " / "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "alignment_reciprocity"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " narrative alignment labels selected from "
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "alignment_pack"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": "@"
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "alignment_pack_version"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": " ("
-                                    },
-                                    {
-                                      "kind": "expression",
-                                      "value": {
-                                        "kind": "path",
-                                        "value": [
-                                          "alignment_pack_sha256"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "kind": "text",
-                                      "value": ")."
-                                    }
-                                  ]
+                                    ]
+                                  }
                                 }
                               }
                             }
@@ -5247,12 +5264,15 @@
                           "kind": {
                             "kind": "text",
                             "value": {
-                              "parts": [
-                                {
-                                  "kind": "text",
-                                  "value": "The compatibility projection is unavailable."
-                                }
-                              ]
+                              "id": "start.5",
+                              "template": {
+                                "parts": [
+                                  {
+                                    "kind": "text",
+                                    "value": "The compatibility projection is unavailable."
+                                  }
+                                ]
+                              }
                             }
                           }
                         }
@@ -5293,12 +5313,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because relationships cannot become personality evidence."
-                            }
-                          ]
+                          "id": "start.6",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because relationships cannot become personality evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -5316,77 +5339,80 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "Runtime relationship query: "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "mentor_kind"
-                            ]
+                      "id": "start.7",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "Runtime relationship query: "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "mentor_kind"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " toward "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "mentor_target"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " from "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "relationship_pack"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "@"
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "relationship_pack_version"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ("
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "relationship_pack_sha256"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": ")."
                           }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " toward "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "mentor_target"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " from "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "relationship_pack"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "@"
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "relationship_pack_version"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " ("
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "relationship_pack_sha256"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": ")."
-                        }
-                      ]
+                        ]
+                      }
                     }
                   }
                 }
@@ -5423,12 +5449,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because expression cannot become personality evidence."
-                            }
-                          ]
+                          "id": "start.8",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because expression cannot become personality evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -5446,77 +5475,80 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "Runtime expression query: "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "expression_term"
-                            ]
+                      "id": "start.9",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "Runtime expression query: "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "expression_term"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "; preference "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "expression_preference"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "; template "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "expression_template"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " from "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "expression_pack"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ("
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "expression_pack_sha256"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": ")."
                           }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "; preference "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "expression_preference"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "; template "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "expression_template"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " from "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "expression_pack"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " ("
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "expression_pack_sha256"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": ")."
-                        }
-                      ]
+                        ]
+                      }
                     }
                   }
                 }
@@ -5553,12 +5585,15 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "This branch is unreachable because projection labels cannot become HEXACO evidence."
-                            }
-                          ]
+                          "id": "start.10",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "This branch is unreachable because projection labels cannot become HEXACO evidence."
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -5576,177 +5611,180 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "Reviewed projection query: lossy="
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_personality_lossy"
-                            ]
+                      "id": "start.11",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "Reviewed projection query: lossy="
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_personality_lossy"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_personality"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "; vocation "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_vocation"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "; social role "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_social_role"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "; narrative role "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_narrative_role"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ("
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_lock"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": ") from "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_pack"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "@"
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_pack_version"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ("
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_pack_sha256"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": "), proposal "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_proposal_sha256"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": ", review "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_review_sha256"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": ". Explanation: "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_explanation"
+                              ]
+                            }
+                          },
+                          {
+                            "kind": "text",
+                            "value": " Rationale: "
+                          },
+                          {
+                            "kind": "expression",
+                            "value": {
+                              "kind": "path",
+                              "value": [
+                                "projection_rationale"
+                              ]
+                            }
                           }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_personality"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "; vocation "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_vocation"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "; social role "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_social_role"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "; narrative role "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_narrative_role"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " ("
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_lock"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": ") from "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_pack"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "@"
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_pack_version"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " ("
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_pack_sha256"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": "), proposal "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_proposal_sha256"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": ", review "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_review_sha256"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": ". Explanation: "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_explanation"
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "text",
-                          "value": " Rationale: "
-                        },
-                        {
-                          "kind": "expression",
-                          "value": {
-                            "kind": "path",
-                            "value": [
-                              "projection_rationale"
-                            ]
-                          }
-                        }
-                      ]
+                        ]
+                      }
                     }
                   }
                 }

@@ -2321,7 +2321,7 @@ mod tests {
     use weave_core::Span;
     use weave_core::ir::{
         CueIr, DomainExportIr, DomainExportSourceIr, DomainModuleIr, DomainValueIr, Instruction,
-        InstructionKind, KnotIr, SceneIr, StageIr, StoryIr, Template,
+        InstructionKind, KnotIr, LineIr, SceneIr, StageIr, StoryIr, Template,
     };
 
     fn branching_story() -> StoryIr {
@@ -2902,7 +2902,12 @@ Mara: The ferry leaves at dusk.
                     },
                     Instruction {
                         span,
-                        kind: InstructionKind::Text(Template::text("The ferry leaves at dusk.")),
+                        kind: InstructionKind::Text(LineIr {
+                            id: "start.1".to_owned(),
+                            template: Template::text("The ferry leaves at dusk."),
+                            tags: Vec::new(),
+                            meta: std::collections::BTreeMap::new(),
+                        }),
                     },
                     Instruction {
                         span,

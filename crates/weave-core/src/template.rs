@@ -2,7 +2,18 @@
 
 use crate::Diagnostic;
 use crate::ast::{Expr, Span, Spanned};
+use crate::markup::{MarkupLex, Piece, check_balance, lex_markup};
 use crate::parser::parse_expression_at;
+
+/// Which text features a template accepts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TemplateMode {
+    /// Grammar references and interpolation only. `<` is ordinary text.
+    Plain,
+    /// Narrative lines: also `<pause N>` and `<style>…</style>` markup, with
+    /// `\<` and `\^` escapes.
+    Markup,
+}
 
 /// One lowered piece of source text.
 #[derive(Debug, Clone, PartialEq)]
@@ -18,13 +29,30 @@ pub enum TemplatePart {
     },
     /// Runtime expression interpolation.
     Expression(Spanned<Expr>),
+    /// A pause in seconds.
+    Pause(f64),
+    /// Opening of a named style span.
+    StyleOpen(String),
+    /// Closing of the innermost style span, which has this name.
+    StyleClose(String),
 }
 
-/// Split one line or grammar alternative into literal, grammar, and expression parts.
+/// Split one grammar alternative or choice label into literal, grammar, and expression parts.
 pub fn parse_template(
     source: &str,
     source_span: Span,
 ) -> Result<Vec<Spanned<TemplatePart>>, Vec<Diagnostic>> {
+    parse_template_with(source, source_span, TemplateMode::Plain)
+}
+
+/// Split text into parts, accepting markup when `mode` is [`TemplateMode::Markup`].
+pub fn parse_template_with(
+    source: &str,
+    source_span: Span,
+    mode: TemplateMode,
+) -> Result<Vec<Spanned<TemplatePart>>, Vec<Diagnostic>> {
+    let markup = mode == TemplateMode::Markup;
+    let mut balance = Vec::new();
     let mut parts = Vec::new();
     let mut diagnostics = Vec::new();
     let mut literal = String::new();
@@ -39,7 +67,8 @@ pub fn parse_template(
         if character == '\\' {
             let next_index = index + width;
             if let Some(next) = source[next_index..].chars().next()
-                && matches!(next, '{' | '}' | '#' | '\\')
+                && (matches!(next, '{' | '}' | '#' | '\\')
+                    || (markup && matches!(next, '<' | '>' | '^')))
             {
                 literal.push(next);
                 index = next_index + next.len_utf8();
@@ -47,6 +76,40 @@ pub fn parse_template(
             }
             literal.push(character);
             index += width;
+            continue;
+        }
+
+        if markup && character == '<' {
+            match lex_markup(&source[index..]) {
+                MarkupLex::Literal => {
+                    literal.push(character);
+                    index += width;
+                }
+                MarkupLex::Element(piece, length) => {
+                    flush_literal(&mut parts, &mut literal, literal_start, index, source_span);
+                    let span = relative_span(source_span, source, index, index + length);
+                    balance.push((piece.clone(), span));
+                    let part = match piece {
+                        Piece::Pause(seconds) => TemplatePart::Pause(seconds),
+                        Piece::Open(name) => TemplatePart::StyleOpen(name),
+                        Piece::Close(name) => TemplatePart::StyleClose(name),
+                        Piece::Text(text) => TemplatePart::Text(text),
+                    };
+                    parts.push(Spanned::new(part, span));
+                    index += length;
+                    literal_start = index;
+                }
+                MarkupLex::Invalid(code, message, length) => {
+                    let end = (index + length).min(source.len());
+                    diagnostics.push(Diagnostic::error(code, message).with_span(relative_span(
+                        source_span,
+                        source,
+                        index,
+                        end,
+                    )));
+                    index = end;
+                }
+            }
             continue;
         }
 
@@ -137,6 +200,7 @@ pub fn parse_template(
         source_span,
     );
 
+    diagnostics.extend(check_balance(&balance));
     if diagnostics.is_empty() {
         Ok(parts)
     } else {

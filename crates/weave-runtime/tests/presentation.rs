@@ -57,6 +57,19 @@ After she leaves.
 -> END
 "#;
 
+trait LineText {
+    fn line_text(&self) -> Option<&str>;
+}
+
+impl LineText for StoryEvent {
+    fn line_text(&self) -> Option<&str> {
+        match self {
+            StoryEvent::Line(line) => Some(&line.text),
+            _ => None,
+        }
+    }
+}
+
 fn compile_story(source: &str) -> Story {
     let compiled = compile(source, &CompileOptions::default()).expect("story should compile");
     Story::new(compiled.story).expect("story should start")
@@ -68,8 +81,8 @@ fn cues_accumulate_across_lines_and_drain_in_source_order() {
     assert!(story.take_presentation().is_empty());
 
     assert_eq!(
-        story.advance().expect("first line"),
-        StoryEvent::Line("Before the crossing.".to_owned())
+        story.advance().expect("first line").line_text(),
+        Some("Before the crossing.")
     );
     assert_eq!(
         story.take_presentation(),
@@ -78,8 +91,8 @@ fn cues_accumulate_across_lines_and_drain_in_source_order() {
     assert!(story.take_presentation().is_empty());
 
     assert_eq!(
-        story.advance().expect("second line"),
-        StoryEvent::Line("Mara: The ferry leaves at dusk.".to_owned())
+        story.advance().expect("second line").line_text(),
+        Some("Mara: The ferry leaves at dusk.")
     );
     assert_eq!(
         story.take_presentation(),
@@ -90,8 +103,8 @@ fn cues_accumulate_across_lines_and_drain_in_source_order() {
     );
 
     assert_eq!(
-        story.advance().expect("third line"),
-        StoryEvent::Line("After she leaves.".to_owned())
+        story.advance().expect("third line").line_text(),
+        Some("After she leaves.")
     );
     assert_eq!(
         story.take_presentation(),
@@ -118,8 +131,11 @@ Still running.
 "#;
     let mut story = compile_story(source);
     assert_eq!(
-        story.advance().expect("line after presentation cues"),
-        StoryEvent::Line("Still running.".to_owned())
+        story
+            .advance()
+            .expect("line after presentation cues")
+            .line_text(),
+        Some("Still running.")
     );
     assert_eq!(
         story.take_presentation(),
@@ -134,8 +150,8 @@ Still running.
 fn staged_cues_emit_in_source_order_and_never_end_the_story() {
     let mut story = compile_story(STAGING_SOURCE);
     assert_eq!(
-        story.advance().expect("line after staged cues"),
-        StoryEvent::Line("The ferry leaves at dusk.".to_owned())
+        story.advance().expect("line after staged cues").line_text(),
+        Some("The ferry leaves at dusk.")
     );
     assert_eq!(
         story.take_presentation(),

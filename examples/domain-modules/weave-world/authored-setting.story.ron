@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("examples/domain-modules/weave-world/authored-setting.weave"),
     entry: "start",
     globals: [],
@@ -1050,6 +1050,11 @@ StoryIr(
             ],
         ),
     },
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "start": KnotIr(
             content: [
@@ -1084,29 +1089,32 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "The beacons answer the storm above ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "world",
-                                                                    "places",
-                                                                    "emberwake_harbor",
-                                                                    "name",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.1",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "The beacons answer the storm above ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ".",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "world",
+                                                                        "places",
+                                                                        "emberwake_harbor",
+                                                                        "name",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: ".",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -1123,13 +1131,16 @@ StoryIr(
                                     ),
                                     kind: InstructionKind(
                                         kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "The harbor keeps an ordinary watch.",
-                                                ),
-                                            ],
+                                        value: LineIr(
+                                            id: "start.2",
+                                            template: Template(
+                                                parts: [
+                                                    TemplatePartIr(
+                                                        kind: text,
+                                                        value: "The harbor keeps an ordinary watch.",
+                                                    ),
+                                                ],
+                                            ),
                                         ),
                                     ),
                                 ),
@@ -1146,45 +1157,48 @@ StoryIr(
                     ),
                     kind: InstructionKind(
                         kind: text,
-                        value: Template(
-                            parts: [
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: "The ",
-                                ),
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "world",
-                                            "places",
-                                            "lantern_road",
-                                            "name",
-                                        ],
+                        value: LineIr(
+                            id: "start.3",
+                            template: Template(
+                                parts: [
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: "The ",
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: " crosses ",
-                                ),
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "world",
-                                            "places",
-                                            "glasswind_reach",
-                                            "name",
-                                        ],
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "world",
+                                                "places",
+                                                "lantern_road",
+                                                "name",
+                                            ],
+                                        ),
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: ".",
-                                ),
-                            ],
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: " crosses ",
+                                    ),
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "world",
+                                                "places",
+                                                "glasswind_reach",
+                                                "name",
+                                            ],
+                                        ),
+                                    ),
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: ".",
+                                    ),
+                                ],
+                            ),
                         ),
                     ),
                 ),

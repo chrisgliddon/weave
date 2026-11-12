@@ -6,8 +6,9 @@ use weave_core::Diagnostic;
 use weave_core::ast::{
     BinaryOperator, Cue, Declaration, Document, Expr, GrammarEntry, Item, ListOperation, Literal,
     ModuleEntry, PatternDrawMethod, PatternEntry, SceneEntry, Spanned, StageEntry, Statement,
-    UnaryOperator, VariableKind, VariantEntry,
+    StringsEntry, UnaryOperator, VariableKind, VariantEntry,
 };
+use weave_core::markup::Tag;
 
 /// Current canonical formatting contract.
 pub const FORMAT_VERSION: u32 = 1;
@@ -270,6 +271,50 @@ impl Formatter {
                     }
                     self.line(0, "}");
                 }
+                Item::Channel(channel) => {
+                    let fields = channel
+                        .node
+                        .fields
+                        .iter()
+                        .map(|field| {
+                            format!("{}: {}", field.node.key, format_literal(&field.node.value))
+                        })
+                        .collect::<Vec<_>>();
+                    if fields.is_empty() {
+                        self.line(0, &format!("channel {} {{}}", channel.node.name));
+                    } else {
+                        self.line(
+                            0,
+                            &format!("channel {} {{ {} }}", channel.node.name, fields.join(", ")),
+                        );
+                    }
+                }
+                Item::Strings(table) => {
+                    self.line(0, &format!("STRINGS {}", table.node.name));
+                    let mut seen_content = false;
+                    for entry in &table.node.entries {
+                        match &entry.node {
+                            StringsEntry::Entry(item) => {
+                                seen_content = true;
+                                self.line(
+                                    1,
+                                    &format!(
+                                        "{} = \"{}\"{}",
+                                        item.key,
+                                        item.raw,
+                                        format_tags(&item.tags)
+                                    ),
+                                );
+                            }
+                            StringsEntry::Comment(comment) => {
+                                seen_content = true;
+                                self.comment(1, comment);
+                            }
+                            StringsEntry::Blank if seen_content => self.blank(),
+                            StringsEntry::Blank => {}
+                        }
+                    }
+                }
                 Item::Knot(knot) => {
                     self.line(0, &format!("=== {} ===", knot.node.name));
                     self.block(&knot.node.body, 0);
@@ -312,6 +357,7 @@ impl Formatter {
             Statement::Choice(choice) => {
                 let marker = if choice.once { '*' } else { '+' };
                 let mut header = format!("{marker} [{}]", escape_choice(&choice.text));
+                header.push_str(&format_tags(&choice.tags));
                 if let Some(condition) = &choice.condition {
                     let _ = write!(header, " {{if {}}}", format_expr(&condition.node));
                 }
@@ -378,10 +424,18 @@ fn format_cue(cue: &Cue) -> String {
         Cue::Hide(name) => format!("@hide {name}"),
         Cue::Speaker(Some(name)) => format!("@speaker {name}"),
         Cue::Speaker(None) => "@speaker".to_owned(),
+        Cue::To(Some(name)) => format!("@to {name}"),
+        Cue::To(None) => "@to".to_owned(),
         Cue::Move { stage, to, .. } => format!("@move {stage} {to}"),
         Cue::Swap { stage, variant, .. } => format!("@swap {stage} {variant}"),
         Cue::Transition { kind, ms, .. } => format!("@transition {kind} {ms}"),
     }
+}
+
+fn format_tags(tags: &[Spanned<Tag>]) -> String {
+    tags.iter()
+        .map(|tag| format!(" {}", tag.node.to_source()))
+        .collect()
 }
 
 fn format_number(value: f64) -> String {
@@ -632,6 +686,35 @@ aside
         assert!(once.contains("spread single { positions: [card] }"));
         assert!(once.contains("module constellation"));
         assert!(once.contains("// body"));
+    }
+
+    #[test]
+    fn formats_writer_metadata_idempotently() {
+        let messy = "channel  dialog {animated:true,cps:40\n box: bottom}\nSTRINGS ui\n  title = \"<b>T</b>\"   ^screen:title\n\n  // note\n  menu.go=\"Go\" ^button\n=== start ===\n@to   dialog\nHi <pause 0.5> there. ^id:start.hi ^mood:warm\n* [Go]  ^curious  {if true} -> next\n@to\n=== next ===\n-> END\n";
+        let once = format_source(messy).expect("writer metadata should format");
+        let twice = format_source(&once).expect("formatted writer metadata should parse");
+        assert_eq!(once, twice);
+        assert!(
+            once.contains("channel dialog { animated: true, cps: 40, box: bottom }"),
+            "{once}"
+        );
+        assert!(
+            once.contains("    title = \"<b>T</b>\" ^screen:title"),
+            "{once}"
+        );
+        assert!(once.contains("    // note"), "{once}");
+        assert!(once.contains("    menu.go = \"Go\" ^button"), "{once}");
+        assert!(once.contains("@to dialog\n"), "{once}");
+        assert!(
+            once.contains("Hi <pause 0.5> there. ^id:start.hi ^mood:warm"),
+            "{once}"
+        );
+        assert!(once.contains("* [Go] ^curious {if true} -> next"), "{once}");
+        assert!(once.contains("\n@to\n"), "{once}");
+
+        let example = include_str!("../../../examples/writer-metadata/lighthouse.weave");
+        let formatted = format_source(example).expect("example should format");
+        assert_eq!(format_source(&formatted).expect("reformat"), formatted);
     }
 
     #[test]

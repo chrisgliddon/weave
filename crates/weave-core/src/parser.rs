@@ -9,12 +9,14 @@ use pest_derive::Parser;
 
 use crate::Diagnostic;
 use crate::ast::{
-    AnchorDecl, BinaryOperator, Choice, Conditional, ConditionalBranch, Cue, Declaration, Document,
-    Expr, GrammarDecl, GrammarEntry, GrammarRule, Item, Knot, ListOperation, Literal, ModuleDecl,
-    ModuleEntry, PatternCollection, PatternDecl, PatternDrawMethod, PatternElement, PatternEntry,
-    SceneDecl, SceneEntry, Span, Spanned, SpreadDecl, StageDecl, StageEntry, Statement,
+    AnchorDecl, BinaryOperator, ChannelDecl, ChannelField, Choice, Conditional, ConditionalBranch,
+    Cue, Declaration, Document, Expr, GrammarDecl, GrammarEntry, GrammarRule, Item, Knot,
+    ListOperation, Literal, ModuleDecl, ModuleEntry, PatternCollection, PatternDecl,
+    PatternDrawMethod, PatternElement, PatternEntry, SceneDecl, SceneEntry, Span, Spanned,
+    SpreadDecl, StageDecl, StageEntry, Statement, StringItem, StringsDecl, StringsEntry,
     UnaryOperator, VariableKind, VariantDecl, VariantEntry,
 };
+use crate::markup::{Tag, extract_tags};
 
 #[derive(Parser)]
 #[grammar = "weave.pest"]
@@ -43,6 +45,8 @@ pub fn parse_document(source: &str) -> Result<Document, Vec<Diagnostic>> {
             Rule::pattern_decl => build_pattern(pair),
             Rule::scene_decl => build_scene(pair),
             Rule::stage_decl => build_stage(pair),
+            Rule::channel_decl => build_channel(pair),
+            Rule::strings_decl => build_strings(pair),
             Rule::global_decl => build_global(pair),
             Rule::knot => build_knot(pair),
             Rule::EOI => continue,
@@ -771,6 +775,151 @@ fn build_variant(pair: Pair<'_, Rule>) -> Result<Spanned<StageEntry>, Diagnostic
     ))
 }
 
+fn build_channel(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
+    let outer_span = span_for(&pair);
+    let mut name = None;
+    let mut fields = Vec::new();
+    let mut diagnostics = Vec::new();
+    for item in pair.into_inner() {
+        match item.as_rule() {
+            Rule::identifier => name = Some(item.as_str().to_owned()),
+            Rule::channel_field => {
+                let field_span = span_for(&item);
+                let mut inner = item.into_inner();
+                let (Some(key), Some(value)) = (inner.next(), inner.next()) else {
+                    return Err(vec![internal_parser_error("channel field is incomplete")]);
+                };
+                let value_span = span_for(&value);
+                let literal = match value.as_rule() {
+                    Rule::signed_number => {
+                        parse_number(value.as_str(), value_span).map(Literal::Number)
+                    }
+                    _ => build_pattern_literal(value, value_span),
+                };
+                match literal {
+                    Ok(value) => fields.push(Spanned::new(
+                        ChannelField {
+                            key: key.as_str().to_owned(),
+                            value,
+                        },
+                        field_span,
+                    )),
+                    Err(error) => diagnostics.push(error),
+                }
+            }
+            _ => {}
+        }
+    }
+    let Some(name) = name else {
+        return Err(vec![internal_parser_error("channel has no name")]);
+    };
+    if !diagnostics.is_empty() {
+        return Err(diagnostics);
+    }
+    Ok(Spanned::new(
+        Item::Channel(Spanned::new(ChannelDecl { name, fields }, outer_span)),
+        outer_span,
+    ))
+}
+
+fn build_strings(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
+    let outer_span = span_for(&pair);
+    let mut name = None;
+    let mut entries = Vec::new();
+    let mut diagnostics = Vec::new();
+    for item in pair.into_inner() {
+        let span = span_for(&item);
+        match item.as_rule() {
+            Rule::identifier => name = Some(item.as_str().to_owned()),
+            Rule::strings_blank => entries.push(Spanned::new(StringsEntry::Blank, span)),
+            Rule::strings_comment => entries.push(Spanned::new(
+                StringsEntry::Comment(comment_from(item)),
+                span,
+            )),
+            Rule::strings_item => {
+                let mut key = None;
+                let mut raw = None;
+                let mut value_span = span;
+                let mut tags = Vec::new();
+                for part in item.into_inner() {
+                    match part.as_rule() {
+                        Rule::strings_key => key = Some(part.as_str().to_owned()),
+                        Rule::strings_value => {
+                            value_span = span_for(&part);
+                            let text = part.as_str();
+                            raw = Some(text[1..text.len() - 1].to_owned());
+                        }
+                        Rule::strings_tail => {
+                            let tail_span = span_for(&part);
+                            match parse_tail_tags(part.as_str(), tail_span) {
+                                Ok(parsed) => tags = parsed,
+                                Err(mut errors) => diagnostics.append(&mut errors),
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                let (Some(key), Some(raw)) = (key, raw) else {
+                    return Err(vec![internal_parser_error("string entry is incomplete")]);
+                };
+                entries.push(Spanned::new(
+                    StringsEntry::Entry(StringItem {
+                        key,
+                        raw,
+                        value_span,
+                        tags,
+                    }),
+                    span,
+                ));
+            }
+            _ => {}
+        }
+    }
+    let Some(name) = name else {
+        return Err(vec![internal_parser_error("string table has no name")]);
+    };
+    if !diagnostics.is_empty() {
+        return Err(diagnostics);
+    }
+    Ok(Spanned::new(
+        Item::Strings(Spanned::new(StringsDecl { name, entries }, outer_span)),
+        outer_span,
+    ))
+}
+
+/// Parse text that must contain only `^tags` and whitespace, such as the tail
+/// after a `STRINGS` value. Other text is `W1070`.
+fn parse_tail_tags(source: &str, span: Span) -> Result<Vec<Spanned<Tag>>, Vec<Diagnostic>> {
+    let leading = source.len() - source.trim_start().len();
+    let trimmed = source.trim();
+    let base = Span::new(
+        span.start + leading,
+        span.start + leading + trimmed.len(),
+        span.line,
+        span.column + source[..leading].chars().count(),
+    );
+    if !trimmed.is_empty() && !source.starts_with(char::is_whitespace) {
+        return Err(vec![
+            Diagnostic::error("W1070", "expected whitespace before a tag")
+                .with_span(base)
+                .with_help("separate tags from the value with a space, as in `\"Begin\" ^button`"),
+        ]);
+    }
+    let tagged = extract_tags(trimmed, base)?;
+    if tagged.text.is_empty() {
+        Ok(tagged.tags)
+    } else {
+        Err(vec![
+            Diagnostic::error(
+                "W1070",
+                format!("unexpected text `{}` after the value", tagged.text),
+            )
+            .with_span(base)
+            .with_help("only `^tags` may follow a string table value"),
+        ])
+    }
+}
+
 fn build_global(pair: Pair<'_, Rule>) -> Result<Spanned<Item>, Vec<Diagnostic>> {
     let span = span_for(&pair);
     let text = pair.as_str().trim_end_matches(['\r', '\n']);
@@ -953,7 +1102,7 @@ impl BodyParser {
 
     fn parse_choice(&mut self, line: BodyLine) -> Spanned<Statement> {
         let span = line.span();
-        let (once, text, condition, divert) = match parse_choice_header(&line) {
+        let (once, text, condition, divert, tags) = match parse_choice_header(&line) {
             Ok(choice) => choice,
             Err(error) => {
                 self.diagnostics.push(error);
@@ -975,6 +1124,7 @@ impl BodyParser {
                 condition,
                 body,
                 divert,
+                tags,
             }),
             span,
         )
@@ -1101,7 +1251,13 @@ fn is_conditional_header(source: &str) -> bool {
     source.starts_with('{') && source.ends_with(':')
 }
 
-type ParsedChoice = (bool, String, Option<Spanned<Expr>>, Option<String>);
+type ParsedChoice = (
+    bool,
+    String,
+    Option<Spanned<Expr>>,
+    Option<String>,
+    Vec<Spanned<Tag>>,
+);
 
 fn parse_choice_header(line: &BodyLine) -> Result<ParsedChoice, Diagnostic> {
     let once = line.trimmed.starts_with('*');
@@ -1115,7 +1271,18 @@ fn parse_choice_header(line: &BodyLine) -> Result<ParsedChoice, Diagnostic> {
         return Err(Diagnostic::error("W1011", "unterminated choice label").with_span(line.span()));
     };
     let text = rest[1..close].replace("\\]", "]").replace("\\\\", "\\");
-    let mut tail = rest[close + 1..].trim();
+    let raw_tail = &rest[close + 1..];
+    let tail_offset = line.trimmed.len() - rest.len() + close + 1;
+    let tail_span = Span::new(
+        line.start + line.leading_bytes + tail_offset,
+        line.start + line.leading_bytes + tail_offset + raw_tail.len(),
+        line.line,
+        line.indent + 1 + line.trimmed[..tail_offset].chars().count(),
+    );
+    let tagged = extract_tags(raw_tail, tail_span).map_err(|mut errors| errors.remove(0))?;
+    let tags = tagged.tags;
+    let tail_text = tagged.text;
+    let mut tail = tail_text.as_str();
     let mut condition = None;
 
     if let Some(after_open) = tail.strip_prefix("{if") {
@@ -1149,7 +1316,7 @@ fn parse_choice_header(line: &BodyLine) -> Result<ParsedChoice, Diagnostic> {
         );
     };
 
-    Ok((once, text, condition, divert))
+    Ok((once, text, condition, divert, tags))
 }
 
 fn find_unescaped(source: &str, needle: char, start: usize) -> Option<usize> {
@@ -1273,6 +1440,8 @@ fn parse_cue(line: &BodyLine) -> Result<Statement, Diagnostic> {
             validate_identifier(argument, line.span())?;
             Cue::Speaker(Some(argument.to_owned()))
         }
+        "to" if argument.is_empty() => Cue::To(None),
+        "to" => Cue::To(Some(cue_target(line, directive, argument, "channel")?)),
         "move" => {
             let [stage, to] = cue_pair(line, directive, &arguments, "stage", "slot")?;
             validate_identifier(&stage.0, stage.1)?;
@@ -1313,7 +1482,7 @@ fn parse_cue(line: &BodyLine) -> Result<Statement, Diagnostic> {
             )
             .with_span(line.span())
             .with_help(
-                "use `@scene`, `@show`, `@hide`, `@speaker`, `@move`, `@swap`, or `@transition`",
+                "use `@scene`, `@show`, `@hide`, `@speaker`, `@to`, `@move`, `@swap`, or `@transition`",
             ));
         }
     };

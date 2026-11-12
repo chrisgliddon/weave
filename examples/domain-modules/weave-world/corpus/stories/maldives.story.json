@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/domain-modules/weave-world/corpus/stories/maldives.weave",
   "entry": "start",
   "globals": [],
@@ -270,6 +270,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -283,55 +288,58 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "world",
-                      "seed",
-                      "identity",
-                      "display_name"
-                    ]
+              "id": "start.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "world",
+                        "seed",
+                        "identity",
+                        "display_name"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": " seeds a "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "world",
+                        "seed",
+                        "primary_biome"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": " world with "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "world",
+                        "seed",
+                        "climate",
+                        "band"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": " conditions."
                   }
-                },
-                {
-                  "kind": "text",
-                  "value": " seeds a "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "world",
-                      "seed",
-                      "primary_biome"
-                    ]
-                  }
-                },
-                {
-                  "kind": "text",
-                  "value": " world with "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "world",
-                      "seed",
-                      "climate",
-                      "band"
-                    ]
-                  }
-                },
-                {
-                  "kind": "text",
-                  "value": " conditions."
-                }
-              ]
+                ]
+              }
             }
           }
         },

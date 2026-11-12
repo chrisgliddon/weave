@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/tabletop-adapters/dungeonpunk/runtime/vesper-ash.weave",
   "entry": "start",
   "globals": [
@@ -1033,6 +1033,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -1077,99 +1082,102 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "character_name"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "character_name"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " enters play with Strength "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "strength"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", FATE "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "fate"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", HP "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "hp"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", Stress "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "stress"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", XP "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "xp"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", and encumbered set to "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "encumbered"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " enters play with Strength "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "strength"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", FATE "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "fate"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", HP "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "hp"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", Stress "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "stress"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", XP "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "xp"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", and encumbered set to "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "encumbered"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     },
@@ -1183,51 +1191,54 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "The active rules are "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_id"
-                                ]
+                          "id": "start.2",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "The active rules are "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_id"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "@"
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_version"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ("
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_sha256"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ")."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "@"
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_version"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " ("
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_sha256"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ")."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -1245,12 +1256,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "This branch is unreachable because the selected adapter declares checks and clocks."
-                        }
-                      ]
+                      "id": "start.3",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "This branch is unreachable because the selected adapter declares checks and clocks."
+                          }
+                        ]
+                      }
                     }
                   }
                 }

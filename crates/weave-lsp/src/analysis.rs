@@ -2,8 +2,13 @@ use std::collections::BTreeMap;
 
 use weave_core::ast::{
     Conditional, Cue, Expr, GrammarEntry, Item, PatternEntry, Span, Spanned, StageEntry, Statement,
+    StringsEntry,
 };
-use weave_core::{Diagnostic, TemplatePart, Type, parse_document, parse_template, type_check};
+use weave_core::markup::extract_tags;
+use weave_core::{
+    Diagnostic, TemplateMode, TemplatePart, Type, parse_document, parse_template,
+    parse_template_with, type_check,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SymbolKind {
@@ -18,6 +23,9 @@ pub enum SymbolKind {
     Variant,
     Slot,
     Variable,
+    Channel,
+    StringTable,
+    StringKey,
 }
 
 impl SymbolKind {
@@ -35,6 +43,9 @@ impl SymbolKind {
             Self::Variant => "stage variant",
             Self::Slot => "stage slot",
             Self::Variable => "variable",
+            Self::Channel => "text channel",
+            Self::StringTable => "string table",
+            Self::StringKey => "string",
         }
     }
 }
@@ -357,6 +368,60 @@ pub fn analyze(source: &str) -> Analysis {
                     children,
                 });
             }
+            Item::Channel(channel) => {
+                let selection = identifier_span(source, item.span, &channel.node.name);
+                analysis.symbols.push(Symbol {
+                    key: format!("channel:{}", channel.node.name),
+                    name: channel.node.name.clone(),
+                    kind: SymbolKind::Channel,
+                    span: item.span,
+                    selection,
+                    detail: "text channel".to_owned(),
+                    container: None,
+                });
+                analysis.outlines.push(Outline {
+                    name: channel.node.name.clone(),
+                    kind: SymbolKind::Channel,
+                    span: item.span,
+                    selection,
+                    detail: "text channel".to_owned(),
+                    children: Vec::new(),
+                });
+            }
+            Item::Strings(table) => {
+                let selection = identifier_span(source, item.span, &table.node.name);
+                let mut children = Vec::new();
+                for entry in &table.node.entries {
+                    if let StringsEntry::Entry(string) = &entry.node {
+                        let key_selection = identifier_span(source, entry.span, &string.key);
+                        children.push(Outline {
+                            name: string.key.clone(),
+                            kind: SymbolKind::StringKey,
+                            span: entry.span,
+                            selection: key_selection,
+                            detail: format!("string in table {}", table.node.name),
+                            children: Vec::new(),
+                        });
+                    }
+                }
+                analysis.symbols.push(Symbol {
+                    key: format!("strings:{}", table.node.name),
+                    name: table.node.name.clone(),
+                    kind: SymbolKind::StringTable,
+                    span: item.span,
+                    selection,
+                    detail: "string table".to_owned(),
+                    container: None,
+                });
+                analysis.outlines.push(Outline {
+                    name: table.node.name.clone(),
+                    kind: SymbolKind::StringTable,
+                    span: item.span,
+                    selection,
+                    detail: format!("{} strings", children.len()),
+                    children,
+                });
+            }
             Item::Global(statement) => collect_statement(source, statement, &mut analysis),
             Item::Comment(_) | Item::Blank => {}
         }
@@ -386,7 +451,18 @@ fn collect_statements(source: &str, statements: &[Spanned<Statement>], analysis:
 
 fn collect_statement(source: &str, statement: &Spanned<Statement>, analysis: &mut Analysis) {
     match &statement.node {
-        Statement::Text(text) => collect_template(source, text, statement.span, analysis),
+        Statement::Text(text) => {
+            if let Ok(tagged) = extract_tags(text, statement.span)
+                && let Ok(parts) =
+                    parse_template_with(&tagged.blanked, statement.span, TemplateMode::Markup)
+            {
+                for part in parts {
+                    if let TemplatePart::Expression(expression) = part.node {
+                        collect_expr(source, &expression, analysis);
+                    }
+                }
+            }
+        }
         Statement::Declare(declaration) => {
             let selection = identifier_span(source, statement.span, &declaration.name);
             let value_type = analysis
@@ -448,7 +524,13 @@ fn collect_statement(source: &str, statement: &Spanned<Statement>, analysis: &mu
                 name,
                 identifier_span(source, statement.span, name),
             ),
-            Cue::Speaker(None) => {}
+            Cue::Speaker(None) | Cue::To(None) => {}
+            Cue::To(Some(name)) => push_reference(
+                analysis,
+                ReferenceTarget::Exact(format!("channel:{name}")),
+                name,
+                identifier_span(source, statement.span, name),
+            ),
             Cue::Move {
                 stage,
                 stage_span,

@@ -13,11 +13,12 @@
 use std::ffi::{CStr, CString, c_char};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
+use weave_core::ir::ValueLiteral;
 use weave_web::Player;
 
 /// Version of this C ABI. Hosts check it once after loading the library.
-pub const WEAVE_FFI_ABI_VERSION: u32 = 1;
+pub const WEAVE_FFI_ABI_VERSION: u32 = 2;
 
 /// Opaque player handle.
 pub struct WeavePlayer(Player);
@@ -155,7 +156,7 @@ pub unsafe extern "C" fn weave_player_advance(handle: *mut WeavePlayer) -> *mut 
     })
 }
 
-/// Currently eligible choices: `{"ok":true,"choices":[{"id","text","once"}...]}`.
+/// Currently eligible choices: `{"ok":true,"choices":[{"id","text","once","tags","meta"}...]}`.
 ///
 /// # Safety
 /// `handle` is a live player.
@@ -250,4 +251,77 @@ pub unsafe extern "C" fn weave_player_restore(
             Err(error) => fail(error),
         }
     })
+}
+
+/// Look up an interface string: `{"ok":true,"string":{"text","rich","spans","beats","tags","meta"}}`.
+///
+/// An unknown table or key is a failure envelope.
+///
+/// # Safety
+/// `handle` is a live player; `table` and `key` are valid NUL-terminated strings.
+#[allow(unsafe_code)]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn weave_player_string(
+    handle: *mut WeavePlayer,
+    table: *const c_char,
+    key: *const c_char,
+) -> *mut c_char {
+    guarded(|| {
+        let p = tri!(player(handle));
+        let table = tri!(read_str(table, "table"));
+        let key = tri!(read_str(key, "key"));
+        match p.string(table, key) {
+            Some(entry) => json!({
+                "ok": true,
+                "string": {
+                    "text": entry.text,
+                    "rich": entry.rich,
+                    "spans": entry.spans,
+                    "beats": entry.beats,
+                    "tags": entry.tags,
+                    "meta": entry.meta,
+                },
+            }),
+            None => fail(format!("unknown string `{key}` in table `{table}`")),
+        }
+    })
+}
+
+/// Declared channels: `{"ok":true,"channels":{"<name>":{"animated":bool,"cps":number|null,"meta":{...}}}}`.
+///
+/// `narration` is always present. Metadata values are plain JSON scalars.
+///
+/// # Safety
+/// `handle` is a live player.
+#[allow(unsafe_code)]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn weave_player_channels(handle: *mut WeavePlayer) -> *mut c_char {
+    guarded(|| {
+        let p = tri!(player(handle));
+        let channels = p
+            .channels()
+            .iter()
+            .map(|(name, channel)| {
+                let meta = channel
+                    .meta
+                    .iter()
+                    .map(|(key, value)| (key.clone(), plain_value(value)))
+                    .collect::<Map<_, _>>();
+                (
+                    name.clone(),
+                    json!({ "animated": channel.animated, "cps": channel.cps, "meta": meta }),
+                )
+            })
+            .collect::<Map<_, _>>();
+        json!({ "ok": true, "channels": channels })
+    })
+}
+
+fn plain_value(value: &ValueLiteral) -> Value {
+    match value {
+        ValueLiteral::Null => Value::Null,
+        ValueLiteral::Bool(value) => Value::Bool(*value),
+        ValueLiteral::Number(value) => json!(value),
+        ValueLiteral::String(value) | ValueLiteral::Symbol(value) => Value::String(value.clone()),
+    }
 }

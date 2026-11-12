@@ -6,6 +6,8 @@ pub mod ast;
 pub mod diagnostic;
 /// Versioned runtime intermediate representation.
 pub mod ir;
+/// Writer metadata: tags, line ids, inline markup, and rich-text rendering.
+pub mod markup;
 /// Parser for `.weave` source files.
 pub mod parser;
 /// Text template parsing shared by checking and lowering.
@@ -16,7 +18,7 @@ pub mod typecheck;
 pub use ast::{Document, Span, Spanned};
 pub use diagnostic::{Diagnostic, DiagnosticCode, Severity, has_errors};
 pub use parser::{parse_document, parse_expression};
-pub use template::{TemplatePart, parse_template};
+pub use template::{TemplateMode, TemplatePart, parse_template, parse_template_with};
 pub use typecheck::{
     DomainModuleSignature, PatternSignature, Type, TypeCheckResult, type_check,
     type_check_with_extensions, type_check_with_patterns,

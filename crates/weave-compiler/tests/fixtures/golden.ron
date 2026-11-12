@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("crates/weave-compiler/tests/fixtures/golden.weave"),
     entry: "start",
     globals: [
@@ -45,6 +45,11 @@ StoryIr(
     },
     patterns: {},
     modules: {},
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "ending": KnotIr(
             content: [
@@ -72,33 +77,36 @@ StoryIr(
                     ),
                     kind: InstructionKind(
                         kind: text,
-                        value: Template(
-                            parts: [
-                                TemplatePartIr(
-                                    kind: grammar_ref,
-                                    value: grammar_ref(
-                                        grammar: Some("greeting"),
-                                        rule: "hello",
+                        value: LineIr(
+                            id: "start.1",
+                            template: Template(
+                                parts: [
+                                    TemplatePartIr(
+                                        kind: grammar_ref,
+                                        value: grammar_ref(
+                                            grammar: Some("greeting"),
+                                            rule: "hello",
+                                        ),
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: ", visitor ",
-                                ),
-                                TemplatePartIr(
-                                    kind: expression,
-                                    value: Expression(
-                                        kind: path,
-                                        value: [
-                                            "visits",
-                                        ],
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: ", visitor ",
                                     ),
-                                ),
-                                TemplatePartIr(
-                                    kind: text,
-                                    value: ".",
-                                ),
-                            ],
+                                    TemplatePartIr(
+                                        kind: expression,
+                                        value: Expression(
+                                            kind: path,
+                                            value: [
+                                                "visits",
+                                            ],
+                                        ),
+                                    ),
+                                    TemplatePartIr(
+                                        kind: text,
+                                        value: ".",
+                                    ),
+                                ],
+                            ),
                         ),
                     ),
                 ),

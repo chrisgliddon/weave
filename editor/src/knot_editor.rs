@@ -276,6 +276,8 @@ fn cue_description(cue: &Cue) -> String {
         Cue::Hide(stage) => format!("Hide {stage}"),
         Cue::Speaker(Some(speaker)) => format!("Speaker {speaker}"),
         Cue::Speaker(None) => "Narration".to_owned(),
+        Cue::To(Some(channel)) => format!("To {channel}"),
+        Cue::To(None) => "To narration".to_owned(),
         Cue::Move { stage, to, .. } => format!("Move {stage} to {to}"),
         Cue::Swap { stage, variant, .. } => format!("Swap {stage} to {variant}"),
         Cue::Transition { kind, ms, .. } => format!("Transition {kind} {ms}ms"),

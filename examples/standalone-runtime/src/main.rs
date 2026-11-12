@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn run_story(mut story: Story) -> Result<(), Box<dyn Error>> {
     loop {
         match story.advance()? {
-            StoryEvent::Line(line) => println!("{line}"),
+            StoryEvent::Line(line) => println!("{}", line.text),
             StoryEvent::Choices(choices) => {
                 for (index, choice) in choices.iter().enumerate() {
                     println!("  {index}: {}", choice.text);

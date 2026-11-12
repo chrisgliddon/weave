@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/tabletop-adapters/contract/runtime/lantern-trail.weave",
   "entry": "start",
   "globals": [
@@ -276,6 +276,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -308,86 +313,89 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "call_sign"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "call_sign"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " uses "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_id"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "@"
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_version"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ("
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_sha256"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ") with Focus "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "focus"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " and "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "momentum"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " Momentum."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " uses "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_id"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "@"
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_version"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " ("
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_sha256"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ") with Focus "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "focus"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " and "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "momentum"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " Momentum."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -405,12 +413,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "This branch is unreachable because the selected adapter does not declare checks."
-                        }
-                      ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "This branch is unreachable because the selected adapter does not declare checks."
+                          }
+                        ]
+                      }
                     }
                   }
                 }

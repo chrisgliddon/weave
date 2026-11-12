@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "crates/weave-web/tests/fixtures/error-path.weave",
   "entry": "start",
   "globals": [
@@ -42,6 +42,11 @@
       }
     },
     "stages": {}
+  },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
   },
   "knots": {
     "start": {
@@ -119,12 +124,15 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "text",
-                  "value": "The ferry leaves at dusk."
-                }
-              ]
+              "id": "start.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "The ferry leaves at dusk."
+                  }
+                ]
+              }
             }
           }
         }

@@ -21,10 +21,10 @@ fn wasm_loads_json_and_exposes_the_complete_player_flow() {
 fn exercise_player_flow() {
     let mut player = Player::from_json(STORY_JSON, 17).expect("load compiled JSON");
     let first = player.advance().expect("first line");
-    let PlayerFrame::Line { text, draws, .. } = first.clone() else {
+    let PlayerFrame::Line { line, draws, .. } = first.clone() else {
         panic!("expected opening line");
     };
-    assert!(text.contains("observatory"));
+    assert!(line.text.contains("observatory"));
     assert_eq!(draws.len(), 1);
 
     let choices = player.advance().expect("choice boundary");
@@ -97,12 +97,12 @@ fn presentation_cues_are_drained_into_the_frame_and_leave_nothing_pending() {
 
     let frame = player.advance().expect("first line");
     let PlayerFrame::Line {
-        text, presentation, ..
+        line, presentation, ..
     } = frame
     else {
         panic!("expected a line");
     };
-    assert_eq!(text, "The ferry leaves at dusk.");
+    assert_eq!(line.text, "The ferry leaves at dusk.");
     assert_eq!(
         presentation,
         vec![
@@ -132,7 +132,7 @@ fn presentation_cues_are_drained_into_the_frame_and_leave_nothing_pending() {
     assert_eq!(
         repeat.advance().expect("first line"),
         PlayerFrame::Line {
-            text,
+            line,
             draws: Vec::new(),
             presentation: vec![
                 PresentationEvent::Scene("ferry_dusk".to_owned()),
@@ -212,13 +212,18 @@ fn a_failed_advance_reports_the_cues_that_ran_before_it() {
     let next = player
         .advance()
         .expect("execution resumes after the failure");
-    assert_eq!(
-        next,
-        PlayerFrame::Line {
-            text: "The ferry leaves at dusk.".to_owned(),
-            draws: Vec::new(),
-            presentation: Vec::new(),
-        },
+    let PlayerFrame::Line {
+        line,
+        draws,
+        presentation,
+    } = next
+    else {
+        panic!("expected a line after the failure");
+    };
+    assert_eq!(line.text, "The ferry leaves at dusk.");
+    assert!(draws.is_empty());
+    assert!(
+        presentation.is_empty(),
         "the delivered cues are not replayed into a later frame"
     );
 }

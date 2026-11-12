@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "crates/weave-web/tests/fixtures/presentation.weave",
   "entry": "start",
   "globals": [],
@@ -27,6 +27,11 @@
           "surprised": "art/mara_surprised.png"
         }
       }
+    }
+  },
+  "channels": {
+    "narration": {
+      "animated": true
     }
   },
   "knots": {
@@ -141,12 +146,15 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "text",
-                  "value": "The ferry leaves at dusk."
-                }
-              ]
+              "id": "start.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "The ferry leaves at dusk."
+                  }
+                ]
+              }
             }
           }
         },

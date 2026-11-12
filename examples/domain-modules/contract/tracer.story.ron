@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("examples/domain-modules/contract/tracer.weave"),
     entry: "start",
     globals: [
@@ -62,6 +62,11 @@ StoryIr(
             },
         ),
     },
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "start": KnotIr(
             content: [
@@ -105,43 +110,46 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "The ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "constellation",
-                                                                    "observation",
-                                                                    "label",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.1",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "The ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " glows at ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "constellation",
-                                                                    "observation",
-                                                                    "intensity",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "constellation",
+                                                                        "observation",
+                                                                        "label",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " intensity.",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " glows at ",
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "constellation",
+                                                                        "observation",
+                                                                        "intensity",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " intensity.",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -158,13 +166,16 @@ StoryIr(
                                     ),
                                     kind: InstructionKind(
                                         kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "The synthetic sky is quiet.",
-                                                ),
-                                            ],
+                                        value: LineIr(
+                                            id: "start.2",
+                                            template: Template(
+                                                parts: [
+                                                    TemplatePartIr(
+                                                        kind: text,
+                                                        value: "The synthetic sky is quiet.",
+                                                    ),
+                                                ],
+                                            ),
                                         ),
                                     ),
                                 ),

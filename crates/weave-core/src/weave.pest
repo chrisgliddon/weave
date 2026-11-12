@@ -1,5 +1,5 @@
 document = { SOI ~ top_item* ~ EOI }
-top_item = _{ blank_line | comment_line | module_decl | grammar_decl | pattern_decl | scene_decl | stage_decl | global_decl | knot }
+top_item = _{ blank_line | comment_line | module_decl | grammar_decl | pattern_decl | scene_decl | stage_decl | channel_decl | strings_decl | global_decl | knot }
 
 ws = _{ " " | "\t" }
 newline = _{ "\r\n" | "\n" }
@@ -142,6 +142,31 @@ variant_entry = _{ blank_line | comment_line | variant_image_decl }
 variant_image_decl = {
     ws* ~ "image" ~ ws* ~ ":" ~ ws* ~ string_literal ~ ws* ~ (newline | &"}")
 }
+
+channel_decl = {
+    ws* ~ "channel" ~ ws+ ~ identifier ~ ws* ~ "{" ~ channel_separator* ~
+    (channel_field ~ (channel_separator+ ~ channel_field)*)? ~ channel_separator* ~
+    "}" ~ ws* ~ (newline | &EOI)
+}
+channel_separator = _{ ws | newline | "," }
+channel_field = { identifier ~ ws* ~ ":" ~ ws* ~ channel_value }
+channel_value = _{ string_literal | boolean_literal | signed_number | identifier }
+
+strings_decl = {
+    ws* ~ "STRINGS" ~ ws+ ~ identifier ~ ws* ~ (newline | &EOI) ~ strings_entry*
+}
+strings_entry = _{ strings_comment | strings_item | strings_blank }
+strings_blank = { ws* ~ newline }
+strings_comment = { ws+ ~ "//" ~ comment_text ~ (newline | &EOI) }
+strings_item = {
+    ws+ ~ strings_key ~ ws* ~ "=" ~ ws* ~ strings_value ~ strings_tail ~ (newline | &EOI)
+}
+strings_key = @{ identifier ~ ("." ~ (ASCII_ALPHANUMERIC | "_")+)* }
+strings_tail = @{ (!newline ~ ANY)* }
+// A STRINGS value also accepts the markup escapes `\<`, `\>` and `\^`.
+strings_value = @{ "\"" ~ strings_value_character* ~ "\"" }
+strings_value_character = _{ strings_value_escape | !("\"" | "\\" | "\r" | "\n") ~ ANY }
+strings_value_escape = { "\\" ~ ("\\" | "\"" | "n" | "r" | "t" | "<" | ">" | "^") }
 
 knot = { knot_header ~ knot_body }
 knot_header = { ws* ~ "===" ~ ws* ~ identifier ~ ws* ~ "===" ~ ws* ~ (newline | &EOI) }

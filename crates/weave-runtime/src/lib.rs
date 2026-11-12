@@ -10,11 +10,15 @@ use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use weave_core::Span;
+pub use weave_core::ir::{BeatIr as Beat, ChannelIr, StringEntryIr, StyleSpanIr as StyleSpan};
 use weave_core::ir::{
     BinaryOperatorIr, ChoiceIr, ConditionalIr, CueIr, DeclarationIr, DomainExportSourceIr,
-    DomainModuleIr, DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind,
+    DomainModuleIr, DomainValueIr, Expression, IR_VERSION, Instruction, InstructionKind, LineIr,
     ListOperationIr, Slot, StoryIr, Template, TemplatePartIr, TransitionKind, UnaryOperatorIr,
     ValueLiteral, VariableKindIr,
+};
+use weave_core::markup::{
+    MAX_PAUSE_SECONDS, NARRATION_CHANNEL, Piece, is_line_id, is_style_name, render,
 };
 use weave_patterns::{
     DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
@@ -117,9 +121,31 @@ pub struct StoryState {
     seed: u64,
     random_draws: u64,
     ended: bool,
+    /// Channel that receives the next line; set by `@to`.
+    #[serde(default = "narration_channel")]
+    channel: String,
+    /// Current speaker; set by `@speaker`, `None` while narrating.
+    #[serde(default)]
+    speaker: Option<String>,
+}
+
+fn narration_channel() -> String {
+    NARRATION_CHANNEL.to_owned()
 }
 
 impl StoryState {
+    /// Channel that receives the next line.
+    #[must_use]
+    pub fn channel(&self) -> &str {
+        &self.channel
+    }
+
+    /// Current speaker, or `None` while narrating.
+    #[must_use]
+    pub fn speaker(&self) -> Option<&str> {
+        self.speaker.as_deref()
+    }
+
     /// Current story variables in deterministic name order.
     #[must_use]
     pub const fn variables(&self) -> &BTreeMap<String, VariableState> {
@@ -203,13 +229,44 @@ pub struct ChoiceView {
     pub text: String,
     /// Whether the choice disappears after it is selected.
     pub once: bool,
+    /// Bare tags written after the label, in source order.
+    #[serde(default)]
+    pub tags: Vec<String>,
+    /// `key:value` tags written after the label, sorted by key.
+    #[serde(default)]
+    pub meta: BTreeMap<String, String>,
+}
+
+/// One rendered narrative line with its id, placement, and writer metadata.
+///
+/// Offsets in `spans` and `beats` count Unicode scalar values of `text`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Line {
+    /// Stable line id: `^id:` or the default `<knot>.<n>`.
+    pub id: String,
+    /// Channel that receives the line.
+    pub channel: String,
+    /// Speaker set by `@speaker`, or `None` while narrating.
+    pub speaker: Option<String>,
+    /// Plain text with tags and markup removed.
+    pub text: String,
+    /// Unreal rich-text form: `<style>text</>`, flattened and escaped.
+    pub rich: String,
+    /// Style spans in opening order.
+    pub spans: Vec<StyleSpan>,
+    /// Pauses in source order.
+    pub beats: Vec<Beat>,
+    /// Bare tags in source order.
+    pub tags: Vec<String>,
+    /// `key:value` tags sorted by key.
+    pub meta: BTreeMap<String, String>,
 }
 
 /// One host-visible result of advancing a story.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum StoryEvent {
     /// One rendered narrative line.
-    Line(String),
+    Line(Line),
     /// Execution is waiting for one of these choices.
     Choices(Vec<ChoiceView>),
     /// Story execution is complete.
@@ -383,6 +440,8 @@ impl Story {
                 seed,
                 random_draws: 0,
                 ended: false,
+                channel: narration_channel(),
+                speaker: None,
             },
             patterns,
             pending_pattern_draws: Vec::new(),
@@ -443,6 +502,18 @@ impl Story {
     #[must_use]
     pub const fn state(&self) -> &StoryState {
         &self.state
+    }
+
+    /// Look up one interface string by table and key.
+    #[must_use]
+    pub fn string(&self, table: &str, key: &str) -> Option<&StringEntryIr> {
+        self.data.strings.get(table)?.get(key)
+    }
+
+    /// Declared channels keyed by name, including `narration`.
+    #[must_use]
+    pub fn channels(&self) -> &BTreeMap<String, ChannelIr> {
+        &self.data.channels
     }
 
     /// Whether execution can advance without a host choice.
@@ -507,11 +578,20 @@ impl Story {
             self.increment_frame()?;
             let span = instruction.span;
             match instruction.kind {
-                InstructionKind::Text(template) => {
+                InstructionKind::Text(line) => {
                     return self
-                        .render_template(&template, 0)
+                        .render_line(&line)
                         .map(StoryEvent::Line)
                         .map_err(|error| with_span(error, span));
+                }
+                InstructionKind::Channel(channel) => {
+                    if channel != NARRATION_CHANNEL && !self.data.channels.contains_key(&channel) {
+                        return Err(RuntimeError::at(
+                            RuntimeErrorKind::InvalidStory(format!("unknown channel `{channel}`")),
+                            span,
+                        ));
+                    }
+                    self.state.channel = channel;
                 }
                 InstructionKind::Declare(declaration) => {
                     self.execute_declaration(&declaration)
@@ -550,6 +630,9 @@ impl Story {
                 InstructionKind::Divert(target) => self.jump(&target)?,
                 InstructionKind::Thread(target) => self.thread(&target, span)?,
                 InstructionKind::Cue(cue) => {
+                    if let CueIr::Speaker(speaker) = &cue {
+                        self.state.speaker.clone_from(speaker);
+                    }
                     self.pending_presentation.push(presentation_event(cue));
                 }
                 InstructionKind::End => {
@@ -561,7 +644,7 @@ impl Story {
     }
 
     /// Advance and require the next boundary to be a narrative line.
-    pub fn continue_line(&mut self) -> Result<Option<String>, RuntimeError> {
+    pub fn continue_line(&mut self) -> Result<Option<Line>, RuntimeError> {
         match self.advance()? {
             StoryEvent::Line(line) => Ok(Some(line)),
             StoryEvent::Choices(_) | StoryEvent::Ended => Ok(None),
@@ -647,6 +730,20 @@ impl Story {
     }
 
     fn validate_state(&self) -> Result<(), RuntimeError> {
+        if self.state.channel != NARRATION_CHANNEL
+            && !self.data.channels.contains_key(&self.state.channel)
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "saved channel is not declared by the compiled story".to_owned(),
+            )));
+        }
+        if let Some(speaker) = &self.state.speaker
+            && !self.data.presentation.stages.contains_key(speaker)
+        {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "saved speaker is not a stage of the compiled story".to_owned(),
+            )));
+        }
         for frame in &self.state.frames {
             let block = self.block(&frame.block)?;
             if frame.index > block.len() {
@@ -855,6 +952,8 @@ impl Story {
                         id: choice.id,
                         text,
                         once: choice.once,
+                        tags: choice.tags,
+                        meta: choice.meta,
                     },
                 });
             }
@@ -1149,6 +1248,41 @@ impl Story {
         }
     }
 
+    fn render_line(&mut self, line: &LineIr) -> Result<Line, RuntimeError> {
+        let mut pieces = Vec::with_capacity(line.template.parts.len());
+        for part in &line.template.parts {
+            pieces.push(match part {
+                TemplatePartIr::Text(text) => Piece::Text(text.clone()),
+                TemplatePartIr::GrammarRef { grammar, rule } => {
+                    let Some(grammar) = grammar else {
+                        return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                            "runtime grammar reference is not qualified".to_owned(),
+                        )));
+                    };
+                    Piece::Text(self.expand_grammar(grammar, rule, 1)?)
+                }
+                TemplatePartIr::Expression(expression) => {
+                    Piece::Text(self.evaluate(expression)?.to_string())
+                }
+                TemplatePartIr::Pause(seconds) => Piece::Pause(*seconds),
+                TemplatePartIr::StyleOpen(name) => Piece::Open(name.clone()),
+                TemplatePartIr::StyleClose(name) => Piece::Close(name.clone()),
+            });
+        }
+        let rendered = render(&pieces);
+        Ok(Line {
+            id: line.id.clone(),
+            channel: self.state.channel.clone(),
+            speaker: self.state.speaker.clone(),
+            text: rendered.text,
+            rich: rendered.rich,
+            spans: rendered.spans,
+            beats: rendered.beats,
+            tags: line.tags.clone(),
+            meta: line.meta.clone(),
+        })
+    }
+
     fn render_template(
         &mut self,
         template: &Template,
@@ -1172,6 +1306,10 @@ impl Story {
                 TemplatePartIr::Expression(expression) => {
                     output.push_str(&self.evaluate(expression)?.to_string());
                 }
+                // Markup only renders on narrative lines; plain templates drop it.
+                TemplatePartIr::Pause(_)
+                | TemplatePartIr::StyleOpen(_)
+                | TemplatePartIr::StyleClose(_) => {}
             }
         }
         Ok(output)
@@ -1486,6 +1624,100 @@ fn validate_story(data: &StoryIr) -> Result<(), RuntimeError> {
                 )));
             }
             previous = Some(authored.path.as_slice());
+        }
+    }
+    validate_writer_metadata(data)
+}
+
+/// Reject hand-edited IR whose channels, pauses, or style names the compiler
+/// could never have produced, so hosts never see a `NaN` pause or a style
+/// name that breaks out of rich text.
+fn validate_writer_metadata(data: &StoryIr) -> Result<(), RuntimeError> {
+    let invalid = |message: &str| {
+        Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+            message.to_owned(),
+        )))
+    };
+    if !data.channels.contains_key(NARRATION_CHANNEL) {
+        return invalid("compiled story does not declare the `narration` channel");
+    }
+    if data.channels.values().any(|channel| {
+        channel
+            .cps
+            .is_some_and(|cps| !(cps.is_finite() && cps > 0.0))
+    }) {
+        return invalid("compiled story has a channel with an invalid `cps`");
+    }
+    for table in data.strings.values() {
+        if table
+            .values()
+            .flat_map(|entry| &entry.beats)
+            .any(|beat| !valid_pause(beat.pause))
+        {
+            return invalid("compiled story has a string with an invalid pause");
+        }
+    }
+    for knot in data.knots.values() {
+        validate_instructions(&knot.content, data)?;
+    }
+    Ok(())
+}
+
+fn valid_pause(seconds: f64) -> bool {
+    seconds.is_finite() && seconds > 0.0 && seconds <= MAX_PAUSE_SECONDS
+}
+
+fn validate_template(template: &Template) -> Result<(), RuntimeError> {
+    for part in &template.parts {
+        let valid = match part {
+            TemplatePartIr::Pause(seconds) => valid_pause(*seconds),
+            TemplatePartIr::StyleOpen(name) | TemplatePartIr::StyleClose(name) => {
+                is_style_name(name)
+            }
+            _ => true,
+        };
+        if !valid {
+            return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(
+                "compiled story has invalid inline markup".to_owned(),
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_instructions(instructions: &[Instruction], data: &StoryIr) -> Result<(), RuntimeError> {
+    for instruction in instructions {
+        match &instruction.kind {
+            InstructionKind::Text(line) => {
+                if !is_line_id(&line.id) {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                        "compiled story has an invalid line id at {}:{}",
+                        instruction.span.line, instruction.span.column
+                    ))));
+                }
+                validate_template(&line.template)?;
+            }
+            InstructionKind::Channel(channel) => {
+                if !data.channels.contains_key(channel) {
+                    return Err(RuntimeError::new(RuntimeErrorKind::InvalidStory(format!(
+                        "unknown channel `{channel}` at {}:{}",
+                        instruction.span.line, instruction.span.column
+                    ))));
+                }
+            }
+            InstructionKind::Choice(choice) => {
+                validate_template(&choice.text)?;
+                validate_instructions(&choice.body, data)?;
+            }
+            InstructionKind::Conditional(conditional) => {
+                for branch in &conditional.branches {
+                    validate_instructions(&branch.body, data)?;
+                }
+                if let Some(fallback) = &conditional.fallback {
+                    validate_instructions(fallback, data)?;
+                }
+            }
+            _ => {}
         }
     }
     Ok(())
@@ -1804,7 +2036,10 @@ mod tests {
             Value::Symbol("twilight".to_owned())
         );
         assert_eq!(
-            story.continue_line().expect("advance tracer"),
+            story
+                .continue_line()
+                .expect("advance tracer")
+                .map(|line| line.text),
             Some("The Glasswing constellation glows at 0.625 intensity.".to_owned())
         );
     }
@@ -1877,10 +2112,10 @@ SET score = score + 1
         let mut story = compile_story(source, 9);
         assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
         story.choose(0).expect("choice should be valid");
-        assert_eq!(
+        assert!(matches!(
             story.advance().expect("story should advance"),
-            StoryEvent::Line("Door open: true; score: 2; quest: active.".to_owned())
-        );
+            StoryEvent::Line(line) if line.text == "Door open: true; score: 2; quest: active."
+        ));
         assert_eq!(
             story.advance().expect("story should end"),
             StoryEvent::Ended
@@ -1904,23 +2139,23 @@ Done.
 "#;
         let mut story = compile_story(source, 0);
         assert_eq!(
-            story.continue_line().expect("line"),
+            story.continue_line().expect("line").map(|line| line.text),
             Some("Before.".to_owned())
         );
         assert_eq!(
-            story.continue_line().expect("line"),
+            story.continue_line().expect("line").map(|line| line.text),
             Some("Aside.".to_owned())
         );
         assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
         story.choose(0).expect("outer choice");
         assert_eq!(
-            story.continue_line().expect("line"),
+            story.continue_line().expect("line").map(|line| line.text),
             Some("Asked.".to_owned())
         );
         assert!(matches!(story.advance(), Ok(StoryEvent::Choices(_))));
         story.choose(0).expect("inner choice");
         assert_eq!(
-            story.continue_line().expect("line"),
+            story.continue_line().expect("line").map(|line| line.text),
             Some("Done.".to_owned())
         );
     }
@@ -1975,7 +2210,7 @@ VAR draw = cards.spread.single.draw()
         let mut story = compile_story(source, 0);
         assert!(matches!(
             story.advance(),
-            Ok(StoryEvent::Line(line)) if line == "One: first" || line == "Two: second"
+            Ok(StoryEvent::Line(line)) if line.text == "One: first" || line.text == "Two: second"
         ));
         let draws = story.take_pattern_draws();
         assert_eq!(draws.len(), 1);
@@ -2039,7 +2274,7 @@ VAR rune = runes.draw()
         let StoryEvent::Line(line) = story.advance().expect("built-ins run") else {
             panic!("expected a line");
         };
-        assert_eq!(line.split('|').count(), 6);
+        assert_eq!(line.text.split('|').count(), 6);
         let draws = story.take_pattern_draws();
         assert_eq!(draws.len(), 3);
         assert_eq!(draws[0].system, "tarot_reading");

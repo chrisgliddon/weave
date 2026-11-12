@@ -439,7 +439,7 @@ impl PreviewSession {
         self.runtime = Some(runtime);
         match event {
             Ok(StoryEvent::Line(line)) => {
-                self.transcript.push(PreviewTranscript::Line(line));
+                self.transcript.push(PreviewTranscript::Line(line.text));
                 self.status = PreviewStatus::Ready;
                 if !self.stale {
                     self.issue = None;

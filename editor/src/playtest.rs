@@ -598,7 +598,8 @@ impl PlaytestRecord {
             }
 
             match event {
-                StoryEvent::Line(text) => {
+                StoryEvent::Line(line) => {
+                    let text = line.text;
                     let (knot, span) = line_location(story, probe.as_ref(), &current_knot);
                     last_knot = knot.clone();
                     events.push(PlaytestEvent {
@@ -995,7 +996,8 @@ impl PlaytestRecord {
             }
 
             match event {
-                StoryEvent::Line(text) => {
+                StoryEvent::Line(line) => {
+                    let text = line.text;
                     let expected = self.events.get(event_position);
                     match expected.map(|event| &event.kind) {
                         Some(PlaytestEventKind::Line { text: recorded }) if *recorded == text => {
@@ -1682,7 +1684,7 @@ The landing is empty.
         let mut runtime = Story::restore(story.clone(), checkpoint.state).expect("restore runtime");
         let mut lines = Vec::new();
         while let StoryEvent::Line(line) = runtime.advance().expect("advance") {
-            lines.push(line);
+            lines.push(line.text);
         }
         assert_eq!(lines, ["Mara: Then we cross together."]);
         assert_eq!(
@@ -1703,9 +1705,9 @@ The landing is empty.
             .content
             .iter()
             .find_map(|instruction| match &instruction.kind {
-                InstructionKind::Text(template)
+                InstructionKind::Text(line)
                     if matches!(
-                        template.parts.as_slice(),
+                        line.template.parts.as_slice(),
                         [TemplatePartIr::Text(text)]
                             if text == "Mara: The ferry leaves at dusk."
                     ) =>

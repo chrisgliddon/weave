@@ -863,7 +863,7 @@ impl GraphBuilder {
                     self.knot_row += 1;
                 }
                 Item::Comment(_) | Item::Blank => {}
-                Item::Scene(_) | Item::Stage(_) => {}
+                Item::Scene(_) | Item::Stage(_) | Item::Channel(_) | Item::Strings(_) => {}
             }
         }
     }

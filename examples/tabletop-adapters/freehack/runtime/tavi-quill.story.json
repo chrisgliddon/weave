@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/tabletop-adapters/freehack/runtime/tavi-quill.weave",
   "entry": "start",
   "globals": [
@@ -511,6 +511,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -567,60 +572,63 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "character_name"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "character_name"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", a "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "archetype"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ", enters play with Focus "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "focus"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " and Fatigue "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "fatigue"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", a "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "archetype"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ", enters play with Focus "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "focus"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " and Fatigue "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "fatigue"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     },
@@ -634,38 +642,41 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "The gantry section is "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "section_status"
-                                ]
+                          "id": "start.2",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "The gantry section is "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "section_status"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "; "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "public_memories"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " public memories are available."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "; "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "public_memories"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " public memories are available."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     },
@@ -679,51 +690,54 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "text",
-                              "value": "The active rules are "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_id"
-                                ]
+                          "id": "start.3",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "text",
+                                "value": "The active rules are "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_id"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": "@"
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_version"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ("
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "adapter_sha256"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": ")."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": "@"
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_version"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " ("
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "adapter_sha256"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": ")."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -741,12 +755,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "This branch is unreachable because the public module declares checks, scenes, and tracks."
-                        }
-                      ]
+                      "id": "start.4",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "This branch is unreachable because the public module declares checks, scenes, and tracks."
+                          }
+                        ]
+                      }
                     }
                   }
                 }

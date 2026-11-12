@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("examples/tabletop-adapters/freehack/runtime/tavi-quill.weave"),
     entry: "start",
     globals: [
@@ -511,6 +511,11 @@ StoryIr(
             },
         ),
     },
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "start": KnotIr(
             content: [
@@ -566,61 +571,64 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "character_name",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.1",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "character_name",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ", a ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "archetype",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: ", a ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ", enters play with Focus ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "focus",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "archetype",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " and Fatigue ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "fatigue",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: ", enters play with Focus ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ".",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "focus",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " and Fatigue ",
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "fatigue",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: ".",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -633,39 +641,42 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "The gantry section is ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "section_status",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.2",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "The gantry section is ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "; ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "public_memories",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "section_status",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " public memories are available.",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "; ",
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "public_memories",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " public memories are available.",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -678,52 +689,55 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "The active rules are ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "adapter_id",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.3",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "The active rules are ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: "@",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "adapter_version",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "adapter_id",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " (",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "adapter_sha256",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: "@",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: ").",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "adapter_version",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " (",
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "adapter_sha256",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: ").",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -740,13 +754,16 @@ StoryIr(
                                     ),
                                     kind: InstructionKind(
                                         kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "This branch is unreachable because the public module declares checks, scenes, and tracks.",
-                                                ),
-                                            ],
+                                        value: LineIr(
+                                            id: "start.4",
+                                            template: Template(
+                                                parts: [
+                                                    TemplatePartIr(
+                                                        kind: text,
+                                                        value: "This branch is unreachable because the public module declares checks, scenes, and tracks.",
+                                                    ),
+                                                ],
+                                            ),
                                         ),
                                     ),
                                 ),

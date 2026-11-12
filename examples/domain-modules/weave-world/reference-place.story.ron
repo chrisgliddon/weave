@@ -1,5 +1,5 @@
 StoryIr(
-    version: 6,
+    version: 7,
     source_name: Some("examples/domain-modules/weave-world/reference-place.weave"),
     entry: "start",
     globals: [
@@ -337,6 +337,11 @@ StoryIr(
             },
         ),
     },
+    channels: {
+        "narration": ChannelIr(
+            animated: true,
+        ),
+    },
     knots: {
         "start": KnotIr(
             content: [
@@ -380,53 +385,56 @@ StoryIr(
                                             ),
                                             kind: InstructionKind(
                                                 kind: text,
-                                                value: Template(
-                                                    parts: [
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "reference_name",
-                                                                ],
+                                                value: LineIr(
+                                                    id: "start.1",
+                                                    template: Template(
+                                                        parts: [
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "reference_name",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " seeds a ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "world",
-                                                                    "seed",
-                                                                    "primary_biome",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " seeds a ",
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " world with an ",
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: expression,
-                                                            value: Expression(
-                                                                kind: path,
-                                                                value: [
-                                                                    "world",
-                                                                    "seed",
-                                                                    "water",
-                                                                    "setting",
-                                                                ],
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "world",
+                                                                        "seed",
+                                                                        "primary_biome",
+                                                                    ],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        TemplatePartIr(
-                                                            kind: text,
-                                                            value: " setting.",
-                                                        ),
-                                                    ],
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " world with an ",
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: expression,
+                                                                value: Expression(
+                                                                    kind: path,
+                                                                    value: [
+                                                                        "world",
+                                                                        "seed",
+                                                                        "water",
+                                                                        "setting",
+                                                                    ],
+                                                                ),
+                                                            ),
+                                                            TemplatePartIr(
+                                                                kind: text,
+                                                                value: " setting.",
+                                                            ),
+                                                        ],
+                                                    ),
                                                 ),
                                             ),
                                         ),
@@ -443,13 +451,16 @@ StoryIr(
                                     ),
                                     kind: InstructionKind(
                                         kind: text,
-                                        value: Template(
-                                            parts: [
-                                                TemplatePartIr(
-                                                    kind: text,
-                                                    value: "The reference-place preset is unavailable.",
-                                                ),
-                                            ],
+                                        value: LineIr(
+                                            id: "start.2",
+                                            template: Template(
+                                                parts: [
+                                                    TemplatePartIr(
+                                                        kind: text,
+                                                        value: "The reference-place preset is unavailable.",
+                                                    ),
+                                                ],
+                                            ),
                                         ),
                                     ),
                                 ),

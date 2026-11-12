@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/domain-modules/weave-world/reference-place.weave",
   "entry": "start",
   "globals": [
@@ -337,6 +337,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -381,52 +386,55 @@
                       "kind": {
                         "kind": "text",
                         "value": {
-                          "parts": [
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "reference_name"
-                                ]
+                          "id": "start.1",
+                          "template": {
+                            "parts": [
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "reference_name"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " seeds a "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "world",
+                                    "seed",
+                                    "primary_biome"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " world with an "
+                              },
+                              {
+                                "kind": "expression",
+                                "value": {
+                                  "kind": "path",
+                                  "value": [
+                                    "world",
+                                    "seed",
+                                    "water",
+                                    "setting"
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "value": " setting."
                               }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " seeds a "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "world",
-                                  "seed",
-                                  "primary_biome"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " world with an "
-                            },
-                            {
-                              "kind": "expression",
-                              "value": {
-                                "kind": "path",
-                                "value": [
-                                  "world",
-                                  "seed",
-                                  "water",
-                                  "setting"
-                                ]
-                              }
-                            },
-                            {
-                              "kind": "text",
-                              "value": " setting."
-                            }
-                          ]
+                            ]
+                          }
                         }
                       }
                     }
@@ -444,12 +452,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "The reference-place preset is unavailable."
-                        }
-                      ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "The reference-place preset is unavailable."
+                          }
+                        ]
+                      }
                     }
                   }
                 }

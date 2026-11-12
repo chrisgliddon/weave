@@ -1,4 +1,4 @@
-const STORY_IR_VERSION = 6;
+const STORY_IR_VERSION = 7;
 
 export function decodeDomainValue(encoded) {
   if (!encoded || typeof encoded !== "object" || typeof encoded.kind !== "string") {

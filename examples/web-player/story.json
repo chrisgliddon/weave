@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "examples/web-player/story.weave",
   "entry": "start",
   "globals": [
@@ -105,6 +105,11 @@
       }
     }
   },
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "start": {
       "content": [
@@ -133,40 +138,43 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "text",
-                  "value": "The hilltop observatory wakes beneath a sky of moving ink. The dial marks "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "signal",
-                      "name"
-                    ]
+              "id": "start.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "The hilltop observatory wakes beneath a sky of moving ink. The dial marks "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "signal",
+                        "name"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": ": "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "signal",
+                        "meaning"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": "."
                   }
-                },
-                {
-                  "kind": "text",
-                  "value": ": "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "signal",
-                      "meaning"
-                    ]
-                  }
-                },
-                {
-                  "kind": "text",
-                  "value": "."
-                }
-              ]
+                ]
+              }
             }
           }
         },
@@ -217,12 +225,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "\"The road of light only opens for a patient eye,\" the observer murmurs as the brass wheel turns."
-                        }
-                      ]
+                      "id": "start.2",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "\"The road of light only opens for a patient eye,\" the observer murmurs as the brass wheel turns."
+                          }
+                        ]
+                      }
                     }
                   }
                 },
@@ -289,12 +300,15 @@
                   "kind": {
                     "kind": "text",
                     "value": {
-                      "parts": [
-                        {
-                          "kind": "text",
-                          "value": "You record the sign, shutter the lens, and leave the stars to their patient work."
-                        }
-                      ]
+                      "id": "start.3",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "You record the sign, shutter the lens, and leave the stars to their patient work."
+                          }
+                        ]
+                      }
                     }
                   }
                 },

@@ -35,7 +35,7 @@ fn installed_package_data_compiles_and_executes_through_the_standard_runtime() {
     let mut lines = Vec::new();
     loop {
         match story.advance().expect("advance story") {
-            StoryEvent::Line(line) => lines.push(line),
+            StoryEvent::Line(line) => lines.push(line.text),
             StoryEvent::Ended => break,
             StoryEvent::Choices(_) => panic!("sample has no choices"),
         }

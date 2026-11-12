@@ -1,9 +1,14 @@
 //! WebAssembly host boundary for deterministic Weave story playback.
 
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use weave_core::ir::StoryIr;
 use weave_patterns::DrawResult;
-use weave_runtime::{ChoiceView, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState};
+
+use weave_runtime::{
+    ChannelIr, ChoiceView, Line, PresentationEvent, RuntimeError, Story, StoryEvent, StoryState,
+    StringEntryIr,
+};
 
 /// Current browser save-envelope version.
 pub const WEB_STATE_VERSION: u32 = 1;
@@ -13,9 +18,13 @@ pub const WEB_STATE_VERSION: u32 = 1;
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum PlayerFrame {
     /// One rendered narrative line.
+    ///
+    /// Serializes the line's `id`, `channel`, `speaker`, `text`, `rich`,
+    /// `spans`, `beats`, `tags`, and `meta` beside `draws` and `presentation`.
     Line {
-        /// Rendered text.
-        text: String,
+        /// Rendered line with its id, placement, and metadata.
+        #[serde(flatten)]
+        line: Line,
         /// Structured pattern draws produced before this boundary.
         draws: Vec<DrawResult>,
         /// Presentation cues produced before this boundary, in source order.
@@ -113,8 +122,25 @@ impl Player {
     pub fn from_json(source: &str, seed: u64) -> Result<Self, PlayerError> {
         let data = serde_json::from_str::<StoryIr>(source)
             .map_err(|error| PlayerError::StoryJson(error.to_string()))?;
+        Self::new(data, seed)
+    }
+
+    /// Start an already decoded story at its entry knot.
+    pub fn new(data: StoryIr, seed: u64) -> Result<Self, PlayerError> {
         let story = Story::with_seed(data.clone(), seed)?;
         Ok(Self { data, story, seed })
+    }
+
+    /// Look up one interface string by table and key.
+    #[must_use]
+    pub fn string(&self, table: &str, key: &str) -> Option<&StringEntryIr> {
+        self.story.string(table, key)
+    }
+
+    /// Declared channels keyed by name, including `narration`.
+    #[must_use]
+    pub fn channels(&self) -> &BTreeMap<String, ChannelIr> {
+        self.story.channels()
     }
 
     /// Advance to the next line, choice set, or ending.
@@ -137,8 +163,8 @@ impl Player {
         let draws = self.story.take_pattern_draws();
         let presentation = self.story.take_presentation();
         Ok(match event {
-            StoryEvent::Line(text) => PlayerFrame::Line {
-                text,
+            StoryEvent::Line(line) => PlayerFrame::Line {
+                line,
                 draws,
                 presentation,
             },
@@ -253,8 +279,9 @@ mod bindings {
 
         /// Advance to the next host-visible story boundary.
         ///
-        /// A successful frame carries `presentation`: an array of cue objects in
-        /// source order, each shaped
+        /// A line frame carries `id`, `channel`, `speaker`, `text`, `rich`,
+        /// `spans`, `beats`, `tags`, and `meta`. A successful frame carries
+        /// `presentation`: an array of cue objects in source order, each shaped
         /// `{ kind: "scene" | "show" | "hide" | "speaker", value: string | null }`.
         /// A bare `@speaker` cue has `kind: "speaker"` and `value: null`.
         ///
@@ -276,6 +303,19 @@ mod bindings {
         /// Return the currently eligible choices.
         pub fn choices(&self) -> Result<JsValue, JsError> {
             to_js(&self.inner.choices())
+        }
+
+        /// Look up one interface string, or `undefined` when the table or key is unknown.
+        pub fn string(&self, table: &str, key: &str) -> Result<JsValue, JsError> {
+            match self.inner.string(table, key) {
+                Some(entry) => to_js(entry),
+                None => Ok(JsValue::UNDEFINED),
+            }
+        }
+
+        /// Declared channels keyed by name, including `narration`.
+        pub fn channels(&self) -> Result<JsValue, JsError> {
+            to_js(self.inner.channels())
         }
 
         /// Select one currently eligible choice by zero-based index.

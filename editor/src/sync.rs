@@ -478,6 +478,7 @@ fn mutate_document(
                         condition: None,
                         body: Vec::new(),
                         divert: Some(target.clone()),
+                        tags: Vec::new(),
                     }),
                     Span::default(),
                 ),

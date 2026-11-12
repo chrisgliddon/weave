@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::ast::Span;
 
 /// Current serialized story format version.
-pub const IR_VERSION: u32 = 6;
+pub const IR_VERSION: u32 = 7;
 
 /// Complete immutable compiled story.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -30,6 +30,11 @@ pub struct StoryIr {
     /// Declared background scenes and character stages.
     #[serde(default, skip_serializing_if = "PresentationIr::is_empty")]
     pub presentation: PresentationIr,
+    /// Declared text channels keyed by name. Always contains `narration`.
+    pub channels: BTreeMap<String, ChannelIr>,
+    /// Interface string tables: table name, then entry key.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub strings: BTreeMap<String, BTreeMap<String, StringEntryIr>>,
     /// Sorted knot definitions.
     pub knots: BTreeMap<String, KnotIr>,
 }
@@ -47,9 +52,95 @@ impl StoryIr {
             patterns: BTreeMap::new(),
             modules: BTreeMap::new(),
             presentation: PresentationIr::default(),
+            channels: BTreeMap::from([(
+                crate::markup::NARRATION_CHANNEL.to_owned(),
+                ChannelIr::default(),
+            )]),
+            strings: BTreeMap::new(),
             knots: BTreeMap::new(),
         }
     }
+}
+
+const fn animated_default() -> bool {
+    true
+}
+
+/// Where and how a host places text: a dialogue box, a book page, a sign.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ChannelIr {
+    /// Whether text on this channel types on over time. Defaults to `true`.
+    #[serde(default = "animated_default")]
+    pub animated: bool,
+    /// Characters per second for animated text, when the author sets it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cps: Option<f64>,
+    /// Author-defined settings the host interprets, sorted by key.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub meta: BTreeMap<String, ValueLiteral>,
+}
+
+impl Default for ChannelIr {
+    fn default() -> Self {
+        Self {
+            animated: true,
+            cps: None,
+            meta: BTreeMap::new(),
+        }
+    }
+}
+
+/// One interface string, rendered at compile time.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct StringEntryIr {
+    /// Plain text with markup removed.
+    pub text: String,
+    /// Unreal rich-text form of the value.
+    pub rich: String,
+    /// Style spans, offsets in Unicode scalar values.
+    pub spans: Vec<StyleSpanIr>,
+    /// Pauses, offsets in Unicode scalar values.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub beats: Vec<BeatIr>,
+    /// Bare tags in source order.
+    pub tags: Vec<String>,
+    /// `key:value` tags sorted by key.
+    pub meta: BTreeMap<String, String>,
+}
+
+/// A styled range of rendered text.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct StyleSpanIr {
+    /// Style name from `<name>…</name>`.
+    pub style: String,
+    /// Inclusive start offset in Unicode scalar values.
+    pub from: usize,
+    /// Exclusive end offset in Unicode scalar values.
+    pub to: usize,
+}
+
+/// A pause at one position in rendered text.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct BeatIr {
+    /// Offset in Unicode scalar values at which the pause happens.
+    pub at: usize,
+    /// Pause length in seconds.
+    pub pause: f64,
+}
+
+/// One narrative line with its stable id and writer metadata.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct LineIr {
+    /// Stable line id: `^id:` or the default `<knot>.<n>`.
+    pub id: String,
+    /// Text template, including markup parts.
+    pub template: Template,
+    /// Bare tags in source order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+    /// `key:value` tags sorted by key.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub meta: BTreeMap<String, String>,
 }
 
 /// Declared visual assets addressable by presentation cues.
@@ -352,7 +443,7 @@ pub struct Instruction {
 #[serde(rename_all = "snake_case", tag = "kind", content = "value")]
 pub enum InstructionKind {
     /// Deliver one rendered narrative line.
-    Text(Template),
+    Text(LineIr),
     /// Declare or reset a story value.
     Declare(DeclarationIr),
     /// Assign an existing story value.
@@ -381,6 +472,8 @@ pub enum InstructionKind {
     Thread(String),
     /// Apply one presentation directive without ending the current advance.
     Cue(CueIr),
+    /// Send following lines to a declared channel.
+    Channel(String),
     /// End the story.
     End,
 }
@@ -500,6 +593,12 @@ pub struct ChoiceIr {
     pub body: Vec<Instruction>,
     /// Optional target executed after the body.
     pub divert: Option<String>,
+    /// Bare tags in source order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+    /// `key:value` tags sorted by key.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub meta: BTreeMap<String, String>,
 }
 
 /// Ordered conditional branches.
@@ -552,6 +651,12 @@ pub enum TemplatePartIr {
     },
     /// Runtime expression interpolation.
     Expression(Expression),
+    /// A pause in seconds at this point of a narrative line.
+    Pause(f64),
+    /// Opening of a named style span.
+    StyleOpen(String),
+    /// Closing of the innermost style span, which has this name.
+    StyleClose(String),
 }
 
 /// Runtime expression, deliberately separate from the source AST.

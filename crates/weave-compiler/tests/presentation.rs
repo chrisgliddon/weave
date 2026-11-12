@@ -484,7 +484,7 @@ fn staged_scene_round_trips_through_ron_and_json() {
     let from_json: StoryIr = serde_json::from_str(&json).expect("decode JSON");
     assert_eq!(from_ron, from_json);
     assert_eq!(from_ron, story);
-    assert_eq!(from_ron.version, 6);
+    assert_eq!(from_ron.version, weave_core::ir::IR_VERSION);
     assert_eq!(from_ron.presentation.stages.len(), 2);
     assert_eq!(
         from_ron.presentation.stages["mara"].variants["surprised"],

@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "source_name": "crates/weave-compiler/tests/fixtures/golden.weave",
   "entry": "start",
   "globals": [
@@ -45,6 +45,11 @@
   },
   "patterns": {},
   "modules": {},
+  "channels": {
+    "narration": {
+      "animated": true
+    }
+  },
   "knots": {
     "ending": {
       "content": [
@@ -73,32 +78,35 @@
           "kind": {
             "kind": "text",
             "value": {
-              "parts": [
-                {
-                  "kind": "grammar_ref",
-                  "value": {
-                    "grammar": "greeting",
-                    "rule": "hello"
+              "id": "start.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "grammar_ref",
+                    "value": {
+                      "grammar": "greeting",
+                      "rule": "hello"
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": ", visitor "
+                  },
+                  {
+                    "kind": "expression",
+                    "value": {
+                      "kind": "path",
+                      "value": [
+                        "visits"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "text",
+                    "value": "."
                   }
-                },
-                {
-                  "kind": "text",
-                  "value": ", visitor "
-                },
-                {
-                  "kind": "expression",
-                  "value": {
-                    "kind": "path",
-                    "value": [
-                      "visits"
-                    ]
-                  }
-                },
-                {
-                  "kind": "text",
-                  "value": "."
-                }
-              ]
+                ]
+              }
             }
           }
         },
