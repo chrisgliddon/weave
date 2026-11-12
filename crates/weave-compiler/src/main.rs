@@ -484,14 +484,24 @@ fn default_output(input: &Path, format: OutputFormat) -> PathBuf {
     })
 }
 
-/// Replace `path` atomically. A symlink is written through to its target, an
-/// existing file keeps its permissions, and a new file is created `0644`
-/// (before the umask-free rename) rather than the temporary file's `0600`.
+/// Replace `path` atomically. A symlink is written through to its target
+/// (created if missing), an existing file keeps its permissions, a read-only
+/// file is refused, and a new file is created `0644` rather than the temporary
+/// file's `0600`.
 pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
-    let target = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let target = resolve_write_target(path);
     let existing = std::fs::metadata(&target)
         .ok()
         .map(|metadata| metadata.permissions());
+    if existing
+        .as_ref()
+        .is_some_and(std::fs::Permissions::readonly)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "the file is read-only",
+        ));
+    }
     let parent = target.parent().unwrap_or_else(|| Path::new("."));
     let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
     temporary.write_all(bytes)?;
@@ -504,6 +514,29 @@ pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
         .persist(&target)
         .map_err(|error| error.error)
         .map(|_| ())
+}
+
+/// The file a write to `path` should replace: the path itself, or the end of
+/// its symlink chain, even when that target does not exist yet. A hard link
+/// is replaced, not written through, as with any atomic rename.
+fn resolve_write_target(path: &Path) -> PathBuf {
+    let mut current = path.to_path_buf();
+    for _ in 0..32 {
+        match std::fs::read_link(&current) {
+            Ok(next) => {
+                current = if next.is_absolute() {
+                    next
+                } else {
+                    current
+                        .parent()
+                        .unwrap_or_else(|| Path::new("."))
+                        .join(next)
+                };
+            }
+            Err(_) => return current,
+        }
+    }
+    current
 }
 
 #[cfg(unix)]

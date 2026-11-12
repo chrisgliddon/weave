@@ -396,14 +396,15 @@ pub fn render(pieces: &[Piece]) -> Rendered {
     let mut offset = 0usize;
     let mut open: Vec<(String, usize)> = Vec::new();
     let mut rich_style: Option<String> = None;
-    // A pause written between two spaces, as in `a <pause 1> b`, keeps one.
+    // A pause written between spaces, as in `a <pause 1> b`, keeps only the
+    // spaces before it.
     let mut pause_after_space = false;
 
     for piece in pieces {
         match piece {
             Piece::Text(text) => {
                 let text = if pause_after_space {
-                    text.strip_prefix(' ').unwrap_or(text)
+                    text.trim_start_matches(' ')
                 } else {
                     text
                 };

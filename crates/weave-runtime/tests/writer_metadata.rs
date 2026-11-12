@@ -215,3 +215,12 @@ fn string_values_keep_their_quoted_edge_spaces() {
     assert_eq!(escaped.text, "<b> & co");
     assert_eq!(escaped.rich, "&lt;b&gt; &amp; co");
 }
+
+#[test]
+fn pause_spacing_and_label_escapes() {
+    let mut story =
+        start("=== start ===\nWait  <pause 1>  now.\n* [Ask \\^ me \\<b\\>]\n    Done.\n-> END\n");
+    assert_eq!(next(&mut story).text, "Wait  now.");
+    assert!(story.continue_line().unwrap().is_none());
+    assert_eq!(story.choices()[0].text, "Ask ^ me <b>");
+}

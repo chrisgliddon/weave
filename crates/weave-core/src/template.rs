@@ -67,8 +67,7 @@ pub fn parse_template_with(
         if character == '\\' {
             let next_index = index + width;
             if let Some(next) = source[next_index..].chars().next()
-                && (matches!(next, '{' | '}' | '#' | '\\')
-                    || (markup && matches!(next, '<' | '>' | '^')))
+                && matches!(next, '{' | '}' | '#' | '\\' | '<' | '>' | '^')
             {
                 literal.push(next);
                 index = next_index + next.len_utf8();

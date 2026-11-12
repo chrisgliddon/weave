@@ -193,7 +193,9 @@ pub fn unreal_export(source: &str) -> Result<UnrealExport, Vec<Diagnostic>> {
         contents: lines_json(&lines),
     });
     let mut by_speaker: BTreeMap<String, Vec<&ExportLine>> = BTreeMap::new();
-    for line in &lines {
+    // Lines with no visible text (only tags or a pause) stay in Lines.csv for
+    // their cues but have nothing to record.
+    for line in lines.iter().filter(|line| !line.rendered.text.is_empty()) {
         by_speaker
             .entry(
                 line.speaker

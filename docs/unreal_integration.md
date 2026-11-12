@@ -72,7 +72,8 @@ The export writes:
   `FWeaveLineRow` row struct. Row names are line ids; columns are `Knot`, `Channel`, `Speaker`,
   `Text`, `Rich`, `Tags`, `Meta` (`key=value` separated by `;`), and `VoFile`.
 - `vo/<speaker>.md`, a voice script per speaker (`narration` for unvoiced lines) with each line's
-  id, text with `[pause N s]` markers, tag direction, and suggested file name
+  id, text with `[pause N s]` markers, tag direction, and suggested file name; lines with no
+  visible text are left out
   (`VO_<speaker>_<id with dots as underscores>`).
 
 Speakers and channels in the export come from reading the source in order, because the runtime
@@ -96,7 +97,9 @@ voice scripts.
 and the picked choice is highlighted. Typing holds on every `<pause N>`, uses the channel's `cps`
 when it declares one (else `CharactersPerSecond`), and shows lines on `animated: false` channels
 all at once, holding them for their pauses. `bShowSpeaker` prefixes lines with the speaker, and
-`ChannelColors` tints lines per channel. `ChoicePlan` lists which choice to take at each branch
+`ChannelColors` tints lines per channel. It draws with a plain 3D text component, so it shows
+`Text` and not the styling; to see `<b>`, `<em>` and other styles, show `RichText` in a UMG Rich
+Text Block instead. `ChoicePlan` lists which choice to take at each branch
 (entries past its end choose by seed), so a playthrough is repeatable. Two command-line switches
 turn it into a recorder:
 
