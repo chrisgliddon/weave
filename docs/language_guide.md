@@ -404,6 +404,99 @@ Expansion order is:
 
 To emit literal `{`, `}`, or `#`, escape it with a backslash. Unbalanced or empty interpolation markers are compile errors.
 
+### 11.1 Tags
+
+A narrative line, a choice header, or a `STRINGS` entry can carry tags for the host: voice direction, sound cues, analytics, anything the engine reads.
+
+```weave
+You came up in this weather? ^wry ^sfx:wind
+* [Ask about the lamp] ^curious
+```
+
+- `^word` is a bare tag. `^key:value` is a meta tag. The key matches `[A-Za-z_][A-Za-z0-9_.-]*`; the value runs to the next whitespace.
+- A tag must start the text or follow whitespace, so `2^8` is ordinary text. A `^` that does start a word must be a well-formed tag (`W1050`); write `\^` for a literal caret.
+- Tags inside `{…}` interpolations and `#…#` grammar references are not tags, and values produced at run time are never read as tags.
+- Each tag and the whitespace before it are removed from the visible text, and the remaining text is trimmed. Bare tags are deduplicated in source order; a meta key may appear only once per line (`W1051`).
+- On a choice, tags follow the `]` and come before any `{if …}` condition or inline divert.
+
+### 11.2 Stable line ids
+
+Every narrative line has a stable id for localization, voice files, and analytics. By default it is `<knot>.<n>`, where `n` counts the narrative lines of the knot from 1 in source order, including lines inside choice bodies and conditionals. Write `^id:` to pin one:
+
+```weave
+GULL POINT LIGHT ^id:shore.sign
+```
+
+- An id is dot-separated segments of letters, digits, and `_`, and its first segment starts with a letter or `_` (`W1052`).
+- A line with an explicit id still uses up its ordinal, so adding `^id:` to one line never renumbers the others.
+- Ids must be unique across the whole story (`W2320`), including an explicit id that equals another line's default id.
+- `^id:` is only valid on narrative lines. Choices keep their compiler-generated identifiers, and `STRINGS` entries are addressed by key (`W1053`).
+
+Default ids move when lines are inserted above them. Before handing a script to translators or voice actors, run `weavec ids --stamp story.weave` to write every default id into the source as `^id:`, so later edits cannot shift them. `weavec ids story.weave` lists every id without changing the file.
+
+### 11.3 Inline markup
+
+Narrative lines and `STRINGS` values accept two kinds of markup:
+
+```weave
+You came up in this weather? <pause 0.6> <em>Brave</em>, or lost.
+```
+
+- `<pause N>` holds the reveal for `N` seconds, where `N` is written with digits and `.` and lies in (0, 60] (`W1062`). A pause between two spaces leaves one space.
+- `<style>…</style>` marks a styled range. A style name is an identifier other than `pause`. Spans nest, and must close in order (`W1063`) and before the line ends (`W1064`).
+- A `<` followed by a letter, `_`, or `/` starts markup that must be well-formed (`W1060` unterminated, `W1061` invalid). Any other `<`, as in `3 < 4` or `<3`, is ordinary text. Write `\<` and `\>` for literal angle brackets.
+- Values produced by interpolation and grammar expansion are never parsed as markup, so a variable containing `<b>` displays those characters.
+- Choice labels and grammar alternatives are plain text; markup there is shown as written.
+
+Each rendered line carries:
+
+- `text`, with markup removed;
+- `rich`, Unreal Rich Text Block markup: `<style>text</>`, with nested styles flattened to the innermost one and `&`, `<`, `>`, and `"` escaped as `&amp;`, `&lt;`, `&gt;`, and `&quot;`;
+- `spans`, `{style, from, to}` in opening order;
+- `beats`, `{at, pause}` in order.
+
+Offsets count Unicode scalar values in `text`. Hosts that index UTF-16 strings, such as Unreal's `FString`, convert them; the Unreal plugin does.
+
+### 11.4 Channels
+
+A channel names where a line is shown: a dialogue box, a sign, a journal page. Declare channels at top level and switch with `@to`:
+
+```weave
+channel dialog { animated: true, cps: 40, box: bottom }
+channel sign { animated: false, frame: brass }
+
+=== shore ===
+@to sign
+GULL POINT LIGHT
+@to dialog
+@speaker keeper
+You came up in this weather?
+@to
+The wind drops.
+```
+
+- `animated` (Boolean, default `true`) says whether text types on; `cps` (a positive number) is the typing speed. Any other field is passed to the host unchanged as a literal (`W2302` for invalid `animated` or `cps`, `W2303` for a repeated field).
+- Fields are separated by commas, spaces, or newlines.
+- `narration` always exists and is the starting channel. Declaring `channel narration { … }` configures it.
+- `@to name` sends the following lines to that channel (`W2301` if it is not declared); a bare `@to` returns to `narration`. Channel names must be unique (`W2300`).
+- The channel and the current `@speaker` stay in effect across knots and are saved with the story state.
+
+### 11.5 Interface strings
+
+`STRINGS` tables hold interface text that is not part of the narrative flow, such as menu labels and hints, so it is localized and exported with the story:
+
+```weave
+STRINGS ui
+    title = "<title>The Lamp at Gull Point</title>" ^screen:title
+    menu.begin = "Begin" ^button
+    hint.skip = "Press <key>Space</key> to skip"
+```
+
+- Each entry is an indented `key = "value"` with optional tags. Keys are dot-separated; segments after the first may start with a digit.
+- Values are string literals with the usual escapes plus `\<`, `\>`, and `\^`. Inline markup applies; `{`, `}`, and `#` are literal because strings are not interpolated.
+- Table names must be unique (`W2310`), keys must be unique within a table (`W2311`), and only tags may follow a value (`W1070`).
+- Hosts look entries up by table and key. Each entry carries the same `text`, `rich`, `spans`, `beats`, `tags`, and `meta` as a line.
+
 ## 12. Choices
 
 `*` introduces a once-only choice. `+` introduces a sticky choice that is offered on every visit:
@@ -487,12 +580,13 @@ The checker performs at least these validations before IR is produced:
 - Unsupported call paths and non-portable presentation asset paths, including variant images.
 - Unknown or out-of-range presentation tokens: slots, fit modes, anchors, layers, transition kinds, and transition durations.
 - Unreachable statements after `-> target` or `-> END` in one block.
+- Writer metadata: malformed tags (`W1050`), repeated meta keys or ids (`W1051`), invalid line ids (`W1052`), `^id:` outside narrative lines (`W1053`), malformed markup (`W1060`–`W1064`), text after a `STRINGS` value (`W1070`), duplicate, unknown, or invalid channels (`W2300`–`W2303`), duplicate string tables or keys (`W2310`, `W2311`), and duplicate line ids (`W2320`).
 
 All diagnostics have a stable code, severity, message, and source span. Errors prevent output. Warnings do not. Tools must not panic on malformed UTF-8 input bytes, malformed syntax, unknown IR versions, or invalid runtime data.
 
 ## 16. Serialized IR
 
-The compiler lowers checked source AST into a distinct runtime IR. IR version 6 includes:
+The compiler lowers checked source AST into a distinct runtime IR. IR version 7 includes:
 
 - Sorted grammar and executable pattern maps, including built-in identity and draw configuration.
 - Sorted active module metadata with exact module and pack versions, validated tagged effective exports, and canonical authored override metadata.
@@ -500,6 +594,8 @@ The compiler lowers checked source AST into a distinct runtime IR. IR version 6 
 - Source-ordered knot instructions and choices.
 - Parsed template segments and expressions.
 - Stable once-choice identifiers.
+- Line ids, tags, and parsed inline markup for every narrative line; choice tags.
+- Declared channels (always including `narration`), channel instructions, and rendered `STRINGS` tables.
 - Source spans for actionable runtime errors.
 
 RON is the normative output. JSON uses the same model for interoperability and follows the schema publication and compatibility contract in [`json_format.md`](json_format.md).

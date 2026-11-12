@@ -1,0 +1,5 @@
+"Key","SourceString","Comment"
+"title","<title>The Lamp at Gull Point</>","^screen:title"
+"menu.begin","Begin","^button"
+"menu.quit","Leave the shore","^button ^confirm:true"
+"hint.skip","Press <key>Space</> to skip",""

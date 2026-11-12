@@ -1,0 +1,805 @@
+{
+  "version": 7,
+  "source_name": "examples/writer-metadata/lighthouse.weave",
+  "entry": "shore",
+  "globals": [
+    {
+      "span": {
+        "start": 565,
+        "end": 586,
+        "line": 22,
+        "column": 1
+      },
+      "kind": {
+        "kind": "declare",
+        "value": {
+          "kind": "variable",
+          "name": "lamp_lit",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "bool",
+              "value": false
+            }
+          },
+          "allowed_states": []
+        }
+      }
+    }
+  ],
+  "grammars": {},
+  "patterns": {},
+  "modules": {},
+  "presentation": {
+    "scenes": {},
+    "stages": {
+      "keeper": {
+        "image": null,
+        "name": "Keeper",
+        "slot": "center",
+        "layer": 0
+      },
+      "visitor": {
+        "image": null,
+        "name": "Visitor",
+        "slot": "center",
+        "layer": 0
+      }
+    }
+  },
+  "channels": {
+    "dialog": {
+      "animated": true,
+      "cps": 40.0,
+      "meta": {
+        "box": {
+          "kind": "symbol",
+          "value": "bottom"
+        }
+      }
+    },
+    "narration": {
+      "animated": true
+    },
+    "sign": {
+      "animated": false,
+      "meta": {
+        "frame": {
+          "kind": "symbol",
+          "value": "brass"
+        }
+      }
+    }
+  },
+  "strings": {
+    "ui": {
+      "hint.skip": {
+        "text": "Press Space to skip",
+        "rich": "Press <key>Space</> to skip",
+        "spans": [
+          {
+            "style": "key",
+            "from": 6,
+            "to": 11
+          }
+        ],
+        "tags": [],
+        "meta": {}
+      },
+      "menu.begin": {
+        "text": "Begin",
+        "rich": "Begin",
+        "spans": [],
+        "tags": [
+          "button"
+        ],
+        "meta": {}
+      },
+      "menu.quit": {
+        "text": "Leave the shore",
+        "rich": "Leave the shore",
+        "spans": [],
+        "tags": [
+          "button"
+        ],
+        "meta": {
+          "confirm": "true"
+        }
+      },
+      "title": {
+        "text": "The Lamp at Gull Point",
+        "rich": "<title>The Lamp at Gull Point</>",
+        "spans": [
+          {
+            "style": "title",
+            "from": 0,
+            "to": 22
+          }
+        ],
+        "tags": [],
+        "meta": {
+          "screen": "title"
+        }
+      }
+    }
+  },
+  "knots": {
+    "leave": {
+      "content": [
+        {
+          "span": {
+            "start": 1415,
+            "end": 1418,
+            "line": 58,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "narration"
+          }
+        },
+        {
+          "span": {
+            "start": 1419,
+            "end": 1427,
+            "line": 59,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": null
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1428,
+            "end": 1479,
+            "line": 60,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "leave.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "The path back is longer than you remember."
+                  }
+                ]
+              },
+              "tags": [
+                "ambient"
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1480,
+            "end": 1486,
+            "line": 61,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    },
+    "shore": {
+      "content": [
+        {
+          "span": {
+            "start": 601,
+            "end": 604,
+            "line": 25,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "narration"
+          }
+        },
+        {
+          "span": {
+            "start": 605,
+            "end": 613,
+            "line": 26,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": null
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 614,
+            "end": 681,
+            "line": 27,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "shore.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Wind pushes the grass flat along the cliff path."
+                  }
+                ]
+              },
+              "tags": [
+                "ambient"
+              ],
+              "meta": {
+                "sfx": "wind"
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 682,
+            "end": 690,
+            "line": 28,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "sign"
+          }
+        },
+        {
+          "span": {
+            "start": 691,
+            "end": 756,
+            "line": 29,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "shore.sign",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "GULL POINT LIGHT "
+                  },
+                  {
+                    "kind": "pause",
+                    "value": 0.4
+                  },
+                  {
+                    "kind": "text",
+                    "value": " "
+                  },
+                  {
+                    "kind": "style_open",
+                    "value": "b"
+                  },
+                  {
+                    "kind": "text",
+                    "value": "Keeper on duty"
+                  },
+                  {
+                    "kind": "style_close",
+                    "value": "b"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 757,
+            "end": 767,
+            "line": 30,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "dialog"
+          }
+        },
+        {
+          "span": {
+            "start": 768,
+            "end": 783,
+            "line": 31,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": "keeper"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 784,
+            "end": 845,
+            "line": 32,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "shore.3",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "You came up in this weather? "
+                  },
+                  {
+                    "kind": "pause",
+                    "value": 0.6
+                  },
+                  {
+                    "kind": "text",
+                    "value": " Brave, or lost."
+                  }
+                ]
+              },
+              "tags": [
+                "wry"
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 846,
+            "end": 862,
+            "line": 33,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": "visitor"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 863,
+            "end": 887,
+            "line": 34,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "shore.4",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "A little of both."
+                  }
+                ]
+              },
+              "tags": [
+                "tired"
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 888,
+            "end": 919,
+            "line": 35,
+            "column": 1
+          },
+          "kind": {
+            "kind": "choice",
+            "value": {
+              "id": "shore:root.10",
+              "once": true,
+              "text": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Ask about the lamp"
+                  }
+                ]
+              },
+              "condition": null,
+              "body": [
+                {
+                  "span": {
+                    "start": 924,
+                    "end": 940,
+                    "line": 36,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "cue",
+                    "value": {
+                      "kind": "speaker",
+                      "value": "visitor"
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 945,
+                    "end": 974,
+                    "line": 37,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "id": "shore.5",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "Why is the lamp dark tonight?"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 979,
+                    "end": 994,
+                    "line": 38,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "cue",
+                    "value": {
+                      "kind": "speaker",
+                      "value": "keeper"
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 999,
+                    "end": 1093,
+                    "line": 39,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "text",
+                    "value": {
+                      "id": "shore.wick",
+                      "template": {
+                        "parts": [
+                          {
+                            "kind": "text",
+                            "value": "The "
+                          },
+                          {
+                            "kind": "style_open",
+                            "value": "em"
+                          },
+                          {
+                            "kind": "text",
+                            "value": "wick"
+                          },
+                          {
+                            "kind": "style_close",
+                            "value": "em"
+                          },
+                          {
+                            "kind": "text",
+                            "value": " is spent. "
+                          },
+                          {
+                            "kind": "pause",
+                            "value": 0.8
+                          },
+                          {
+                            "kind": "text",
+                            "value": " I was waiting for someone to fetch oil."
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "span": {
+                    "start": 1098,
+                    "end": 1107,
+                    "line": 40,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "divert",
+                    "value": "stores"
+                  }
+                }
+              ],
+              "divert": null,
+              "tags": [
+                "curious"
+              ]
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1108,
+            "end": 1131,
+            "line": 41,
+            "column": 1
+          },
+          "kind": {
+            "kind": "choice",
+            "value": {
+              "id": "shore:root.11",
+              "once": true,
+              "text": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Turn back"
+                  }
+                ]
+              },
+              "condition": null,
+              "body": [
+                {
+                  "span": {
+                    "start": 1136,
+                    "end": 1144,
+                    "line": 42,
+                    "column": 5
+                  },
+                  "kind": {
+                    "kind": "divert",
+                    "value": "leave"
+                  }
+                }
+              ],
+              "divert": null,
+              "tags": [
+                "cautious"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "stores": {
+      "content": [
+        {
+          "span": {
+            "start": 1161,
+            "end": 1171,
+            "line": 45,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "dialog"
+          }
+        },
+        {
+          "span": {
+            "start": 1172,
+            "end": 1187,
+            "line": 46,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": "keeper"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1188,
+            "end": 1247,
+            "line": 47,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "stores.1",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "Oil is in the shed. "
+                  },
+                  {
+                    "kind": "pause",
+                    "value": 0.5
+                  },
+                  {
+                    "kind": "text",
+                    "value": " Mind the "
+                  },
+                  {
+                    "kind": "style_open",
+                    "value": "b"
+                  },
+                  {
+                    "kind": "text",
+                    "value": "third"
+                  },
+                  {
+                    "kind": "style_close",
+                    "value": "b"
+                  },
+                  {
+                    "kind": "text",
+                    "value": " step."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1248,
+            "end": 1267,
+            "line": 48,
+            "column": 1
+          },
+          "kind": {
+            "kind": "assign",
+            "value": {
+              "name": "lamp_lit",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "bool",
+                  "value": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1268,
+            "end": 1276,
+            "line": 49,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "sign"
+          }
+        },
+        {
+          "span": {
+            "start": 1277,
+            "end": 1285,
+            "line": 50,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": null
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1286,
+            "end": 1309,
+            "line": 51,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "stores.lit",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "LAMP LIT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1310,
+            "end": 1320,
+            "line": 52,
+            "column": 1
+          },
+          "kind": {
+            "kind": "channel",
+            "value": "dialog"
+          }
+        },
+        {
+          "span": {
+            "start": 1321,
+            "end": 1337,
+            "line": 53,
+            "column": 1
+          },
+          "kind": {
+            "kind": "cue",
+            "value": {
+              "kind": "speaker",
+              "value": "visitor"
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1338,
+            "end": 1392,
+            "line": 54,
+            "column": 1
+          },
+          "kind": {
+            "kind": "text",
+            "value": {
+              "id": "stores.3",
+              "template": {
+                "parts": [
+                  {
+                    "kind": "text",
+                    "value": "There. "
+                  },
+                  {
+                    "kind": "pause",
+                    "value": 1.2
+                  },
+                  {
+                    "kind": "text",
+                    "value": " Now the boats can find the harbour."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "span": {
+            "start": 1393,
+            "end": 1399,
+            "line": 55,
+            "column": 1
+          },
+          "kind": {
+            "kind": "end"
+          }
+        }
+      ]
+    }
+  }
+}

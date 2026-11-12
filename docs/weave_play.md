@@ -579,6 +579,30 @@ compile-time failures.
   guarantee (`bs6g7xs8`). A playtest record refers to a contract version but
   never embeds one.
 
+## Scripted playthroughs
+
+`weavec play` runs a story from source with a fixed choice plan and prints the transcript, so a
+playthrough can be reviewed, diffed, or attached to a bug report without a renderer:
+
+```bash
+weavec play story.weave --plan 0,1,0 --seed 7
+weavec play story.weave --plan 0,1,0 --json > transcript.json
+```
+
+- `--plan` lists zero-based choice indices, used in order at each choice set. `--seed` fixes random
+  draws (default `0`).
+- The text form prints each line as `[id] (channel) speaker: text`, each choice set with the picked
+  entry marked `>`, and a final `-- outcome` line.
+- `--json` prints `{source, seed, plan, outcome, error, frames}`. Frames are the
+  [line frames](json_format.md#line-frames) the web player and the C ABI produce; choice frames add
+  `"chosen": index`.
+- The outcome is `ended`, `plan_exhausted` (a choice set was reached with no plan entries left),
+  `step_limit` (10,000 frames), or `error`. The exit code is 1 for `error` and 0 otherwise.
+
+`weavec ids` and `weavec export --unreal` are described in the
+[language guide](language_guide.md#112-stable-line-ids) and the
+[Unreal guide](unreal_integration.md#exporting-text-for-localization-and-voice).
+
 ## Licence and provenance gate
 
 Before an asset or dependency ships with the repository:

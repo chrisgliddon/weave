@@ -1,0 +1,112 @@
+[
+  {
+    "Channel": "narration",
+    "Knot": "shore",
+    "Meta": "sfx=wind",
+    "Name": "shore.1",
+    "Rich": "Wind pushes the grass flat along the cliff path.",
+    "Speaker": "",
+    "Tags": "ambient",
+    "Text": "Wind pushes the grass flat along the cliff path.",
+    "VoFile": "VO_narration_shore_1"
+  },
+  {
+    "Channel": "sign",
+    "Knot": "shore",
+    "Meta": "",
+    "Name": "shore.sign",
+    "Rich": "GULL POINT LIGHT <b>Keeper on duty</>",
+    "Speaker": "",
+    "Tags": "",
+    "Text": "GULL POINT LIGHT Keeper on duty",
+    "VoFile": "VO_narration_shore_sign"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "shore",
+    "Meta": "",
+    "Name": "shore.3",
+    "Rich": "You came up in this weather? Brave, or lost.",
+    "Speaker": "keeper",
+    "Tags": "wry",
+    "Text": "You came up in this weather? Brave, or lost.",
+    "VoFile": "VO_keeper_shore_3"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "shore",
+    "Meta": "",
+    "Name": "shore.4",
+    "Rich": "A little of both.",
+    "Speaker": "visitor",
+    "Tags": "tired",
+    "Text": "A little of both.",
+    "VoFile": "VO_visitor_shore_4"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "shore",
+    "Meta": "",
+    "Name": "shore.5",
+    "Rich": "Why is the lamp dark tonight?",
+    "Speaker": "visitor",
+    "Tags": "",
+    "Text": "Why is the lamp dark tonight?",
+    "VoFile": "VO_visitor_shore_5"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "shore",
+    "Meta": "",
+    "Name": "shore.wick",
+    "Rich": "The <em>wick</> is spent. I was waiting for someone to fetch oil.",
+    "Speaker": "keeper",
+    "Tags": "",
+    "Text": "The wick is spent. I was waiting for someone to fetch oil.",
+    "VoFile": "VO_keeper_shore_wick"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "stores",
+    "Meta": "",
+    "Name": "stores.1",
+    "Rich": "Oil is in the shed. Mind the <b>third</> step.",
+    "Speaker": "keeper",
+    "Tags": "",
+    "Text": "Oil is in the shed. Mind the third step.",
+    "VoFile": "VO_keeper_stores_1"
+  },
+  {
+    "Channel": "sign",
+    "Knot": "stores",
+    "Meta": "",
+    "Name": "stores.lit",
+    "Rich": "LAMP LIT",
+    "Speaker": "",
+    "Tags": "",
+    "Text": "LAMP LIT",
+    "VoFile": "VO_narration_stores_lit"
+  },
+  {
+    "Channel": "dialog",
+    "Knot": "stores",
+    "Meta": "",
+    "Name": "stores.3",
+    "Rich": "There. Now the boats can find the harbour.",
+    "Speaker": "visitor",
+    "Tags": "",
+    "Text": "There. Now the boats can find the harbour.",
+    "VoFile": "VO_visitor_stores_3"
+  },
+  {
+    "Channel": "narration",
+    "Knot": "leave",
+    "Meta": "",
+    "Name": "leave.1",
+    "Rich": "The path back is longer than you remember.",
+    "Speaker": "",
+    "Tags": "ambient",
+    "Text": "The path back is longer than you remember.",
+    "VoFile": "VO_narration_leave_1"
+  }
+]

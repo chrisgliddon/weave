@@ -1,0 +1,61 @@
+// A small story that exercises every writer-metadata feature:
+// tags, stable line ids, two channels, speakers, pauses, style spans,
+// and an interface string table.
+
+channel dialog { animated: true, cps: 40, box: bottom }
+channel sign { animated: false, frame: brass }
+
+stage keeper {
+    name: "Keeper"
+}
+
+stage visitor {
+    name: "Visitor"
+}
+
+STRINGS ui
+    title = "<title>The Lamp at Gull Point</title>" ^screen:title
+    menu.begin = "Begin" ^button
+    menu.quit = "Leave the shore" ^button ^confirm:true
+    hint.skip = "Press <key>Space</key> to skip"
+
+VAR lamp_lit = false
+
+=== shore ===
+@to
+@speaker
+Wind pushes the grass flat along the cliff path. ^ambient ^sfx:wind
+@to sign
+GULL POINT LIGHT <pause 0.4> <b>Keeper on duty</b> ^id:shore.sign
+@to dialog
+@speaker keeper
+You came up in this weather? <pause 0.6> Brave, or lost. ^wry
+@speaker visitor
+A little of both. ^tired
+* [Ask about the lamp] ^curious
+    @speaker visitor
+    Why is the lamp dark tonight?
+    @speaker keeper
+    The <em>wick</em> is spent. <pause 0.8> I was waiting for someone to fetch oil. ^id:shore.wick
+    -> stores
+* [Turn back] ^cautious
+    -> leave
+
+=== stores ===
+@to dialog
+@speaker keeper
+Oil is in the shed. <pause 0.5> Mind the <b>third</b> step.
+SET lamp_lit = true
+@to sign
+@speaker
+LAMP LIT ^id:stores.lit
+@to dialog
+@speaker visitor
+There. <pause 1.2> Now the boats can find the harbour.
+-> END
+
+=== leave ===
+@to
+@speaker
+The path back is longer than you remember. ^ambient
+-> END
