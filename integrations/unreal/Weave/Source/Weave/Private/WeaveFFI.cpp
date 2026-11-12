@@ -53,15 +53,18 @@ bool FWeaveFFI::Load(FString& OutError)
 	F.Save = (FCall)Sym(TEXT("weave_player_save"));
 	F.Restore = (FRestore)Sym(TEXT("weave_player_restore"));
 	F.AbiVersion = (FAbi)Sym(TEXT("weave_ffi_abi_version"));
-	if (!F.New || !F.PlayerFree || !F.StringFree || !F.Advance || !F.Choices || !F.Choose || !F.CanContinue
-		|| !F.Restart || !F.Save || !F.Restore || !F.AbiVersion)
+	F.StringLookup = (FStringLookup)Sym(TEXT("weave_player_string"));
+	F.Channels = (FCall)Sym(TEXT("weave_player_channels"));
+	if (F.AbiVersion && F.AbiVersion() != ExpectedAbi)
 	{
-		OutError = FString::Printf(TEXT("Weave runtime library at %s is missing exports"), *Path);
+		OutError = FString::Printf(TEXT("Weave runtime ABI %u, plugin expects %u (rebuild and restage the runtime library)"),
+			F.AbiVersion(), ExpectedAbi);
 		return false;
 	}
-	if (F.AbiVersion() != ExpectedAbi)
+	if (!F.New || !F.PlayerFree || !F.StringFree || !F.Advance || !F.Choices || !F.Choose || !F.CanContinue
+		|| !F.Restart || !F.Save || !F.Restore || !F.AbiVersion || !F.StringLookup || !F.Channels)
 	{
-		OutError = FString::Printf(TEXT("Weave runtime ABI %u, plugin expects %u"), F.AbiVersion(), ExpectedAbi);
+		OutError = FString::Printf(TEXT("Weave runtime library at %s is missing exports"), *Path);
 		return false;
 	}
 	GWeave = F;

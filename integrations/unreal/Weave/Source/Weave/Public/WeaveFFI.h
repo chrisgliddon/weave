@@ -14,8 +14,9 @@ struct WEAVE_API FWeaveFFI
 	using FRestart = char* (*)(void*, uint64);
 	using FRestore = char* (*)(void*, const char*);
 	using FAbi = uint32 (*)();
+	using FStringLookup = char* (*)(void*, const char*, const char*);
 
-	static constexpr uint32 ExpectedAbi = 1;
+	static constexpr uint32 ExpectedAbi = 2;
 
 	/** Load the library once. Safe to call repeatedly. */
 	static bool Load(FString& OutError);
@@ -35,5 +36,7 @@ struct WEAVE_API FWeaveFFI
 	FCall Save = nullptr;
 	FRestore Restore = nullptr;
 	FAbi AbiVersion = nullptr;
+	FStringLookup StringLookup = nullptr;
+	FCall Channels = nullptr;
 	void* Handle = nullptr;
 };

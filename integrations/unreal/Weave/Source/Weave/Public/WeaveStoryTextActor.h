@@ -12,6 +12,9 @@ class UWeaveStory;
  * Plays a Weave story as 3D text in the level: lines type out, choices are listed and one is picked
  * (from ChoicePlan, else seeded), until the story ends. A ready-made way to see a story running.
  *
+ * Typing honours the story: it holds on every `<pause N>` beat, uses the line's channel speed (`cps`)
+ * when the channel declares one, and shows lines on channels declared `animated: false` all at once.
+ *
  * Headless capture: start the game with -WeaveCapture=<dir> (or set CaptureDirectory) to write
  * every rendered frame as a PNG, and -WeaveQuitWhenDone to exit after the ending. Use a fixed
  * frame rate (-benchmark -fps=30) so the frames form a smooth video.
@@ -34,6 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave")
 	TArray<int32> ChoicePlan;
 
+	/** Typing speed for channels that do not declare `cps`. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave|Timing")
 	float CharactersPerSecond = 40.f;
 
@@ -62,6 +66,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave|Look")
 	FString EndText = TEXT("~ fin ~");
 
+	/** Prefix each line with its speaker, as in `keeper: Hello`. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave|Look")
+	bool bShowSpeaker = true;
+
+	/** Text colour per channel name; channels not listed use LineColor. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave|Look")
+	TMap<FString, FColor> ChannelColors;
+
 	/** Write every frame here as PNG (also -WeaveCapture=<dir>). Empty = off. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weave|Capture")
 	FString CaptureDirectory;
@@ -89,6 +101,8 @@ private:
 
 	void Next();
 	void ShowChoices(int32 Picked);
+	void BeginLine(const FWeaveFrame& Frame);
+	/** Wrap by turning spaces into newlines, so every character keeps its index. */
 	static FString Wrap(const FString& Text, int32 Columns);
 
 	UPROPERTY(Transient)
@@ -96,6 +110,18 @@ private:
 
 	EState State = EState::Idle;
 	FString Current;
+	/** Typing speed for the current line. */
+	float LineCps = 40.f;
+	/** Characters revealed so far, fractional between frames. */
+	float Revealed = 0.f;
+	/** Seconds left on the current beat. */
+	float BeatRemaining = 0.f;
+	/** Beats of the current line, offsets into Current. */
+	TArray<FWeaveBeat> LineBeats;
+	int32 NextBeat = 0;
+	/** Seconds the current line holds once fully shown. */
+	float LineHold = 0.f;
+	TMap<FString, FWeaveChannel> Channels;
 	TArray<FWeaveChoice> Choices;
 	int32 Picked = 0;
 	int32 ChoiceCount = 0;

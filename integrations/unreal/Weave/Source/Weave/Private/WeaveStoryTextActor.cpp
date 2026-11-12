@@ -53,24 +53,76 @@ void AWeaveStoryTextActor::BeginPlay()
 		State = EState::Ending; // show the error briefly, then quit if asked, so batch renders never hang
 		return;
 	}
+	Channels = Player->GetChannels();
 	Next();
 }
 
 FString AWeaveStoryTextActor::Wrap(const FString& Text, int32 Columns)
 {
-	TArray<FString> Words;
-	Text.ParseIntoArrayWS(Words);
-	FString Out, Line;
-	for (const FString& W : Words)
+	FString Out = Text;
+	int32 LineStart = 0;
+	int32 LastSpace = INDEX_NONE;
+	for (int32 Index = 0; Index < Out.Len(); ++Index)
 	{
-		if (!Line.IsEmpty() && Line.Len() + 1 + W.Len() > Columns)
+		if (Out[Index] == TEXT('\n'))
 		{
-			Out += Line + TEXT("\n");
-			Line.Reset();
+			LineStart = Index + 1;
+			LastSpace = INDEX_NONE;
+			continue;
 		}
-		Line += Line.IsEmpty() ? W : TEXT(" ") + W;
+		if (Out[Index] == TEXT(' '))
+		{
+			LastSpace = Index;
+		}
+		if (Index - LineStart >= Columns && LastSpace != INDEX_NONE)
+		{
+			Out[LastSpace] = TEXT('\n');
+			LineStart = LastSpace + 1;
+			LastSpace = INDEX_NONE;
+		}
 	}
-	return Out + Line;
+	return Out;
+}
+
+void AWeaveStoryTextActor::BeginLine(const FWeaveFrame& Frame)
+{
+	const FString Prefix = (bShowSpeaker && !Frame.Speaker.IsEmpty()) ? Frame.Speaker + TEXT(": ") : FString();
+	Current = Wrap(Prefix + Frame.Text, WrapColumns);
+
+	const FWeaveChannel* Found = Channels.Find(Frame.Channel);
+	const bool bAnimated = Found ? Found->bAnimated : true;
+	LineCps = (Found && Found->bHasCharactersPerSecond) ? Found->CharactersPerSecond : CharactersPerSecond;
+	LineCps = FMath::Max(LineCps, 1.f);
+
+	LineBeats.Reset();
+	float BeatTotal = 0.f;
+	for (const FWeaveBeat& Beat : Frame.Beats)
+	{
+		FWeaveBeat Shifted = Beat;
+		Shifted.At += Prefix.Len();
+		LineBeats.Add(Shifted);
+		BeatTotal += Beat.Seconds;
+	}
+	NextBeat = 0;
+	BeatRemaining = 0.f;
+	Revealed = 0.f;
+	LineHold = LineHoldSeconds;
+
+	const FColor* Tint = ChannelColors.Find(Frame.Channel);
+	LineText->SetTextRenderColor(Tint ? *Tint : LineColor);
+	ChoicesText->SetText(FText::GetEmpty());
+	if (bAnimated)
+	{
+		State = EState::Typing;
+		LineText->SetText(FText::GetEmpty());
+	}
+	else
+	{
+		// A non-animated channel shows the whole line at once and holds for its beats too.
+		LineText->SetText(FText::FromString(Current));
+		LineHold += BeatTotal;
+		State = EState::Holding;
+	}
 }
 
 void AWeaveStoryTextActor::Next()
@@ -81,10 +133,7 @@ void AWeaveStoryTextActor::Next()
 	switch (Frame.Kind)
 	{
 	case EWeaveFrameKind::Line:
-		Current = Wrap(Frame.Text, WrapColumns);
-		ChoicesText->SetText(FText::GetEmpty());
-		LineText->SetTextRenderColor(LineColor);
-		State = EState::Typing;
+		BeginLine(Frame);
 		break;
 	case EWeaveFrameKind::Choices:
 		Choices = Frame.Choices;
@@ -133,9 +182,32 @@ void AWeaveStoryTextActor::Tick(float DeltaSeconds)
 	{
 	case EState::Typing:
 	{
-		const int32 Shown = FMath::Min(Current.Len(), FMath::FloorToInt(Clock * CharactersPerSecond));
+		float Budget = DeltaSeconds;
+		while (Budget > 0.f)
+		{
+			if (BeatRemaining > 0.f)
+			{
+				const float Spent = FMath::Min(Budget, BeatRemaining);
+				BeatRemaining -= Spent;
+				Budget -= Spent;
+				continue;
+			}
+			const float Target = Revealed + Budget * LineCps;
+			if (LineBeats.IsValidIndex(NextBeat) && Target >= static_cast<float>(LineBeats[NextBeat].At))
+			{
+				const float At = static_cast<float>(LineBeats[NextBeat].At);
+				Budget -= FMath::Max(0.f, At - Revealed) / LineCps;
+				Revealed = At;
+				BeatRemaining = LineBeats[NextBeat].Seconds;
+				++NextBeat;
+				continue;
+			}
+			Revealed = Target;
+			Budget = 0.f;
+		}
+		const int32 Shown = FMath::Min(Current.Len(), FMath::FloorToInt(Revealed));
 		LineText->SetText(FText::FromString(Current.Left(Shown)));
-		if (Shown >= Current.Len())
+		if (Shown >= Current.Len() && BeatRemaining <= 0.f)
 		{
 			State = EState::Holding;
 			Clock = 0.f;
@@ -143,7 +215,7 @@ void AWeaveStoryTextActor::Tick(float DeltaSeconds)
 		break;
 	}
 	case EState::Holding:
-		if (Clock >= LineHoldSeconds)
+		if (Clock >= LineHold)
 		{
 			Next();
 		}
