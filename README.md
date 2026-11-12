@@ -319,6 +319,7 @@ weave/
 │   ├── domain_modules.md    # Manifest, namespace, compatibility, and provenance contract
 │   ├── tabletop_adapters.md # Adapter capabilities, state, replay, visibility, and licensing
 │   ├── bevy_integration.md # Using Weave in Bevy games
+│   ├── unreal_integration.md # Using Weave in Unreal Engine
 │   ├── editor_guide.md     # Using the visual editor
 │   └── api_reference.md    # Generated rustdoc entry points
 │

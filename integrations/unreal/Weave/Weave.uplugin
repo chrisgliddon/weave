@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1.0",
+	"FriendlyName": "Weave",
+	"Description": "Play Weave branching stories (Ink-like syntax) in Unreal Engine through the shared Weave runtime.",
+	"Category": "Narrative",
+	"CreatedBy": "Weave contributors",
+	"DocsURL": "https://github.com/chrisgliddon/weave/blob/dev/docs/unreal_integration.md",
+	"EngineVersion": "5.9.0",
+	"CanContainContent": false,
+	"EnabledByDefault": true,
+	"Modules": [
+		{ "Name": "Weave", "Type": "Runtime", "LoadingPhase": "Default", "PlatformAllowList": [ "Linux", "Mac", "Win64" ] },
+		{ "Name": "WeaveEditor", "Type": "Editor", "LoadingPhase": "Default", "PlatformAllowList": [ "Linux", "Mac", "Win64" ] }
+	]
+}

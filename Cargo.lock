@@ -8192,6 +8192,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-ffi"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "weave-web",
+]
+
+[[package]]
 name = "weave-fmt"
 version = "0.1.0"
 dependencies = [

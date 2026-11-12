@@ -1,0 +1,25 @@
+[package]
+name = "weave-ffi"
+description = "C ABI over the Weave story player, for engines such as Unreal Engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json.workspace = true
+weave-web = { path = "../weave-web" }
+
+# The workspace forbids unsafe code. A C ABI cannot avoid it, so this crate denies it
+# instead and allows it only on the exported functions, each documented with its contract.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
