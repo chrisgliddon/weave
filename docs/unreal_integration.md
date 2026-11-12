@@ -78,8 +78,13 @@ The export writes:
 Speakers and channels in the export come from reading the source in order, because the runtime
 decides them only while playing. The opening knot starts from narration; every other knot, and any
 line after a thread or a branch that changes them, is uncertain. The export prints one warning per
-knot with uncertain lines; starting each knot with `@speaker` and `@to` makes every row exact. It
-also warns when two lines would share a voice file, or when names differ only in case.
+knot with uncertain lines; starting each knot with `@speaker` and `@to` makes every row exact.
+
+Voice file names are unique: when two ids map to the same name (`intro.1` and `intro_1`), the later
+line gets `_2`, `_3`, and so on, with a warning. The export also warns when file or row names
+differ only in case, and when a cell starts with `=`, `+`, `-`, or `@`. The CSVs are written for
+engine import and are not rewritten, so spreadsheet apps may run such cells as formulas; open them
+as text.
 
 Choice labels are not exported. They have no `^id:`, so they are not yet part of string tables or
 voice scripts.

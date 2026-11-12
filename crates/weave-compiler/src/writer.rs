@@ -157,10 +157,12 @@ struct ExportLine {
     rendered: Rendered,
     tags: Vec<String>,
     meta: BTreeMap<String, String>,
+    /// Unique voice file name, assigned once every line is known.
+    vo_file: String,
 }
 
 impl ExportLine {
-    fn vo_file(&self) -> String {
+    fn base_vo_file(&self) -> String {
         format!(
             "VO_{}_{}",
             self.speaker.as_deref().unwrap_or(NARRATION_CHANNEL),
@@ -180,7 +182,8 @@ pub fn unreal_export(source: &str) -> Result<UnrealExport, Vec<Diagnostic>> {
     }
     let mut export = UnrealExport::default();
     string_tables(&document, &mut export)?;
-    let lines = export_lines(&document, &mut export.warnings)?;
+    let mut lines = export_lines(&document, &mut export.warnings)?;
+    assign_voice_files(&mut lines, &mut export.warnings);
     export.files.push(ExportFile {
         path: "Lines.csv".to_owned(),
         contents: lines_csv(&lines),
@@ -225,6 +228,12 @@ fn string_tables(document: &Document, export: &mut UnrealExport) -> Result<(), V
                 rendered.rich
             };
             let comment = tags_source(&item.tags);
+            if starts_like_formula(&source_string) {
+                export.warnings.push(format!(
+                    "string `{}.{}` starts with `=`, `+`, `-`, or `@`; spreadsheet apps may run such CSV cells as formulas, so open the CSVs as text or import them straight into the engine",
+                    table.node.name, item.key
+                ));
+            }
             push_csv_row(&mut csv, &[&item.key, &source_string, &comment]);
         }
         export.files.push(ExportFile {
@@ -317,6 +326,7 @@ impl Walker<'_> {
                         rendered: script_text(&tagged.text)?,
                         tags: tags.tags,
                         meta: tags.meta,
+                        vo_file: String::new(),
                     });
                 }
                 Statement::Cue(Cue::Speaker(speaker)) => {
@@ -383,20 +393,36 @@ fn enters(statements: &[Spanned<Statement>], knot: &str) -> bool {
     })
 }
 
-/// Warn about names that would overwrite each other: two lines sharing a
-/// voice file, or files and row names that differ only in case (one file on
-/// case-insensitive filesystems, one row in an Unreal DataTable).
-fn collision_warnings(lines: &[ExportLine], files: &[ExportFile], warnings: &mut Vec<String>) {
-    let mut seen: BTreeMap<String, &str> = BTreeMap::new();
-    for line in lines {
-        let vo = line.vo_file();
-        if let Some(other) = seen.insert(vo.to_lowercase(), &line.id) {
+/// Give every line a voice file name of its own. Names come from the speaker
+/// and line id with dots as underscores, so different ids can meet (`intro.1`
+/// and `intro_1`); a later line that would reuse a name, ignoring case, gets
+/// `_2`, `_3`, and so on, with a warning so the writer can pick a clearer id.
+fn assign_voice_files(lines: &mut [ExportLine], warnings: &mut Vec<String>) {
+    let mut taken: BTreeMap<String, String> = BTreeMap::new();
+    for line in lines.iter_mut() {
+        let base = line.base_vo_file();
+        let mut name = base.clone();
+        let mut suffix = 2;
+        while taken.contains_key(&name.to_lowercase()) {
+            name = format!("{base}_{suffix}");
+            suffix += 1;
+        }
+        if name != base {
             warnings.push(format!(
-                "lines `{other}` and `{}` share the voice file name `{vo}`; give one a different `^id:`",
-                line.id
+                "line `{}` would share the voice file name `{base}` with line `{}`; it is exported as `{name}`, or give it a different `^id:`",
+                line.id,
+                taken[&base.to_lowercase()]
             ));
         }
+        taken.insert(name.to_lowercase(), line.id.clone());
+        line.vo_file = name;
     }
+}
+
+/// Warn about names that would overwrite each other: files and row names that
+/// differ only in case (one file on case-insensitive filesystems, one row in
+/// an Unreal DataTable), and cells a spreadsheet would run as a formula.
+fn collision_warnings(lines: &[ExportLine], files: &[ExportFile], warnings: &mut Vec<String>) {
     let mut rows: BTreeMap<String, &str> = BTreeMap::new();
     for line in lines {
         if let Some(other) = rows.insert(line.id.to_lowercase(), &line.id)
@@ -416,6 +442,15 @@ fn collision_warnings(lines: &[ExportLine], files: &[ExportFile], warnings: &mut
                 file.path
             ));
         }
+    }
+    let formula = lines
+        .iter()
+        .find(|line| starts_like_formula(&line.rendered.text))
+        .map(|line| line.id.clone());
+    if let Some(id) = formula {
+        warnings.push(format!(
+            "line `{id}` starts with `=`, `+`, `-`, or `@`; spreadsheet apps may run such CSV cells as formulas, so open the CSVs as text or import them straight into the engine"
+        ));
     }
     if lines
         .iter()
@@ -484,7 +519,7 @@ fn line_fields(line: &ExportLine) -> [String; 9] {
             .map(|(key, value)| format!("{key}={value}"))
             .collect::<Vec<_>>()
             .join(";"),
-        line.vo_file(),
+        line.vo_file.clone(),
     ]
 }
 
@@ -534,7 +569,7 @@ fn voice_script(speaker: &str, lines: &[&ExportLine]) -> String {
             markdown_cell(&line.id),
             markdown_cell(&spoken_text(&line.rendered)),
             markdown_cell(&direction.join(", ")),
-            markdown_cell(&line.vo_file()),
+            markdown_cell(&line.vo_file),
         );
     }
     output
@@ -585,6 +620,11 @@ fn tags_source(tags: &[Spanned<Tag>]) -> String {
         .map(|tag| tag.node.to_source())
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+/// Whether a spreadsheet would treat a cell starting this way as a formula.
+fn starts_like_formula(text: &str) -> bool {
+    text.starts_with(['=', '+', '-', '@', '\t', '\r'])
 }
 
 fn push_csv_row(output: &mut String, fields: &[&str]) {
@@ -728,9 +768,32 @@ Back again.
             export
                 .warnings
                 .iter()
-                .any(|warning| warning.contains("VO_narration_intro_1")),
+                .any(|warning| warning.contains("VO_narration_intro_1_2")),
             "{:?}",
             export.warnings
+        );
+        let csv = &export
+            .files
+            .iter()
+            .find(|file| file.path == "Lines.csv")
+            .expect("lines")
+            .contents;
+        assert!(csv.contains("\"VO_narration_intro_1\"\n"), "{csv}");
+        assert!(csv.contains("\"VO_narration_intro_1_2\"\n"), "{csv}");
+
+        let formula = unreal_export(
+            "STRINGS ui\n    a = \"=SUM(1,2)\"\n=== intro ===\n@speaker\n-1 is odd.\n-> END\n",
+        )
+        .expect("export");
+        assert_eq!(
+            formula
+                .warnings
+                .iter()
+                .filter(|warning| warning.contains("formulas"))
+                .count(),
+            2,
+            "{:?}",
+            formula.warnings
         );
     }
 
