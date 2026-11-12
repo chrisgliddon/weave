@@ -66,8 +66,8 @@ weavec export --unreal Content/Story story.weave
 The export writes:
 
 - `StringTable_<table>.csv` for each `STRINGS` table, with `Key`, `SourceString`, and `Comment`
-  columns, ready for String Table import. `SourceString` is Rich Text markup when the entry has
-  styles; `Comment` holds the entry's tags.
+  columns, ready for String Table import. `SourceString` is always Rich Text markup, with `&`, `<`,
+  `>`, and `"` escaped, so show it in a Rich Text Block; `Comment` holds the entry's tags.
 - `Lines.csv` and `Lines.json`, one row per narrative line, ready to import as a DataTable with the
   `FWeaveLineRow` row struct. Row names are line ids; columns are `Knot`, `Channel`, `Speaker`,
   `Text`, `Rich`, `Tags`, `Meta` (`key=value` separated by `;`), and `VoFile`.
@@ -81,7 +81,8 @@ line after a thread or a branch that changes them, is uncertain. The export prin
 knot with uncertain lines; starting each knot with `@speaker` and `@to` makes every row exact.
 
 Voice file names are unique: when two ids map to the same name (`intro.1` and `intro_1`), the later
-line gets `_2`, `_3`, and so on, with a warning. The export also warns when file or row names
+line gets `_2`, `_3`, and so on, with a warning. Such suffixes follow source order, so give
+colliding lines distinct ids before recording rather than relying on them. The export also warns when file or row names
 differ only in case, and when a cell starts with `=`, `+`, `-`, or `@`. The CSVs are written for
 engine import and are not rewritten, so spreadsheet apps may run such cells as formulas; open them
 as text.

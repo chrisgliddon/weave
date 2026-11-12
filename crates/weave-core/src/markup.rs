@@ -377,14 +377,21 @@ pub struct Rendered {
     pub beats: Vec<BeatIr>,
 }
 
-/// Render pieces into plain text, rich text, spans, and beats.
+/// Render a narrative line: like [`render`], after dropping whitespace at
+/// either end of the visible text, so `Done. <pause 1>` renders as `Done.`.
+#[must_use]
+pub fn render_line(pieces: &[Piece]) -> Rendered {
+    render(&trim_pieces(pieces))
+}
+
+/// Render pieces into plain text, rich text, spans, and beats, keeping every
+/// space; `STRINGS` values use this so quoted edge spaces survive.
 ///
 /// Unbalanced pieces are tolerated here: an unmatched close is ignored and an
 /// unclosed span ends at the end of the text. Compile-time validation rejects
 /// both before any story reaches this function.
 #[must_use]
 pub fn render(pieces: &[Piece]) -> Rendered {
-    let pieces = trim_pieces(pieces);
     let mut rendered = Rendered::default();
     let mut offset = 0usize;
     let mut open: Vec<(String, usize)> = Vec::new();
@@ -392,7 +399,7 @@ pub fn render(pieces: &[Piece]) -> Rendered {
     // A pause written between two spaces, as in `a <pause 1> b`, keeps one.
     let mut pause_after_space = false;
 
-    for piece in &pieces {
+    for piece in pieces {
         match piece {
             Piece::Text(text) => {
                 let text = if pause_after_space {

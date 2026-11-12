@@ -11,7 +11,7 @@ use std::fmt::Write as _;
 use weave_core::ast::{Cue, Document, Spanned, Statement, StringsEntry};
 use weave_core::markup::{
     LineIdEntry, NARRATION_CHANNEL, Piece, Rendered, Tag, collect_line_ids, extract_tags,
-    fold_tags, parse_string_value, render,
+    fold_tags, parse_string_value, render, render_line,
 };
 use weave_core::{Diagnostic, Span, TemplateMode, TemplatePart, parse_template_with};
 
@@ -222,11 +222,9 @@ fn string_tables(document: &Document, export: &mut UnrealExport) -> Result<(), V
                 continue;
             };
             let rendered = render(&parse_string_value(&item.raw, item.value_span)?);
-            let source_string = if rendered.spans.is_empty() {
-                rendered.text
-            } else {
-                rendered.rich
-            };
+            // Always rich text, so every row reads the same way: escaped `<`
+            // and `&` stay text instead of turning into markup on import.
+            let source_string = rendered.rich;
             let comment = tags_source(&item.tags);
             if starts_like_formula(&source_string) {
                 export.warnings.push(format!(
@@ -498,7 +496,7 @@ fn script_text(text: &str) -> Result<Rendered, Vec<Diagnostic>> {
             TemplatePart::StyleClose(name) => Piece::Close(name),
         })
         .collect::<Vec<_>>();
-    Ok(render(&pieces))
+    Ok(render_line(&pieces))
 }
 
 const LINE_COLUMNS: [&str; 9] = [

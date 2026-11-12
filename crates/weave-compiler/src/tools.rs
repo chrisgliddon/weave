@@ -7,10 +7,10 @@ use std::process::ExitCode;
 use clap::Parser;
 use serde_json::{Value, json};
 use weave_compiler::writer::{list_line_ids, stamp_line_ids, unreal_export};
-use weave_compiler::{CompileOptions, compile};
+use weave_compiler::{CompileOptions, compile_with_extensions};
 use weave_web::{Player, PlayerFrame};
 
-use crate::{atomic_write, print_diagnostics};
+use crate::{adjacent_domain_catalog, atomic_write, print_diagnostics};
 
 /// Most frames one `weavec play` run records before stopping.
 const MAX_PLAY_STEPS: usize = 10_000;
@@ -188,7 +188,20 @@ fn play(cli: &PlayCli) -> u8 {
     let options = CompileOptions {
         source_name: Some(cli.input.display().to_string()),
     };
-    let compiled = match compile(&source, &options) {
+    // Use the story's adjacent module project, as a plain `weavec` build does.
+    let catalog = match adjacent_domain_catalog(&cli.input) {
+        Ok(catalog) => catalog,
+        Err(error) => {
+            eprintln!("weavec: {error}");
+            return 2;
+        }
+    };
+    let compiled = match compile_with_extensions(
+        &source,
+        &options,
+        &std::collections::BTreeMap::new(),
+        &catalog,
+    ) {
         Ok(compiled) => compiled,
         Err(error) => {
             print_diagnostics(&cli.input, &source, &error.diagnostics);

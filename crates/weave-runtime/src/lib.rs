@@ -18,7 +18,7 @@ use weave_core::ir::{
     ValueLiteral, VariableKindIr,
 };
 use weave_core::markup::{
-    MAX_PAUSE_SECONDS, NARRATION_CHANNEL, Piece, is_line_id, is_style_name, render,
+    MAX_PAUSE_SECONDS, NARRATION_CHANNEL, Piece, is_line_id, is_style_name, render_line,
 };
 use weave_patterns::{
     DrawRequest, DrawResult, PatternState, PatternSystem, PatternValue, SeededRandom,
@@ -1269,7 +1269,7 @@ impl Story {
                 TemplatePartIr::StyleClose(name) => Piece::Close(name.clone()),
             });
         }
-        let rendered = render(&pieces);
+        let rendered = render_line(&pieces);
         Ok(Line {
             id: line.id.clone(),
             channel: self.state.channel.clone(),

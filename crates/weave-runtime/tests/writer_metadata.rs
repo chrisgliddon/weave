@@ -204,3 +204,14 @@ fn rejects_hand_edited_ir_with_invalid_writer_metadata() {
     );
     assert!(load(serde_json::from_str(&bad_style).unwrap()).is_err());
 }
+
+#[test]
+fn string_values_keep_their_quoted_edge_spaces() {
+    let story = start(
+        "STRINGS ui\n    score = \"Score: \"\n    escaped = \"\\<b> & co\"\n=== start ===\nHi.\n-> END\n",
+    );
+    assert_eq!(story.string("ui", "score").unwrap().text, "Score: ");
+    let escaped = story.string("ui", "escaped").unwrap();
+    assert_eq!(escaped.text, "<b> & co");
+    assert_eq!(escaped.rich, "&lt;b&gt; &amp; co");
+}

@@ -227,6 +227,21 @@ fn compile_once(cli: &Cli, input: &Path) -> u8 {
     0
 }
 
+/// The domain modules a story beside `input` can use: its adjacent
+/// `weave.modules.json` project when there is one, else none. Never writes a
+/// lock file.
+pub(crate) fn adjacent_domain_catalog(input: &Path) -> Result<DomainCatalog, String> {
+    let current_weave = semver::Version::parse(env!("CARGO_PKG_VERSION"))
+        .map_err(|_| "compiler compatibility version is invalid".to_owned())?;
+    let project = load_adjacent_domain_project(input, &current_weave)
+        .map_err(|error| format!("could not load adjacent domain project: {error}"))?;
+    Ok(if project.config_path().exists() {
+        project.catalog().clone()
+    } else {
+        DomainCatalog::new()
+    })
+}
+
 struct DomainInputs {
     catalog: DomainCatalog,
     project: Option<LoadedDomainProject>,
